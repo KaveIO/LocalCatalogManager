@@ -19,8 +19,9 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.HashMap;
 import java.util.Map;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNull;
 import org.junit.Test;
-import static org.junit.Assert.*;
 
 /**
  *
@@ -28,10 +29,10 @@ import static org.junit.Assert.*;
  */
 public class MetaDataTest {
 
-    private Method setMethod;
-    
-    private Method getMethod;
-    
+    private final Method setMethod;
+
+    private final Method getMethod;
+
     public MetaDataTest() throws NoSuchMethodException {
         setMethod = MetaData.class.getDeclaredMethod("set", String.class, Object.class);
         setMethod.setAccessible(true);
