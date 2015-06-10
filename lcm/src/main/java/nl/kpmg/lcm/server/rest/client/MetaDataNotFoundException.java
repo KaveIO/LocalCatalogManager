@@ -13,24 +13,30 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package nl.kpmg.lcm.server.metadata.storage;
-
-import java.util.List;
-import nl.kpmg.lcm.server.metadata.MetaData;
+package nl.kpmg.lcm.server.rest.client;
 
 /**
  *
  * @author mhoekstra
  */
-public interface MetaDataDao {
-    
-    public List<MetaData> getAll();
-    
-    public MetaData getByName(String name);
-    
-    public MetaData getByNameAndVersion(String name, String version);
-    
-    public void persist(MetaData metadata);
-    
-    public void delete(MetaData metadata);
+public class MetaDataNotFoundException extends Exception {
+
+    public MetaDataNotFoundException() {
+    }
+
+    public MetaDataNotFoundException(String message) {
+        super(message);
+    }
+
+    public MetaDataNotFoundException(String arg0, Throwable arg1) {
+        super(arg0, arg1);
+    }
+
+    public MetaDataNotFoundException(Throwable cause) {
+        super(cause);
+    }
+
+    public MetaDataNotFoundException(String arg0, Throwable arg1, boolean arg2, boolean arg3) {
+        super(arg0, arg1, arg2, arg3);
+    }
 }

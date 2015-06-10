@@ -1,6 +1,7 @@
 package nl.kpmg.lcm.server.rest.client;
 
 import java.util.HashMap;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import javax.ws.rs.Consumes;
@@ -12,20 +13,37 @@ import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
+import nl.kpmg.lcm.server.Resources;
 import nl.kpmg.lcm.server.metadata.MetaData;
-import nl.kpmg.lcm.server.metadata.storage.file.MetaDataDaoImpl;
+import nl.kpmg.lcm.server.metadata.storage.MetaDataDao;
 import org.apache.commons.lang.NotImplementedException;
 
 /**
+ * First Implementation of the LCM Client interface.
+ *
+ * The client interface is the REST API to which all clients will make their
+ * requests.
  *
  * @author mhoekstra
  */
-
 @Path("client/v0")
 public class ClientVersion0 {
-    
+
+    private Map getHATEOASLink(final String relation, final String href) {
+        return new HashMap() { {
+            put("rel", relation);
+            put("href", href);
+        } };
+    }
+
+    private void fillHATEOASLinks(MetaData metadata) {
+        LinkedList list = new LinkedList();
+        list.add(getHATEOASLink("self", ""));
+        metadata.put("links", list);
+    }
+
     /**
-     * Placeholder method for calls to a non endpoint. 
+     * Placeholder method for calls to a non endpoint.
      *
      * @return String "ok" as niceness
      */
@@ -34,33 +52,33 @@ public class ClientVersion0 {
     public String getIndex() {
         return "ok";
     }
-    
+
     /**
      * Get local meta data overview
-     * 
-     * @return 
+     *
+     * @return
      */
     @GET
     @Path("local")
     @Produces({"application/json"})
     public Map getLocalMetaDataOverview() {
         HashMap result = new HashMap();
-        
-        MetaDataDaoImpl metaDataDaoImpl = new MetaDataDaoImpl();
-        for (MetaData metadata : metaDataDaoImpl.getAll()) {
+
+        MetaDataDao metaDataDao = Resources.getMetaDataDao();
+        for (MetaData metadata : metaDataDao.getAll()) {
             HashMap details = new HashMap();
             details.put("url", "http://localhost:8080/client/v0/local/" + metadata.getName() + "/" + metadata.getVersionNumber());
             result.put(metadata.getName(), details);
         }
         return result;
     }
-    
+
     /**
      * Create a new metadata item.
      *
      * @param metaDataName
      * @param metaData
-     * @return String "ok" if call is successful 
+     * @return String "ok" if call is successful
      */
     @PUT
     @Path("local/{metaDataName}")
@@ -69,122 +87,145 @@ public class ClientVersion0 {
     public String putLocalMetaData(
             @PathParam("metaDataName") String metaDataName,
             MetaData metaData) {
-        
+
         metaData.setName(metaDataName);
-        MetaDataDaoImpl metaDataDaoImpl = new MetaDataDaoImpl();
-        metaDataDaoImpl.persist(metaData);
-        
+
+        MetaDataDao metaDataDao = Resources.getMetaDataDao();
+        metaDataDao.persist(metaData);
+
         return "ok";
     }
 
     /**
      * Get meta data of the head version of a specific meta data set.
-     * 
-     * @param metaDataName
-     * @return 
+     *
+     * @param metaDataName The name of the meta data set
+     * @return The head version of the requested meta data set
+     * @throws MetaDataNotFoundException
      */
     @GET
     @Path("local/{metaDataName}")
-    @Produces({"application/json"})
-    public String getLocalMetaData(
-            @PathParam("metaDataName") String metaDataName) {
-        throw new NotImplementedException();
-    }        
-  
+    @Produces({"application/json" })
+    public final MetaData getLocalMetaData(
+             @PathParam("metaDataName") final String metaDataName)
+            throws MetaDataNotFoundException {
+
+        MetaDataDao metaDataDao = Resources.getMetaDataDao();
+        MetaData metadata = metaDataDao.getByName(metaDataName);
+
+        if (metadata == null) {
+            throw new MetaDataNotFoundException(String.format("MetaData set %s could not be found", metaDataName));
+        }
+
+        return metadata;
+    }
+
     /**
-     *  Delete the entire meta data set from the LCM
-     * 
-     * @param metaDataName
-     * @return 
+     * Delete the entire meta data set from the LCM.
+     *
+     * @param metaDataName The name of the meta data set
+     * @return "ok" if successful
+     * @throws nl.kpmg.lcm.server.rest.client.MetaDataNotFoundException
      */
     @DELETE
     @Path("local/{metaDataName}")
-    @Produces({"application/json"})
-    public String deleteLocalMetaData(
-            @PathParam("metaDataName") String metaDataName) {
-        throw new NotImplementedException();
+    @Produces({"application/json" })
+    public final String deleteLocalMetaData(
+            @PathParam("metaDataName") final String metaDataName)
+            throws MetaDataNotFoundException {
+
+        MetaDataDao metaDataDao = Resources.getMetaDataDao();
+        MetaData metadata = metaDataDao.getByName(metaDataName);
+
+        if (metadata == null) {
+            throw new MetaDataNotFoundException(String.format("MetaData set %s could not be found", metaDataName));
+        }
+
+        metaDataDao.delete(metadata);
+
+        return "ok";
     }
-    
+
     /**
-     * Place a fetch request for given data to be stored in a local data store. 
-     * 
+     * Place a fetch request for given data to be stored in a local data store.
+     *
      * @param metaDataName
      * @param metaData
-     * @return 
+     * @return
      */
     @POST
     @Path("local/{metaDataName}")
     @Consumes({"application/json"})
     @Produces({"application/json"})
     public String postLocalMetaData(
-            @PathParam("metaDataName") String metaDataName, 
+            @PathParam("metaDataName") String metaDataName,
             MetaData metaData) {
         throw new NotImplementedException();
     }
-    
+
     /**
-     * Get meta data of a specific version of a specific meta data set
-     * 
-     * @param metaDataName
-     * @param version
-     * @return 
+     * Get meta data of a specific version of a specific meta data set.
+     *
+     * @param metaDataName The name of the meta data set
+     * @param version The version of the meta data set
+     * @return The head version of the requested meta data set
+     * @throws MetaDataNotFoundException
      */
     @GET
     @Path("local/{metaDataName}/{version}")
-    @Produces({"application/json"})
-    public String getLocalMetaDataByVersion(
-            @PathParam("metaDataName") String metaDataName, 
-            @PathParam("version") String version) {
-        throw new NotImplementedException();
-    }        
-    
+    @Produces({"application/json" })
+    public final MetaData getLocalMetaDataByVersion(
+            @PathParam("metaDataName") final String metaDataName,
+            @PathParam("version") final String version)
+            throws MetaDataNotFoundException {
+
+        MetaDataDao metaDataDao = Resources.getMetaDataDao();
+        MetaData metadata = metaDataDao.getByNameAndVersion(metaDataName, version);
+
+        if (metadata == null) {
+            throw new MetaDataNotFoundException(String.format("MetaData set %s could not be found", metaDataName));
+        }
+
+        return metadata;
+    }
+
     /**
      * Delete a version of meta data about a data-set
-     * 
+     *
      * @param metaDataName
      * @param version
-     * @return 
+     * @return
      */
     @DELETE
     @Path("local/{metaDataName}/{version}")
     @Produces({"application/json"})
     public String deleteLocalMetaDataByVersion(
-            @PathParam("metaDataName") String metaDataName, 
+            @PathParam("metaDataName") String metaDataName,
             @PathParam("version") String version) {
         throw new NotImplementedException();
     }
-    
+
     /**
-     * Place a fetch request for given data to be stored in a local data store. 
-     * 
+     * Place a fetch request for given data to be stored in a local data store.
+     *
      * @param metaDataName
      * @param version
      * @param metaData
-     * @return 
+     * @return
      */
     @POST
     @Path("local/{metadata}/{version}")
     @Consumes({"application/json"})
     @Produces({"application/json"})
     public String postLocalMetaDataByVersion(
-            @PathParam("metaDataName") String metaDataName, 
-            @PathParam("version") String version, 
+            @PathParam("metaDataName") String metaDataName,
+            @PathParam("version") String version,
             MetaData metaData) {
-        
-        // Sample code to unmarshall the metaData. not clear if this will do the trick.
-        // MetaData readValue;
-        // try {
-        //    JacksonJsonProvider jacksonJsonProvider = new JacksonJsonProvider();
-        //    ObjectMapper context = jacksonJsonProvider.getContext(MetaData.class);
-        //    readValue = context.readValue(bla, MetaData.class);
-        // } catch (IOException ex) {
-        //    Logger.getLogger(Client.class.getName()).log(Level.SEVERE, null, ex);
-        // }
-        
+
         throw new NotImplementedException();
     }
-    
-    
+
+
     /**
      * Get an overview of the connected remote LCM's
      *
@@ -199,9 +240,9 @@ public class ClientVersion0 {
 
     /**
      * Attach a remote LCM to your local LCM.
-     * 
+     *
      * @param remoteLcmName
-     * @return 
+     * @return
      */
     @PUT
     @Path("remote/{remote_lcm_name}")
@@ -210,12 +251,12 @@ public class ClientVersion0 {
             @PathParam("remote_lcm_name") String remoteLcmName) {
         throw new NotImplementedException();
     }
-    
+
     /**
      * Get remote meta data overview
-     * 
+     *
      * @param remoteLcmName
-     * @return 
+     * @return
      */
     @GET
     @Path("remote/{remote_lcm_name}")
@@ -224,13 +265,13 @@ public class ClientVersion0 {
             @PathParam("remote_lcm_name") String remoteLcmName) {
         throw new NotImplementedException();
     }
-    
+
     /**
      * Get meta data of the head version of a specific meta data set
-     * 
+     *
      * @param remoteLcmName
      * @param remoteMetaDataName
-     * @return 
+     * @return
      */
     @GET
     @Path("remote/{remote_lcm_name}/{remote_meta_data}")
@@ -240,14 +281,14 @@ public class ClientVersion0 {
             @PathParam("remote_meta_data") String remoteMetaDataName) {
         throw new NotImplementedException();
     }
-    
+
     /**
      * Get meta data of a specific version of a specific meta data set
-     * 
+     *
      * @param remoteLcmName
      * @param remoteMetaDataName
      * @param version
-     * @return 
+     * @return
      */
     @GET
     @Path("remote/{remote_lcm_name}/{remote_meta_data}/{version}")
@@ -258,14 +299,14 @@ public class ClientVersion0 {
             @PathParam("version") String version) {
         throw new NotImplementedException();
     }
-    
+
     /**
-     *  Attach the remote meta-data to your own LCM, This causes the meta data to become available in like local meta-data. 
-     * 
+     *  Attach the remote meta-data to your own LCM, This causes the meta data to become available in like local meta-data.
+     *
      * @param remoteLcmName
      * @param remoteMetaDataName
      * @param version
-     * @return 
+     * @return
      */
     @POST
     @Path("remote/{remote_lcm_name}/{remote_meta_data}")
@@ -276,11 +317,11 @@ public class ClientVersion0 {
             @PathParam("version") String version) {
         throw new NotImplementedException();
     }
-    
+
     /**
      * Get an overview of the connected storage handlers.
      *
-     * @return 
+     * @return
      */
     @GET
     @Path("storage")
@@ -288,12 +329,12 @@ public class ClientVersion0 {
     public String getStorage() {
         throw new NotImplementedException();
     }
-    
+
     /**
      * Get an overview of the connected storage handlers.
      *
      * @param storageHandlerName
-     * @return 
+     * @return
      */
     @GET
     @Path("storage/{storage_handler_name}")
@@ -302,12 +343,12 @@ public class ClientVersion0 {
             @PathParam("storage_handler_name") String storageHandlerName) {
         throw new NotImplementedException();
     }
-    
+
     /**
      * Delete a specific storage handler.
      *
      * @param storageHandlerName
-     * @return 
+     * @return
      */
     @DELETE
     @Path("storage/{storage_handler_name}")
@@ -316,12 +357,12 @@ public class ClientVersion0 {
             @PathParam("storage_handler_name") String storageHandlerName) {
         throw new NotImplementedException();
     }
-    
+
     /**
      * Add a specific storage handler.
      *
      * @param storageHandlerName
-     * @return 
+     * @return
      */
     @PUT
     @Path("storage/{storage_handler_name}")
@@ -332,9 +373,9 @@ public class ClientVersion0 {
     }
 
     /**
-     * Get a list of all the commands running 
+     * Get a list of all the commands running
      *
-     * @return 
+     * @return
      */
     @GET
     @Path("commands")
@@ -342,12 +383,12 @@ public class ClientVersion0 {
     public String getCommands() {
         throw new NotImplementedException();
     }
-    
+
     /**
      * Get information about a specific command
      *
      * @param commandId
-     * @return 
+     * @return
      */
     @GET
     @Path("commands/{command_id}")
@@ -356,12 +397,12 @@ public class ClientVersion0 {
             @PathParam("command_id") String commandId) {
         throw new NotImplementedException();
     }
-    
+
     /**
-     * Unschedule a command 
+     * Unschedule a command
      *
      * @param commandId
-     * @return 
+     * @return
      */
     @DELETE
     @Path("commands/{command_id}")

@@ -18,6 +18,7 @@ package nl.kpmg.lcm.server.metadata.storage.file;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import java.io.File;
 import java.io.IOException;
+import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.logging.Level;
@@ -27,61 +28,74 @@ import nl.kpmg.lcm.server.metadata.MetaData;
 import nl.kpmg.lcm.server.metadata.storage.MetaDataDao;
 
 /**
- *
- * @author mhoekstra
+ * Implementation of a file based MetaData DAO.
  */
 public class MetaDataDaoImpl implements MetaDataDao {
-    private static final Logger logger = Logger.getLogger(MetaDataDaoImpl.class.getName());
-    private final String storagePath = "./metadata";
+
+    /**
+     * The logger for this class.
+     */
+    private static final Logger LOGGER = Logger.getLogger(MetaDataDaoImpl.class.getName());
+
+    /**
+     * Path where the metaData is stored.
+     */
+    private final File storage;
+
+    /**
+     * Object mapper used to serialize and de-serialize the metaData.
+     */
     private final ObjectMapper mapper;
 
-    public MetaDataDaoImpl() {
+    /**
+     * @param storagePath The path where the metaData is stored
+     * @throws StorageException when the storagePath doesn't exist
+     */
+    public MetaDataDaoImpl(final String storagePath) throws StorageException {
+        storage = new File(storagePath);
+
         JacksonJsonProvider jacksonJsonProvider = new JacksonJsonProvider();
         mapper = jacksonJsonProvider.getContext(MetaData.class);
-        
-        /** @TODO remove this hack */
-        new File(storagePath).mkdir();
+
+        if (!storage.isDirectory() || !this.storage.canWrite()) {
+            throw new StorageException(String.format(
+                    "The storage path %s is not a directory or not writable.", storage.getAbsolutePath()));
+        }
     }
 
     private File getMetaDataFile(String name, String versionNumber) {
-        return new File(String.format("%s/%s/%s", storagePath, name, versionNumber));
+        return new File(String.format("%s/%s/%s", storage, name, versionNumber));
     }
     
     private File getMetaDataFolder(String name) {
-        return new File(String.format("%s/%s", storagePath, name));
+        return new File(String.format("%s/%s", storage, name));
     }
     
     @Override
     public List<MetaData> getAll() {
-        String[] allMetaDataNames = new File(storagePath).list();
+        String[] allMetaDataNames = storage.list();
         LinkedList<MetaData> result = new LinkedList();
-        
-        for (int i = 0; i < allMetaDataNames.length; i++) {
-            MetaData metaData = getByName(allMetaDataNames[i]);
+
+        for (String metaDataName : allMetaDataNames) {
+            MetaData metaData = getByName(metaDataName);
             if (metaData != null) {
                 result.add(metaData);
             }
         }
-        
         return result;
     }
 
     @Override
     public MetaData getByName(String name) {
         File metaDataFolder = getMetaDataFolder(name);
-        String[] list = metaDataFolder.list();
-        
-        if (!metaDataFolder.isDirectory()) {
-            metaDataFolder.mkdir();
+        if (metaDataFolder.isDirectory()) {
+            String[] versions = metaDataFolder.list();
+            
+            Arrays.sort(versions);
+            String head = versions[versions.length - 1];
+            return getByNameAndVersion(name, head);
         }
-        
-        if (list == null) {
-            return null;
-        } else {
-            /** @TODO this needs be sorted currently we don't really listen to versions */
-            String versionNumber = list[list.length - 1];
-            return getByNameAndVersion(name, versionNumber);
-        }
+        return null;
     }
 
     @Override
@@ -90,7 +104,7 @@ public class MetaDataDaoImpl implements MetaDataDao {
             MetaData metaData = mapper.readValue(getMetaDataFile(name, versionNumber), MetaData.class);
             metaData.setName(name);
             metaData.setVersionNumber(versionNumber);
-            return mapper.readValue(getMetaDataFile(name, versionNumber), MetaData.class);
+            return metaData;
         } catch (IOException ex) {
             Logger.getLogger(MetaDataDaoImpl.class.getName()).log(Level.SEVERE, null, ex);
             return null;
@@ -104,12 +118,12 @@ public class MetaDataDaoImpl implements MetaDataDao {
         MetaData previousVersionMetaData = getByName(name);
 
         if (previousVersionMetaData == null) {
-
+            getMetaDataFolder(name).mkdir();
         } else {
             versionNumber = previousVersionMetaData.getVersionNumber();
             
             if (versionNumber == null) {
-                logger.warning("Previous version found be no version number could be parsed.");
+                LOGGER.warning("Previous version found be no version number could be parsed.");
                 versionNumber = "0"; /** @TODO quick and dirty. Should throw */
             } else {
                 int previousVersionNumber = Integer.parseInt(versionNumber);
@@ -126,16 +140,10 @@ public class MetaDataDaoImpl implements MetaDataDao {
 
     @Override
     public void delete(MetaData metadata) {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        File metaDataFolder = getMetaDataFolder(metadata.getName());
+        for (File versionFile : metaDataFolder.listFiles()) {
+            versionFile.delete();
+        }
+        metaDataFolder.delete();
     }
-
-    @Override
-    public void deleteVersion(MetaData metadata) {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
-    }
-
-    private void getVersionNumber() {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
-    }
-    
 }
