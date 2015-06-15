@@ -35,9 +35,9 @@ public class MetaData extends HashMap {
             Logger.getLogger(MetaData.class.getName()).log(Level.SEVERE, "Couldn't find path: " + path, ex);
             return null;
         }
-        
+
     }
-    
+
     private <T> T get(Map map, String[] path) throws Exception {
         if (path.length == 0) {
             throw new Exception("Errrrr");
@@ -52,7 +52,7 @@ public class MetaData extends HashMap {
             throw new Exception("Errrrr");
         }
     }
-    
+
     private void set(String path, Object value) {
         try {
             String[] split = path.split("\\.");
@@ -60,9 +60,9 @@ public class MetaData extends HashMap {
         } catch (Exception ex) {
             Logger.getLogger(MetaData.class.getName()).log(Level.SEVERE, "Couldn't find path: " + path, ex);
         }
-        
+
     }
-    
+
     private void set(Map map, String[] path, Object value) throws Exception {
         if (path.length == 0) {
             throw new Exception("Errrrr");
@@ -70,7 +70,7 @@ public class MetaData extends HashMap {
             map.put(path[0], value);
         } else if (map.containsKey(path[0])) {
             Class<? extends Object> elementClass = map.get(path[0]).getClass();
-            if (Map.class.isAssignableFrom(elementClass)) { 
+            if (Map.class.isAssignableFrom(elementClass)) {
                 set((Map) map.get(path[0]), (String[]) ArrayUtils.removeElement(path, path[0]), value);
             } else {
                 throw new Exception("Trying to traverse deeper but this path element isn't a map");
@@ -81,7 +81,7 @@ public class MetaData extends HashMap {
             set(newMap, (String[]) ArrayUtils.removeElement(path, path[0]), value);
         }
     }
-    
+
     public String getName() {
         return get("name");
     }
@@ -96,5 +96,13 @@ public class MetaData extends HashMap {
 
     public void setVersionNumber(String versionNumber) {
         set("version.number", versionNumber);
+    }
+
+    public String getDataUri() {
+        return get("data.uri");
+    }
+
+    public void setDataUri(String dataUri) {
+        set("data.uri", dataUri);
     }
 }
