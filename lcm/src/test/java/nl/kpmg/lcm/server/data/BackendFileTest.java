@@ -31,6 +31,7 @@ import org.junit.After;
 public class BackendFileTest {
     
     private static final String TEST_STORAGE_PATH = "temp_test/";
+    
     @Before
     public void setUp() throws Exception {
         // make test temp dir and set storage path
@@ -43,6 +44,15 @@ public class BackendFileTest {
         File file = new File(TEST_STORAGE_PATH);
         file.delete();
     }
+    
+    @Test
+    public void testGetSupportedUriSchema(){
+        File testDir = new File(TEST_STORAGE_PATH);
+        BackendFileImpl testBackend = new BackendFileImpl(testDir);
+        String testSchema =  testBackend.getSupportedUriSchema();
+        assertEquals("file",testSchema);
+    }
+    
      @Test
   public void evaluatesExpression() {
     int sum = 1+2+3;
