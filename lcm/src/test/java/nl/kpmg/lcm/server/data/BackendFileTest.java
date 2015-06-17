@@ -20,6 +20,7 @@ package nl.kpmg.lcm.server.data;
 import java.io.File;
 import java.io.IOException;
 import java.net.URI;
+import nl.kpmg.lcm.server.metadata.MetaData;
 import static org.junit.Assert.assertEquals;
 import org.junit.Test;
 import org.junit.Before;
@@ -59,10 +60,18 @@ public class BackendFileTest {
     public void testParseUri() throws BackendException,IOException {
         File testDir = new File(TEST_STORAGE_PATH);
         String uri = "file://"+testDir.getCanonicalPath()+"/temp.csv";
-        BackendFileImpl testBackend = new BackendFileImpl(testDir);
+        BackendFileImpl testBackend = new BackendFileImpl(testDir); 
         URI dataUri = testBackend.parseUri(uri);
         String filePath = dataUri.getPath();
         assertEquals(testDir.getCanonicalPath()+"/temp.csv",filePath);
+    }
+    
+    @Test
+    public void testGatherDatasetInformationEmptyMetadata() throws BackendException {
+        MetaData metaData = new MetaData();
+        File testDir = new File(TEST_STORAGE_PATH);
+        BackendFileImpl testBackend = new BackendFileImpl(testDir);
+        DataSetInformation dataSetInformation = testBackend.gatherDataSetInformation(metaData);
     }
     
      @Test

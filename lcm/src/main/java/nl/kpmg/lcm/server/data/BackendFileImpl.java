@@ -38,11 +38,15 @@ public class BackendFileImpl extends AbstractBackend {
     }
 
     private File getPathFromUri(String uri) throws BackendException {
-        URI dataUri = parseUri(uri);
+        URI dataUri;
+        /** @TODO Should we issue a warning via logger or exception in this case?  */ 
+        if(uri!=null){
+           dataUri = parseUri(uri);
 
         String filePath = dataUri.getPath();
         /** @TODO This is super scary. we should check if the resulting path is still within storagePath*/
         return new File(String.format("%s/%s", storagePath, filePath));
+        } else return null;
     }
 
     @Override
@@ -55,9 +59,9 @@ public class BackendFileImpl extends AbstractBackend {
         File file = getPathFromUri(metadata.getDataUri());
 
         DataSetInformation dataSetInformation = new DataSetInformation();
-
+        
         dataSetInformation.setUri(metadata.getDataUri());
-        dataSetInformation.setAttached(file.isFile());
+        if(file!=null) dataSetInformation.setAttached(file.isFile());
 
         if (dataSetInformation.isAttached()) {
             dataSetInformation.setReadable(file.canRead());
