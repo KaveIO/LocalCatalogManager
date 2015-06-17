@@ -16,8 +16,12 @@
 
 package nl.kpmg.lcm.server.data;
 
+
+import java.io.File;
 import static org.junit.Assert.assertEquals;
 import org.junit.Test;
+import org.junit.Before;
+import org.junit.After;
 /**
  *
  * @author Pavel Jez
@@ -25,6 +29,20 @@ import org.junit.Test;
 
 
 public class BackendFileTest {
+    
+    private static final String TEST_STORAGE_PATH = "temp_test/";
+    @Before
+    public void setUp() throws Exception {
+        // make test temp dir and set storage path
+        File testDir = new File(TEST_STORAGE_PATH);
+        testDir.mkdir();
+    }
+    
+    @After
+    public void tearDown() {
+        File file = new File(TEST_STORAGE_PATH);
+        file.delete();
+    }
      @Test
   public void evaluatesExpression() {
     int sum = 1+2+3;
