@@ -18,14 +18,18 @@ package nl.kpmg.lcm.server.data;
 
 
 import java.io.File;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.net.URI;
+import java.util.Date;
 import java.util.HashMap;
 import nl.kpmg.lcm.server.metadata.MetaData;
 import static org.junit.Assert.assertEquals;
 import org.junit.Test;
 import org.junit.Before;
 import org.junit.After;
+
+
 /**
  *
  * @author Pavel Jez
@@ -46,6 +50,8 @@ public class BackendFileTest {
     @After
     public void tearDown() {
         File file = new File(TEST_STORAGE_PATH);
+         for (File c : file.listFiles())
+            c.delete();
         file.delete();
     }
     
@@ -85,14 +91,33 @@ public class BackendFileTest {
         DataSetInformation dataSetInformation = testBackend.gatherDataSetInformation(metaData);
     }
     
-     @Test
+    @Test
     public void testGatherDatasetInformationWrongLink() throws BackendException,IOException {
         MetaData metaData = new MetaData();
         File testDir = new File(TEST_STORAGE_PATH);
+        // need to make sure that test file does not exist
+        File testFile = new File(TEST_STORAGE_PATH+"/temp.csv");
+        testFile.delete(); 
         final String fileUri = "file://"+testDir.getCanonicalPath()+"/temp.csv";
         metaData.put("data", new HashMap() {{ put("uri", fileUri); }});
         BackendFileImpl testBackend = new BackendFileImpl(testDir);
         DataSetInformation dataSetInformation = testBackend.gatherDataSetInformation(metaData);
+        assertEquals(dataSetInformation.isAttached(),false);
+    }
+    
+    @Test
+    public void testGatherDatasetInformation() throws BackendException,IOException {
+        MetaData metaData = new MetaData();
+        File testDir = new File(TEST_STORAGE_PATH);
+        File testFile = new File(TEST_STORAGE_PATH+"/temp.csv");
+        if (!testFile.exists())
+            new FileOutputStream(testFile).close();
+        Date exp_timestamp = new Date(testFile.lastModified());
+        final String fileUri = "file://"+testDir.getCanonicalPath()+"/temp.csv";
+        metaData.put("data", new HashMap() {{ put("uri", fileUri); }});
+        BackendFileImpl testBackend = new BackendFileImpl(testDir);
+        DataSetInformation dataSetInformation = testBackend.gatherDataSetInformation(metaData);
+        assertEquals(dataSetInformation.getModificationTime() ,exp_timestamp);
     }
     
      @Test
