@@ -18,8 +18,11 @@ package nl.kpmg.lcm.server.data;
 
 
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileOutputStream;
+import java.io.FileWriter;
 import java.io.IOException;
+import java.io.InputStream;
 import java.net.URI;
 import java.util.Date;
 import java.util.HashMap;
@@ -28,6 +31,7 @@ import static org.junit.Assert.assertEquals;
 import org.junit.Test;
 import org.junit.Before;
 import org.junit.After;
+
 
 
 /**
@@ -47,13 +51,13 @@ public class BackendFileTest {
         testDir.mkdir();
     }
     
-    @After
-    public void tearDown() {
-        File file = new File(TEST_STORAGE_PATH);
-         for (File c : file.listFiles())
-            c.delete();
-        file.delete();
-    }
+//    @After
+//    public void tearDown() {
+//        File file = new File(TEST_STORAGE_PATH);
+//         for (File c : file.listFiles())
+//            c.delete();
+//        file.delete();
+//    }
     
     @Test
     public void testGetSupportedUriSchema(){
@@ -118,6 +122,37 @@ public class BackendFileTest {
         BackendFileImpl testBackend = new BackendFileImpl(testDir);
         DataSetInformation dataSetInformation = testBackend.gatherDataSetInformation(metaData);
         assertEquals(dataSetInformation.getModificationTime() ,exp_timestamp);
+    }
+    
+    @Test
+    public void testStore() throws IOException, BackendException {
+        //first make a test file with some content
+        File testFile = new File(TEST_STORAGE_PATH+"/testFile.csv");
+        testFile.createNewFile();
+        FileWriter writer = new FileWriter(testFile);
+        for(int i =0; i  < 10; i++){
+            writer.write("qwertyuiop");
+            writer.write("\n");
+            writer.write("asdfghjkl");
+            writer.write("\n");
+            writer.write("zxcvbnm,!@#$%^&*()_");
+            writer.write("\n");
+            writer.write("1234567890[][;',.");
+            writer.write("\n");
+        }
+        writer.flush();
+        writer.close();
+        // now make a metadata with uri
+        File testDir = new File(TEST_STORAGE_PATH);
+        final String fileUri = "file://"+testDir.getCanonicalPath()+"/testStore.csv";
+        MetaData metaData = new MetaData();
+        metaData.put("data", new HashMap() {{ put("uri", fileUri); }});
+        InputStream is = new FileInputStream(testFile);
+        BackendFileImpl testBackend = new BackendFileImpl(testDir);
+        testBackend.store(metaData, is);
+        final File expected = testFile;
+        final File output = new File(testDir.getCanonicalPath()+"/testStore.csv");
+        // missing assertEquals for files!
     }
     
      @Test
