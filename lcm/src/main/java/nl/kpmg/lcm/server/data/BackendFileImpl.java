@@ -16,6 +16,8 @@
 package nl.kpmg.lcm.server.data;
 
 import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.URI;
@@ -23,6 +25,8 @@ import java.net.URISyntaxException;
 import java.util.Date;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import sun.misc.IOUtils;
+
 import nl.kpmg.lcm.server.metadata.MetaData;
 
 /**
@@ -80,11 +84,14 @@ public class BackendFileImpl extends AbstractBackend {
         }
 
         File file = getPathFromUri(metadata.getDataUri());
-
-
-
-
-        throw new UnsupportedOperationException("Not supported yet.");
+        String path;
+        try{
+           path = file.getCanonicalPath();
+           new FileOutputStream(path).write(IOUtils.readFully(content,-1,false));
+           // is the FileOutputStream closed at the exit of code block where it is defined?
+        } catch (IOException ex){
+             Logger.getLogger(BackendFileImpl.class.getName()).log(Level.SEVERE, "Couldn't find path: " + metadata.getDataUri(), ex);
+        }  
     }
 
     @Override
