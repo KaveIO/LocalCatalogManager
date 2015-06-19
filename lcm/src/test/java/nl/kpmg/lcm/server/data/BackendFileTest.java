@@ -75,12 +75,22 @@ public class BackendFileTest {
         DataSetInformation dataSetInformation = testBackend.gatherDataSetInformation(metaData);
     }
     
-    @Test
+    @Test(expected=BackendException.class)
     public void testGatherDatasetInformationWrongMetadata() throws BackendException {
         MetaData metaData = new MetaData();
         final String fileUri = "NotAnUri";
         metaData.put("data", new HashMap() {{ put("uri", fileUri); }});
         File testDir = new File(TEST_STORAGE_PATH);
+        BackendFileImpl testBackend = new BackendFileImpl(testDir);
+        DataSetInformation dataSetInformation = testBackend.gatherDataSetInformation(metaData);
+    }
+    
+     @Test
+    public void testGatherDatasetInformationWrongLink() throws BackendException,IOException {
+        MetaData metaData = new MetaData();
+        File testDir = new File(TEST_STORAGE_PATH);
+        final String fileUri = "file://"+testDir.getCanonicalPath()+"/temp.csv";
+        metaData.put("data", new HashMap() {{ put("uri", fileUri); }});
         BackendFileImpl testBackend = new BackendFileImpl(testDir);
         DataSetInformation dataSetInformation = testBackend.gatherDataSetInformation(metaData);
     }
