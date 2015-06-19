@@ -45,7 +45,7 @@ public class BackendFileImpl extends AbstractBackend {
 
         String filePath = dataUri.getPath();
         /** @TODO This is super scary. we should check if the resulting path is still within storagePath*/
-        return new File(String.format("%s/%s", storagePath, filePath));
+        return new File(String.format("%s", filePath));
         } else return null;
     }
 
