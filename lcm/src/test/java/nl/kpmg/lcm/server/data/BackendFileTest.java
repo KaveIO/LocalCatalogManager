@@ -28,6 +28,7 @@ import java.util.Date;
 import java.util.HashMap;
 import nl.kpmg.lcm.server.metadata.MetaData;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotSame;
 import org.junit.Test;
 import org.junit.Before;
 import org.junit.After;
@@ -221,6 +222,53 @@ public class BackendFileTest {
         HashCode hcExp = Files.hash(expected, Hashing.md5());
         HashCode hcOut = Files.hash(output, Hashing.md5());
         assertEquals(hcExp.toString(), hcOut.toString());
+    }
+
+    /**
+     * Tests store() method of {@link BackendFileImp}.
+     * Test creates a text file, then tries to store it and modify it afterwards.
+     * Finally tests if files are different using md5.
+     * 
+     * @throws BackendException if it is not possible to gather information about the
+     *         dataset
+     * @throws IOException if it is not possible to get path of the storage directory
+     */
+    @Test
+    public final void testStore2() throws IOException, BackendException {
+        //first make a test file with some content
+        File testFile = new File(TEST_STORAGE_PATH + "/testFile2.csv");
+        testFile.createNewFile();
+        try (FileWriter writer = new FileWriter(testFile)) {
+            final int nLoops = 10;
+            for (int i = 0; i  < nLoops; i++) {
+                writer.write("qwertyuiop");
+                writer.write("\n");
+                writer.write("asdfghjkl");
+                writer.write("\n");
+                writer.write("zxcvbnm,!@#$%^&*()_");
+                writer.write("\n");
+                writer.write("1234567890[][;',.");
+                writer.write("\n");
+            }
+            writer.flush();
+        }
+        // now make a metadata with uri
+        File testDir = new File(TEST_STORAGE_PATH);
+        final String fileUri = "file://" + testDir.getCanonicalPath() + "/testStore2.csv";
+        MetaData metaData = new MetaData();
+        metaData.put("data", new HashMap() { { put("uri", fileUri); } });
+        InputStream is = new FileInputStream(testFile);
+        BackendFileImpl testBackend = new BackendFileImpl(testDir);
+        testBackend.store(metaData, is);
+        try (FileWriter writer = new FileWriter(testFile, true)) {
+            writer.write("\n");
+            writer.flush();
+        }
+        final File expected = testFile;
+        final File output = new File(testDir.getCanonicalPath() + "/testStore2.csv");
+        HashCode hcExp = Files.hash(expected, Hashing.md5());
+        HashCode hcOut = Files.hash(output, Hashing.md5());
+        assertNotSame(hcExp.toString(), hcOut.toString());
     }
 }
 
