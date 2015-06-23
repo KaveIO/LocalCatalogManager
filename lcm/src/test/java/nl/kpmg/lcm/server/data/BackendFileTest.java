@@ -31,6 +31,9 @@ import static org.junit.Assert.assertEquals;
 import org.junit.Test;
 import org.junit.Before;
 import org.junit.After;
+import com.google.common.hash.HashCode;
+import com.google.common.hash.Hashing;
+import com.google.common.io.Files;
 
 
 
@@ -51,13 +54,13 @@ public class BackendFileTest {
         testDir.mkdir();
     }
     
-//    @After
-//    public void tearDown() {
-//        File file = new File(TEST_STORAGE_PATH);
-//         for (File c : file.listFiles())
-//            c.delete();
-//        file.delete();
-//    }
+    @After
+    public void tearDown() {
+        File file = new File(TEST_STORAGE_PATH);
+         for (File c : file.listFiles())
+            c.delete();
+        file.delete();
+    }
     
     @Test
     public void testGetSupportedUriSchema(){
@@ -152,6 +155,9 @@ public class BackendFileTest {
         testBackend.store(metaData, is);
         final File expected = testFile;
         final File output = new File(testDir.getCanonicalPath()+"/testStore.csv");
+        HashCode hc_exp = Files.hash(expected, Hashing.md5());
+        HashCode hc_out = Files.hash(output, Hashing.md5());
+        assertEquals(hc_exp.toString(),hc_out.toString());
         // missing assertEquals for files!
     }
     
