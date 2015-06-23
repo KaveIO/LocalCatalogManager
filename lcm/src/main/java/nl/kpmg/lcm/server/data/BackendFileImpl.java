@@ -152,6 +152,7 @@ public class BackendFileImpl extends AbstractBackend {
         OutputStream os = null;
         try (FileInputStream fis = new FileInputStream(file)) {
             // this works for files < 2 GB. Otherwise the readBytes is -1.
+            /** @TODO at the moment followin line throws NullPointerExpetion, please fix by providing suitable OutputStream*/
             int readBytes = IOUtils.copy(fis, os);
             Logger.getLogger(BackendFileImpl.class.getName())
              .log(Level.INFO, "{0} bytes read", readBytes);

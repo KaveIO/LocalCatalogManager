@@ -35,6 +35,7 @@ import org.junit.After;
 import com.google.common.hash.HashCode;
 import com.google.common.hash.Hashing;
 import com.google.common.io.Files;
+import java.io.OutputStream;
 
 
 
@@ -269,6 +270,37 @@ public class BackendFileTest {
         HashCode hcExp = Files.hash(expected, Hashing.md5());
         HashCode hcOut = Files.hash(output, Hashing.md5());
         assertNotSame(hcExp.toString(), hcOut.toString());
+    }
+    
+    /**
+     * 
+     * @throws java.io.IOException if the canonical path of the storage location cannot be resolved
+     * @throws nl.kpmg.lcm.server.data.BackendException if it is not possible to read
+     *         from the test backend
+     */
+    @Test
+    public final void testRead() throws IOException, BackendException {
+        // make a metadata with uri
+        File testDir = new File(TEST_STORAGE_PATH);
+        final String fileUri = "file://" + testDir.getCanonicalPath() + "/testStore.csv";
+        MetaData metaData = new MetaData();
+        metaData.put("data", new HashMap() { { put("uri", fileUri); } });
+        // make local data backend in specified directory and read the existing file
+        BackendFileImpl testBackend = new BackendFileImpl(testDir);
+        OutputStream os = testBackend.read(metaData);
+        // make test file to where the content stored in previous test would be read
+        File testFile = new File(TEST_STORAGE_PATH + "/testRead.csv");
+        testFile.createNewFile();
+        FileOutputStream fos = new FileOutputStream(testFile);
+        fos = (FileOutputStream) os;
+        fos.flush();
+        fos.close();
+        // check if the files are identical
+        final File expected = testFile;
+        final File output = new File(testDir.getCanonicalPath() + "/testStore.csv");
+        HashCode hcExp = Files.hash(expected, Hashing.md5());
+        HashCode hcOut = Files.hash(output, Hashing.md5());
+        assertEquals(hcExp.toString(), hcOut.toString());
     }
 }
 
