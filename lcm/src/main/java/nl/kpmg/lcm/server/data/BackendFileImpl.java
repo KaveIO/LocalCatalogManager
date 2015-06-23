@@ -16,6 +16,7 @@
 package nl.kpmg.lcm.server.data;
 
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -25,7 +26,7 @@ import java.net.URISyntaxException;
 import java.util.Date;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import sun.misc.IOUtils;
+import org.apache.commons.io.IOUtils;
 
 import nl.kpmg.lcm.server.metadata.MetaData;
 
@@ -84,19 +85,41 @@ public class BackendFileImpl extends AbstractBackend {
         }
 
         File file = getPathFromUri(metadata.getDataUri());
-        String path;
-        try{
-           path = file.getCanonicalPath();
-           new FileOutputStream(path).write(IOUtils.readFully(content,-1,false));
-           // is the FileOutputStream closed at the exit of code block where it is defined?
-        } catch (IOException ex){
-             Logger.getLogger(BackendFileImpl.class.getName()).log(Level.SEVERE, "Couldn't find path: " + metadata.getDataUri(), ex);
+        try (FileOutputStream fos = new FileOutputStream(file)) {
+          int copied = IOUtils.copy(content, fos);
+          Logger.getLogger(BackendFileImpl.class.getName())
+             .log(Level.INFO, "{0} bytes written", copied);
+        } catch (IOException ex) {
+             Logger.getLogger(BackendFileImpl.class.getName())
+             .log(Level.SEVERE, "Couldn't find path: " + metadata.getDataUri(), ex);
         }  
-    }
+    } 
 
+    /**
+     * Returns an output stream with a content of a file that is specified by
+     * metadata argument. {@link MetaData} needs to contain valid URI of a file. 
+     * 
+     * @param metadata MetaData with URI of the data
+     * @return OutputStream with the data file content
+     * @throws BackendException if the metadata does not contain valid URI of a file
+     */
     @Override
-    public OutputStream read(MetaData metadata) {
-        throw new UnsupportedOperationException("Not supported yet.");
+    public final OutputStream read(final MetaData metadata) throws BackendException {
+        DataSetInformation dataSetInformation = gatherDataSetInformation(metadata);
+        if (!dataSetInformation.isAttached()) {
+            throw new BackendException("No dataset attached.");
+        }
+        File file = getPathFromUri(metadata.getDataUri());
+        OutputStream os = null;
+        try (FileInputStream fis = new FileInputStream(file)) {
+            int readBytes = IOUtils.copy(fis, os);
+            Logger.getLogger(BackendFileImpl.class.getName())
+             .log(Level.INFO, "{0} bytes read", readBytes);
+        } catch (IOException ex) {
+             Logger.getLogger(BackendFileImpl.class.getName())
+             .log(Level.SEVERE, "Couldn't read path: " + metadata.getDataUri(), ex);
+        }
+        return os;
     }
 
     @Override
