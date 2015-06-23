@@ -22,7 +22,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.URI;
-import java.net.URISyntaxException;
 import java.util.Date;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -35,38 +34,70 @@ import nl.kpmg.lcm.server.metadata.MetaData;
  * @author mhoekstra
  */
 public class BackendFileImpl extends AbstractBackend {
-
+    /**
+     * Location of the data storage on the local file system.
+     * @param storagePath is the directory on a local backend
+     */
     private final File storagePath;
 
-    public BackendFileImpl(File storagePath) {
+    /**
+     * Default constructor.
+     * @param storagePath is the directory on a local backend
+     */
+    public BackendFileImpl(final File storagePath) {
         this.storagePath = storagePath;
     }
 
-    private File getPathFromUri(String uri) throws BackendException {
+    /**
+     * Returns a {@link File} specified by the URI. It checks if the URI exists and if it
+     * uses "file" protocol.
+     * @param uri is identifier of a local file/directory
+     * @return File pointed at by the URI
+     * @throws BackendException if no URI is specified
+     */
+    private File getPathFromUri(final String uri) throws BackendException {
         URI dataUri;
-        /** @TODO Should we issue a warning via logger or exception in this case?  */ 
-        if(uri!=null){
+        /** @TODO Should we issue a warning via logger or exception in this case?  */
+        if (uri != null) {
            dataUri = parseUri(uri);
 
         String filePath = dataUri.getPath();
         /** @TODO This is super scary. we should check if the resulting path is still within storagePath*/
         return new File(String.format("%s", filePath));
-        } else return null;
+        } else {
+            throw new BackendException("No URI specified.");
+        }
     }
 
+    /**
+     * Returns scheme supported by URI for this backend.
+     * @return "file" string
+     */
     @Override
-    protected String getSupportedUriSchema() {
+    protected final String getSupportedUriSchema() {
         return "file";
     }
 
+    /**
+     * Returns information about dataset mentioned in the metadata.
+     * It checks if the referenced data exist and can be accessed. It also gathers
+     * information about the size and modification time.
+     * @param metadata is investigated {@link MetaData} object
+     * @return filled {@link DataSetInformation} object
+     * @throws BackendException
+     */
     @Override
-    public DataSetInformation gatherDataSetInformation(MetaData metadata) throws BackendException {
+    public final DataSetInformation gatherDataSetInformation(final MetaData metadata) throws BackendException {
         File file = getPathFromUri(metadata.getDataUri());
 
         DataSetInformation dataSetInformation = new DataSetInformation();
-        
+
         dataSetInformation.setUri(metadata.getDataUri());
-        if(file!=null) dataSetInformation.setAttached(file.isFile());
+        if (file != null) {
+            dataSetInformation.setAttached(file.isFile());
+        } else {
+            throw new BackendException("URI not pointing to a file");
+        }
 
         if (dataSetInformation.isAttached()) {
             dataSetInformation.setReadable(file.canRead());
@@ -78,8 +109,8 @@ public class BackendFileImpl extends AbstractBackend {
     }
 
     /**
-     * Writes an input stream to the file specifed in the {@MetaData}.
-     * 
+     * Writes an input stream to the file specified in the {@MetaData}.
+     *
      * @param metadata should contain valid destination URI
      * @param content is a stream that should be stored
      * @throws BackendException if the URI in metadata points to the existing file
@@ -93,6 +124,7 @@ public class BackendFileImpl extends AbstractBackend {
 
         File file = getPathFromUri(metadata.getDataUri());
         try (FileOutputStream fos = new FileOutputStream(file)) {
+            // this works for files < 2 GB. Otherwise the copied is -1.
           int copied = IOUtils.copy(content, fos);
           Logger.getLogger(BackendFileImpl.class.getName())
              .log(Level.INFO, "{0} bytes written", copied);
@@ -105,7 +137,7 @@ public class BackendFileImpl extends AbstractBackend {
     /**
      * Returns an output stream with a content of a file that is specified by
      * metadata argument. {@link MetaData} needs to contain valid URI of a file.
-     * 
+     *
      * @param metadata MetaData with URI of the data
      * @return OutputStream with the data file content
      * @throws BackendException if the metadata does not contain valid URI of a file
@@ -119,6 +151,7 @@ public class BackendFileImpl extends AbstractBackend {
         File file = getPathFromUri(metadata.getDataUri());
         OutputStream os = null;
         try (FileInputStream fis = new FileInputStream(file)) {
+            // this works for files < 2 GB. Otherwise the readBytes is -1.
             int readBytes = IOUtils.copy(fis, os);
             Logger.getLogger(BackendFileImpl.class.getName())
              .log(Level.INFO, "{0} bytes read", readBytes);
@@ -129,6 +162,11 @@ public class BackendFileImpl extends AbstractBackend {
         return os;
     }
 
+    /**
+     *
+     * @param metadata
+     * @return
+     */
     @Override
     public OutputStream delete(MetaData metadata) {
         throw new UnsupportedOperationException("Not supported yet.");
