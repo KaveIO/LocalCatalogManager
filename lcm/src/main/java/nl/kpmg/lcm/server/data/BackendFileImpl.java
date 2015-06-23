@@ -77,8 +77,15 @@ public class BackendFileImpl extends AbstractBackend {
         return dataSetInformation;
     }
 
+    /**
+     * Writes an input stream to the file specifed in the {@MetaData}.
+     * 
+     * @param metadata should contain valid destination URI
+     * @param content is a stream that should be stored
+     * @throws BackendException if the URI in metadata points to the existing file
+     */
     @Override
-    public void store(MetaData metadata, InputStream content) throws BackendException {
+    public final void store(final MetaData metadata, final InputStream content) throws BackendException {
         DataSetInformation dataSetInformation = gatherDataSetInformation(metadata);
         if (dataSetInformation.isAttached()) {
             throw new BackendException("Data set is already attached, won't overwrite.");
@@ -92,12 +99,12 @@ public class BackendFileImpl extends AbstractBackend {
         } catch (IOException ex) {
              Logger.getLogger(BackendFileImpl.class.getName())
              .log(Level.SEVERE, "Couldn't find path: " + metadata.getDataUri(), ex);
-        }  
-    } 
+        }
+    }
 
     /**
      * Returns an output stream with a content of a file that is specified by
-     * metadata argument. {@link MetaData} needs to contain valid URI of a file. 
+     * metadata argument. {@link MetaData} needs to contain valid URI of a file.
      * 
      * @param metadata MetaData with URI of the data
      * @return OutputStream with the data file content
