@@ -4,13 +4,22 @@ import java.io.IOException;
 import java.net.URI;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+
 import nl.kpmg.lcm.server.metadata.MetaData;
+import nl.kpmg.lcm.server.metadata.storage.MetaDataDao;
 import nl.kpmg.lcm.server.metadata.storage.file.MetaDataDaoImpl;
 import nl.kpmg.lcm.server.metadata.storage.file.StorageException;
+
 import org.glassfish.grizzly.http.server.HttpServer;
 import org.glassfish.jersey.grizzly2.httpserver.GrizzlyHttpServerFactory;
 import org.glassfish.jersey.server.ResourceConfig;
 import org.glassfish.jersey.jackson.JacksonFeature;
+import org.springframework.beans.BeansException;
+import org.springframework.beans.factory.BeanFactory;
+import org.springframework.beans.factory.NoSuchBeanDefinitionException;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.ApplicationContext;
+import org.springframework.context.support.ClassPathXmlApplicationContext;
 
 /**
  *
@@ -19,6 +28,8 @@ import org.glassfish.jersey.jackson.JacksonFeature;
 public class Server {
     private final String baseUri;
     private final String storagePath;
+    @Autowired
+    private MetaDataDao metaDataDao;
 
     private HttpServer restServer;
 
@@ -28,8 +39,8 @@ public class Server {
         storagePath = "./metadata/";
 
         try {
-            Resources.setMetaDataDao(new MetaDataDaoImpl(storagePath));
-        } catch (StorageException ex) {
+            Resources.setMetaDataDao(metaDataDao);
+        } catch (Exception ex) {
             Logger.getLogger(Server.class.getName()).log(Level.SEVERE,
                     "Construction of MetaDataDaoImpl failed. The storage path doesn't exist", ex);
         }

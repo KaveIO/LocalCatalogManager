@@ -36,8 +36,10 @@ public class MetaDataDaoImpl implements MetaDataDao {
      * The logger for this class.
      */
     private static final Logger LOGGER = Logger.getLogger(MetaDataDaoImpl.class.getName());
+ 
+    private String storagePath;
 
-    /**
+	/**
      * Path where the metaData is stored.
      */
     private final File storage;
@@ -48,6 +50,7 @@ public class MetaDataDaoImpl implements MetaDataDao {
     private final ObjectMapper mapper;
 
     /**
+     * To implement DI, this needs to be refactored
      * @param storagePath The path where the metaData is stored
      * @throws StorageException when the storagePath doesn't exist
      */
@@ -62,6 +65,14 @@ public class MetaDataDaoImpl implements MetaDataDao {
                     "The storage path %s is not a directory or not writable.", storage.getAbsolutePath()));
         }
     }
+    
+    public String getStoragePath() {
+		return storagePath;
+	}
+
+	public void setStoragePath(String storagePath) {
+		this.storagePath = storagePath;
+	}
 
     private File getMetaDataFile(String name, String versionNumber) {
         return new File(String.format("%s/%s/%s", storage, name, versionNumber));
