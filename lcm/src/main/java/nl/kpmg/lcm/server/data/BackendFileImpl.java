@@ -21,7 +21,6 @@ import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.OutputStream;
 import java.net.URI;
 import java.util.Date;
 import java.util.logging.Level;
@@ -141,7 +140,7 @@ public class BackendFileImpl extends AbstractBackend {
      * {@link MetaData} needs to contain valid URI of a file.
      *
      * @param metadata MetaData with URI of the data
-     * @return OutputStream with the data file content
+     * @return InputStream with the data file content
      * @throws BackendException if the metadata does not contain valid URI of a file
      */
     @Override
@@ -162,14 +161,28 @@ public class BackendFileImpl extends AbstractBackend {
         return null;
     }
 
-    /**
+    /** Deletes the file specified in the {@MetaData}.
      *
-     * @param metadata
-     * @return
+     * @param metadata {@link MetaData} with URI of the data
+     * @return true if delete is successful, false otherwise
+     * @throws BackendException if the metadata does not contain valid URI of a file
      */
     @Override
-    public OutputStream delete(MetaData metadata) {
-        throw new UnsupportedOperationException("Not supported yet.");
+    public final boolean delete(final MetaData metadata) throws BackendException {
+        DataSetInformation dataSetInformation = gatherDataSetInformation(metadata);
+        if (!dataSetInformation.isAttached()) {
+            throw new BackendException("No dataset attached.");
+        }
+        File file = getPathFromUri(metadata.getDataUri());
+        boolean success = file.delete();
+        if (success) {
+            Logger.getLogger(BackendFileImpl.class.getName())
+             .log(Level.INFO, "Delete successful.");
+        } else {
+            Logger.getLogger(BackendFileImpl.class.getName())
+              .log(Level.SEVERE, "Deletion of file: {0} failed.", metadata.getDataUri());
+        }
+        return success;
     }
 
 }

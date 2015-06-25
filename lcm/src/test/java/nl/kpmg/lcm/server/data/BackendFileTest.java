@@ -274,7 +274,9 @@ public class BackendFileTest {
         assertNotSame(hcExp.toString(), hcOut.toString());
     }
 
-    /**
+    /** Tests read() method of {@link BackendFileImp}.
+     * Test reads a text file created by previous test and stores in the new text file.
+     * Then it tests if the 2 files are identical using md5.
      * 
      * @throws java.io.IOException if the canonical path of the storage location cannot be resolved
      * @throws nl.kpmg.lcm.server.data.BackendException if it is not possible to read
@@ -306,6 +308,26 @@ public class BackendFileTest {
         HashCode hcExp = Files.hash(expected, Hashing.md5());
         HashCode hcOut = Files.hash(output, Hashing.md5());
         assertEquals(hcExp.toString(), hcOut.toString());
+    }
+
+    /** Tests delete() method of {@link BackendFileImp}.
+     *  It tries to delete one of the files created by previous tests. It fails
+     *  if it is not possible to delete the file.
+     * 
+     * @throws IOException if the canonical path of the storage location cannot be resolved
+     * @throws BackendException if it is not possible to delete on the test backend
+     */
+    @Test
+    public final void testDelete() throws IOException, BackendException {
+        File testDir = new File(TEST_STORAGE_PATH);
+        final String fileUri = "file://" + testDir.getCanonicalPath() + "/testStore.csv";
+        // make metadata pointing to the file to be deleted
+        MetaData metaData = new MetaData();
+        metaData.put("data", new HashMap() { { put("uri", fileUri); } });
+        // make local data backend in specified directory and delete the existing file
+        BackendFileImpl testBackend = new BackendFileImpl(testDir);
+        boolean result = testBackend.delete(metaData);
+        assertEquals(result, true);
     }
 }
 

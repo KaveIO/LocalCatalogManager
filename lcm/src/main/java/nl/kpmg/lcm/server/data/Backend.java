@@ -51,7 +51,8 @@ public interface Backend {
     /** Method to delete some content on a data storage backend.
      * 
      * @param metadata {@link MetaData} with URI of the data.
+     * @return true if delete is successful, false otherwise.
      * @throws BackendException if the URI is not valid or it is not possible to reach the storage.
      */
-    void delete(MetaData metadata) throws BackendException;
+    boolean delete(MetaData metadata) throws BackendException;
 }
