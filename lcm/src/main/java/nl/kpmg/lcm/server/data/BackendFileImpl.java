@@ -21,6 +21,7 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.io.PipedOutputStream;
 import java.net.URI;
 import java.util.Date;
 import java.util.logging.Level;
@@ -149,7 +150,7 @@ public class BackendFileImpl extends AbstractBackend {
             throw new BackendException("No dataset attached.");
         }
         File file = getPathFromUri(metadata.getDataUri());
-        OutputStream os = null;
+        OutputStream os = new PipedOutputStream();
         try (FileInputStream fis = new FileInputStream(file)) {
             // this works for files < 2 GB. Otherwise the readBytes is -1.
             /** @TODO at the moment followin line throws NullPointerExpetion, please fix by providing suitable OutputStream*/
