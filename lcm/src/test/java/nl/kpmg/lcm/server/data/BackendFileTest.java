@@ -30,15 +30,14 @@ import nl.kpmg.lcm.server.metadata.MetaData;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotSame;
 import org.junit.Test;
-import org.junit.Before;
-import org.junit.After;
 import com.google.common.hash.HashCode;
 import com.google.common.hash.Hashing;
 import com.google.common.io.Files;
-import java.io.OutputStream;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.apache.commons.io.IOUtils;
+import org.junit.AfterClass;
+import org.junit.BeforeClass;
 
 
 
@@ -51,7 +50,7 @@ import org.apache.commons.io.IOUtils;
 public class BackendFileTest {
 
     /**
-     * Temorary directory in which all the test files will exist.
+     * Temporary directory in which all the test files will exist.
      */
     private static final String TEST_STORAGE_PATH = "temp_test/";
 
@@ -59,8 +58,8 @@ public class BackendFileTest {
      * Makes a temporary test directory.
      * @throws Exception if it is not possible to make a test directory.
      */
-    @Before
-    public final void setUp() throws Exception {
+    @BeforeClass
+    public static final void setUp() throws Exception {
         // make test temp dir and set storage path
         File testDir = new File(TEST_STORAGE_PATH);
         testDir.mkdir();
@@ -70,14 +69,14 @@ public class BackendFileTest {
      * Deletes the temporary test directory and its content, assuming there are
      *  no subdirectories.
      */
-//    @After
-//    public final void tearDown() {
-//        File file = new File(TEST_STORAGE_PATH);
-//         for (File c : file.listFiles()) {
-//            c.delete();
-//         }
-//        file.delete();
-//    }
+    @AfterClass
+    public static final void tearDown() {
+        File file = new File(TEST_STORAGE_PATH);
+         for (File c : file.listFiles()) {
+            c.delete();
+         }
+        file.delete();
+    }
 
     /**
      * Test to check if "file" URI scheme is supported by getSupportedUriSchema()
@@ -274,7 +273,7 @@ public class BackendFileTest {
         HashCode hcOut = Files.hash(output, Hashing.md5());
         assertNotSame(hcExp.toString(), hcOut.toString());
     }
-    
+
     /**
      * 
      * @throws java.io.IOException if the canonical path of the storage location cannot be resolved
@@ -293,7 +292,7 @@ public class BackendFileTest {
         metaData.put("data", new HashMap() { { put("uri", fileUri); } });
         // make local data backend in specified directory and read the existing file
         BackendFileImpl testBackend = new BackendFileImpl(testDir);
-        try(InputStream is = testBackend.read(metaData)){
+        try (InputStream is = testBackend.read(metaData)) {
             try (FileOutputStream fos = new FileOutputStream(testFile)) {
                 int readBytes = IOUtils.copy(is, fos);
                 Logger.getLogger(BackendFileImpl.class.getName())
