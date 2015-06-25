@@ -36,6 +36,9 @@ import com.google.common.hash.HashCode;
 import com.google.common.hash.Hashing;
 import com.google.common.io.Files;
 import java.io.OutputStream;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import org.apache.commons.io.IOUtils;
 
 
 
@@ -67,14 +70,14 @@ public class BackendFileTest {
      * Deletes the temporary test directory and its content, assuming there are
      *  no subdirectories.
      */
-    @After
-    public final void tearDown() {
-        File file = new File(TEST_STORAGE_PATH);
-         for (File c : file.listFiles()) {
-            c.delete();
-         }
-        file.delete();
-    }
+//    @After
+//    public final void tearDown() {
+//        File file = new File(TEST_STORAGE_PATH);
+//         for (File c : file.listFiles()) {
+//            c.delete();
+//         }
+//        file.delete();
+//    }
 
     /**
      * Test to check if "file" URI scheme is supported by getSupportedUriSchema()
@@ -283,18 +286,21 @@ public class BackendFileTest {
         // make a metadata with uri
         File testDir = new File(TEST_STORAGE_PATH);
         final String fileUri = "file://" + testDir.getCanonicalPath() + "/testStore.csv";
+        // make test file to where the content stored in previous test would be read
+        File testFile = new File(TEST_STORAGE_PATH + "/testRead.csv");
+        testFile.createNewFile();
         MetaData metaData = new MetaData();
         metaData.put("data", new HashMap() { { put("uri", fileUri); } });
         // make local data backend in specified directory and read the existing file
         BackendFileImpl testBackend = new BackendFileImpl(testDir);
-        OutputStream os = testBackend.read(metaData);
-        // make test file to where the content stored in previous test would be read
-        File testFile = new File(TEST_STORAGE_PATH + "/testRead.csv");
-        testFile.createNewFile();
-        FileOutputStream fos = new FileOutputStream(testFile);
-        fos = (FileOutputStream) os;
-        fos.flush();
-        fos.close();
+        try(InputStream is = testBackend.read(metaData)){
+            try (FileOutputStream fos = new FileOutputStream(testFile)) {
+                int readBytes = IOUtils.copy(is, fos);
+                Logger.getLogger(BackendFileImpl.class.getName())
+                        .log(Level.INFO, "{0} bytes read", readBytes);
+                fos.flush();
+            }
+        }
         // check if the files are identical
         final File expected = testFile;
         final File output = new File(testDir.getCanonicalPath() + "/testStore.csv");

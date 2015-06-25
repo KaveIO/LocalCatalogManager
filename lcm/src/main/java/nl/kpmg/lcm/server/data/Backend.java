@@ -28,7 +28,7 @@ public interface Backend {
 
     public void store(MetaData metadata, InputStream content) throws BackendException;
 
-    public OutputStream read(MetaData metadata) throws BackendException;
+    public InputStream read(MetaData metadata) throws BackendException;
 
     public OutputStream delete(MetaData metadata) throws BackendException;
 }
