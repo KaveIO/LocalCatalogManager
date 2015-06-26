@@ -16,7 +16,6 @@
 package nl.kpmg.lcm.server.data;
 
 import java.io.InputStream;
-import java.io.OutputStream;
 import nl.kpmg.lcm.server.metadata.MetaData;
 
 /**
@@ -24,11 +23,36 @@ import nl.kpmg.lcm.server.metadata.MetaData;
  * @author mhoekstra
  */
 public interface Backend {
-    public DataSetInformation gatherDataSetInformation(MetaData metadata) throws BackendException;
 
-    public void store(MetaData metadata, InputStream content) throws BackendException;
+    /** Method to gather information necessary for the dataset manipulation from the metadata.
+     * 
+     * @param metadata should contain above all valid URI.
+     * @return information whether URI points to existing resource, and its properties.
+     * @throws BackendException if the URI is not valid or it is not possible to reach the resource.
+     */
+    DataSetInformation gatherDataSetInformation(MetaData metadata) throws BackendException;
 
-    public OutputStream read(MetaData metadata) throws BackendException;
+     /** Method to store some content on a data storage backend.
+     * 
+     * @param metadata {@link MetaData} with URI of the data.
+     * @param content {@link InputStream} that should be stored.
+     * @throws BackendException if the URI is not valid or it is not possible to reach the storage.
+     */
+    void store(MetaData metadata, InputStream content) throws BackendException;
 
-    public OutputStream delete(MetaData metadata) throws BackendException;
+    /** Method to read some content from a data storage backend.
+     * 
+     * @param metadata {@link MetaData} with URI of the data.
+     * @return {@link InputStream} with the data to be read.
+     * @throws BackendException if the URI is not valid or it is not possible to reach the storage.
+     */
+    InputStream read(MetaData metadata) throws BackendException;
+
+    /** Method to delete some content on a data storage backend.
+     * 
+     * @param metadata {@link MetaData} with URI of the data.
+     * @return true if delete is successful, false otherwise.
+     * @throws BackendException if the URI is not valid or it is not possible to reach the storage.
+     */
+    boolean delete(MetaData metadata) throws BackendException;
 }
