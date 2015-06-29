@@ -17,10 +17,10 @@ package nl.kpmg.lcm.server.data;
 
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.OutputStream;
 import java.net.URI;
 import java.util.Date;
 import java.util.logging.Level;
@@ -135,42 +135,54 @@ public class BackendFileImpl extends AbstractBackend {
     }
 
     /**
-     * Returns an output stream with a content of a file that is specified by
-     * metadata argument. {@link MetaData} needs to contain valid URI of a file.
+     * Returns an input stream with a content of a file that is specified by
+     * metadata argument. Returns null if it is not possible to open the file.
+     * {@link MetaData} needs to contain valid URI of a file.
      *
      * @param metadata MetaData with URI of the data
-     * @return OutputStream with the data file content
+     * @return InputStream with the data file content
      * @throws BackendException if the metadata does not contain valid URI of a file
      */
     @Override
-    public final OutputStream read(final MetaData metadata) throws BackendException {
+    public final InputStream read(final MetaData metadata) throws BackendException {
         DataSetInformation dataSetInformation = gatherDataSetInformation(metadata);
         if (!dataSetInformation.isAttached()) {
             throw new BackendException("No dataset attached.");
         }
         File file = getPathFromUri(metadata.getDataUri());
-        OutputStream os = null;
-        try (FileInputStream fis = new FileInputStream(file)) {
-            // this works for files < 2 GB. Otherwise the readBytes is -1.
-            /** @TODO at the moment followin line throws NullPointerExpetion, please fix by providing suitable OutputStream*/
-            int readBytes = IOUtils.copy(fis, os);
+        try {
+            InputStream is = new FileInputStream(file);
+            return is;
+        } catch (FileNotFoundException ex) {
             Logger.getLogger(BackendFileImpl.class.getName())
-             .log(Level.INFO, "{0} bytes read", readBytes);
-        } catch (IOException ex) {
-             Logger.getLogger(BackendFileImpl.class.getName())
-             .log(Level.SEVERE, "Couldn't read path: " + metadata.getDataUri(), ex);
+              .log(Level.SEVERE, "Did not find file: " + metadata.getDataUri()
+                      + ". Returning null.", ex);
         }
-        return os;
+        return null;
     }
 
-    /**
+    /** Deletes the file specified in the {@MetaData}.
      *
-     * @param metadata
-     * @return
+     * @param metadata {@link MetaData} with URI of the data
+     * @return true if delete is successful, false otherwise
+     * @throws BackendException if the metadata does not contain valid URI of a file
      */
     @Override
-    public OutputStream delete(MetaData metadata) {
-        throw new UnsupportedOperationException("Not supported yet.");
+    public final boolean delete(final MetaData metadata) throws BackendException {
+        DataSetInformation dataSetInformation = gatherDataSetInformation(metadata);
+        if (!dataSetInformation.isAttached()) {
+            throw new BackendException("No dataset attached.");
+        }
+        File file = getPathFromUri(metadata.getDataUri());
+        boolean success = file.delete();
+        if (success) {
+            Logger.getLogger(BackendFileImpl.class.getName())
+             .log(Level.INFO, "Delete successful.");
+        } else {
+            Logger.getLogger(BackendFileImpl.class.getName())
+              .log(Level.SEVERE, "Deletion of file: {0} failed.", metadata.getDataUri());
+        }
+        return success;
     }
 
 }

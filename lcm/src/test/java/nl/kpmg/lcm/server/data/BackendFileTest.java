@@ -30,12 +30,14 @@ import nl.kpmg.lcm.server.metadata.MetaData;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotSame;
 import org.junit.Test;
-import org.junit.Before;
-import org.junit.After;
 import com.google.common.hash.HashCode;
 import com.google.common.hash.Hashing;
 import com.google.common.io.Files;
-import java.io.OutputStream;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import org.apache.commons.io.IOUtils;
+import org.junit.AfterClass;
+import org.junit.BeforeClass;
 
 
 
@@ -48,7 +50,7 @@ import java.io.OutputStream;
 public class BackendFileTest {
 
     /**
-     * Temorary directory in which all the test files will exist.
+     * Temporary directory in which all the test files will exist.
      */
     private static final String TEST_STORAGE_PATH = "temp_test/";
 
@@ -56,8 +58,8 @@ public class BackendFileTest {
      * Makes a temporary test directory.
      * @throws Exception if it is not possible to make a test directory.
      */
-    @Before
-    public final void setUp() throws Exception {
+    @BeforeClass
+    public static final void setUp() throws Exception {
         // make test temp dir and set storage path
         File testDir = new File(TEST_STORAGE_PATH);
         testDir.mkdir();
@@ -67,8 +69,8 @@ public class BackendFileTest {
      * Deletes the temporary test directory and its content, assuming there are
      *  no subdirectories.
      */
-    @After
-    public final void tearDown() {
+    @AfterClass
+    public static final void tearDown() {
         File file = new File(TEST_STORAGE_PATH);
          for (File c : file.listFiles()) {
             c.delete();
@@ -271,8 +273,10 @@ public class BackendFileTest {
         HashCode hcOut = Files.hash(output, Hashing.md5());
         assertNotSame(hcExp.toString(), hcOut.toString());
     }
-    
-    /**
+
+    /** Tests read() method of {@link BackendFileImp}.
+     * Test reads a text file created by previous test and stores in the new text file.
+     * Then it tests if the 2 files are identical using md5.
      * 
      * @throws java.io.IOException if the canonical path of the storage location cannot be resolved
      * @throws nl.kpmg.lcm.server.data.BackendException if it is not possible to read
@@ -283,24 +287,47 @@ public class BackendFileTest {
         // make a metadata with uri
         File testDir = new File(TEST_STORAGE_PATH);
         final String fileUri = "file://" + testDir.getCanonicalPath() + "/testStore.csv";
+        // make test file to where the content stored in previous test would be read
+        File testFile = new File(TEST_STORAGE_PATH + "/testRead.csv");
+        testFile.createNewFile();
         MetaData metaData = new MetaData();
         metaData.put("data", new HashMap() { { put("uri", fileUri); } });
         // make local data backend in specified directory and read the existing file
         BackendFileImpl testBackend = new BackendFileImpl(testDir);
-        OutputStream os = testBackend.read(metaData);
-        // make test file to where the content stored in previous test would be read
-        File testFile = new File(TEST_STORAGE_PATH + "/testRead.csv");
-        testFile.createNewFile();
-        FileOutputStream fos = new FileOutputStream(testFile);
-        fos = (FileOutputStream) os;
-        fos.flush();
-        fos.close();
+        try (InputStream is = testBackend.read(metaData)) {
+            try (FileOutputStream fos = new FileOutputStream(testFile)) {
+                int readBytes = IOUtils.copy(is, fos);
+                Logger.getLogger(BackendFileImpl.class.getName())
+                        .log(Level.INFO, "{0} bytes read", readBytes);
+                fos.flush();
+            }
+        }
         // check if the files are identical
         final File expected = testFile;
         final File output = new File(testDir.getCanonicalPath() + "/testStore.csv");
         HashCode hcExp = Files.hash(expected, Hashing.md5());
         HashCode hcOut = Files.hash(output, Hashing.md5());
         assertEquals(hcExp.toString(), hcOut.toString());
+    }
+
+    /** Tests delete() method of {@link BackendFileImp}.
+     *  It tries to delete one of the files created by previous tests. It fails
+     *  if it is not possible to delete the file.
+     * 
+     * @throws IOException if the canonical path of the storage location cannot be resolved
+     * @throws BackendException if it is not possible to delete on the test backend
+     */
+    @Test
+    public final void testDelete() throws IOException, BackendException {
+        File testDir = new File(TEST_STORAGE_PATH);
+        final String fileUri = "file://" + testDir.getCanonicalPath() + "/testStore.csv";
+        // make metadata pointing to the file to be deleted
+        MetaData metaData = new MetaData();
+        metaData.put("data", new HashMap() { { put("uri", fileUri); } });
+        // make local data backend in specified directory and delete the existing file
+        BackendFileImpl testBackend = new BackendFileImpl(testDir);
+        boolean result = testBackend.delete(metaData);
+        assertEquals(result, true);
     }
 }
 
