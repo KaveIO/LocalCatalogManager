@@ -29,6 +29,12 @@ public abstract class AbstractBackend implements Backend {
     protected URI parseUri(String uri) throws BackendException {
         try {
             URI parsedUri = new URI(uri);
+            if(parsedUri.getScheme()== null){
+                // Strangely enough, the URI constructor allows URI instances without scheme
+                throw new BackendException(String.format(
+                        "No scheme supplied in uri \"%s\". Please use the supported uri schema (%s)", 
+                        uri, getSupportedUriSchema()));
+            }
             if (!parsedUri.getScheme().equals(getSupportedUriSchema())) {
                 throw new BackendException(String.format(
                         "Detected uri schema (%s) doesn't match with this backends supported uri schema (%s)",
