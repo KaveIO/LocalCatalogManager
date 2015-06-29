@@ -15,16 +15,16 @@
  */
 package nl.kpmg.lcm.server.metadata.storage.file;
 
+import java.io.File;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import nl.kpmg.lcm.server.metadata.MetaData;
+import org.junit.After;
+import org.junit.AfterClass;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
-
-import java.io.File;
-
-import nl.kpmg.lcm.server.metadata.MetaData;
-
-import org.junit.After;
-import org.junit.AfterClass;
+import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 

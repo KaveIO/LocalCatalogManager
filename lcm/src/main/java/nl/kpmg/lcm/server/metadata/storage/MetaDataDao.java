@@ -33,8 +33,4 @@ public interface MetaDataDao {
     public void persist(MetaData metadata);
     
     public void delete(MetaData metadata);
-    
-    public void setStoragePath(String path);
-    
-    public String getStoragePath();
 }

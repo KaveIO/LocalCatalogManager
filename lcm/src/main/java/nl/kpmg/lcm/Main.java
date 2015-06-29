@@ -1,8 +1,6 @@
 package nl.kpmg.lcm;
 
 import org.apache.commons.lang.ArrayUtils;
-import org.springframework.context.ApplicationContext;
-import org.springframework.context.support.ClassPathXmlApplicationContext;
 
 import java.io.IOException;
 import java.util.logging.Level;
@@ -40,9 +38,7 @@ public class Main {
 
             if (command.equals("server")) {
                 LOG.log(Level.INFO, "Starting LCM server");
-                // Load spring beans 
-            	ApplicationContext ctx = new ClassPathXmlApplicationContext(new String[]{"application-context.xml","application-context-dao.xml"});
-            	System.out.println("MetaDataDaoImpl instance : "+ctx.getBean("metaDataDao"));
+
                 final Server server = new Server(arguments);
                 server.start();
 

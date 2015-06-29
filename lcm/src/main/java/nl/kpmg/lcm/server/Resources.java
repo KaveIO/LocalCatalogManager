@@ -15,8 +15,6 @@
  */
 package nl.kpmg.lcm.server;
 
-import org.springframework.beans.factory.annotation.Autowired;
-
 import nl.kpmg.lcm.server.metadata.storage.MetaDataDao;
 
 /**
@@ -32,8 +30,7 @@ public final class Resources {
     /**
      * The DAO implementation.
      */
-    @Autowired
-	private static MetaDataDao metaDataDao;
+    private static MetaDataDao metaDataDao;
 
     private static String baseUri;
 
@@ -52,8 +49,8 @@ public final class Resources {
     /**
      * @param metaDataDao the metaData DAO implementation to use
      */
-    public static void setMetaDataDao(final MetaDataDao mdDao) {
-        metaDataDao = mdDao;
+    public static void setMetaDataDao(final MetaDataDao metaDataDao) {
+        Resources.metaDataDao = metaDataDao;
     }
 
     public static String getBaseUri() {
