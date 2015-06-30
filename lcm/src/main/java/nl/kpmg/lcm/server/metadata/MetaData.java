@@ -27,7 +27,7 @@ import org.apache.commons.lang.ArrayUtils;
  */
 public class MetaData extends HashMap {
 
-    private <T> T get(String path) {
+    public <T> T get(String path) {
         try {
             String[] split = path.split("\\.");
             return get(this, split);
@@ -53,7 +53,7 @@ public class MetaData extends HashMap {
         }
     }
 
-    private void set(String path, Object value) {
+    public void set(String path, Object value) {
         try {
             String[] split = path.split("\\.");
             set(this, split, value);

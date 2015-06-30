@@ -13,31 +13,31 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package nl.kpmg.lcm.server.metadata.storage.file;
+package nl.kpmg.lcm.server.task;
 
 /**
  *
  * @author mhoekstra
  */
-public class StorageException extends Exception {
+public class TaskException extends Exception {
 
-    public StorageException() {
+    public TaskException() {
     }
 
-    public StorageException(String message) {
+    public TaskException(String message) {
         super(message);
     }
 
-    public StorageException(String arg0, Throwable arg1) {
+    public TaskException(String arg0, Throwable arg1) {
         super(arg0, arg1);
     }
 
-    public StorageException(Throwable cause) {
+    public TaskException(Throwable cause) {
         super(cause);
     }
 
-    public StorageException(String arg0, Throwable arg1, boolean arg2, boolean arg3) {
+    public TaskException(String arg0, Throwable arg1, boolean arg2, boolean arg3) {
         super(arg0, arg1, arg2, arg3);
     }
-    
+
 }

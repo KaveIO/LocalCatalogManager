@@ -15,6 +15,7 @@
  */
 package nl.kpmg.lcm.server.metadata.storage.file;
 
+import nl.kpmg.lcm.server.metadata.storage.StorageException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import java.io.File;
 import java.io.IOException;
@@ -66,11 +67,11 @@ public class MetaDataDaoImpl implements MetaDataDao {
     private File getMetaDataFile(String name, String versionNumber) {
         return new File(String.format("%s/%s/%s", storage, name, versionNumber));
     }
-    
+
     private File getMetaDataFolder(String name) {
         return new File(String.format("%s/%s", storage, name));
     }
-    
+
     @Override
     public List<MetaData> getAll() {
         String[] allMetaDataNames = storage.list();
@@ -90,7 +91,7 @@ public class MetaDataDaoImpl implements MetaDataDao {
         File metaDataFolder = getMetaDataFolder(name);
         if (metaDataFolder.isDirectory()) {
             String[] versions = metaDataFolder.list();
-            
+
             Arrays.sort(versions);
             String head = versions[versions.length - 1];
             return getByNameAndVersion(name, head);
@@ -121,7 +122,7 @@ public class MetaDataDaoImpl implements MetaDataDao {
             getMetaDataFolder(name).mkdir();
         } else {
             versionNumber = previousVersionMetaData.getVersionNumber();
-            
+
             if (versionNumber == null) {
                 LOGGER.warning("Previous version found be no version number could be parsed.");
                 versionNumber = "0"; /** @TODO quick and dirty. Should throw */
@@ -130,7 +131,7 @@ public class MetaDataDaoImpl implements MetaDataDao {
                 versionNumber = "" + (previousVersionNumber + 1);
             }
         }
-            
+
         try {
             mapper.writeValue(getMetaDataFile(name, versionNumber), metadata);
         } catch (IOException ex) {
