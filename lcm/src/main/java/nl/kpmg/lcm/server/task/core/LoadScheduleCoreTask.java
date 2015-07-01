@@ -18,8 +18,9 @@ package nl.kpmg.lcm.server.task.core;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import nl.kpmg.lcm.server.metadata.TaskSchedule;
-import nl.kpmg.lcm.server.metadata.storage.TaskScheduleDao;
+import nl.kpmg.lcm.server.Resources;
+import nl.kpmg.lcm.server.data.TaskSchedule;
+import nl.kpmg.lcm.server.data.dao.TaskScheduleDao;
 import nl.kpmg.lcm.server.task.CoreTask;
 import nl.kpmg.lcm.server.task.EnrichmentTask;
 import nl.kpmg.lcm.server.task.TaskException;
@@ -28,11 +29,8 @@ import nl.kpmg.lcm.server.task.TaskResult;
 import nl.kpmg.lcm.server.task.TaskScheduleException;
 import static org.quartz.CronScheduleBuilder.cronSchedule;
 import org.quartz.CronTrigger;
-import org.quartz.Job;
 import static org.quartz.JobBuilder.newJob;
 import org.quartz.JobDetail;
-import org.quartz.JobExecutionContext;
-import org.quartz.JobExecutionException;
 import org.quartz.JobKey;
 import org.quartz.Scheduler;
 import org.quartz.SchedulerException;
@@ -53,7 +51,9 @@ public class LoadScheduleCoreTask extends CoreTask {
 
     private TaskSchedule current;
 
-
+    public LoadScheduleCoreTask() {
+        taskScheduleDao = Resources.getTaskScheduleDao();
+    }
 
     @Override
     public TaskResult execute() throws TaskException {
@@ -61,7 +61,7 @@ public class LoadScheduleCoreTask extends CoreTask {
         Scheduler scheduler = taskManager.getScheduler();
 
         TaskSchedule latest = taskScheduleDao.getCurrent();
-        if (!current.equals(latest)) {
+        if (current == null || !current.equals(latest)) {
             try {
                 removeTasks(scheduler);
             } catch (SchedulerException ex) {
@@ -78,6 +78,8 @@ public class LoadScheduleCoreTask extends CoreTask {
                     }
                 }
             }
+
+            current = latest;
         }
         return TaskResult.SUCCESS;
     }

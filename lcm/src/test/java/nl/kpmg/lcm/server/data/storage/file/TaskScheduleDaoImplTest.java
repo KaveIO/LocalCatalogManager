@@ -13,14 +13,15 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package nl.kpmg.lcm.server.metadata.storage.file;
+package nl.kpmg.lcm.server.data.storage.file;
 
-import nl.kpmg.lcm.server.metadata.storage.StorageException;
+import nl.kpmg.lcm.server.data.dao.file.TaskScheduleDaoImpl;
+import nl.kpmg.lcm.server.data.dao.DaoException;
 import java.io.File;
 import java.util.LinkedList;
 import java.util.List;
-import nl.kpmg.lcm.server.metadata.TaskSchedule;
-import nl.kpmg.lcm.server.metadata.TaskSchedule.TaskScheduleItem;
+import nl.kpmg.lcm.server.data.TaskSchedule;
+import nl.kpmg.lcm.server.data.TaskSchedule.TaskScheduleItem;
 import org.junit.After;
 import org.junit.AfterClass;
 import static org.junit.Assert.assertEquals;
@@ -37,7 +38,7 @@ public class TaskScheduleDaoImplTest {
 
     private final TaskScheduleDaoImpl taskScheduleDao;
 
-    public TaskScheduleDaoImplTest() throws StorageException {
+    public TaskScheduleDaoImplTest() throws DaoException {
         File file = new File(TEST_STORAGE_PATH);
         file.mkdir();
 

@@ -17,10 +17,10 @@ package nl.kpmg.lcm.server.task.enrichment;
 
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import nl.kpmg.lcm.server.data.Backend;
-import nl.kpmg.lcm.server.data.BackendException;
-import nl.kpmg.lcm.server.data.DataSetInformation;
-import nl.kpmg.lcm.server.metadata.MetaData;
+import nl.kpmg.lcm.server.backend.Backend;
+import nl.kpmg.lcm.server.backend.BackendException;
+import nl.kpmg.lcm.server.backend.DataSetInformation;
+import nl.kpmg.lcm.server.data.MetaData;
 import nl.kpmg.lcm.server.task.EnrichmentTask;
 import nl.kpmg.lcm.server.task.TaskException;
 import nl.kpmg.lcm.server.task.TaskResult;
@@ -31,6 +31,8 @@ import nl.kpmg.lcm.server.task.TaskResult;
  */
 public class DataEnrichmentTask extends EnrichmentTask {
 
+
+    
     Backend backend;
 
     @Override

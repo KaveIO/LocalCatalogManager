@@ -19,11 +19,12 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import nl.kpmg.lcm.server.metadata.MetaData;
-import nl.kpmg.lcm.server.metadata.TaskDescription;
-import nl.kpmg.lcm.server.metadata.TaskSchedule;
-import nl.kpmg.lcm.server.metadata.storage.MetaDataDao;
-import nl.kpmg.lcm.server.metadata.storage.TaskDescriptionDao;
+import nl.kpmg.lcm.server.Resources;
+import nl.kpmg.lcm.server.data.MetaData;
+import nl.kpmg.lcm.server.data.TaskDescription;
+import nl.kpmg.lcm.server.data.TaskSchedule;
+import nl.kpmg.lcm.server.data.dao.MetaDataDao;
+import nl.kpmg.lcm.server.data.dao.TaskDescriptionDao;
 import nl.kpmg.lcm.server.task.CoreTask;
 import nl.kpmg.lcm.server.task.EnrichmentTask;
 import nl.kpmg.lcm.server.task.TaskException;
@@ -38,6 +39,11 @@ public class ExecuteTasksCoreTask extends CoreTask {
 
     private MetaDataDao metaDataDao;
     private TaskDescriptionDao taskDescriptionDao;
+
+    public ExecuteTasksCoreTask() {
+        metaDataDao = Resources.getMetaDataDao();
+        taskDescriptionDao = Resources.getTaskDescriptionDao();
+    }
 
     @Override
     public TaskResult execute() throws TaskException {

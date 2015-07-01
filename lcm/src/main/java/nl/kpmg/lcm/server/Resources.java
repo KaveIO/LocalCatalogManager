@@ -15,9 +15,10 @@
  */
 package nl.kpmg.lcm.server;
 
-import nl.kpmg.lcm.server.metadata.storage.MetaDataDao;
-import nl.kpmg.lcm.server.metadata.storage.TaskDescriptionDao;
-import nl.kpmg.lcm.server.metadata.storage.TaskScheduleDao;
+import nl.kpmg.lcm.server.data.dao.MetaDataDao;
+import nl.kpmg.lcm.server.data.dao.TaskDescriptionDao;
+import nl.kpmg.lcm.server.data.dao.TaskScheduleDao;
+import nl.kpmg.lcm.server.data.service.MetaDataService;
 
 /**
  * Static resources class for centralizing dependencies.
@@ -37,12 +38,16 @@ public final class Resources {
     /**
      * The DAO implementation.
      */
-    private static TaskDescriptionDao taskDao;
+    private static TaskDescriptionDao taskDescriptionDao;
 
     /**
      * The DAO implementation.
      */
     private static TaskScheduleDao taskScheduleDao;
+
+
+    private static MetaDataService metaDataService;
+
 
     private static String baseUri;
 
@@ -65,12 +70,12 @@ public final class Resources {
         Resources.metaDataDao = metaDataDao;
     }
 
-    public static TaskDescriptionDao getTaskDao() {
-        return taskDao;
+    public static TaskDescriptionDao getTaskDescriptionDao() {
+        return taskDescriptionDao;
     }
 
-    public static void setTaskDao(TaskDescriptionDao taskDao) {
-        Resources.taskDao = taskDao;
+    public static void setTaskDescriptionDao(TaskDescriptionDao taskDescriptionDao) {
+        Resources.taskDescriptionDao = taskDescriptionDao;
     }
 
     public static TaskScheduleDao getTaskScheduleDao() {
@@ -79,6 +84,14 @@ public final class Resources {
 
     public static void setTaskScheduleDao(TaskScheduleDao taskScheduleDao) {
         Resources.taskScheduleDao = taskScheduleDao;
+    }
+
+    public static MetaDataService getMetaDataService() {
+        return metaDataService;
+    }
+
+    public static void setMetaDataService(MetaDataService metaDataService) {
+        Resources.metaDataService = metaDataService;
     }
 
     public static String getBaseUri() {

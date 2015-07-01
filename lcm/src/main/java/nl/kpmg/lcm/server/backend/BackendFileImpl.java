@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package nl.kpmg.lcm.server.data;
+package nl.kpmg.lcm.server.backend;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -27,7 +27,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.apache.commons.io.IOUtils;
 
-import nl.kpmg.lcm.server.metadata.MetaData;
+import nl.kpmg.lcm.server.data.MetaData;
 
 /**
  *

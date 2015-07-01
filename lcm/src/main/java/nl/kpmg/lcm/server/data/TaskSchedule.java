@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package nl.kpmg.lcm.server.metadata;
+package nl.kpmg.lcm.server.data;
 
 import java.util.LinkedList;
 import java.util.List;

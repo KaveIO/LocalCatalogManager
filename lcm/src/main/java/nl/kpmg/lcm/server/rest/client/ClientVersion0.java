@@ -14,8 +14,8 @@ import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
 import nl.kpmg.lcm.server.Resources;
-import nl.kpmg.lcm.server.metadata.MetaData;
-import nl.kpmg.lcm.server.metadata.storage.MetaDataDao;
+import nl.kpmg.lcm.server.data.MetaData;
+import nl.kpmg.lcm.server.data.dao.MetaDataDao;
 import org.apache.commons.lang.NotImplementedException;
 
 /**

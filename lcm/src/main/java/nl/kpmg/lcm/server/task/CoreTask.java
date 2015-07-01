@@ -15,15 +15,9 @@
  */
 package nl.kpmg.lcm.server.task;
 
-import java.util.LinkedList;
-import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import nl.kpmg.lcm.server.metadata.MetaData;
-import nl.kpmg.lcm.server.metadata.storage.MetaDataDao;
-import org.apache.commons.lang.NotImplementedException;
 import org.quartz.Job;
-import org.quartz.JobDataMap;
 import org.quartz.JobExecutionContext;
 import org.quartz.JobExecutionException;
 
@@ -41,7 +35,7 @@ public abstract class CoreTask implements Job {
             Logger.getLogger(CoreTask.class.getName()).entering(this.getClass().getName(), "execute");
             execute();
             Logger.getLogger(CoreTask.class.getName()).exiting(this.getClass().getName(), "execute");
-        } catch (TaskException ex) {
+        } catch (Exception ex ) {
             Logger.getLogger(CoreTask.class.getName()).log(Level.SEVERE, "Failed executing task", ex);
         }
     }

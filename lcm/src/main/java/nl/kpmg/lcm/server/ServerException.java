@@ -1,5 +1,3 @@
-package nl.kpmg.lcm.server.metadata.storage;
-
 /*
  * Copyright 2015 KPMG N.V. (unless otherwise stated).
  *
@@ -15,31 +13,31 @@ package nl.kpmg.lcm.server.metadata.storage;
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
+package nl.kpmg.lcm.server;
 
 /**
  *
  * @author mhoekstra
  */
-public class StorageException extends Exception {
+public class ServerException extends Exception {
 
-    public StorageException() {
+    public ServerException() {
     }
 
-    public StorageException(String message) {
+    public ServerException(String message) {
         super(message);
     }
 
-    public StorageException(String arg0, Throwable arg1) {
+    public ServerException(String arg0, Throwable arg1) {
         super(arg0, arg1);
     }
 
-    public StorageException(Throwable cause) {
+    public ServerException(Throwable cause) {
         super(cause);
     }
 
-    public StorageException(String arg0, Throwable arg1, boolean arg2, boolean arg3) {
+    public ServerException(String arg0, Throwable arg1, boolean arg2, boolean arg3) {
         super(arg0, arg1, arg2, arg3);
     }
-    
+
 }

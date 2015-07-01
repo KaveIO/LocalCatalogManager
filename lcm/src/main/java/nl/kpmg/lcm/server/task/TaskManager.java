@@ -101,4 +101,12 @@ public class TaskManager {
             throw new TaskScheduleException(ex);
         }
     }
+
+    public void stop() {
+        try {
+            scheduler.shutdown();
+        } catch (SchedulerException ex) {
+            Logger.getLogger(TaskManager.class.getName()).log(Level.WARNING, "failed shuting down the schedulere", ex);
+        }
+    }
 }

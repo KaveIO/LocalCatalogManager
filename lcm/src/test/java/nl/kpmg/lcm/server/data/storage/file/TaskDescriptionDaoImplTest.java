@@ -13,13 +13,14 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package nl.kpmg.lcm.server.metadata.storage.file;
+package nl.kpmg.lcm.server.data.storage.file;
 
-import nl.kpmg.lcm.server.metadata.storage.StorageException;
+import nl.kpmg.lcm.server.data.dao.file.TaskDescriptionDaoImpl;
+import nl.kpmg.lcm.server.data.dao.DaoException;
 import java.io.File;
 import java.util.Date;
 import java.util.List;
-import nl.kpmg.lcm.server.metadata.TaskDescription;
+import nl.kpmg.lcm.server.data.TaskDescription;
 import org.junit.After;
 import org.junit.AfterClass;
 import static org.junit.Assert.assertEquals;
@@ -36,7 +37,7 @@ public class TaskDescriptionDaoImplTest {
 
     private final TaskDescriptionDaoImpl taskDescriptionDao;
 
-    public TaskDescriptionDaoImplTest() throws StorageException {
+    public TaskDescriptionDaoImplTest() throws DaoException {
         File file = new File(TEST_STORAGE_PATH);
         file.mkdir();
 

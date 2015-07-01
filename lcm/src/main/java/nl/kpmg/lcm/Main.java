@@ -7,6 +7,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import nl.kpmg.lcm.server.Server;
+import nl.kpmg.lcm.server.ServerException;
 
 /**
  * Main class.
@@ -31,7 +32,7 @@ public class Main {
             if (args.length == 0) {
                 throw new InvalidArgumentsException("No command found");
             }
-            
+
             final String command = args[0];
             final String[] arguments = (String[]) ArrayUtils.removeElement(args, command);
 
@@ -44,7 +45,7 @@ public class Main {
 
                 LOG.log(Level.INFO, "Hit enter to stop it...");
                 System.in.read();
-                
+
                 server.stop();
             } else if (command.equals("client")) {
                 LOG.log(Level.INFO, "Client not implemented yet.");
@@ -61,19 +62,21 @@ public class Main {
             }
         } catch (InvalidArgumentsException e) {
             displayHelp(e);
-        } 
+        } catch (ServerException ex) {
+            Logger.getLogger(Main.class.getName()).log(Level.SEVERE, "Failed starting the server", ex);
+        }
     }
 
-    
+
     private static void displayHelp() {
         System.out.println("Help text");
     }
-    
+
     private static void displayHelp(InvalidArgumentsException e) {
         System.out.println(e.getMessage());
-        displayHelp(); 
+        displayHelp();
     }
-    
+
     private static void displayHelp(String command) {
         switch (command) {
             case "server":

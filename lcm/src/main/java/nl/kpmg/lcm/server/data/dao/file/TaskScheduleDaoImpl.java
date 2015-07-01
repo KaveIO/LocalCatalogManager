@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package nl.kpmg.lcm.server.metadata.storage.file;
+package nl.kpmg.lcm.server.data.dao.file;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import java.io.File;
@@ -23,9 +23,9 @@ import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import nl.kpmg.lcm.server.JacksonJsonProvider;
-import nl.kpmg.lcm.server.metadata.storage.StorageException;
-import nl.kpmg.lcm.server.metadata.storage.TaskScheduleDao;
-import nl.kpmg.lcm.server.metadata.TaskSchedule;
+import nl.kpmg.lcm.server.data.dao.DaoException;
+import nl.kpmg.lcm.server.data.dao.TaskScheduleDao;
+import nl.kpmg.lcm.server.data.TaskSchedule;
 
 /**
  * Implementation of a file based TaskSchedule DAO.
@@ -49,16 +49,16 @@ public class TaskScheduleDaoImpl implements TaskScheduleDao {
 
     /**
      * @param storagePath The path where the taskSchedule is stored
-     * @throws StorageException when the storagePath doesn't exist
+     * @throws DaoException when the storagePath doesn't exist
      */
-    public TaskScheduleDaoImpl(final String storagePath) throws StorageException {
+    public TaskScheduleDaoImpl(final String storagePath) throws DaoException {
         storage = new File(storagePath);
 
         JacksonJsonProvider jacksonJsonProvider = new JacksonJsonProvider();
         mapper = jacksonJsonProvider.getContext(TaskSchedule.class);
 
         if (!storage.isDirectory() || !this.storage.canWrite()) {
-            throw new StorageException(String.format(
+            throw new DaoException(String.format(
                     "The storage path %s is not a directory or not writable.", storage.getAbsolutePath()));
         }
     }
@@ -80,7 +80,7 @@ public class TaskScheduleDaoImpl implements TaskScheduleDao {
             }
             return taskSchedule;
         } catch (IOException ex) {
-            Logger.getLogger(TaskScheduleDaoImpl.class.getName()).log(Level.SEVERE, null, ex);
+            Logger.getLogger(TaskScheduleDaoImpl.class.getName()).log(Level.WARNING, null, ex);
             return null;
         }
     }

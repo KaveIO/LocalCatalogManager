@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package nl.kpmg.lcm.server.data;
+package nl.kpmg.lcm.server.backend;
 
 import java.net.URI;
 import java.net.URISyntaxException;

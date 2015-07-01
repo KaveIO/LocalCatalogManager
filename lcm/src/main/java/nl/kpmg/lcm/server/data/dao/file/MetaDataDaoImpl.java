@@ -13,9 +13,9 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package nl.kpmg.lcm.server.metadata.storage.file;
+package nl.kpmg.lcm.server.data.dao.file;
 
-import nl.kpmg.lcm.server.metadata.storage.StorageException;
+import nl.kpmg.lcm.server.data.dao.DaoException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import java.io.File;
 import java.io.IOException;
@@ -25,8 +25,8 @@ import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import nl.kpmg.lcm.server.JacksonJsonProvider;
-import nl.kpmg.lcm.server.metadata.MetaData;
-import nl.kpmg.lcm.server.metadata.storage.MetaDataDao;
+import nl.kpmg.lcm.server.data.MetaData;
+import nl.kpmg.lcm.server.data.dao.MetaDataDao;
 
 /**
  * Implementation of a file based MetaData DAO.
@@ -50,16 +50,16 @@ public class MetaDataDaoImpl implements MetaDataDao {
 
     /**
      * @param storagePath The path where the metaData is stored
-     * @throws StorageException when the storagePath doesn't exist
+     * @throws DaoException when the storagePath doesn't exist
      */
-    public MetaDataDaoImpl(final String storagePath) throws StorageException {
+    public MetaDataDaoImpl(final String storagePath) throws DaoException {
         storage = new File(storagePath);
 
         JacksonJsonProvider jacksonJsonProvider = new JacksonJsonProvider();
         mapper = jacksonJsonProvider.getContext(MetaData.class);
 
         if (!storage.isDirectory() || !this.storage.canWrite()) {
-            throw new StorageException(String.format(
+            throw new DaoException(String.format(
                     "The storage path %s is not a directory or not writable.", storage.getAbsolutePath()));
         }
     }

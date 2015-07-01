@@ -1,3 +1,5 @@
+package nl.kpmg.lcm.server.data.dao;
+
 /*
  * Copyright 2015 KPMG N.V. (unless otherwise stated).
  *
@@ -13,23 +15,31 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package nl.kpmg.lcm.server.metadata.storage;
 
-import java.util.List;
-import nl.kpmg.lcm.server.metadata.TaskSchedule;
 
 /**
  *
  * @author mhoekstra
  */
-public interface TaskScheduleDao {
-    public TaskSchedule getById(Integer id);
+public class DaoException extends Exception {
+
+    public DaoException() {
+    }
+
+    public DaoException(String message) {
+        super(message);
+    }
+
+    public DaoException(String arg0, Throwable arg1) {
+        super(arg0, arg1);
+    }
+
+    public DaoException(Throwable cause) {
+        super(cause);
+    }
+
+    public DaoException(String arg0, Throwable arg1, boolean arg2, boolean arg3) {
+        super(arg0, arg1, arg2, arg3);
+    }
     
-    public List<TaskSchedule> getAll();
-
-    public TaskSchedule getCurrent();
-
-    public void persist(TaskSchedule task);
-
-    public void delete(TaskSchedule task);
 }

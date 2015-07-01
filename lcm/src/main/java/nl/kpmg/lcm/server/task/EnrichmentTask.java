@@ -15,13 +15,12 @@
  */
 package nl.kpmg.lcm.server.task;
 
-import java.util.LinkedList;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import nl.kpmg.lcm.server.metadata.MetaData;
-import nl.kpmg.lcm.server.metadata.storage.MetaDataDao;
-import org.apache.commons.lang.NotImplementedException;
+import nl.kpmg.lcm.server.data.MetaData;
+import nl.kpmg.lcm.server.data.service.MetaDataService;
+import nl.kpmg.lcm.server.data.service.ServiceException;
 import org.quartz.Job;
 import org.quartz.JobDataMap;
 import org.quartz.JobExecutionContext;
@@ -35,42 +34,9 @@ public abstract class EnrichmentTask implements Job {
 
     public static final String TARGET = "target";
 
-
-    MetaDataDao metaDataDao;
+    private MetaDataService metaDataService;
 
     public abstract TaskResult execute(MetaData metadata) throws TaskException;
-
-
-    private List<MetaData> fetchTargets(String expression) throws TaskException {
-        /** @TODO this should go in a service layer. This has no place here. */
-        List<MetaData> targets = new LinkedList();
-
-        if (expression.length() == 0) {
-            throw new TaskException("Target expression is empty");
-        }
-
-        String[] split = expression.split("/");
-        if (split.length == 1) {
-            if (split[0].equals("*")) {
-                targets = metaDataDao.getAll();
-            } else {
-                targets.add(metaDataDao.getByName(split[0]));
-            }
-        } else if (split.length == 2) {
-            if (split[0].equals("*")) {
-                throw new NotImplementedException("Scheduling on */* is not implemented yet.");
-            } else {
-                if (split[1].equals("*")) {
-                    throw new NotImplementedException("Scheduling on ???/* is not implemented yet.");
-                } else {
-                    targets.add(metaDataDao.getByNameAndVersion(split[0], split[1]));
-                }
-            }
-        } else {
-            throw new TaskException("Target expression has an unknown format");
-        }
-        return targets;
-    }
 
     @Override
     public final void execute(JobExecutionContext context) throws JobExecutionException {
@@ -79,8 +45,8 @@ public abstract class EnrichmentTask implements Job {
 
         List<MetaData> targets;
         try {
-            targets = fetchTargets(target);
-        } catch (TaskException ex) {
+            targets = metaDataService.getByExpression(target);
+        } catch (ServiceException ex) {
             Logger.getLogger(EnrichmentTask.class.getName()).log(Level.SEVERE, "Couldn't fetch targets for Job.", ex);
             throw new JobExecutionException(ex);
         }

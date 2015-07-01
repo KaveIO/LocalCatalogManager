@@ -13,30 +13,23 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package nl.kpmg.lcm.server.data;
+package nl.kpmg.lcm.server.data.dao;
+
+import java.util.List;
+import nl.kpmg.lcm.server.data.TaskSchedule;
 
 /**
  *
  * @author mhoekstra
  */
-public class BackendException extends Exception {
+public interface TaskScheduleDao {
+    public TaskSchedule getById(Integer id);
+    
+    public List<TaskSchedule> getAll();
 
-    public BackendException() {
-    }
+    public TaskSchedule getCurrent();
 
-    public BackendException(String message) {
-        super(message);
-    }
+    public void persist(TaskSchedule task);
 
-    public BackendException(String arg0, Throwable arg1) {
-        super(arg0, arg1);
-    }
-
-    public BackendException(Throwable cause) {
-        super(cause);
-    }
-
-    public BackendException(String arg0, Throwable arg1, boolean arg2, boolean arg3) {
-        super(arg0, arg1, arg2, arg3);
-    }
+    public void delete(TaskSchedule task);
 }
