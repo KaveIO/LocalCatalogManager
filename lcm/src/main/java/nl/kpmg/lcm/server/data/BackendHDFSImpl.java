@@ -22,7 +22,9 @@ import java.util.Date;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import nl.kpmg.lcm.server.metadata.MetaData;
+import org.apache.commons.io.IOUtils;
 import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.fs.FSDataOutputStream;
 import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
@@ -74,22 +76,12 @@ public class BackendHDFSImpl extends AbstractBackend {
      * @throws IOException if it is not possible to connect to the location
      * specified by the URI
      */
-    private FileSystem getPathFromUri(final String uri) throws BackendException, IOException {
+    private FileSystem getFS() throws BackendException, IOException {
 
-        if (uri != null) {
-            URI dataUri;
-            dataUri = parseUri(uri);
-            Configuration conf = new Configuration();
-            conf.set("fs.default.name", storagePath);
-            FileSystem file = FileSystem.get(dataUri, conf);
-            /**
-             * @TODO This is super scary. we should check if the resulting path
-             * is still within storagePath
-             */
-            return file;
-        } else {
-            throw new BackendException("No URI specified.");
-        }
+        Configuration conf = new Configuration();
+        conf.set("fs.default.name", storagePath);
+        FileSystem file = FileSystem.get(conf);
+        return file;
     }
 
     /**
@@ -107,8 +99,8 @@ public class BackendHDFSImpl extends AbstractBackend {
         DataSetInformation dataSetInformation = new DataSetInformation();
         dataSetInformation.setUri(uri);
 
-        try (FileSystem file = getPathFromUri(uri)) {
-            if (file != null) {
+        try (FileSystem file = getFS()) {
+            if (file != null && uri != null) {
                 Path filePath = new Path(uri);
                 dataSetInformation.setAttached(file.isFile(filePath));
 
@@ -132,9 +124,40 @@ public class BackendHDFSImpl extends AbstractBackend {
         return dataSetInformation;
     }
 
+    /**
+     * Writes an input stream to the file specified in the {
+     *
+     * @MetaData}.
+     *
+     * @param metadata should contain valid destination URI
+     * @param content is a stream that should be stored
+     * @throws BackendException if the URI in metadata points to the existing
+     * file
+     */
     @Override
-    public void store(MetaData metadata, InputStream content) throws BackendException {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    public final void store(final MetaData metadata, final InputStream content) throws BackendException {
+        DataSetInformation dataSetInformation = gatherDataSetInformation(metadata);
+        if (dataSetInformation.isAttached()) {
+            throw new BackendException("Data set is already attached, won't overwrite.");
+        }
+
+        try (FileSystem file = getFS()) {
+            Path filePath = new Path(metadata.getDataUri());
+            try (FSDataOutputStream fos = file.create(filePath, false)) {
+                // this works for files < 2 GB. Otherwise the copied is -1.
+                int copied = IOUtils.copy(content, fos);
+                Logger.getLogger(BackendFileImpl.class.getName())
+                        .log(Level.INFO, "{0} bytes written", copied);
+            }
+            catch (IOException ex) {
+                Logger.getLogger(BackendFileImpl.class.getName())
+                        .log(Level.SEVERE, "Couldn't find path: " + metadata.getDataUri(), ex);
+            }
+        }
+        catch (IOException ex) {
+            Logger.getLogger(BackendHDFSImpl.class.getName())
+                    .log(Level.SEVERE, "Cannot reach the location " + metadata.getDataUri(), ex);
+        }
     }
 
     @Override
