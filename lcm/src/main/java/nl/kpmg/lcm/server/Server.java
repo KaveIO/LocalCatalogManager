@@ -9,6 +9,7 @@ import nl.kpmg.lcm.server.data.dao.DaoException;
 import nl.kpmg.lcm.server.data.dao.file.MetaDataDaoImpl;
 import nl.kpmg.lcm.server.data.dao.file.TaskDescriptionDaoImpl;
 import nl.kpmg.lcm.server.data.dao.file.TaskScheduleDaoImpl;
+import nl.kpmg.lcm.server.data.service.BackendService;
 import nl.kpmg.lcm.server.data.service.MetaDataService;
 import nl.kpmg.lcm.server.task.TaskManager;
 import nl.kpmg.lcm.server.task.TaskManagerException;
@@ -39,6 +40,7 @@ public class Server {
             Resources.setTaskScheduleDao(new TaskScheduleDaoImpl(String.format("%s/%s", dataPath, "taskschedule/")));
 
             Resources.setMetaDataService(new MetaDataService());
+            Resources.setBackendService(new BackendService());
 
         } catch (DaoException ex) {
             Logger.getLogger(Server.class.getName()).log(Level.SEVERE,

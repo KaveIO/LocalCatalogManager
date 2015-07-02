@@ -18,6 +18,7 @@ package nl.kpmg.lcm.server;
 import nl.kpmg.lcm.server.data.dao.MetaDataDao;
 import nl.kpmg.lcm.server.data.dao.TaskDescriptionDao;
 import nl.kpmg.lcm.server.data.dao.TaskScheduleDao;
+import nl.kpmg.lcm.server.data.service.BackendService;
 import nl.kpmg.lcm.server.data.service.MetaDataService;
 
 /**
@@ -48,6 +49,7 @@ public final class Resources {
 
     private static MetaDataService metaDataService;
 
+    private static BackendService backendService;
 
     private static String baseUri;
 
@@ -92,6 +94,14 @@ public final class Resources {
 
     public static void setMetaDataService(MetaDataService metaDataService) {
         Resources.metaDataService = metaDataService;
+    }
+
+    public static BackendService getBackendService() {
+        return backendService;
+    }
+
+    public static void setBackendService(BackendService backendService) {
+        Resources.backendService = backendService;
     }
 
     public static String getBaseUri() {
