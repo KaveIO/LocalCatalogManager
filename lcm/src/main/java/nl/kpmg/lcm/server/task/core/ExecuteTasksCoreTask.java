@@ -123,7 +123,7 @@ public class ExecuteTasksCoreTask extends CoreTask {
             JobDetail jobDetail = newJob(job)
                     .withIdentity(name, GROUP_KEY)
                     .build();
-            jobDetail.getJobDataMap().put(EnrichmentTask.TARGET, target);
+            jobDetail.getJobDataMap().put(EnrichmentTask.TARGET_KEY, target);
 
             scheduler.addJob(jobDetail, true);
             scheduler.triggerJob(jobDetail.getKey());

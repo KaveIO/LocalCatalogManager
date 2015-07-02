@@ -15,10 +15,14 @@
  */
 package nl.kpmg.lcm.server.task;
 
+import java.util.Date;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import nl.kpmg.lcm.server.Resources;
 import nl.kpmg.lcm.server.data.MetaData;
+import nl.kpmg.lcm.server.data.TaskDescription;
+import nl.kpmg.lcm.server.data.dao.TaskDescriptionDao;
 import nl.kpmg.lcm.server.data.service.MetaDataService;
 import nl.kpmg.lcm.server.data.service.ServiceException;
 import org.quartz.Job;
@@ -36,12 +40,37 @@ public abstract class EnrichmentTask implements Job {
     /**
      * The field name containing the metadata expression in the JobDataMap.
      */
-    public static final String TARGET = "target";
+    public static final String TARGET_KEY = "target";
+
+    /**
+     * The field name containing the task id in the JobDataMap.
+     */
+    public static final String TASK_ID_KEY = "task_id";
 
     /**
      * The MetaDataService.
+     *
+     * @TODO Auto wire this.
      */
-    private MetaDataService metaDataService;
+    private final MetaDataService metaDataService;
+
+    /**
+     * The TaskDescriptionDao.
+     *
+     * @TODO Auto wire this.
+     */
+    private final TaskDescriptionDao taskDescriptionDao;
+
+
+    /**
+     * Default constructor.
+     *
+     * Only needed because we can't autowire the dao's yet.
+     */
+    public EnrichmentTask() {
+        metaDataService = Resources.getMetaDataService();
+        taskDescriptionDao = Resources.getTaskDescriptionDao();
+    }
 
     /**
      * Method called to process the actual code of this task.
@@ -64,9 +93,27 @@ public abstract class EnrichmentTask implements Job {
      */
     @Override
     public final void execute(final JobExecutionContext context) throws JobExecutionException {
-        JobDataMap jobDataMap = context.getJobDetail().getJobDataMap();
-        String target = jobDataMap.getString(TARGET);
 
+        // Fetch information from the job context.
+        JobDataMap jobDataMap = context.getJobDetail().getJobDataMap();
+        String target = jobDataMap.getString(TARGET_KEY);
+        Integer taskId = jobDataMap.getInt(TASK_ID_KEY);
+
+        // Update or create the task description
+        TaskDescription taskDescription;
+        if (taskId == 0) {
+            taskDescription = taskDescriptionDao.getById(taskId);
+        } else {
+            taskDescription = new TaskDescription();
+            taskDescription.setJob(this.getClass().getName());
+            taskDescription.setTarget(target);
+            taskDescription.setName(context.getJobDetail().getKey().getName());
+        }
+        taskDescription.setStatus(TaskDescription.TaskStatus.RUNNING);
+        taskDescription.setStartTime(new Date());
+        taskDescriptionDao.persist(taskDescription);
+
+        // Find the MetaData target on which this job needs to be executed
         List<MetaData> targets;
         try {
             targets = metaDataService.getByExpression(target);
@@ -75,6 +122,7 @@ public abstract class EnrichmentTask implements Job {
             throw new JobExecutionException(ex);
         }
 
+        // Execute the actuall code for each target
         if (targets != null) {
             for (MetaData metadata : targets) {
                 try {
@@ -86,5 +134,9 @@ public abstract class EnrichmentTask implements Job {
                 }
             }
         }
+
+        taskDescription.setStatus(TaskDescription.TaskStatus.SUCCESS);
+        taskDescription.setEndTime(new Date());
+        taskDescriptionDao.persist(taskDescription);
     }
 }
