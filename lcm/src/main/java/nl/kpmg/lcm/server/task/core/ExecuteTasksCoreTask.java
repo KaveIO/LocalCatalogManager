@@ -30,6 +30,7 @@ import nl.kpmg.lcm.server.task.TaskResult;
 import nl.kpmg.lcm.server.task.TaskScheduleException;
 import static org.quartz.JobBuilder.newJob;
 import org.quartz.JobDetail;
+import org.quartz.Scheduler;
 import org.quartz.SchedulerException;
 
 /**
@@ -63,10 +64,9 @@ public class ExecuteTasksCoreTask extends CoreTask {
     }
 
     /**
-     * Executes the first TaskDescription with the status PENDING.
+     * Schedules all tasks with the status PENDING for direct execution.
      *
-     * @TODO should be rewritten to use quartz to schedule the tasks directly.
-     * @return the result of the task
+     * @return the result of the scheduling
      * @throws TaskException if the task fails to execute
      */
     @Override
@@ -125,6 +125,7 @@ public class ExecuteTasksCoreTask extends CoreTask {
                     .build();
             jobDetail.getJobDataMap().put(EnrichmentTask.TARGET_KEY, target);
 
+            Scheduler scheduler = getScheduler();
             scheduler.addJob(jobDetail, true);
             scheduler.triggerJob(jobDetail.getKey());
         } catch (SchedulerException ex) {

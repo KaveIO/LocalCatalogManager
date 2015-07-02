@@ -80,7 +80,7 @@ public class TaskScheduleDaoImpl implements TaskScheduleDao {
             }
             return taskSchedule;
         } catch (IOException ex) {
-            Logger.getLogger(TaskScheduleDaoImpl.class.getName()).log(Level.WARNING,
+            Logger.getLogger(TaskScheduleDaoImpl.class.getName()).log(Level.FINER,
                     String.format("Couldn't construct TaskSchedule with id %s", id), ex);
             return null;
         }

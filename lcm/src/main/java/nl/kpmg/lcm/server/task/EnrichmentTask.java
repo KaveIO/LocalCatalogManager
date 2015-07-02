@@ -126,9 +126,15 @@ public abstract class EnrichmentTask implements Job {
         if (targets != null) {
             for (MetaData metadata : targets) {
                 try {
-                    Logger.getLogger(EnrichmentTask.class.getName()).log(Level.INFO, "Executing task for metadata");
+                    Logger.getLogger(EnrichmentTask.class.getName()).log(Level.INFO,
+                            String.format("Executing EnrichmentTask %s (%s)",
+                                    taskDescription.getName(), taskDescription.getJob()));
+
                     execute(metadata);
-                    Logger.getLogger(EnrichmentTask.class.getName()).log(Level.INFO, "Done with task");
+
+                    Logger.getLogger(EnrichmentTask.class.getName()).log(Level.INFO,
+                            String.format("Done with EnrichmentTask %s (%s)",
+                                    taskDescription.getName(), taskDescription.getJob()));
                 } catch (TaskException ex) {
                     Logger.getLogger(EnrichmentTask.class.getName()).log(Level.SEVERE, "Failed executing task", ex);
                 }

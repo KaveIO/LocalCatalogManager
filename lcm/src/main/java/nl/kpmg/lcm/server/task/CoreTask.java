@@ -32,10 +32,15 @@ import org.quartz.Scheduler;
  * @author mhoekstra
  */
 public abstract class CoreTask implements Job {
-
+    /**
+     * The field name containing the scheduler in the JobDataMap.
+     */
     public static final String SCHEDULER = "scheduler";
 
-    protected Scheduler scheduler;
+    /**
+     * The quartz scheduler.
+     */
+    private Scheduler scheduler;
 
     /**
      * Method called to process the actual code of this task.
@@ -57,12 +62,23 @@ public abstract class CoreTask implements Job {
         scheduler = (Scheduler) jobDataMap.get(SCHEDULER);
 
         try {
-            Logger.getLogger(CoreTask.class.getName()).log(Level.INFO, "Entering execute");
+            Logger.getLogger(CoreTask.class.getName()).log(Level.FINE,
+                    String.format("Executing CoreTask %s ", context.getJobDetail().getKey().getName()));
+
             execute();
-            Logger.getLogger(CoreTask.class.getName()).log(Level.INFO, "Exiting execute");
+
+            Logger.getLogger(CoreTask.class.getName()).log(Level.FINE,
+                    String.format("Done with CoreTask %s ", context.getJobDetail().getKey().getName()));
         } catch (Exception ex) {
             Logger.getLogger(CoreTask.class.getName()).log(Level.SEVERE, "Failed executing task", ex);
             throw new JobExecutionException(ex);
         }
+    }
+
+    /**
+     * @return the quartz scheduler
+     */
+    protected final Scheduler getScheduler() {
+        return scheduler;
     }
 }

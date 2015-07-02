@@ -39,37 +39,67 @@ import org.quartz.impl.matchers.GroupMatcher;
 import static org.quartz.impl.matchers.GroupMatcher.groupEquals;
 
 /**
+ * TaskSchedule update task.
+ *
+ * This task will try and install all task items in the most current TaskSchedule.
+ * The current implementation doesn't do this with much intelligence. A backoff
+ * should be implemented so that a new schedule will only sparsely overwrite the
+ * previous schedule.
  *
  * @author mhoekstra
  */
 public class LoadScheduleCoreTask extends CoreTask {
 
+    /**
+     * The group key which is used to register the scheduled tasks.
+     */
     private static final String GROUP_KEY = "scheduled";
 
-    // @Autowired
-    private TaskScheduleDao taskScheduleDao;
+    /**
+     * The TaskScheduleDao.
+     * @TODO Auto wire this.
+     */
+    private final TaskScheduleDao taskScheduleDao;
 
+    /**
+     * The currently active TaskSchedule.
+     */
     private TaskSchedule current;
 
+    /**
+     * Default constructor.
+     *
+     * Only needed because we can't autowire the dao's yet.
+     */
     public LoadScheduleCoreTask() {
         taskScheduleDao = Resources.getTaskScheduleDao();
     }
 
+    /**
+     * Installs the current TaskSchedule.
+     *
+     * @return the result of the task
+     * @throws TaskException if the task fails
+     */
     @Override
-    public TaskResult execute() throws TaskException {
+    public final TaskResult execute() throws TaskException {
         TaskSchedule latest = taskScheduleDao.getCurrent();
         if (current == null || !current.equals(latest)) {
             try {
-                removeTasks(scheduler);
+                removeTasks();
             } catch (SchedulerException ex) {
-                Logger.getLogger(LoadScheduleCoreTask.class.getName()).log(Level.SEVERE, "couldn't remove the previous schedule.", ex);
+                Logger.getLogger(LoadScheduleCoreTask.class.getName()).log(Level.SEVERE,
+                        "couldn't remove the previous schedule.", ex);
                 return TaskResult.FAILURE;
             }
 
             if (latest != null && latest.getItems() != null) {
                 for (TaskSchedule.TaskScheduleItem taskScheduleItem : latest.getItems()) {
                     try {
-                        schedule(scheduler, taskScheduleItem.getName(), taskScheduleItem.getJob(), taskScheduleItem.getTarget(), taskScheduleItem.getCron());
+                        scheduleEnrichmentTask(taskScheduleItem.getName(),
+                                taskScheduleItem.getJob(),
+                                taskScheduleItem.getTarget(),
+                                taskScheduleItem.getCron());
                     } catch (TaskScheduleException ex) {
                         Logger.getLogger(TaskManager.class.getName()).log(Level.SEVERE, "Failed to schedule ", ex);
                     }
@@ -81,11 +111,21 @@ public class LoadScheduleCoreTask extends CoreTask {
         return TaskResult.SUCCESS;
     }
 
-    private void schedule(Scheduler scheduler, String name, String job, String target, String cron) throws TaskScheduleException {
+    /**
+     * Schedules an EnrichmentTask based on its cron definition.
+     *
+     * @param name The name of the job
+     * @param job the class of the job to execute
+     * @param target the target MetaData expression
+     * @param cron the execution schedule
+     * @throws TaskScheduleException when the task couldn't be scheduled
+     */
+    private void scheduleEnrichmentTask(final String name, final String job,
+            final String target, final String cron) throws TaskScheduleException {
         try {
             Class<?> cls = Class.forName(job);
             if (EnrichmentTask.class.isAssignableFrom(cls)) {
-                schedule(scheduler, name, (Class<EnrichmentTask>) cls, target, cron);
+                scheduleEnrichmentTask(name, (Class<EnrichmentTask>) cls, target, cron);
             } else {
                 throw new TaskScheduleException("Task definition doesn't contain a schedulable job");
             }
@@ -95,27 +135,44 @@ public class LoadScheduleCoreTask extends CoreTask {
         }
     }
 
-    private void schedule(Scheduler scheduler, String name, Class<? extends EnrichmentTask> aClass, String target, String cron) throws TaskScheduleException {
+    /**
+     * Schedules an EnrichmentTask based on its cron definition.
+     *
+     * @param name The name of the job
+     * @param job the class of the job to execute
+     * @param target the target MetaData expression
+     * @param cron the execution schedule
+     * @throws TaskScheduleException when the task couldn't be scheduled
+     */
+    private void scheduleEnrichmentTask(final String name, final Class<? extends EnrichmentTask> job,
+            final String target, final String cron) throws TaskScheduleException {
         try {
-            JobDetail job = newJob(aClass)
+            JobDetail jobDetail = newJob(job)
                     .withIdentity(name, GROUP_KEY)
                     .build();
 
-            job.getJobDataMap().put(EnrichmentTask.TARGET_KEY, target);
+            jobDetail.getJobDataMap().put(EnrichmentTask.TARGET_KEY, target);
 
             CronTrigger trigger = newTrigger()
                     .withIdentity(name, GROUP_KEY)
                     .withSchedule(cronSchedule(cron))
                     .build();
 
-            scheduler.scheduleJob(job, trigger);
+            Scheduler scheduler = getScheduler();
+            scheduler.scheduleJob(jobDetail, trigger);
         } catch (SchedulerException ex) {
             Logger.getLogger(TaskManager.class.getName()).log(Level.SEVERE, null, ex);
             throw new TaskScheduleException(ex);
         }
     }
 
-    private void removeTasks(Scheduler scheduler) throws SchedulerException {
+    /**
+     * Remove all the scheduled task.
+     *
+     * @throws SchedulerException if a job can't be removed
+     */
+    private void removeTasks() throws SchedulerException {
+        Scheduler scheduler = getScheduler();
         Set<JobKey> jobKeys = scheduler.getJobKeys((GroupMatcher<JobKey>) groupEquals(GROUP_KEY));
 
         for (JobKey jobKey : jobKeys) {
