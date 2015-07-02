@@ -17,10 +17,13 @@ package nl.kpmg.lcm.server.task.enrichment;
 
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import nl.kpmg.lcm.server.Resources;
 import nl.kpmg.lcm.server.backend.Backend;
 import nl.kpmg.lcm.server.backend.BackendException;
 import nl.kpmg.lcm.server.backend.DataSetInformation;
 import nl.kpmg.lcm.server.data.MetaData;
+import nl.kpmg.lcm.server.data.dao.MetaDataDao;
+import nl.kpmg.lcm.server.data.service.BackendService;
 import nl.kpmg.lcm.server.task.EnrichmentTask;
 import nl.kpmg.lcm.server.task.TaskException;
 import nl.kpmg.lcm.server.task.TaskResult;
@@ -55,10 +58,26 @@ import nl.kpmg.lcm.server.task.TaskResult;
 public class DataEnrichmentTask extends EnrichmentTask {
 
     /**
-     * Hack to get the code compilable but in no means the place where this variable
-     * needs to be.
+     * The MetaDataDao.
+     * @TODO Auto wire this.
      */
-    private Backend backend;
+    private final MetaDataDao metaDataDao;
+
+    /**
+     * The BackendService.
+     * @TODO Auto wire this.
+     */
+    private final BackendService backendService;
+
+    /**
+     * Default constructor.
+     *
+     * Only needed because we can't autowire the dao's yet.
+     */
+    public DataEnrichmentTask() {
+        backendService = Resources.getBackendService();
+        metaDataDao = Resources.getMetaDataDao();
+    }
 
     /**
      * Will store information on the data associated with a piece of MetaData.
@@ -68,8 +87,9 @@ public class DataEnrichmentTask extends EnrichmentTask {
      * @throws TaskException if the backend fails
      */
     @Override
-    public final TaskResult execute(final MetaData metadata) throws TaskException {
+    protected final TaskResult execute(final MetaData metadata) throws TaskException {
         try {
+            Backend backend = backendService.getBackend(metadata);
             DataSetInformation gatherDataSetInformation = backend.gatherDataSetInformation(metadata);
 
             if (!gatherDataSetInformation.isAttached()) {
@@ -85,6 +105,8 @@ public class DataEnrichmentTask extends EnrichmentTask {
             metadata.set("dynamic.data.readable", "READABLE");
             metadata.set("dynamic.data.size", gatherDataSetInformation.getByteSize());
             metadata.set("dynamic.data.update-timestamp", gatherDataSetInformation.getModificationTime().toString());
+
+            metaDataDao.persist(metadata);
 
             return TaskResult.SUCCESS;
         } catch (BackendException ex) {
