@@ -50,7 +50,7 @@ public abstract class EnrichmentTask implements Job {
      * @return The result of the task
      * @throws TaskException if the task can't be executed properly
      */
-    public abstract TaskResult execute(MetaData metadata) throws TaskException;
+    protected abstract TaskResult execute(MetaData metadata) throws TaskException;
 
     /**
      * Execute method invoked by the quartz scheduler.

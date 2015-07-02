@@ -17,7 +17,6 @@ package nl.kpmg.lcm.server.task;
 
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import static nl.kpmg.lcm.server.task.EnrichmentTask.TARGET;
 import org.quartz.Job;
 import org.quartz.JobDataMap;
 import org.quartz.JobExecutionContext;
@@ -44,7 +43,7 @@ public abstract class CoreTask implements Job {
      * @return The result of the task
      * @throws TaskException if the task can't be executed properly
      */
-    public abstract TaskResult execute() throws TaskException;
+    protected abstract TaskResult execute() throws TaskException;
 
     /**
      * Execute method invoked by the quartz scheduler.
