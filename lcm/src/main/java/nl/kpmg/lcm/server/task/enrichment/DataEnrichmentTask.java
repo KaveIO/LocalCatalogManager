@@ -26,17 +26,49 @@ import nl.kpmg.lcm.server.task.TaskException;
 import nl.kpmg.lcm.server.task.TaskResult;
 
 /**
+ * Fills data on a MetaData object concerning the described Data.
+ *
+ * MetaData describes data. This Task will check through the appropriate backend
+ * if the data in question is actually attached and/or readable from the LCM.
+ * This will update and overwrite the specific piece of MetaData. The data
+ * added contains:
+ *   - state                : DETACHED | ATTACHED
+ *   - readable             : UNREADABLE | READABLE
+ *   - size                 : byte-size
+ *   - update-timestamp     : date
+ *
+ * this will be set on the following path:
+ *
+ * {
+ *   "dynamic": {
+ *     "data" {
+ *       "state"
+ *       "readable"
+ *       "size"
+ *       "update-timestamp"
+ *     }
+ *   }
+ * }
  *
  * @author mhoekstra
  */
 public class DataEnrichmentTask extends EnrichmentTask {
 
+    /**
+     * Hack to get the code compilable but in no means the place where this variable
+     * needs to be.
+     */
+    private Backend backend;
 
-    
-    Backend backend;
-
+    /**
+     * Will store information on the data associated with a piece of MetaData.
+     *
+     * @param metadata the metadata to enrich
+     * @return the result of the task
+     * @throws TaskException if the backend fails
+     */
     @Override
-    public TaskResult execute(MetaData metadata) throws TaskException {
+    public final TaskResult execute(final MetaData metadata) throws TaskException {
         try {
             DataSetInformation gatherDataSetInformation = backend.gatherDataSetInformation(metadata);
 

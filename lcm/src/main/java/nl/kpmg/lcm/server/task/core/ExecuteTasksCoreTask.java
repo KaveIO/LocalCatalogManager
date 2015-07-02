@@ -15,132 +15,143 @@
  */
 package nl.kpmg.lcm.server.task.core;
 
-import java.util.LinkedList;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import nl.kpmg.lcm.server.Resources;
-import nl.kpmg.lcm.server.data.MetaData;
 import nl.kpmg.lcm.server.data.TaskDescription;
 import nl.kpmg.lcm.server.data.TaskSchedule;
-import nl.kpmg.lcm.server.data.dao.MetaDataDao;
 import nl.kpmg.lcm.server.data.dao.TaskDescriptionDao;
 import nl.kpmg.lcm.server.task.CoreTask;
 import nl.kpmg.lcm.server.task.EnrichmentTask;
 import nl.kpmg.lcm.server.task.TaskException;
+import nl.kpmg.lcm.server.task.TaskManager;
 import nl.kpmg.lcm.server.task.TaskResult;
-import org.apache.commons.lang.NotImplementedException;
+import nl.kpmg.lcm.server.task.TaskScheduleException;
+import static org.quartz.JobBuilder.newJob;
+import org.quartz.JobDetail;
+import org.quartz.SchedulerException;
 
 /**
+ * Executor of ad-hoc tasks.
+ *
+ * EnrichmentTasks can be created either through a schedule or in an ad-hoc way.
+ * These ad-hoc tasks will be scheduled by this Task.
  *
  * @author mhoekstra
  */
 public class ExecuteTasksCoreTask extends CoreTask {
 
-    private MetaDataDao metaDataDao;
-    private TaskDescriptionDao taskDescriptionDao;
+    /**
+     * The group key which is used to register the ad-hoc tasks.
+     */
+    private static final String GROUP_KEY = "adhoc";
 
+    /**
+     * The TaskDescriptionDao.
+     * @TODO Auto wire this.
+     */
+    private final TaskDescriptionDao taskDescriptionDao;
+
+    /**
+     * Default constructor.
+     *
+     * Only needed because we can't autowire the dao's yet.
+     */
     public ExecuteTasksCoreTask() {
-        metaDataDao = Resources.getMetaDataDao();
         taskDescriptionDao = Resources.getTaskDescriptionDao();
     }
 
+    /**
+     * Executes the first TaskDescription with the status PENDING.
+     *
+     * @TODO should be rewritten to use quartz to schedule the tasks directly.
+     * @return the result of the task
+     * @throws TaskException if the task fails to execute
+     */
     @Override
-    public TaskResult execute() throws TaskException {
+    public final TaskResult execute() throws TaskException {
+
         List<TaskDescription> taskDescriptions = taskDescriptionDao.getAll();
         for (TaskDescription taskDescription : taskDescriptions) {
             if (taskDescription.getStatus() == TaskDescription.TaskStatus.PENDING) {
-                taskDescription.setStatus(TaskDescription.TaskStatus.RUNNING);
-                taskDescriptionDao.persist(taskDescription);
-
-
-                TaskResult result = execute(taskDescription);
-
-
-                return result;
+                try {
+                    scheduleEnrichmentTask(
+                            taskDescription.getName(),
+                            taskDescription.getJob(),
+                            taskDescription.getTarget());
+                    taskDescription.setStatus(TaskDescription.TaskStatus.SCHEDULED);
+                    taskDescriptionDao.persist(taskDescription);
+                } catch (TaskScheduleException ex) {
+                    Logger.getLogger(ExecuteTasksCoreTask.class.getName()).log(Level.SEVERE, null, ex);
+                }
             }
         }
         return TaskResult.SUCCESS;
     }
 
-    private TaskResult execute(TaskDescription taskDescription) throws TaskException {
-        TaskResult result = TaskResult.SUCCESS;
-        String target = taskDescription.getTarget();
-
-        List<MetaData> targets;
+    /**
+     * Schedules an EnrichmentTask for immediate execution.
+     *
+     * @param name The name of the job
+     * @param job the class name of the job to execute
+     * @param target the target MetaData expression
+     * @throws TaskScheduleException when the task couldn't be scheduled
+     */
+    private void scheduleEnrichmentTask(final String name, final String job, final String target)
+            throws TaskScheduleException {
         try {
-            targets = fetchTargets(target);
+            Class<? extends EnrichmentTask> enrichmentTaskClass = getEnrichmentTaskClass(job);
+            scheduleEnrichmentTask(name, enrichmentTaskClass, target);
         } catch (TaskException ex) {
-            Logger.getLogger(EnrichmentTask.class.getName()).log(Level.SEVERE, "Couldn't fetch targets for Job.", ex);
-            throw new TaskException(ex);
+            Logger.getLogger(ExecuteTasksCoreTask.class.getName()).log(Level.SEVERE, null, ex);
+            throw new TaskScheduleException(ex);
         }
-
-        EnrichmentTask enrichmentTask = getEnrichmentTaskInstance(taskDescription.getJob());
-        if (targets != null) {
-            for (MetaData metadata : targets) {
-                try {
-                    Logger.getLogger(EnrichmentTask.class.getName()).log(Level.INFO, "Executing task for metadata");
-                    result = enrichmentTask.execute(metadata);
-                    Logger.getLogger(EnrichmentTask.class.getName()).log(Level.INFO, "Done with task");
-                } catch (TaskException ex) {
-                    Logger.getLogger(EnrichmentTask.class.getName()).log(Level.SEVERE, "Failed executing task", ex);
-                    result = TaskResult.FAILURE;
-                }
-            }
-        } else {
-            return TaskResult.FAILURE;
-        }
-
-        return result;
     }
 
-    private List<MetaData> fetchTargets(String expression) throws TaskException {
-        /** @TODO this should go in a service layer. This has no place here. */
-        List<MetaData> targets = new LinkedList();
-
-        if (expression.length() == 0) {
-            throw new TaskException("Target expression is empty");
-        }
-
-        String[] split = expression.split("/");
-        if (split.length == 1) {
-            if (split[0].equals("*")) {
-                targets = metaDataDao.getAll();
-            } else {
-                targets.add(metaDataDao.getByName(split[0]));
-            }
-        } else if (split.length == 2) {
-            if (split[0].equals("*")) {
-                throw new NotImplementedException("Scheduling on */* is not implemented yet.");
-            } else {
-                if (split[1].equals("*")) {
-                    throw new NotImplementedException("Scheduling on ???/* is not implemented yet.");
-                } else {
-                    targets.add(metaDataDao.getByNameAndVersion(split[0], split[1]));
-                }
-            }
-        } else {
-            throw new TaskException("Target expression has an unknown format");
-        }
-        return targets;
-    }
-
-    private EnrichmentTask getEnrichmentTaskInstance(String job) throws TaskException {
+    /**
+     * Schedules an EnrichmentTask for immediate execution.
+     *
+     * @param name The name of the job
+     * @param job the class of the job to execute
+     * @param target the target MetaData expression
+     * @throws TaskScheduleException when the task couldn't be scheduled
+     */
+    private void scheduleEnrichmentTask(final String name, final Class<? extends EnrichmentTask> job,
+            final String target) throws TaskScheduleException {
         try {
-            Class<?> cls = Class.forName(job);
+            JobDetail jobDetail = newJob(job)
+                    .withIdentity(name, GROUP_KEY)
+                    .build();
+            jobDetail.getJobDataMap().put(EnrichmentTask.TARGET, target);
+
+            scheduler.addJob(jobDetail, true);
+            scheduler.triggerJob(jobDetail.getKey());
+        } catch (SchedulerException ex) {
+            Logger.getLogger(TaskManager.class.getName()).log(Level.SEVERE, null, ex);
+            throw new TaskScheduleException(ex);
+        }
+    }
+
+    /**
+     * Method for translating a class name to a specific Class instance.
+     *
+     * This will check if the provided class name actually extends an EnrichmentTask
+     *
+     * @param className the name of the class
+     * @return the class instance of the class
+     * @throws TaskException when className is not correct or points to something else than an EnrichmentTask
+     */
+    private Class<? extends EnrichmentTask> getEnrichmentTaskClass(final String className) throws TaskException {
+        try {
+            Class<?> cls = Class.forName(className);
             if (EnrichmentTask.class.isAssignableFrom(cls)) {
-                return (EnrichmentTask) cls.newInstance();
+                return (Class<? extends EnrichmentTask>) cls;
             } else {
                 throw new TaskException("Task definition doesn't contain a schedulable job");
             }
         } catch (ClassNotFoundException ex) {
             Logger.getLogger(TaskSchedule.class.getName()).log(Level.SEVERE, null, ex);
-            throw new TaskException(ex);
-        } catch (InstantiationException ex) {
-            Logger.getLogger(ExecuteTasksCoreTask.class.getName()).log(Level.SEVERE, null, ex);
-            throw new TaskException(ex);
-        } catch (IllegalAccessException ex) {
-            Logger.getLogger(ExecuteTasksCoreTask.class.getName()).log(Level.SEVERE, null, ex);
             throw new TaskException(ex);
         }
     }

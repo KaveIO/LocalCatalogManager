@@ -16,10 +16,18 @@
 package nl.kpmg.lcm.server.task;
 
 /**
+ * Used to communicate the outcome of a Task.
  *
  * @author mhoekstra
  */
 public enum TaskResult {
+    /**
+     * The task was successfully executed.
+     */
     SUCCESS,
+
+    /**
+     * The task failed somewhere during execution.
+     */
     FAILURE;
 }

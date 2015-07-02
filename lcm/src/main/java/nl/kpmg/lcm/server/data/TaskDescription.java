@@ -18,32 +18,91 @@ package nl.kpmg.lcm.server.data;
 import java.util.Date;
 
 /**
+ * Description of tasks in the system.
+ *
+ * This Model object describes Tasks. TaskDescriptions are used in two way's
+ * first to log the result of scheduled tasks and secondly to schedule ad-hoc
+ * tasks. Only in the second case the life cycle will apply.
+ *
+ * A Tasks lifecycle follows the following steps:
+ *
+ *   1. PENDING             : A task is created
+ *   2. SCHEDULED           : The scheduler has picked the task up
+ *   3. RUNNING             : The task is being executed
+ *   4. FAILED | SUCCESS    : The task is done and either failed or successful
  *
  * @author mhoekstra
  */
 public class TaskDescription {
 
+    /**
+     * The unique task identifier.
+     */
     private Integer id;
 
+    /**
+     * The name of the task.
+     */
     private String name;
 
+    /**
+     * The name of the class which contains the executable code.
+     */
     private String job;
 
+    /**
+     * The target expression describing on what the task should run.
+     */
     private String target;
 
+    /**
+     * Contains the output of the job if there is any.
+     */
     private String output;
 
+    /**
+     * The time this job was started.
+     */
     private Date startTime;
 
+    /**
+     * The time this job finished.
+     */
     private Date endTime;
 
+    /**
+     * The current status of this job.
+     */
     private TaskStatus status;
 
+    /**
+     * An inner enumeration describing the states the task can be in.
+     */
     public enum TaskStatus {
+        /**
+         * A task is created.
+         */
         PENDING,
-        SUCCESS,
+
+        /**
+         * The scheduler has picked the task up.
+         */
+        SCHEDULED,
+
+        /**
+         * The task is being executed.
+         */
+        RUNNING,
+
+        /**
+         * The task end of life if the task is failed.
+         */
         FAILED,
-        RUNNING;
+
+        /**
+         * The task end of life if the task is successful.
+         */
+        SUCCESS;
     }
 
     public Date getEndTime() {

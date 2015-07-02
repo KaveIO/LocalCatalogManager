@@ -27,19 +27,43 @@ import org.quartz.JobExecutionContext;
 import org.quartz.JobExecutionException;
 
 /**
+ * A task which is being applied on MetaData to enrich its content.
  *
  * @author mhoekstra
  */
 public abstract class EnrichmentTask implements Job {
 
+    /**
+     * The field name containing the metadata expression in the JobDataMap.
+     */
     public static final String TARGET = "target";
 
+    /**
+     * The MetaDataService.
+     */
     private MetaDataService metaDataService;
 
+    /**
+     * Method called to process the actual code of this task.
+     *
+     * @param metadata the MetaData to apply this task on
+     * @return The result of the task
+     * @throws TaskException if the task can't be executed properly
+     */
     public abstract TaskResult execute(MetaData metadata) throws TaskException;
 
+    /**
+     * Execute method invoked by the quartz scheduler.
+     *
+     * Interprets the target in the JobDataMap and invokes execute for each of
+     * them. If the task fails for any of the MetaData the execution cycle will
+     * keep going.
+     *
+     * @param context provided by quartz
+     * @throws JobExecutionException if the job couldn't be executed properly.
+     */
     @Override
-    public final void execute(JobExecutionContext context) throws JobExecutionException {
+    public final void execute(final JobExecutionContext context) throws JobExecutionException {
         JobDataMap jobDataMap = context.getJobDetail().getJobDataMap();
         String target = jobDataMap.getString(TARGET);
 

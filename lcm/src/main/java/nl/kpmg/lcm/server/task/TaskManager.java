@@ -30,19 +30,45 @@ import static org.quartz.TriggerBuilder.newTrigger;
 import org.quartz.impl.StdSchedulerFactory;
 
 /**
+ * The Singleton class the manages the execution of Tasks.
+ *
+ * The TaskManager uses quartz as a scheduling mechanism. All actual work is
+ * delegated to quartz jobs or actually their children: CoreTask and
+ * EnrichmentTask.
+ *
+ * Currently this uses the singleton design pattern. It is likely this should
+ * be rewritten as a proper JavaBean.
  *
  * @author mhoekstra
  */
-public class TaskManager {
+public final class TaskManager {
 
-    private static final String GROUP_KEY = "core";
-
+    /**
+     * The singleton instance.
+     */
     private static TaskManager instance;
 
+    /**
+     * The group key which is used to register the task which drive the core
+     * of the TaskManager logic.
+     */
+    private static final String GROUP_KEY = "core";
+
+    /**
+     * The quartz scheduler that actually takes care of the execution of tasks.
+     */
     private Scheduler scheduler;
 
+    /**
+     * Private constructor for Singleton purposes.
+     */
     private TaskManager() { }
 
+    /**
+     * The Singleton instance returner.
+     *
+     * @return The only instance
+     */
     public static TaskManager getInstance() {
         if (instance == null) {
             instance = new TaskManager();
@@ -50,6 +76,9 @@ public class TaskManager {
         return instance;
     }
 
+    /**
+     * @return true if the scheduler is initialized.
+     */
     public boolean isInitialized() {
         try {
             return scheduler != null && scheduler.isStarted();
@@ -58,33 +87,71 @@ public class TaskManager {
         }
     }
 
+    /**
+     * Initializes the scheduler.
+     *
+     * This method will instantiate and start the scheduler. Additionally it will
+     * already schedule all core tasks. The core tasks are important to keep the
+     * entire system up to date and running. Currently two core tasks are scheduled.
+     *
+     * ExecuteTasksCoreTask
+     *    Which will find tasks with a PENDING state in the task list and execute
+     *    them.
+     *
+     * LoadScheduleCoreTask
+     *    Which will update the TaskSchedule of the quartz scheduler if this is
+     *    changed.
+     *
+     * @throws TaskManagerException if there is a failure in the scheduler initialization
+     */
     public void initialize() throws TaskManagerException {
         try {
             if (scheduler == null || !scheduler.isStarted()) {
                 SchedulerFactory sf = new StdSchedulerFactory();
                 scheduler = sf.getScheduler();
 
-                schedule("executeTasksCoreTask", ExecuteTasksCoreTask.class, "0 * * * * ?");
-                schedule("loadScheduleCoreTask", LoadScheduleCoreTask.class, "0 * * * * ?");
+                scheduleCoreTask("executeTasksCoreTask", ExecuteTasksCoreTask.class, "0 * * * * ?");
+                scheduleCoreTask("loadScheduleCoreTask", LoadScheduleCoreTask.class, "0 * * * * ?");
 
                 scheduler.start();
             } else {
                 throw new TaskManagerException("Trying to initialize the TaskManager while its already running.");
             }
         } catch (SchedulerException ex) {
-            Logger.getLogger(TaskManager.class.getName()).log(Level.SEVERE, "Initialization of the quartz scheduler failed", ex);
+            Logger.getLogger(TaskManager.class.getName()).log(Level.SEVERE,
+                    "Initialization of the quartz scheduler failed", ex);
+
             throw new TaskManagerException(ex);
         } catch (TaskScheduleException ex) {
-            Logger.getLogger(TaskManager.class.getName()).log(Level.SEVERE, "Core task couldn't be scheduled", ex);
+            Logger.getLogger(TaskManager.class.getName()).log(Level.SEVERE,
+                    "Core task couldn't be scheduled", ex);
+
             throw new TaskManagerException(ex);
         }
     }
 
+    /**
+     * Gets the scheduler.
+     *
+     * You probably don't need this! This is currently needed by LoadScheduleCoreTask
+     * but in most other cases direct access to the scheduler is at least suspicious.
+     *
+     * @return the scheduler
+     */
     public Scheduler getScheduler() {
         return scheduler;
     }
 
-    private void schedule(String name, Class<? extends CoreTask> aClass, String cron) throws TaskScheduleException {
+    /**
+     * Method for simplifying the scheduling of core tasks.
+     *
+     * @param name The name of the task
+     * @param aClass The class which will be executed
+     * @param cron The cron definition used for triggering this task
+     * @throws TaskScheduleException if the job can't be scheduled
+     */
+    private void scheduleCoreTask(final String name, final Class<? extends CoreTask> aClass,
+            final String cron) throws TaskScheduleException {
         try {
             JobDetail job = newJob(aClass)
                     .withIdentity(name, GROUP_KEY)
@@ -102,6 +169,9 @@ public class TaskManager {
         }
     }
 
+    /**
+     * Stop the scheduler.
+     */
     public void stop() {
         try {
             scheduler.shutdown();

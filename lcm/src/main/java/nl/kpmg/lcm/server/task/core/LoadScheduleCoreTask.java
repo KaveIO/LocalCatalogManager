@@ -44,7 +44,7 @@ import static org.quartz.impl.matchers.GroupMatcher.groupEquals;
  */
 public class LoadScheduleCoreTask extends CoreTask {
 
-    private static final String GROUP_KEY = "tasks";
+    private static final String GROUP_KEY = "scheduled";
 
     // @Autowired
     private TaskScheduleDao taskScheduleDao;

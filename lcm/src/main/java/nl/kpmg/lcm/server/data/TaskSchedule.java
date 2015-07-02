@@ -19,23 +19,45 @@ import java.util.LinkedList;
 import java.util.List;
 
 /**
+ * Contains the schedule of tasks.
  *
  * @author mhoekstra
  */
 public class TaskSchedule {
 
-    Integer id;
+    /**
+     * The unique identifier.
+     */
+    private Integer id;
 
-    List<TaskScheduleItem> items = new LinkedList();
+    /**
+     * The schedule. s
+     */
+    private List<TaskScheduleItem> items = new LinkedList();
 
+    /**
+     * An inner class describing a single schedule item.
+     */
     public static class TaskScheduleItem {
-        String name;
+        /**
+         * The name of the task.
+         */
+        private String name;
 
-        String cron;
+        /**
+         * The cron definition on when this task should run.
+         */
+        private String cron;
 
-        String job;
+        /**
+         * The name of the class which contains the executable code.
+         */
+        private String job;
 
-        String target;
+        /**
+         * The target expression describing on what the task should run.
+         */
+        private String target;
 
         public String getName() {
             return name;
