@@ -33,7 +33,7 @@ import org.quartz.Scheduler;
  */
 public abstract class CoreTask implements Job {
 
-    public static final String TARGET = "scheduler";
+    public static final String SCHEDULER = "scheduler";
 
     protected Scheduler scheduler;
 
@@ -54,7 +54,7 @@ public abstract class CoreTask implements Job {
     @Override
     public final void execute(final JobExecutionContext context) throws JobExecutionException {
         JobDataMap jobDataMap = context.getJobDetail().getJobDataMap();
-        scheduler = (Scheduler) jobDataMap.get(TARGET);
+        scheduler = (Scheduler) jobDataMap.get(SCHEDULER);
 
         try {
             Logger.getLogger(CoreTask.class.getName()).log(Level.INFO, "Entering execute");

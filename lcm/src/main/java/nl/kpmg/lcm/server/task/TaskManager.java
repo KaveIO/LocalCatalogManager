@@ -157,6 +157,8 @@ public final class TaskManager {
                     .withIdentity(name, GROUP_KEY)
                     .build();
 
+            job.getJobDataMap().put(CoreTask.SCHEDULER, scheduler);
+
             CronTrigger trigger = newTrigger()
                     .withIdentity(name, GROUP_KEY)
                     .withSchedule(cronSchedule(cron))

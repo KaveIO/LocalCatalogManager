@@ -57,9 +57,6 @@ public class LoadScheduleCoreTask extends CoreTask {
 
     @Override
     public TaskResult execute() throws TaskException {
-        TaskManager taskManager = TaskManager.getInstance();
-        Scheduler scheduler = taskManager.getScheduler();
-
         TaskSchedule latest = taskScheduleDao.getCurrent();
         if (current == null || !current.equals(latest)) {
             try {
@@ -69,7 +66,7 @@ public class LoadScheduleCoreTask extends CoreTask {
                 return TaskResult.FAILURE;
             }
 
-            if (latest.getItems() != null) {
+            if (latest != null && latest.getItems() != null) {
                 for (TaskSchedule.TaskScheduleItem taskScheduleItem : latest.getItems()) {
                     try {
                         schedule(scheduler, taskScheduleItem.getName(), taskScheduleItem.getJob(), taskScheduleItem.getTarget(), taskScheduleItem.getCron());
