@@ -120,9 +120,7 @@ public class BackendFileImpl extends AbstractBackend {
     }
 
     /**
-     * Writes an input stream to the file specified in the {
-     *
-     * @MetaData}.
+     * Writes an input stream to the file specified in the {@link MetaData}.
      *
      * @param metadata should contain valid destination URI
      * @param content is a stream that should be stored
@@ -179,9 +177,7 @@ public class BackendFileImpl extends AbstractBackend {
     }
 
     /**
-     * Deletes the file specified in the {
-     *
-     * @MetaData}.
+     * Deletes the file specified in the {@link MetaData}.
      *
      * @param metadata {@link MetaData} with URI of the data
      * @return true if delete is successful, false otherwise

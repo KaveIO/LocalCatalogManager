@@ -17,7 +17,6 @@ package nl.kpmg.lcm.server.data;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.net.URI;
 import java.util.Date;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -64,10 +63,8 @@ public class BackendHDFSImpl extends AbstractBackend {
     }
 
     /**
-     * Returns a {@link FileSystem} specified by the URI. It checks if the URI
-     * exists and if it uses "hdfs" protocol.
+     * Returns a {@link FileSystem} specified by the storagePath.
      *
-     * @param uri is identifier of a file/directory at the HDFS backend
      * @return {
      * @FileSystem} instance connected with a location specified by the URI
      * @throws BackendException if no URI is specified, if it is using wrong
@@ -125,9 +122,7 @@ public class BackendHDFSImpl extends AbstractBackend {
     }
 
     /**
-     * Writes an input stream to the file specified in the {
-     *
-     * @MetaData}.
+     * Writes an input stream to the file specified in the {@link MetaData}.
      *
      * @param metadata should contain valid destination URI
      * @param content is a stream that should be stored
@@ -160,14 +155,69 @@ public class BackendHDFSImpl extends AbstractBackend {
         }
     }
 
+    /**
+     * Returns an input stream with a content of a file that is specified by
+     * metadata argument. Returns null if it is not possible to open the file.
+     * {@link MetaData} needs to contain valid URI of a file.
+     *
+     * @param metadata MetaData with URI of the data
+     * @return InputStream with the data file content
+     * @throws BackendException if the metadata does not contain valid URI of a
+     * file
+     */
     @Override
-    public InputStream read(MetaData metadata) throws BackendException {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    public final InputStream read(final MetaData metadata) throws BackendException {
+        DataSetInformation dataSetInformation = gatherDataSetInformation(metadata);
+        if (!dataSetInformation.isAttached()) {
+            throw new BackendException("No dataset attached.");
+        }
+
+        Path filePath = new Path(metadata.getDataUri());
+        try {
+            FileSystem file = getFS();
+            InputStream is = file.open(filePath);
+            return is;
+            // The file is not closed, because we need to keep connection open in order to stream from is.
+        }
+        catch (IOException ex) {
+            Logger.getLogger(BackendFileImpl.class.getName())
+                    .log(Level.SEVERE, "Couldn't find path: " + metadata.getDataUri()
+                            + ". Returning null.", ex);
+        }
+        return null;
     }
 
+    /**
+     * Deletes the file specified in the {@link MetaData}.
+     *
+     * @param metadata {@link MetaData} with URI of the data
+     * @return true if delete is successful, false otherwise
+     * @throws BackendException if the metadata does not contain valid URI of a
+     * file
+     */
     @Override
-    public boolean delete(MetaData metadata) throws BackendException {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    public final boolean delete(final MetaData metadata) throws BackendException {
+        DataSetInformation dataSetInformation = gatherDataSetInformation(metadata);
+        if (!dataSetInformation.isAttached()) {
+            throw new BackendException("No dataset attached.");
+        }
+        boolean success = false;
+        Path filePath = new Path(metadata.getDataUri());
+        try (FileSystem file = getFS()) {
+            success = file.delete(filePath, false);
+            if (success) {
+                Logger.getLogger(BackendFileImpl.class.getName())
+                        .log(Level.INFO, "Delete successful.");
+            } else {
+                Logger.getLogger(BackendFileImpl.class.getName())
+                        .log(Level.SEVERE, "Deletion of file: {0} failed.", metadata.getDataUri());
+            }
+        }
+        catch (IOException ex) {
+            Logger.getLogger(BackendHDFSImpl.class.getName())
+                    .log(Level.SEVERE, "Cannot reach the location " + metadata.getDataUri(), ex);
+        }
+        return success;
     }
 
 }
