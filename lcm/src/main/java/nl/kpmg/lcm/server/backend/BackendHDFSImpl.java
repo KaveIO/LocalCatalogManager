@@ -13,14 +13,14 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package nl.kpmg.lcm.server.data;
+package nl.kpmg.lcm.server.backend;
 
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.Date;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import nl.kpmg.lcm.server.metadata.MetaData;
+import nl.kpmg.lcm.server.data.MetaData;
 import org.apache.commons.io.IOUtils;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FSDataOutputStream;
