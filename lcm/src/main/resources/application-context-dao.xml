@@ -11,10 +11,10 @@
         http://www.springframework.org/schema/data/mongo/spring-mongo.xsd">
 	<!-- bean definitions here -->
 	<bean id="metaDataDao"
-		class="nl.kpmg.lcm.server.metadata.storage.file.MetaDataDaoImpl">
+		class="nl.kpmg.lcm.server.data.dao.file.MetaDataDaoImpl">
 		<!-- Hard coded metadata storage path -->
 		<constructor-arg index="0" type="java.lang.String"
-			value="metadata" />
+			value="./metadata" />
 	</bean>
 	<bean id="devProps"
 		class="org.springframework.context.support.PropertySourcesPlaceholderConfigurer">
