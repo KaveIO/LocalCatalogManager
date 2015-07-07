@@ -38,7 +38,7 @@ import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
  * @author venkateswarlub
  */
 @RunWith(SpringJUnit4ClassRunner.class)
-@ContextConfiguration(locations={"/application-context-dao-test.xml"})
+@ContextConfiguration(locations={"/application-context-dao.xml"})
 public class MetaDataDaoImplSpringTest {
     private static final String TEST_STORAGE_PATH = "test/";
     
@@ -87,14 +87,14 @@ public class MetaDataDaoImplSpringTest {
     @Test
     public void testGetByNameReturnsLatestVersion() {
         MetaData metaData = new MetaData();
-        metaData.setName("test");
+        metaData.setName("test1");
 
         metaDataDao.persist(metaData);
-        MetaData metadata = metaDataDao.getByName("test");
+        MetaData metadata = metaDataDao.getByName("test1");
         assertEquals("0", metadata.getVersionNumber());
 
         metaDataDao.persist(metaData);
-        metadata = metaDataDao.getByName("test");
+        metadata = metaDataDao.getByName("test1");
         assertEquals("1", metadata.getVersionNumber());
     }
     
