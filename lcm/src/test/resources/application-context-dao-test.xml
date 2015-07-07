@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns:util="http://www.springframework.org/schema/util" xsi:schemaLocation="
+        http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
+        http://www.springframework.org/schema/util http://www.springframework.org/schema/util/spring-util.xsd">
+        
+         <!-- bean definitions here -->
+         <bean id="metaDataDao" class="nl.kpmg.lcm.server.metadata.storage.file.MetaDataDaoImpl">
+         	<!-- Hard coded metadata storage path -->
+         	<constructor-arg index="0" type="java.lang.String" value="metadata" />
+         </bean>
+         
+         	<bean id="devProps"
+		class="org.springframework.context.support.PropertySourcesPlaceholderConfigurer">
+		<property name="locations">
+			<list>
+				<value>classpath*:mongodb.properties</value>
+			</list>
+		</property>
+		<property name="ignoreUnresolvablePlaceholders" value="true" />
+		<!--property name="localOverride" value="true" / -->
+	</bean>
+
+	<!-- <mongo:mongo host="127.0.0.1" port="27017" />
+	<mongo:db-factory dbname="mymongodb" /> -->
+	<bean id="mongo" class="com.mongodb.Mongo">		
+	</bean>
+	<!-- <bean id="mongoDbFactory" class="org.springframework.data.mongodb.core.SimpleMongoDbFactory">
+		<constructor-arg name="mongo" ref="mongoClient" />
+		<constructor-arg name="dbname" value="mymongodb" />
+	</bean> -->
+	<bean id="mongoTemplate" class="org.springframework.data.mongodb.core.MongoTemplate">
+		<constructor-arg type="com.mongodb.Mongo" name="mongo" ref="mongo" />
+		<constructor-arg type="java.lang.String" name="databaseName" value="mymongodb" />
+		<!-- <constructor-arg name="mongoDbFactory" ref="mongoDbFactory" /> -->
+	</bean>
+
+</beans>
