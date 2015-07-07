@@ -42,10 +42,8 @@ public class Main {
                 LOG.log(Level.INFO, "Starting LCM server");
                 // Load spring beans 
             	ApplicationContext ctx = new ClassPathXmlApplicationContext(new String[]{"application-context.xml","application-context-dao.xml"});
-            	System.out.println("PropertyConfigurer instance : "+ctx.getBean("devProps"));
-            	System.out.println("MongoTemplate Instance : "+ctx.getBean("mongoTemplate"));
-            	System.out.println("Mongo DB : "+ctx.getBean("mongo"));
-             	final Server server = new Server(arguments);
+            	
+            	final Server server = new Server(arguments);
                 server.start();
 
                 LOG.log(Level.INFO, "Hit enter to stop it...");
