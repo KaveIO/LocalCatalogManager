@@ -13,28 +13,23 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package nl.kpmg.lcm.server.metadata.storage;
+package nl.kpmg.lcm.server.data.dao;
 
 import java.util.List;
-import nl.kpmg.lcm.server.metadata.MetaData;
+import nl.kpmg.lcm.server.data.TaskSchedule;
 
 /**
  *
  * @author mhoekstra
  */
-public interface MetaDataDao {
+public interface TaskScheduleDao {
+    public TaskSchedule getById(Integer id);
     
-    public List<MetaData> getAll();
-    
-    public MetaData getByName(String name);
-    
-    public MetaData getByNameAndVersion(String name, String version);
-    
-    public void persist(MetaData metadata);
-    
-    public void delete(MetaData metadata);
-    
-    public void setStoragePath(String path);
-    
-    public String getStoragePath();
+    public List<TaskSchedule> getAll();
+
+    public TaskSchedule getCurrent();
+
+    public void persist(TaskSchedule task);
+
+    public void delete(TaskSchedule task);
 }

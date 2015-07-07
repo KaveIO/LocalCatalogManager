@@ -13,30 +13,31 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package nl.kpmg.lcm.server.data;
+package nl.kpmg.lcm.server.task;
 
 /**
  *
  * @author mhoekstra
  */
-public class BackendException extends Exception {
+public class TaskException extends Exception {
 
-    public BackendException() {
+    public TaskException() {
     }
 
-    public BackendException(String message) {
+    public TaskException(String message) {
         super(message);
     }
 
-    public BackendException(String arg0, Throwable arg1) {
+    public TaskException(String arg0, Throwable arg1) {
         super(arg0, arg1);
     }
 
-    public BackendException(Throwable cause) {
+    public TaskException(Throwable cause) {
         super(cause);
     }
 
-    public BackendException(String arg0, Throwable arg1, boolean arg2, boolean arg3) {
+    public TaskException(String arg0, Throwable arg1, boolean arg2, boolean arg3) {
         super(arg0, arg1, arg2, arg3);
     }
+
 }

@@ -14,9 +14,12 @@
  * limitations under the License.
  */
 
-package nl.kpmg.lcm.server.data;
+package nl.kpmg.lcm.server.backend;
 
 
+import nl.kpmg.lcm.server.backend.BackendException;
+import nl.kpmg.lcm.server.backend.BackendFileImpl;
+import nl.kpmg.lcm.server.backend.DataSetInformation;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
@@ -26,7 +29,6 @@ import java.io.InputStream;
 import java.net.URI;
 import java.util.Date;
 import java.util.HashMap;
-import nl.kpmg.lcm.server.metadata.MetaData;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotSame;
 import org.junit.Test;
@@ -35,6 +37,7 @@ import com.google.common.hash.Hashing;
 import com.google.common.io.Files;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import nl.kpmg.lcm.server.data.MetaData;
 import org.apache.commons.io.IOUtils;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;

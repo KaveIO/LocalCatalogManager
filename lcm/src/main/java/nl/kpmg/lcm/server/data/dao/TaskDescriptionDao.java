@@ -13,31 +13,22 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package nl.kpmg.lcm.server.metadata.storage.file;
+package nl.kpmg.lcm.server.data.dao;
+
+import java.util.List;
+import nl.kpmg.lcm.server.data.TaskDescription;
 
 /**
  *
  * @author mhoekstra
  */
-public class StorageException extends Exception {
+public interface TaskDescriptionDao {
 
-    public StorageException() {
-    }
+    public TaskDescription getById(Integer id);
 
-    public StorageException(String message) {
-        super(message);
-    }
+    public List<TaskDescription> getAll();
 
-    public StorageException(String arg0, Throwable arg1) {
-        super(arg0, arg1);
-    }
+    public void persist(TaskDescription task);
 
-    public StorageException(Throwable cause) {
-        super(cause);
-    }
-
-    public StorageException(String arg0, Throwable arg1, boolean arg2, boolean arg3) {
-        super(arg0, arg1, arg2, arg3);
-    }
-    
+    public void delete(TaskDescription task);
 }

@@ -13,8 +13,9 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package nl.kpmg.lcm.server.metadata.storage.file;
+package nl.kpmg.lcm.server.data.dao.file;
 
+import nl.kpmg.lcm.server.data.dao.DaoException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import java.io.File;
 import java.io.IOException;
@@ -24,8 +25,8 @@ import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import nl.kpmg.lcm.server.JacksonJsonProvider;
-import nl.kpmg.lcm.server.metadata.MetaData;
-import nl.kpmg.lcm.server.metadata.storage.MetaDataDao;
+import nl.kpmg.lcm.server.data.MetaData;
+import nl.kpmg.lcm.server.data.dao.MetaDataDao;
 
 /**
  * Implementation of a file based MetaData DAO.
@@ -36,10 +37,8 @@ public class MetaDataDaoImpl implements MetaDataDao {
      * The logger for this class.
      */
     private static final Logger LOGGER = Logger.getLogger(MetaDataDaoImpl.class.getName());
- 
-    private String storagePath;
 
-	/**
+    /**
      * Path where the metaData is stored.
      */
     private final File storage;
@@ -50,38 +49,29 @@ public class MetaDataDaoImpl implements MetaDataDao {
     private final ObjectMapper mapper;
 
     /**
-     * To implement DI, this needs to be refactored
      * @param storagePath The path where the metaData is stored
-     * @throws StorageException when the storagePath doesn't exist
+     * @throws DaoException when the storagePath doesn't exist
      */
-    public MetaDataDaoImpl(final String storagePath) throws StorageException {
+    public MetaDataDaoImpl(final String storagePath) throws DaoException {
         storage = new File(storagePath);
 
         JacksonJsonProvider jacksonJsonProvider = new JacksonJsonProvider();
         mapper = jacksonJsonProvider.getContext(MetaData.class);
 
         if (!storage.isDirectory() || !this.storage.canWrite()) {
-            throw new StorageException(String.format(
+            throw new DaoException(String.format(
                     "The storage path %s is not a directory or not writable.", storage.getAbsolutePath()));
         }
     }
-    
-    public String getStoragePath() {
-		return storagePath;
-	}
-
-	public void setStoragePath(String storagePath) {
-		this.storagePath = storagePath;
-	}
 
     private File getMetaDataFile(String name, String versionNumber) {
         return new File(String.format("%s/%s/%s", storage, name, versionNumber));
     }
-    
+
     private File getMetaDataFolder(String name) {
         return new File(String.format("%s/%s", storage, name));
     }
-    
+
     @Override
     public List<MetaData> getAll() {
         String[] allMetaDataNames = storage.list();
@@ -101,7 +91,7 @@ public class MetaDataDaoImpl implements MetaDataDao {
         File metaDataFolder = getMetaDataFolder(name);
         if (metaDataFolder.isDirectory()) {
             String[] versions = metaDataFolder.list();
-            
+
             Arrays.sort(versions);
             String head = versions[versions.length - 1];
             return getByNameAndVersion(name, head);
@@ -132,7 +122,7 @@ public class MetaDataDaoImpl implements MetaDataDao {
             getMetaDataFolder(name).mkdir();
         } else {
             versionNumber = previousVersionMetaData.getVersionNumber();
-            
+
             if (versionNumber == null) {
                 LOGGER.warning("Previous version found be no version number could be parsed.");
                 versionNumber = "0"; /** @TODO quick and dirty. Should throw */
@@ -141,7 +131,7 @@ public class MetaDataDaoImpl implements MetaDataDao {
                 versionNumber = "" + (previousVersionNumber + 1);
             }
         }
-            
+
         try {
             mapper.writeValue(getMetaDataFile(name, versionNumber), metadata);
         } catch (IOException ex) {

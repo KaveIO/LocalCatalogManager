@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package nl.kpmg.lcm.server.data;
+package nl.kpmg.lcm.server.backend;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -27,21 +27,24 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.apache.commons.io.IOUtils;
 
-import nl.kpmg.lcm.server.metadata.MetaData;
+import nl.kpmg.lcm.server.data.MetaData;
 
 /**
  *
  * @author mhoekstra
  */
 public class BackendFileImpl extends AbstractBackend {
+
     /**
      * Location of the data storage on the local file system.
+     *
      * @param storagePath is the directory on a local backend
      */
     private final File storagePath;
 
     /**
      * Default constructor.
+     *
      * @param storagePath is the directory on a local backend
      */
     public BackendFileImpl(final File storagePath) {
@@ -49,21 +52,27 @@ public class BackendFileImpl extends AbstractBackend {
     }
 
     /**
-     * Returns a {@link File} specified by the URI. It checks if the URI exists and if it
-     * uses "file" protocol.
+     * Returns a {@link File} specified by the URI. It checks if the URI exists
+     * and if it uses "file" protocol.
+     *
      * @param uri is identifier of a local file/directory
      * @return File pointed at by the URI
      * @throws BackendException if no URI is specified
      */
     private File getPathFromUri(final String uri) throws BackendException {
         URI dataUri;
-        /** @TODO Should we issue a warning via logger or exception in this case?  */
+        /**
+         * @TODO Should we issue a warning via logger or exception in this case?
+         */
         if (uri != null) {
-           dataUri = parseUri(uri);
+            dataUri = parseUri(uri);
 
-        String filePath = dataUri.getPath();
-        /** @TODO This is super scary. we should check if the resulting path is still within storagePath*/
-        return new File(String.format("%s", filePath));
+            String filePath = dataUri.getPath();
+            /**
+             * @TODO This is super scary. we should check if the resulting path
+             * is still within storagePath
+             */
+            return new File(filePath);
         } else {
             throw new BackendException("No URI specified.");
         }
@@ -71,6 +80,7 @@ public class BackendFileImpl extends AbstractBackend {
 
     /**
      * Returns scheme supported by URI for this backend.
+     *
      * @return "file" string
      */
     @Override
@@ -79,9 +89,10 @@ public class BackendFileImpl extends AbstractBackend {
     }
 
     /**
-     * Returns information about dataset mentioned in the metadata.
-     * It checks if the referenced data exist and can be accessed. It also gathers
+     * Returns information about dataset mentioned in the metadata. It checks if
+     * the referenced data exist and can be accessed. It also gathers
      * information about the size and modification time.
+     *
      * @param metadata is investigated {@link MetaData} object
      * @return filled {@link DataSetInformation} object
      * @throws BackendException
@@ -109,11 +120,12 @@ public class BackendFileImpl extends AbstractBackend {
     }
 
     /**
-     * Writes an input stream to the file specified in the {@MetaData}.
+     * Writes an input stream to the file specified in the {@link MetaData}.
      *
      * @param metadata should contain valid destination URI
      * @param content is a stream that should be stored
-     * @throws BackendException if the URI in metadata points to the existing file
+     * @throws BackendException if the URI in metadata points to the existing
+     * file
      */
     @Override
     public final void store(final MetaData metadata, final InputStream content) throws BackendException {
@@ -125,12 +137,13 @@ public class BackendFileImpl extends AbstractBackend {
         File file = getPathFromUri(metadata.getDataUri());
         try (FileOutputStream fos = new FileOutputStream(file)) {
             // this works for files < 2 GB. Otherwise the copied is -1.
-          int copied = IOUtils.copy(content, fos);
-          Logger.getLogger(BackendFileImpl.class.getName())
-             .log(Level.INFO, "{0} bytes written", copied);
-        } catch (IOException ex) {
-             Logger.getLogger(BackendFileImpl.class.getName())
-             .log(Level.SEVERE, "Couldn't find path: " + metadata.getDataUri(), ex);
+            int copied = IOUtils.copy(content, fos);
+            Logger.getLogger(BackendFileImpl.class.getName())
+                    .log(Level.INFO, "{0} bytes written", copied);
+        }
+        catch (IOException ex) {
+            Logger.getLogger(BackendFileImpl.class.getName())
+                    .log(Level.SEVERE, "Couldn't find path: " + metadata.getDataUri(), ex);
         }
     }
 
@@ -141,7 +154,8 @@ public class BackendFileImpl extends AbstractBackend {
      *
      * @param metadata MetaData with URI of the data
      * @return InputStream with the data file content
-     * @throws BackendException if the metadata does not contain valid URI of a file
+     * @throws BackendException if the metadata does not contain valid URI of a
+     * file
      */
     @Override
     public final InputStream read(final MetaData metadata) throws BackendException {
@@ -153,19 +167,22 @@ public class BackendFileImpl extends AbstractBackend {
         try {
             InputStream is = new FileInputStream(file);
             return is;
-        } catch (FileNotFoundException ex) {
+        }
+        catch (FileNotFoundException ex) {
             Logger.getLogger(BackendFileImpl.class.getName())
-              .log(Level.SEVERE, "Did not find file: " + metadata.getDataUri()
-                      + ". Returning null.", ex);
+                    .log(Level.SEVERE, "Did not find file: " + metadata.getDataUri()
+                            + ". Returning null.", ex);
         }
         return null;
     }
 
-    /** Deletes the file specified in the {@MetaData}.
+    /**
+     * Deletes the file specified in the {@link MetaData}.
      *
      * @param metadata {@link MetaData} with URI of the data
      * @return true if delete is successful, false otherwise
-     * @throws BackendException if the metadata does not contain valid URI of a file
+     * @throws BackendException if the metadata does not contain valid URI of a
+     * file
      */
     @Override
     public final boolean delete(final MetaData metadata) throws BackendException {
@@ -177,10 +194,10 @@ public class BackendFileImpl extends AbstractBackend {
         boolean success = file.delete();
         if (success) {
             Logger.getLogger(BackendFileImpl.class.getName())
-             .log(Level.INFO, "Delete successful.");
+                    .log(Level.INFO, "Delete successful.");
         } else {
             Logger.getLogger(BackendFileImpl.class.getName())
-              .log(Level.SEVERE, "Deletion of file: {0} failed.", metadata.getDataUri());
+                    .log(Level.SEVERE, "Deletion of file: {0} failed.", metadata.getDataUri());
         }
         return success;
     }

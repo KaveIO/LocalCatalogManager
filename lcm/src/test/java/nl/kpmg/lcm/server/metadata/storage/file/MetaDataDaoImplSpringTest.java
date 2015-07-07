@@ -21,7 +21,8 @@ import static org.junit.Assert.assertNull;
 
 import java.io.File;
 
-import nl.kpmg.lcm.server.metadata.MetaData;
+import nl.kpmg.lcm.server.data.MetaData;
+import nl.kpmg.lcm.server.data.dao.file.MetaDataDaoImpl;
 
 import org.junit.After;
 import org.junit.AfterClass;
