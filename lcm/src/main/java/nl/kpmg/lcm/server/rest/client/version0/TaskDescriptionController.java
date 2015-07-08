@@ -98,10 +98,11 @@ public class TaskDescriptionController {
      * Get information about a specific tasks.
      *
      * @param taskDescription the task description
+     * @return 200 OK if successful
      */
     @POST
     @Consumes({"application/x-nl.kpmg.lcm.server.data.TaskDescription+json" })
-    public final void createTask(final TaskDescription taskDescription) {
+    public final Response createTask(final TaskDescription taskDescription) {
         taskDescription.setId(null);
         taskDescription.setStatus(TaskDescription.TaskStatus.PENDING);
         taskDescription.setOutput(null);
@@ -109,6 +110,8 @@ public class TaskDescriptionController {
         taskDescription.setEndTime(null);
 
         taskDescriptionDao.persist(taskDescription);
+
+        return Response.ok().build();
     }
 
     /**
@@ -133,15 +136,17 @@ public class TaskDescriptionController {
      * Delete a tasks.
      *
      * @param taskDescriptionId the id of the task
+     * @return 200 OK if successful
      */
     @DELETE
     @Path("{tasks_id}")
     @Produces({"application/json" })
-    public final void deleteCommand(@PathParam("tasks_id") final Integer taskDescriptionId) {
+    public final Response deleteCommand(@PathParam("tasks_id") final Integer taskDescriptionId) {
         TaskDescription taskDescriptions = taskDescriptionDao.getById(taskDescriptionId);
 
         if (taskDescriptions != null) {
             taskDescriptionDao.delete(taskDescriptions);
+            return Response.ok().build();
         }
         throw new WebApplicationException(Response.Status.NOT_FOUND);
     }
