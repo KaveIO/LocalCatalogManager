@@ -16,43 +16,101 @@
 package nl.kpmg.lcm.server;
 
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
+import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.databind.DeserializationFeature;
-import com.fasterxml.jackson.databind.MapperFeature;
+import com.fasterxml.jackson.databind.JsonSerializer;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.SerializerProvider;
+import com.fasterxml.jackson.databind.module.SimpleModule;
+import java.io.IOException;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.ejb.Singleton;
+import javax.ws.rs.core.Link;
 import javax.ws.rs.ext.ContextResolver;
 import javax.ws.rs.ext.Provider;
 
 /**
- * Jackson JSON processor could be controlled via providing a custom Jackson ObjectMapper instance. 
- * This could be handy if you need to redefine the default Jackson behavior and to fine-tune how 
- * your JSON data structures look like (copied from Jersey web site). * 
+ * Jackson JSON processor could be controlled via providing a custom Jackson ObjectMapper instance.
+ * This could be handy if you need to redefine the default Jackson behavior and to fine-tune how
+ * your JSON data structures look like (copied from Jersey web site). *
  * @see https://jersey.java.net/documentation/latest/media.html#d0e4799
  *
  *
  * @author mhoekstra
  */
 @Provider
-//@Produces({MediaType.APPLICATION_JSON})
-//@Consumes(MediaType.APPLICATION_JSON)
 @Singleton
 public class JacksonJsonProvider implements ContextResolver<ObjectMapper> {
-    
-    private static final ObjectMapper MAPPER = new ObjectMapper();
-    
-    static {
-      MAPPER.setSerializationInclusion(Include.NON_EMPTY);
-      MAPPER.disable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES);
-      //MAPPER.disable(DeserializationFeature.ACCEPT_SINGLE_VALUE_AS_ARRAY);
-    }
- 
+    /**
+     * The Logger of this class.
+     */
+    private static final Logger LOGGER = Logger.getLogger(JacksonJsonProvider.class.getName());
+
+    /**
+     * The actual Mapper used for serializing and un-serializing of objects.
+     *
+     * This is completely static.
+     *
+     * We enable inclusion of any NON_EMPTY json field on serialization mainly
+     * so we can have somewhat clean json arriving at the client side.
+     *
+     * We disable FAIL_ON_UNKNOWN_PROPERTIES for the MetaData class. We try to
+     * safeguard freedom for any MetaData usage scenario. Therefor we allow fields
+     * to be persisted we don't know yet.
+     *
+     * Added a custom Link serializer to facilitate pretty HATEOAS links.
+     */
+    private static final ObjectMapper MAPPER = new ObjectMapper() { {
+        setSerializationInclusion(Include.NON_EMPTY);
+        disable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES);
+
+        // Add the linkSerializer. Used for pretty printing of hyperlinks in restful media
+        SimpleModule linkSerializer = new SimpleModule();
+        linkSerializer.addSerializer(Link.class, new LinkSerializer());
+        registerModule(linkSerializer);
+    } };
+
+    /**
+     * Default Constructor.
+     *
+     * Logs its usage for clarity other wise irrelevant.
+     */
     public JacksonJsonProvider() {
-        System.out.println("Instantiate MyJacksonJsonProvider");
+        LOGGER.log(Level.INFO, "Instantiate MyJacksonJsonProvider");
     }
-     
+
+    /**
+     * Returns the requested ObjectMapper.
+     *
+     * Since we only have one static ObjectMapper the response is rather simple.
+     *
+     * @param type the class for which a mapper is requested
+     * @return the ObjectMapper
+     */
     @Override
-    public ObjectMapper getContext(Class<?> type) {
-        System.out.println("MyJacksonProvider.getContext() called with type: "+type);
+    public final ObjectMapper getContext(final Class<?> type) {
+        LOGGER.log(Level.INFO, "MyJacksonProvider.getContext() called with type: {0}", type);
         return MAPPER;
-    } 
+    }
+
+    /**
+     * Inner static class for serializing Link objects.
+     */
+    public static class LinkSerializer extends JsonSerializer<Link> {
+
+        @Override
+        public final void serialize(final Link link, final JsonGenerator jg, final SerializerProvider sp)
+                throws IOException {
+
+            jg.writeStartObject();
+            jg.writeStringField("rel", link.getRel());
+            jg.writeStringField("href", link.getUri().toString());
+            if (link.getType() != null) {
+                jg.writeStringField("type", link.getType());
+            }
+            jg.writeEndObject();
+        }
+    }
 }
+
