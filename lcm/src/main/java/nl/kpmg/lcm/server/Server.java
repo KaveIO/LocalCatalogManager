@@ -59,6 +59,7 @@ public class Server {
                 .packages("nl.kpmg.lcm.server.rest")
                 .registerClasses(JacksonFeature.class)
                 .registerClasses(JacksonJsonProvider.class)
+                .registerClasses(LoggingExceptionMapper.class)
                 .register(DeclarativeLinkingFeature.class);
 
         // create and start a new instance of grizzly http server
