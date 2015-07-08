@@ -19,17 +19,20 @@ import java.util.LinkedList;
 import java.util.List;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.DELETE;
+import javax.ws.rs.DefaultValue;
 import javax.ws.rs.GET;
 import javax.ws.rs.POST;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
+import javax.ws.rs.QueryParam;
 import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.Response;
 import nl.kpmg.lcm.server.Resources;
 import nl.kpmg.lcm.server.data.TaskDescription;
 import nl.kpmg.lcm.server.data.dao.TaskDescriptionDao;
 import nl.kpmg.lcm.server.rest.client.version0.types.TaskDescriptionRepresentation;
+import nl.kpmg.lcm.server.rest.client.version0.types.TaskDescriptionStatusFilter;
 import nl.kpmg.lcm.server.rest.client.version0.types.TaskDescriptionsRepresentation;
 
 /**
@@ -54,17 +57,59 @@ public class TaskDescriptionController {
     /**
      * Get a list of all the tasks.
      *
+     * @param status
      * @return a list of all tasks
      */
     @GET
     @Produces({"application/json" })
-    public final TaskDescriptionsRepresentation getOverview() {
-        List<TaskDescription> taskDescriptions = taskDescriptionDao.getAll();
+    public final TaskDescriptionsRepresentation getOverview(
+            @DefaultValue("ALL") @QueryParam("status") final TaskDescriptionStatusFilter status) {
+
+        List<TaskDescription> taskDescriptions;
+        switch(status) {
+            case PENDING:
+                taskDescriptions = taskDescriptionDao.getByStatus(TaskDescription.TaskStatus.PENDING);
+                break;
+            case RUNNING:
+                taskDescriptions = taskDescriptionDao.getByStatus(TaskDescription.TaskStatus.RUNNING);
+                break;
+            case SCHEDULED:
+                taskDescriptions = taskDescriptionDao.getByStatus(TaskDescription.TaskStatus.SCHEDULED);
+                break;
+            case SUCCESS:
+                taskDescriptions = taskDescriptionDao.getByStatus(TaskDescription.TaskStatus.SUCCESS);
+                break;
+            case FAILED:
+                taskDescriptions = taskDescriptionDao.getByStatus(TaskDescription.TaskStatus.FAILED);
+                break;
+            case ALL:
+            default:
+                taskDescriptions = taskDescriptionDao.getAll();
+                break;
+        }
+
         if (taskDescriptions != null) {
             return new TaskDescriptionsRepresentation(taskDescriptions);
         }
         return new TaskDescriptionsRepresentation(new LinkedList());
     }
+
+//    /**
+//     * Get a list of all the tasks with a specific status.
+//     *
+//     * @param status of tasks to return
+//     * @return a list of all tasks
+//     */
+//    @GET
+//    @Produces({"application/json" })
+//    public final TaskDescriptionsRepresentation getOverview(
+//            @QueryParam("status") final TaskDescription.TaskStatus status) {
+//        List<TaskDescription> taskDescriptions = taskDescriptionDao.getByStatus(status);
+//        if (taskDescriptions != null) {
+//            return new TaskDescriptionsRepresentation(taskDescriptions);
+//        }
+//        return new TaskDescriptionsRepresentation(new LinkedList());
+//    }
 
     /**
      * Get information about a specific tasks.

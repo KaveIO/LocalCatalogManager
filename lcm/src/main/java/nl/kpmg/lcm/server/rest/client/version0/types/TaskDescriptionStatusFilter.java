@@ -13,25 +13,37 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package nl.kpmg.lcm.server.data.dao;
-
-import java.util.List;
-import nl.kpmg.lcm.server.data.TaskDescription;
+package nl.kpmg.lcm.server.rest.client.version0.types;
 
 /**
  *
  * @author mhoekstra
  */
-public interface TaskDescriptionDao {
+public enum TaskDescriptionStatusFilter {
+    ALL,
 
-    public TaskDescription getById(Integer id);
+    /**
+     * A task is created.
+     */
+    PENDING,
 
-    public List<TaskDescription> getByStatus(TaskDescription.TaskStatus status);
-    
-    public List<TaskDescription> getAll();
+    /**
+     * The scheduler has picked the task up.
+     */
+    SCHEDULED,
 
-    public void persist(TaskDescription task);
+    /**
+     * The task is being executed.
+     */
+    RUNNING,
 
-    public void delete(TaskDescription task);
+    /**
+     * The task end of life if the task is failed.
+     */
+    FAILED,
 
+    /**
+     * The task end of life if the task is successful.
+     */
+    SUCCESS;
 }
