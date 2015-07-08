@@ -57,7 +57,7 @@ public class TaskDescriptionController {
     /**
      * Get a list of all the tasks.
      *
-     * @param status
+     * @param status to filter the tasks on
      * @return a list of all tasks
      */
     @GET
@@ -93,23 +93,6 @@ public class TaskDescriptionController {
         }
         return new TaskDescriptionsRepresentation(new LinkedList());
     }
-
-//    /**
-//     * Get a list of all the tasks with a specific status.
-//     *
-//     * @param status of tasks to return
-//     * @return a list of all tasks
-//     */
-//    @GET
-//    @Produces({"application/json" })
-//    public final TaskDescriptionsRepresentation getOverview(
-//            @QueryParam("status") final TaskDescription.TaskStatus status) {
-//        List<TaskDescription> taskDescriptions = taskDescriptionDao.getByStatus(status);
-//        if (taskDescriptions != null) {
-//            return new TaskDescriptionsRepresentation(taskDescriptions);
-//        }
-//        return new TaskDescriptionsRepresentation(new LinkedList());
-//    }
 
     /**
      * Get information about a specific tasks.
