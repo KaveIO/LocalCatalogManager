@@ -28,7 +28,7 @@ import org.apache.commons.lang.NotImplementedException;
  * @author mhoekstra
  */
 @Path("client/v0/remote")
-public class Remote {
+public class RemoteMetaDataController {
 /**
      * Get an overview of the connected remote LCM's
      *
