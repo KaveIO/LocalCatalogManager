@@ -3,7 +3,6 @@ package nl.kpmg.lcm.server;
 import java.net.URI;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import nl.kpmg.lcm.server.data.MetaData;
 import nl.kpmg.lcm.server.data.dao.DaoException;
 import nl.kpmg.lcm.server.data.dao.file.TaskDescriptionDaoImpl;
 import nl.kpmg.lcm.server.data.dao.file.TaskScheduleDaoImpl;
@@ -15,6 +14,7 @@ import org.glassfish.grizzly.http.server.HttpServer;
 import org.glassfish.jersey.grizzly2.httpserver.GrizzlyHttpServerFactory;
 import org.glassfish.jersey.server.ResourceConfig;
 import org.glassfish.jersey.jackson.JacksonFeature;
+import org.glassfish.jersey.linking.DeclarativeLinkingFeature;
 
 /**
  *
@@ -56,7 +56,8 @@ public class Server {
                 .packages("nl.kpmg.lcm.server.rest")
                 .registerClasses(JacksonFeature.class)
                 .registerClasses(JacksonJsonProvider.class)
-                .registerClasses(MetaData.class);
+                .registerClasses(LoggingExceptionMapper.class)
+                .register(DeclarativeLinkingFeature.class);
 
         // create and start a new instance of grizzly http server
         // exposing the Jersey application at BASE_URI

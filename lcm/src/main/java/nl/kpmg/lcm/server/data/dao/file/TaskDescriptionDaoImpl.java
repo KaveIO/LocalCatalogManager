@@ -100,6 +100,18 @@ public class TaskDescriptionDaoImpl implements TaskDescriptionDao {
     }
 
     @Override
+    public List<TaskDescription> getByStatus(TaskDescription.TaskStatus status) {
+        LinkedList<TaskDescription> result = new LinkedList();
+        List<TaskDescription> allTasks = getAll();
+        for (TaskDescription task : allTasks) {
+            if (task.getStatus() == status) {
+                result.add(task);
+            }
+        }
+        return result;
+    }
+
+    @Override
     public void persist(TaskDescription taskDescription) {
         Integer id = taskDescription.getId();
 

@@ -83,7 +83,10 @@ public class ExecuteTasksCoreTask extends CoreTask {
                     taskDescription.setStatus(TaskDescription.TaskStatus.SCHEDULED);
                     taskDescriptionDao.persist(taskDescription);
                 } catch (TaskScheduleException ex) {
-                    Logger.getLogger(ExecuteTasksCoreTask.class.getName()).log(Level.SEVERE, null, ex);
+                    Logger.getLogger(ExecuteTasksCoreTask.class.getName())
+                            .log(Level.WARNING, "Failed scheduling task.");
+                    taskDescription.setStatus(TaskDescription.TaskStatus.FAILED);
+                    taskDescriptionDao.persist(taskDescription);
                 }
             }
         }
@@ -100,6 +103,17 @@ public class ExecuteTasksCoreTask extends CoreTask {
      */
     private void scheduleEnrichmentTask(final String name, final String job, final String target)
             throws TaskScheduleException {
+
+        if (name == null || name.isEmpty()) {
+            throw new TaskScheduleException("Name can't be empty for scheduled task");
+        }
+        if (job == null || job.isEmpty()) {
+            throw new TaskScheduleException("Job can't be empty for scheduled task");
+        }
+        if (target == null || target.isEmpty()) {
+            throw new TaskScheduleException("Target can't be empty for scheduled task");
+        }
+
         try {
             Class<? extends EnrichmentTask> enrichmentTaskClass = getEnrichmentTaskClass(job);
             scheduleEnrichmentTask(name, enrichmentTaskClass, target);
