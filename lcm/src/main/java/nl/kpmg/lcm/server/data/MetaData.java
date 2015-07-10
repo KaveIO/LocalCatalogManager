@@ -19,12 +19,15 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+
 import org.apache.commons.lang.ArrayUtils;
+import org.springframework.data.mongodb.core.mapping.Document;
 
 /**
  *
  * @author mhoekstra
  */
+@Document(collection="mdCollection")
 public class MetaData extends HashMap {
 
     public <T> T get(String path) {

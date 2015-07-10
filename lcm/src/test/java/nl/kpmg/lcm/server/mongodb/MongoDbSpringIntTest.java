@@ -16,9 +16,11 @@
 package nl.kpmg.lcm.server.mongodb;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNull;
 
 import java.util.List;
 
+import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -27,7 +29,9 @@ import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
+import com.mongodb.DBCollection;
 import com.mongodb.Mongo;
+import com.mongodb.MongoClient;
 
 /**
  *
@@ -35,6 +39,7 @@ import com.mongodb.Mongo;
  */
 @RunWith(SpringJUnit4ClassRunner.class)
 @ContextConfiguration(locations={"/application-context-dao.xml"})
+@Ignore
 public class MongoDbSpringIntTest {
     
            
@@ -55,7 +60,26 @@ public class MongoDbSpringIntTest {
     	System.out.println(" users = " + listUser.toString());
     	assertEquals(listUser.get(0).getUser(),"user1");
     	assertEquals(listUser.get(0).getPassword(),"password123");
-     	
+     	mo.dropCollection(MongoDbUser.class);
+    }
+    
+    @Test
+    public void testMongoTemplateCreateCollection() {    	
+     	MongoOperations mo = (MongoOperations) mongoTemplate;
+     	mo.dropCollection("testCollection1");
+     	mo.createCollection("testCollection1");
+     	DBCollection dbc = mo.getCollection("testCollection1");
+    	System.out.println("Count users : "+dbc.count());
+    	assertEquals(0,dbc.count());
+    	
+    }
+    
+
+    @Test
+    public void testMongoDb() {    	
+     	MongoTemplate mt =  mongoTemplate;    	
+    	System.out.println("DB :: "+mt.getDb());
+    	assertEquals(mt.getDb().toString(),"mymongodb");
     }
        
 }

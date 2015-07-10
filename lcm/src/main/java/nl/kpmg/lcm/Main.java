@@ -42,8 +42,7 @@ public class Main {
                 LOG.log(Level.INFO, "Starting LCM server");
                 
                 // Load spring beans
-                ApplicationContext ctx = new ClassPathXmlApplicationContext(new String[] {
-                    "application-context.xml",
+                ApplicationContext ctx = new ClassPathXmlApplicationContext(new String[] {                    
                     "application-context-dao.xml"
                 });
                 

@@ -2,12 +2,18 @@ package nl.kpmg.lcm.server.metadata.storage.mongodb;
 
 import java.util.List;
 
-import nl.kpmg.lcm.server.metadata.MetaData;
-import nl.kpmg.lcm.server.metadata.storage.MetaDataDao;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.mongodb.core.MongoTemplate;
+
+import nl.kpmg.lcm.server.data.MetaData;
+import nl.kpmg.lcm.server.data.dao.MetaDataDao;
 
 
 public class MongoDbDaoImpl implements MetaDataDao {
 
+	@Autowired
+	private MongoTemplate mongoTemplate;
+	
 	@Override
 	public List<MetaData> getAll() {
 		// TODO Auto-generated method stub
@@ -38,16 +44,5 @@ public class MongoDbDaoImpl implements MetaDataDao {
 		
 	}
 
-	@Override
-	public void setStoragePath(String path) {
-		// TODO Auto-generated method stub
-		
-	}
-
-	@Override
-	public String getStoragePath() {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
+	
 }
