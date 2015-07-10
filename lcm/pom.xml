@@ -14,6 +14,8 @@
         <spring-data-mongodb>1.2.0.RELEASE</spring-data-mongodb>
         <mongo-java-driver>2.10.1</mongo-java-driver>
         <slf4j.version>1.7.10</slf4j.version>
+        <mockito.version>1.10.19</mockito.version>
+        <jmock.version>2.5.0</jmock.version>
     </properties>
     
     <dependencyManagement>
@@ -55,6 +57,17 @@
             <artifactId>junit</artifactId>
             <version>4.9</version>
             <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.mockito</groupId>
+            <artifactId>mockito-core</artifactId>
+            <version>${mockito.version}</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+        	<groupId>org.jmock</groupId>
+        	<artifactId>jmock-junit4</artifactId>
+        	<version>${jmock.version}</version>
         </dependency>
         <dependency>
             <groupId>org.glassfish.jersey.media</groupId>
