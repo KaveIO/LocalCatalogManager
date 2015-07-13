@@ -1,0 +1,10 @@
+{
+    "items":[
+        {
+            "name":"Default Enrichment Task",
+            "cron":"0 0 * * * ?",
+            "job":"nl.kpmg.lcm.server.task.enrichment.DataEnrichmentTask",
+            "target":"*"
+        }
+    ]
+}
