@@ -4,7 +4,6 @@ import java.net.URI;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import nl.kpmg.lcm.server.data.dao.DaoException;
-import nl.kpmg.lcm.server.data.dao.file.MetaDataDaoImpl;
 import nl.kpmg.lcm.server.data.dao.file.TaskDescriptionDaoImpl;
 import nl.kpmg.lcm.server.data.dao.file.TaskScheduleDaoImpl;
 import nl.kpmg.lcm.server.data.service.BackendService;
@@ -34,13 +33,11 @@ public class Server {
         dataPath = ".";
 
         try {
-            Resources.setMetaDataDao(new MetaDataDaoImpl(String.format("%s/%s", dataPath, "metadata/")));
             Resources.setTaskDescriptionDao(new TaskDescriptionDaoImpl(String.format("%s/%s", dataPath, "taskdescription/")));
             Resources.setTaskScheduleDao(new TaskScheduleDaoImpl(String.format("%s/%s", dataPath, "taskschedule/")));
 
             Resources.setMetaDataService(new MetaDataService());
             Resources.setBackendService(new BackendService());
-
         } catch (DaoException ex) {
             Logger.getLogger(Server.class.getName()).log(Level.SEVERE,
                     "Construction of MetaDataDaoImpl failed. The storage path doesn't exist", ex);
