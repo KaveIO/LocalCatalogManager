@@ -20,6 +20,7 @@ import nl.kpmg.lcm.server.data.dao.TaskDescriptionDao;
 import nl.kpmg.lcm.server.data.dao.TaskScheduleDao;
 import nl.kpmg.lcm.server.data.service.BackendService;
 import nl.kpmg.lcm.server.data.service.MetaDataService;
+import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * Static resources class for centralizing dependencies.
@@ -34,6 +35,7 @@ public final class Resources {
     /**
      * The DAO implementation.
      */
+    @Autowired
     private static MetaDataDao metaDataDao;
 
     /**

@@ -1,12 +1,14 @@
 package nl.kpmg.lcm;
 
-import org.apache.commons.lang.ArrayUtils;
-
 import java.io.IOException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import nl.kpmg.lcm.server.Server;
+
+import org.apache.commons.lang.ArrayUtils;
+import org.springframework.context.ApplicationContext;
+import org.springframework.context.support.ClassPathXmlApplicationContext;
 import nl.kpmg.lcm.server.ServerException;
 
 /**
@@ -36,9 +38,16 @@ public class Main {
             final String command = args[0];
             final String[] arguments = (String[]) ArrayUtils.removeElement(args, command);
 
-
             if (command.equals("server")) {
                 LOG.log(Level.INFO, "Starting LCM server");
+                // Load spring beans
+                ApplicationContext ctx = new ClassPathXmlApplicationContext(new String[] {
+                    "application-context.xml",
+                    "application-context-dao.xml"
+                });
+                System.out.println("PropertyConfigurer instance : " + ctx.getBean("devProps"));
+                System.out.println("MongoTemplate Instance : " + ctx.getBean("mongoTemplate"));
+                System.out.println("Mongo DB : " + ctx.getBean("mongo"));
 
                 final Server server = new Server(arguments);
                 server.start();
@@ -66,7 +75,6 @@ public class Main {
             Logger.getLogger(Main.class.getName()).log(Level.SEVERE, "Failed starting the server", ex);
         }
     }
-
 
     private static void displayHelp() {
         System.out.println("Help text");
