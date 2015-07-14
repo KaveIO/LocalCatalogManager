@@ -39,7 +39,6 @@ import com.mongodb.MongoClient;
  */
 @RunWith(SpringJUnit4ClassRunner.class)
 @ContextConfiguration(locations={"/application-context-dao.xml"})
-@Ignore
 public class MongoDbSpringIntTest {
     
            
