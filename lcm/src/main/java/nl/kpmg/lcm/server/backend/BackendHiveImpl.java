@@ -16,6 +16,9 @@
 package nl.kpmg.lcm.server.backend;
 
 import java.io.InputStream;
+import java.net.URI;
+import java.sql.Connection;
+import java.sql.SQLException;
 import nl.kpmg.lcm.server.data.MetaData;
 
 /**
@@ -47,9 +50,16 @@ public class BackendHiveImpl extends AbstractBackend {
      */
     @Override
     protected final String getSupportedUriSchema() {
-        return "jdbc:hive";
+        return "jdbc:hive2";
     }
     
+    private Connection getConnection() throws BackendException, SQLException {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
+    
+    private String getTableName(URI uri) throws BackendException {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    } 
 
     @Override
     public DataSetInformation gatherDataSetInformation(MetaData metadata) throws BackendException {
