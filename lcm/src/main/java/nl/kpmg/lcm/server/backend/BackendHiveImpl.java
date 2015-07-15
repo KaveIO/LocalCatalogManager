@@ -24,10 +24,32 @@ import nl.kpmg.lcm.server.data.MetaData;
  */
 public class BackendHiveImpl extends AbstractBackend {
 
-    @Override
-    protected String getSupportedUriSchema() {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    /**
+     * Address of the Hive server.
+     *
+     * @param storagePath is the server address.
+     */
+    private final String storagePath;
+    
+    /**
+     * Default constructor.
+     *
+     * @param storagePath is the server address.
+     */
+    public BackendHiveImpl(final String storagePath) {
+        this.storagePath = storagePath;
     }
+    
+    /**
+     * Returns scheme supported by URI for this backend.
+     *
+     * @return "hive" string
+     */
+    @Override
+    protected final String getSupportedUriSchema() {
+        return "jdbc:hive";
+    }
+    
 
     @Override
     public DataSetInformation gatherDataSetInformation(MetaData metadata) throws BackendException {
