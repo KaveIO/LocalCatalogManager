@@ -18,6 +18,7 @@ package nl.kpmg.lcm.server.backend;
 import java.io.InputStream;
 import java.sql.Connection;
 import java.sql.DriverManager;
+import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.logging.Level;
@@ -65,7 +66,7 @@ public class BackendHiveImplTest {
         System.out.println("getSupportedUriSchema");
         String server = "jdbc:hive://localhost:10000/default";
         BackendHiveImpl instance = new BackendHiveImpl(server);
-        String expResult = "jdbc:hive";
+        String expResult = "hive";
         String result = instance.getSupportedUriSchema();
         assertEquals(expResult, result);
     }
@@ -74,7 +75,7 @@ public class BackendHiveImplTest {
     public void testConnection() throws SQLException {
         System.out.println("testConnection");
         String server = "jdbc:hive2://localhost:10000/default";
-        String user = "jpavel";
+        String user = "";
         String passwd = "";
         
         try {
@@ -84,11 +85,26 @@ public class BackendHiveImplTest {
             Logger.getLogger(BackendHiveImplTest.class.getName()).log(Level.SEVERE, null, ex);
         }
         
-        Connection con = DriverManager.getConnection(server, user, passwd);
-        Statement stmt = con.createStatement();
-     //   con.close();
+//        Connection con = DriverManager.getConnection(server, user, passwd);
+//        Statement stmt = con.createStatement();
+//        ResultSet res = stmt.executeQuery("describe formatted default.nyse_stocks");
+//        System.out.println(res.getMetaData().getColumnCount()+" columns");
+//        while (res.next()) {
+//         System.out.println(res.getString(1)+" "+res.getString(2)+" "+res.getString(3));
+//        }
+//        con.close();
         
     }
+    
+    @Test
+    public final void testGetUriInfo() throws BackendException {
+        System.out.println("getURI");
+        String server = "localhost";
+        BackendHiveImpl instance = new BackendHiveImpl(server);
+        String[] uriInfo = instance.getServerDbTableFromUri("hive://user@server:10000/database/table");
+        System.out.println(uriInfo[0]+" "+uriInfo[1]+" "+uriInfo[2]);
+    }
+    
 
     /**
      * Test of gatherDataSetInformation method, of class BackendHiveImpl.
