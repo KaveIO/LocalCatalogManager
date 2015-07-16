@@ -15,42 +15,39 @@
  */
 package nl.kpmg.lcm.server;
 
-import java.io.FileInputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.util.Properties;
-
 /**
  *
  * @author mhoekstra
  */
 public class Configuration {
-    private static String DEFAULT_FILENAME = "application.properties";
-    private final Properties prop = new Properties();
 
-    public Configuration() throws IOException {
-	InputStream input = getClass().getClassLoader().getResourceAsStream(DEFAULT_FILENAME);
-        if (input == null) {
-            throw new IOException("Can't find default configuration file");
-        }
-        prop.load(input);
+    private String serverName;
+
+    private String serverPort;
+
+    private String serverStorage;
+
+    public String getServerName() {
+        return serverName;
     }
 
-    public Configuration(String filePath) throws IOException {
-        InputStream input = new FileInputStream(filePath);
-        prop.load(input);
+    public void setServerName(String serverName) {
+        this.serverName = serverName;
     }
 
-
-    public final String getServerName() {
-        return prop.getProperty("lcm.server.name");
+    public String getServerPort() {
+        return serverPort;
     }
 
-    public final String getServerPort() {
-        return prop.getProperty("lcm.server.port");
+    public void setServerPort(String serverPort) {
+        this.serverPort = serverPort;
     }
 
-    public final String getServerStorage() {
-        return prop.getProperty("lcm.server.storage");
+    public String getServerStorage() {
+        return serverStorage;
+    }
+
+    public void setServerStorage(String serverStorage) {
+        this.serverStorage = serverStorage;
     }
 }

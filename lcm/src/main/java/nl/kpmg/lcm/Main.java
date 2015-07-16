@@ -37,18 +37,10 @@ public class Main {
             final String command = args[0];
             final String[] arguments = (String[]) ArrayUtils.removeElement(args, command);
 
-            Configuration configuration;
-            if (arguments.length == 0) {
-                configuration = new Configuration();
-            } else {
-                configuration = new Configuration(arguments[0]);
-            }
-
-
             if (command.equals("server")) {
                 LOG.log(Level.INFO, "Starting LCM server");
 
-                final Server server = new Server(configuration);
+                final Server server = new Server();
                 server.start();
 
                 LOG.log(Level.INFO, "Hit enter to stop it...");

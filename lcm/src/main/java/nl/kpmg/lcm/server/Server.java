@@ -17,7 +17,6 @@ import org.springframework.context.support.ClassPathXmlApplicationContext;
  *
  * @author mhoekstra
  */
-
 public class Server {
     private static final Logger LOGGER = Logger.getLogger(Server.class.getName());
 
@@ -29,14 +28,23 @@ public class Server {
     private HttpServer restServer;
     private TaskManager taskManager;
 
-    public Server(Configuration configuration) throws ServerException {
-        this.configuration = configuration;
+    public Server() throws ServerException {
+        // A double application conext is used because the single configuration
+        // file (application.properties) drives which application Context is
+        // actually effective. Effort was made to enable a hierachical application
+        // context. However this approach failed. Currently we load the
+        // parentContext just for the Configuration bean. Moments later we load
+        // the actuall ApplicationContext and ignore the ParentContext.
+        ApplicationContext parentContext = new ClassPathXmlApplicationContext(new String[] {
+            "application-context.xml"
+        });
+        configuration = parentContext.getBean(Configuration.class);
 
+        String storage = configuration.getServerStorage();
         baseUri = String.format(
                 "http://%s:%s/",
                 configuration.getServerName(),
                 configuration.getServerPort());
-        String storage = configuration.getServerStorage();
 
         // Switching the application context based on the configuration. The configuration
         // allows for different storage backend which are Autwired with Spring.
@@ -54,9 +62,6 @@ public class Server {
             default:
                 throw new ServerException("Couldn't determine LCM storage engine.");
         }
-
-
-        System.out.println("Mongo DB : " + context.getBean("metaDataDao"));
     }
 
     /**
@@ -65,7 +70,7 @@ public class Server {
      */
     public HttpServer startRestInterface() {
         // create a resource config that scans for JAX-RS resources and providers
-        // in com.example package
+        // in nl.kpmg.lcm.server.rest
         final ResourceConfig rc = new ResourceConfig()
                 .packages("nl.kpmg.lcm.server.rest")
                 .registerClasses(JacksonFeature.class)

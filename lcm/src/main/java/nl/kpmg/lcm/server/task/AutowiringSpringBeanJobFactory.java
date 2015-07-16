@@ -21,6 +21,11 @@ import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
 import org.springframework.scheduling.quartz.SpringBeanJobFactory;
 
+/**
+ * A Job Factory which will auto wire dependencies based on the ApplicationContext.
+ * 
+ * @author mhoekstra
+ */
 public final class AutowiringSpringBeanJobFactory extends SpringBeanJobFactory implements
     ApplicationContextAware {
 

@@ -13,10 +13,8 @@
         http://www.springframework.org/schema/context
         http://www.springframework.org/schema/context/spring-context.xsd">
         
-        <context:component-scan base-package="nl.kpmg.lcm.server" />
-        
-	<!-- bean definitions here -->
-	<bean class="org.springframework.beans.factory.config.PropertyPlaceholderConfigurer">
+        <!-- Common beans -->
+        <bean class="org.springframework.beans.factory.config.PropertyPlaceholderConfigurer">
             <property name="ignoreUnresolvablePlaceholders" value="true" />
             <property name="ignoreResourceNotFound" value="true" />
             <property name="locations">
@@ -25,7 +23,15 @@
                     <value>file:config/application.properties</value>
                 </list>
             </property>
-	</bean>
+        </bean>
+        
+        <bean id="configuration" class="nl.kpmg.lcm.server.Configuration">
+            <property name="serverName" value="${lcm.server.name}"/>
+            <property name="serverPort" value="${lcm.server.port}"/>
+            <property name="serverStorage" value="${lcm.server.storage}"/>
+        </bean>
+        
+        <context:component-scan base-package="nl.kpmg.lcm.server" />
         
         <!-- DAOs -->
         <bean id="metaDataDao" class="nl.kpmg.lcm.server.data.dao.file.MetaDataDaoImpl">
