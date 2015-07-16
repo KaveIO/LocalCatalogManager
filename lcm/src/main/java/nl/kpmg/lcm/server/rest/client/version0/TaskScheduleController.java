@@ -21,10 +21,10 @@ import javax.ws.rs.POST;
 import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
 import javax.ws.rs.core.Response;
-import nl.kpmg.lcm.server.Resources;
 import nl.kpmg.lcm.server.data.TaskSchedule;
 import nl.kpmg.lcm.server.data.dao.TaskScheduleDao;
 import nl.kpmg.lcm.server.rest.client.version0.types.TaskScheduleRepresentation;
+import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  *
@@ -36,14 +36,8 @@ public class TaskScheduleController {
     /**
      * The TaskDescription DAO.
      */
+    @Autowired
     private TaskScheduleDao taskScheduleDao;
-
-    /**
-     * Default constructor.
-     */
-    public TaskScheduleController() {
-        this.taskScheduleDao = Resources.getTaskScheduleDao();
-    }
 
     /**
      * @return a list of all tasks

@@ -17,7 +17,6 @@ package nl.kpmg.lcm.server.task.enrichment;
 
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import nl.kpmg.lcm.server.Resources;
 import nl.kpmg.lcm.server.backend.Backend;
 import nl.kpmg.lcm.server.backend.BackendException;
 import nl.kpmg.lcm.server.backend.DataSetInformation;
@@ -27,6 +26,7 @@ import nl.kpmg.lcm.server.data.service.BackendService;
 import nl.kpmg.lcm.server.task.EnrichmentTask;
 import nl.kpmg.lcm.server.task.TaskException;
 import nl.kpmg.lcm.server.task.TaskResult;
+import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * Fills data on a MetaData object concerning the described Data.
@@ -59,25 +59,15 @@ public class DataEnrichmentTask extends EnrichmentTask {
 
     /**
      * The MetaDataDao.
-     * @TODO Auto wire this.
      */
-    private final MetaDataDao metaDataDao;
+    @Autowired
+    private MetaDataDao metaDataDao;
 
     /**
      * The BackendService.
-     * @TODO Auto wire this.
      */
-    private final BackendService backendService;
-
-    /**
-     * Default constructor.
-     *
-     * Only needed because we can't autowire the dao's yet.
-     */
-    public DataEnrichmentTask() {
-        backendService = Resources.getBackendService();
-        metaDataDao = Resources.getMetaDataDao();
-    }
+    @Autowired
+    private BackendService backendService;
 
     /**
      * Will store information on the data associated with a piece of MetaData.

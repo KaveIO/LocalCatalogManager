@@ -2,6 +2,7 @@ package nl.kpmg.lcm.server.rest;
 
 import javax.ws.rs.client.ClientBuilder;
 import javax.ws.rs.client.WebTarget;
+import nl.kpmg.lcm.server.Configuration;
 import nl.kpmg.lcm.server.Server;
 
 import org.junit.After;
@@ -17,9 +18,9 @@ public class ClientTest {
     @Before
     public void setUp() throws Exception {
         // start the server
-        server = new Server(new String[] {});
+        server = new Server(new Configuration());
         server.start();
-        
+
         // create the client
         target = ClientBuilder.newClient().target(server.getBaseUri());
     }

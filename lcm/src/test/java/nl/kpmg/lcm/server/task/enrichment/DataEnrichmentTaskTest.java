@@ -16,10 +16,8 @@
 package nl.kpmg.lcm.server.task.enrichment;
 
 import java.io.File;
-import nl.kpmg.lcm.server.Resources;
 import nl.kpmg.lcm.server.data.MetaData;
-import nl.kpmg.lcm.server.data.dao.DaoException;
-import nl.kpmg.lcm.server.data.dao.file.MetaDataDaoImpl;
+import nl.kpmg.lcm.server.data.dao.MetaDataDao;
 import nl.kpmg.lcm.server.data.service.BackendService;
 import nl.kpmg.lcm.server.task.TaskException;
 import org.junit.After;
@@ -27,29 +25,31 @@ import org.junit.AfterClass;
 import org.junit.Test;
 import static org.junit.Assert.*;
 import org.junit.BeforeClass;
+import org.junit.runner.RunWith;
+import org.springframework.beans.BeansException;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.config.AutowireCapableBeanFactory;
+import org.springframework.context.ApplicationContext;
+import org.springframework.context.ApplicationContextAware;
+import org.springframework.test.context.ContextConfiguration;
+import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
 /**
  *
  * @author mhoekstra
  */
-public class DataEnrichmentTaskTest {
+@RunWith(SpringJUnit4ClassRunner.class)
+@ContextConfiguration(locations={"/application-context-file.xml"})
+public class DataEnrichmentTaskTest implements ApplicationContextAware {
     private static final String TEST_STORAGE_PATH = "test/";
 
-    private final MetaDataDaoImpl metaDataDao;
+    private ApplicationContext context;
 
+    @Autowired
+    private MetaDataDao metaDataDao;
 
-    private final BackendService backendService;
-
-    public DataEnrichmentTaskTest() throws DaoException {
-        File file = new File(TEST_STORAGE_PATH);
-        file.mkdir();
-
-        metaDataDao = new MetaDataDaoImpl(TEST_STORAGE_PATH);
-                Resources.setMetaDataDao(metaDataDao);
-
-        backendService = new BackendService();
-        Resources.setBackendService(backendService);
-    }
+    @Autowired
+    private BackendService backendService;
 
     @BeforeClass
     public static void setUpClass() {
@@ -63,6 +63,11 @@ public class DataEnrichmentTaskTest {
         file.delete();
     }
 
+    @Override
+    public void setApplicationContext(ApplicationContext context) throws BeansException {
+        this.context = context;
+    }
+
     @After
     public void tearDown() {
         File file = new File(TEST_STORAGE_PATH);
@@ -74,6 +79,11 @@ public class DataEnrichmentTaskTest {
         }
     }
 
+    private void autowire(DataEnrichmentTask task) {
+        AutowireCapableBeanFactory beanFactory = context.getAutowireCapableBeanFactory();
+        beanFactory.autowireBean(task);
+    }
+
     @Test
     public void testExecuteWithExistingMetaData() throws TaskException {
         MetaData metaData = new MetaData();
@@ -81,9 +91,9 @@ public class DataEnrichmentTaskTest {
         metaDataDao.persist(metaData);
 
         DataEnrichmentTask dataEnrichmentTask = new DataEnrichmentTask();
+        autowire(dataEnrichmentTask);
         dataEnrichmentTask.execute(metaData);
 
         assertEquals("DETACHED", metaData.get("dynamic.data.state"));
     }
-
 }

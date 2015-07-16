@@ -2,13 +2,13 @@
   "general": {
     "creation_date": "01-01-2015 00:00:00",
     "owner": "bob",
-    "description": "This is the newly computed train schedule for optimized transport flow."
+    "description": "This is the newly computed train schedule for optimized transport flow.",
     "tags": ["train", "svm", "lolwut"],
     "size": 351684984631,
     "records": 3455461
   },
   "origin": {
-    "created": "LOCAL"
+    "created": "LOCAL",
     "dependencies": {
       "lcm://lcm.kave.io/bob/list_of_trains": { "version": "v1" },
       "lcm://lcm.kave.io/bob/railway_graph": { "version": "v1" },
