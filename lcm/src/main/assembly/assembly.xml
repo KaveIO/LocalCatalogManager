@@ -88,6 +88,48 @@ limitations under the License.
             </excludes>
         </fileSet>
         
+        <!-- 
+            Assemblies and git don't allow for empty folders. So we are balancing 
+            a couple of things here. First abuse src/main/assembly (a random folder
+            with content) to create empty folders by excluding everyting in it. 
+            Secondly we are overwriting our data-template in it so we can get some 
+            defaults in there. 
+        -->
+        <fileSet>
+            <directory>src/main/assembly</directory>
+            <outputDirectory>data</outputDirectory>
+            <excludes>
+                <exclude>**/*</exclude>
+            </excludes>
+        </fileSet>
+        <fileSet>
+            <directory>src/main/assembly</directory>
+            <outputDirectory>data/backend</outputDirectory>
+            <excludes>
+                <exclude>**/*</exclude>
+            </excludes>
+        </fileSet>
+        <fileSet>
+            <directory>src/main/assembly</directory>
+            <outputDirectory>data/metadata</outputDirectory>
+            <excludes>
+                <exclude>**/*</exclude>
+            </excludes>
+        </fileSet>
+        <fileSet>
+            <directory>src/main/assembly</directory>
+            <outputDirectory>data/taskdescription</outputDirectory>
+            <excludes>
+                <exclude>**/*</exclude>
+            </excludes>
+        </fileSet>
+        <fileSet>
+            <directory>src/main/assembly</directory>
+            <outputDirectory>data/taskschedule</outputDirectory>
+            <excludes>
+                <exclude>**/*</exclude>
+            </excludes>
+        </fileSet>
         <fileSet>
             <directory>src/main/data-template</directory>
             <outputDirectory>data</outputDirectory>
