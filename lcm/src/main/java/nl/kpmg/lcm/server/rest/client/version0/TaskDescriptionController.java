@@ -28,12 +28,12 @@ import javax.ws.rs.Produces;
 import javax.ws.rs.QueryParam;
 import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.Response;
-import nl.kpmg.lcm.server.Resources;
 import nl.kpmg.lcm.server.data.TaskDescription;
 import nl.kpmg.lcm.server.data.dao.TaskDescriptionDao;
 import nl.kpmg.lcm.server.rest.client.version0.types.TaskDescriptionRepresentation;
 import nl.kpmg.lcm.server.rest.client.version0.types.TaskDescriptionStatusFilter;
 import nl.kpmg.lcm.server.rest.client.version0.types.TaskDescriptionsRepresentation;
+import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  *
@@ -45,14 +45,8 @@ public class TaskDescriptionController {
     /**
      * The TaskDescription DAO.
      */
+    @Autowired
     private TaskDescriptionDao taskDescriptionDao;
-
-    /**
-     * Default constructor.
-     */
-    public TaskDescriptionController() {
-        this.taskDescriptionDao = Resources.getTaskDescriptionDao();
-    }
 
     /**
      * Get a list of all the tasks.

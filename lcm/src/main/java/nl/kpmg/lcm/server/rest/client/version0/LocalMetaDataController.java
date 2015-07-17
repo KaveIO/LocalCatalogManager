@@ -15,10 +15,7 @@
  */
 package nl.kpmg.lcm.server.rest.client.version0;
 
-import java.util.HashMap;
-import java.util.LinkedList;
 import java.util.List;
-import java.util.Map;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.DELETE;
 import javax.ws.rs.GET;
@@ -30,29 +27,28 @@ import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
-import nl.kpmg.lcm.server.Resources;
 import nl.kpmg.lcm.server.data.MetaData;
 import nl.kpmg.lcm.server.data.dao.MetaDataDao;
-import nl.kpmg.lcm.server.rest.client.MetaDataNotFoundException;
 import nl.kpmg.lcm.server.rest.client.version0.types.MetaDataRepresentation;
 import nl.kpmg.lcm.server.rest.client.version0.types.MetaDatasRepresentation;
 import org.apache.commons.lang.NotImplementedException;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
 
 /**
  *
  * @author mhoekstra
  */
+@Component
 @Path("client/v0/local")
 public class LocalMetaDataController {
 
-
     private MetaDataDao metaDataDao;
 
-    public LocalMetaDataController() {
-        metaDataDao = Resources.getMetaDataDao();
+    @Autowired
+    public LocalMetaDataController(MetaDataDao metaDataDao) {
+        this.metaDataDao = metaDataDao;
     }
-
-
 
     /**
      * Get the head versions of all MetaData.

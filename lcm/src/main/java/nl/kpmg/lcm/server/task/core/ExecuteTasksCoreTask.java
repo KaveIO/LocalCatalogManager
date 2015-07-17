@@ -18,7 +18,6 @@ package nl.kpmg.lcm.server.task.core;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import nl.kpmg.lcm.server.Resources;
 import nl.kpmg.lcm.server.data.TaskDescription;
 import nl.kpmg.lcm.server.data.TaskSchedule;
 import nl.kpmg.lcm.server.data.dao.TaskDescriptionDao;
@@ -32,6 +31,7 @@ import static org.quartz.JobBuilder.newJob;
 import org.quartz.JobDetail;
 import org.quartz.Scheduler;
 import org.quartz.SchedulerException;
+import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * Executor of ad-hoc tasks.
@@ -50,18 +50,9 @@ public class ExecuteTasksCoreTask extends CoreTask {
 
     /**
      * The TaskDescriptionDao.
-     * @TODO Auto wire this.
      */
-    private final TaskDescriptionDao taskDescriptionDao;
-
-    /**
-     * Default constructor.
-     *
-     * Only needed because we can't autowire the dao's yet.
-     */
-    public ExecuteTasksCoreTask() {
-        taskDescriptionDao = Resources.getTaskDescriptionDao();
-    }
+    @Autowired
+    private TaskDescriptionDao taskDescriptionDao;
 
     /**
      * Schedules all tasks with the status PENDING for direct execution.

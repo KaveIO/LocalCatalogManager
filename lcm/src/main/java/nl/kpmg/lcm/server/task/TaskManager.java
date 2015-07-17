@@ -25,9 +25,9 @@ import static org.quartz.JobBuilder.newJob;
 import org.quartz.JobDetail;
 import org.quartz.Scheduler;
 import org.quartz.SchedulerException;
-import org.quartz.SchedulerFactory;
 import static org.quartz.TriggerBuilder.newTrigger;
-import org.quartz.impl.StdSchedulerFactory;
+import org.springframework.context.ApplicationContext;
+import org.springframework.scheduling.quartz.SchedulerFactoryBean;
 
 /**
  * The Singleton class the manages the execution of Tasks.
@@ -104,11 +104,16 @@ public final class TaskManager {
      *
      * @throws TaskManagerException if there is a failure in the scheduler initialization
      */
-    public void initialize() throws TaskManagerException {
+    public void initialize(ApplicationContext context) throws TaskManagerException {
         try {
             if (scheduler == null || !scheduler.isStarted()) {
-                SchedulerFactory sf = new StdSchedulerFactory();
-                scheduler = sf.getScheduler();
+                SchedulerFactoryBean schedulerFactory = new SchedulerFactoryBean();
+                AutowiringSpringBeanJobFactory jobFactory = new AutowiringSpringBeanJobFactory();
+                jobFactory.setApplicationContext(context);
+                schedulerFactory.setJobFactory(jobFactory);
+                schedulerFactory.afterPropertiesSet();
+
+                scheduler = schedulerFactory.getScheduler();
 
                 scheduleCoreTask("executeTasksCoreTask", ExecuteTasksCoreTask.class, "0 * * * * ?");
                 scheduleCoreTask("loadScheduleCoreTask", LoadScheduleCoreTask.class, "0 * * * * ?");
@@ -125,6 +130,11 @@ public final class TaskManager {
         } catch (TaskScheduleException ex) {
             Logger.getLogger(TaskManager.class.getName()).log(Level.SEVERE,
                     "Core task couldn't be scheduled", ex);
+
+            throw new TaskManagerException(ex);
+        } catch (Exception ex) {
+            Logger.getLogger(TaskManager.class.getName()).log(Level.SEVERE,
+                    "Initialization of the quartz scheduler failed", ex);
 
             throw new TaskManagerException(ex);
         }

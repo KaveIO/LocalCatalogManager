@@ -19,7 +19,6 @@ import java.util.Date;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import nl.kpmg.lcm.server.Resources;
 import nl.kpmg.lcm.server.data.MetaData;
 import nl.kpmg.lcm.server.data.TaskDescription;
 import nl.kpmg.lcm.server.data.dao.TaskDescriptionDao;
@@ -29,6 +28,7 @@ import org.quartz.Job;
 import org.quartz.JobDataMap;
 import org.quartz.JobExecutionContext;
 import org.quartz.JobExecutionException;
+import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * A task which is being applied on MetaData to enrich its content.
@@ -49,28 +49,15 @@ public abstract class EnrichmentTask implements Job {
 
     /**
      * The MetaDataService.
-     *
-     * @TODO Auto wire this.
      */
-    private final MetaDataService metaDataService;
+    @Autowired
+    private MetaDataService metaDataService;
 
     /**
      * The TaskDescriptionDao.
-     *
-     * @TODO Auto wire this.
      */
-    private final TaskDescriptionDao taskDescriptionDao;
-
-
-    /**
-     * Default constructor.
-     *
-     * Only needed because we can't autowire the dao's yet.
-     */
-    public EnrichmentTask() {
-        metaDataService = Resources.getMetaDataService();
-        taskDescriptionDao = Resources.getTaskDescriptionDao();
-    }
+    @Autowired
+    private TaskDescriptionDao taskDescriptionDao;
 
     /**
      * Method called to process the actual code of this task.

@@ -17,10 +17,10 @@ package nl.kpmg.lcm.server.data.service;
 
 import java.util.LinkedList;
 import java.util.List;
-import nl.kpmg.lcm.server.Resources;
 import nl.kpmg.lcm.server.data.MetaData;
 import nl.kpmg.lcm.server.data.dao.MetaDataDao;
 import org.apache.commons.lang.NotImplementedException;
+import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  *
@@ -28,11 +28,8 @@ import org.apache.commons.lang.NotImplementedException;
  */
 public class MetaDataService {
 
-    private final MetaDataDao metaDataDao;
-
-    public MetaDataService() {
-        this.metaDataDao = Resources.getMetaDataDao();
-    }
+    @Autowired
+    private MetaDataDao metaDataDao;
 
     public List<MetaData> getByExpression(String expression) throws ServiceException {
         List<MetaData> targets = new LinkedList();

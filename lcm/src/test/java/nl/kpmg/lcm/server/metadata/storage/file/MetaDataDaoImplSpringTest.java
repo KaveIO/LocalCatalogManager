@@ -13,43 +13,38 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package nl.kpmg.lcm.server.task.enrichment;
+package nl.kpmg.lcm.server.metadata.storage.file;
+
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
 
 import java.io.File;
+
 import nl.kpmg.lcm.server.data.MetaData;
 import nl.kpmg.lcm.server.data.dao.MetaDataDao;
-import nl.kpmg.lcm.server.data.service.BackendService;
-import nl.kpmg.lcm.server.task.TaskException;
+import nl.kpmg.lcm.server.data.dao.file.MetaDataDaoImpl;
+
 import org.junit.After;
 import org.junit.AfterClass;
-import org.junit.Test;
-import static org.junit.Assert.*;
 import org.junit.BeforeClass;
+import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.config.AutowireCapableBeanFactory;
-import org.springframework.context.ApplicationContext;
-import org.springframework.context.ApplicationContextAware;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
 /**
  *
- * @author mhoekstra
+ * @author venkateswarlub
  */
 @RunWith(SpringJUnit4ClassRunner.class)
 @ContextConfiguration(locations={"/application-context-file.xml"})
-public class DataEnrichmentTaskTest implements ApplicationContextAware {
+public class MetaDataDaoImplSpringTest {
     private static final String TEST_STORAGE_PATH = "test";
-
-    private ApplicationContext context;
 
     @Autowired
     private MetaDataDao metaDataDao;
-
-    @Autowired
-    private BackendService backendService;
 
     @BeforeClass
     public static void setUpClass() {
@@ -88,26 +83,62 @@ public class DataEnrichmentTaskTest implements ApplicationContextAware {
         }
     }
 
-    @Override
-    public void setApplicationContext(ApplicationContext context) throws BeansException {
-        this.context = context;
-    }
+    @Test
+    public void testPersistVersionZero() {
+        MetaData metaData = new MetaData();
+        metaData.setName("test");
 
-    private void autowire(DataEnrichmentTask task) {
-        AutowireCapableBeanFactory beanFactory = context.getAutowireCapableBeanFactory();
-        beanFactory.autowireBean(task);
+        metaDataDao.persist(metaData);
+
+        MetaData versionZeroExists = metaDataDao.getByNameAndVersion("test", "0");
+        assertNotNull(versionZeroExists);
+
+        MetaData versionOneMissing = metaDataDao.getByNameAndVersion("test", "1");
+        assertNull(versionOneMissing);
     }
 
     @Test
-    public void testExecuteWithExistingMetaData() throws TaskException {
+    public void testGetByNameReturnsLatestVersion() {
         MetaData metaData = new MetaData();
-        metaData.setDataUri("file:///tmp/test");
+        metaData.setName("test1");
+
+        metaDataDao.persist(metaData);
+        MetaData metadata = metaDataDao.getByName("test1");
+        assertEquals("0", metadata.getVersionNumber());
+
+        metaDataDao.persist(metaData);
+        metadata = metaDataDao.getByName("test1");
+        assertEquals("1", metadata.getVersionNumber());
+    }
+
+    @Test
+    public void testGetByNameAndVersionReturnsSpecificVersion() {
+        MetaData metaData = new MetaData();
+        metaData.setName("test");
+
+        metaDataDao.persist(metaData);
         metaDataDao.persist(metaData);
 
-        DataEnrichmentTask dataEnrichmentTask = new DataEnrichmentTask();
-        autowire(dataEnrichmentTask);
-        dataEnrichmentTask.execute(metaData);
+        MetaData metadata = metaDataDao.getByNameAndVersion("test", "0");
+        assertEquals("0", metadata.getVersionNumber());
 
-        assertEquals("DETACHED", metaData.get("dynamic.data.state"));
+        metadata = metaDataDao.getByNameAndVersion("test", "1");
+        assertEquals("1", metadata.getVersionNumber());
+    }
+
+    @Test
+    public void testDeleteRemovesMetaData() {
+        MetaData metaData = new MetaData();
+        metaData.setName("test");
+
+        metaDataDao.persist(metaData);
+
+        MetaData metadata = metaDataDao.getByName("test");
+        assertNotNull(metadata);
+
+        metaDataDao.delete(metaData);
+
+        metadata = metaDataDao.getByName("test");
+        assertNull(metadata);
     }
 }

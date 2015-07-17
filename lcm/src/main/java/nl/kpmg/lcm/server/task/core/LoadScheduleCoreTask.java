@@ -18,7 +18,6 @@ package nl.kpmg.lcm.server.task.core;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import nl.kpmg.lcm.server.Resources;
 import nl.kpmg.lcm.server.data.TaskSchedule;
 import nl.kpmg.lcm.server.data.dao.TaskScheduleDao;
 import nl.kpmg.lcm.server.task.CoreTask;
@@ -37,6 +36,7 @@ import org.quartz.SchedulerException;
 import static org.quartz.TriggerBuilder.newTrigger;
 import org.quartz.impl.matchers.GroupMatcher;
 import static org.quartz.impl.matchers.GroupMatcher.groupEquals;
+import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * TaskSchedule update task.
@@ -49,7 +49,6 @@ import static org.quartz.impl.matchers.GroupMatcher.groupEquals;
  * @author mhoekstra
  */
 public class LoadScheduleCoreTask extends CoreTask {
-
     /**
      * The group key which is used to register the scheduled tasks.
      */
@@ -57,23 +56,14 @@ public class LoadScheduleCoreTask extends CoreTask {
 
     /**
      * The TaskScheduleDao.
-     * @TODO Auto wire this.
      */
-    private final TaskScheduleDao taskScheduleDao;
+    @Autowired
+    private TaskScheduleDao taskScheduleDao;
 
     /**
      * The currently active TaskSchedule.
      */
     private TaskSchedule current;
-
-    /**
-     * Default constructor.
-     *
-     * Only needed because we can't autowire the dao's yet.
-     */
-    public LoadScheduleCoreTask() {
-        taskScheduleDao = Resources.getTaskScheduleDao();
-    }
 
     /**
      * Installs the current TaskSchedule.
