@@ -389,27 +389,118 @@ public class BackendHiveImpl extends AbstractBackend {
             Logger.getLogger(BackendHiveImpl.class.getName()).log(Level.SEVERE, null, ex);
         }
 
-        // CREATE TABLE test_yahoo2(Date STRING,Open STRING,High STRING,Low STRING,Close STRING,Volume STRING,Adj_Close STRING) ROW FORMAT DELIMITED FIELDS TERMINATED BY ',' LINES TERMINATED by '\n' STORED AS TEXTFILE
+        // CREATE TABLE test_yahoo2
+        // (Date STRING,Open STRING,High STRING,Low STRING,Close STRING,Volume STRING,Adj_Close STRING)
+        // ROW FORMAT DELIMITED FIELDS TERMINATED BY ',' LINES TERMINATED by '\n' STORED AS TEXTFILE;
+
         // LOAD DATA INPATH  '/user/root/yahoo_stocks.csv' OVERWRITE INTO TABLE test_yahoo2;
     }
 
     /**
-     * Executes query specified in metadata, saves output locally and opens
+     * Reads the table specified by metadata. It first creates an file in HDFS
+     * to which the table is stored. Then it uses {@link BackendHDFSInpl} to
+     * open an input stream to this file. Note that in output, columns are
+     * separated by CTRL-A
      *
-     * @param metadata
-     * @return
-     * @throws BackendException
+     * @param metadata {@link MetaData} object containing the URI of origin
+     * table
+     * @return {@link InputStream} with the table content.
+     * @throws BackendException if something is wrong with the URI
      */
     @Override
-    public InputStream read(MetaData metadata) throws BackendException {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
-        //  INSERT OVERWRITE LOCAL DIRECTORY '/root/testDir3' ROW FORMAT DELIMITED FIELDS TERMINATED BY ',' select * from default.test_yahoo2 limit 10;
+    public final InputStream read(final MetaData metadata) throws BackendException {
+        // check if dataset really exists
+        DataSetInformation dataSetInformation = gatherDataSetInformation(metadata);
+        if (!dataSetInformation.isAttached()) {
+            throw new BackendException("No dataset attached.");
+        }
+        // collect information from metadata
+        final String uri = metadata.getDataUri();
+        final String conPath = this.makeConnectionString(uri);
+        final String user = this.getUserFromUri(uri);
+        final String passwd = "";
+        final String[] uriInfo = this.getServerDbTableFromUri(uri);
+        final String tabName = uriInfo[2];
+        final String dbName = uriInfo[1];
+        /**
+         * @TODO need to make this more flexible;
+         */
+        final String serverName = uriInfo[0];
+        // get driver
+        try {
+            Class.forName(DRIVER_NAME);
+        } catch (ClassNotFoundException ex) {
+            Logger.getLogger(BackendHiveImpl.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        //open connection
+        try (Connection con = DriverManager.getConnection(conPath, user, passwd)) {
+            Statement stmt = con.createStatement();
+            // store table in HDFS
+            String sql = "INSERT OVERWRITE DIRECTORY \'" + tabName + "\' ";
+            sql += "SELECT * FROM " + dbName + "." + tabName;
+            stmt.execute(sql);
+            // Closing connection. The file will be read using HDFS backend
+        }
+        catch (SQLException ex) {
+            Logger.getLogger(BackendHiveImpl.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        // now make metadata pointing to a new file
+        MetaData metaTemp = new MetaData();
+        metaTemp.put("data", new HashMap() {
+            {
+                put("uri", tabName);
+            }
+        });
+        // read it with HDFS backend
+        BackendHDFSImpl hdfsBackend = new BackendHDFSImpl(serverName);
+        InputStream is = hdfsBackend.read(metaTemp);
+        return is;
+
+        //  INSERT OVERWRITE LOCAL DIRECTORY '/root/testDir3' ROW FORMAT DELIMITED
+        // FIELDS TERMINATED BY ',' select * from default.test_yahoo2 limit 10;
+
         //   INSERT OVERWRITE DIRECTORY '/user/root/testDir4' select * from default.test_yahoo2 limit 10;
     }
 
+    /**
+     * Deletes table specified in metadata.
+     *
+     * @param metadata {@link MetaData} object containing the URI of table to be deleted
+     * @return true if operation was success, false otherwise
+     * @throws BackendException if there is something wrong with the metadata or
+     * URI
+     */
     @Override
-    public boolean delete(MetaData metadata) throws BackendException {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    public final boolean delete(final MetaData metadata) throws BackendException {
+        DataSetInformation dataSetInformation = gatherDataSetInformation(metadata);
+        if (!dataSetInformation.isAttached()) {
+            throw new BackendException("No dataset attached.");
+        }
+        boolean success = false;
+        // collect information from metadata
+        final String uri = metadata.getDataUri();
+        final String conPath = this.makeConnectionString(uri);
+        final String user = this.getUserFromUri(uri);
+        final String passwd = "";
+        final String[] uriInfo = this.getServerDbTableFromUri(uri);
+        final String tabName = uriInfo[2];
+        final String dbName = uriInfo[1];
+        // get driver
+        try {
+            Class.forName(DRIVER_NAME);
+        } catch (ClassNotFoundException ex) {
+            Logger.getLogger(BackendHiveImpl.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        //open connection
+        try (Connection con = DriverManager.getConnection(conPath, user, passwd)) {
+            Statement stmt = con.createStatement();
+            String sql = "DROP TABLE " + dbName + "." + tabName;
+            success = stmt.execute(sql);
+        }
+        catch (SQLException ex) {
+            Logger.getLogger(BackendHiveImpl.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        return success;
         //drop table test_yahoo2;
     }
 
