@@ -15,6 +15,7 @@
  */
 package nl.kpmg.lcm.server;
 
+import nl.kpmg.lcm.server.data.dao.BackendDao;
 import nl.kpmg.lcm.server.data.dao.MetaDataDao;
 import nl.kpmg.lcm.server.data.dao.TaskDescriptionDao;
 import nl.kpmg.lcm.server.data.dao.TaskScheduleDao;
@@ -35,6 +36,10 @@ public final class Resources {
      * The DAO implementation.
      */
     private static MetaDataDao metaDataDao;
+
+
+
+    private static BackendDao backEndDao;
 
     /**
      * The DAO implementation.
@@ -71,6 +76,23 @@ public final class Resources {
     public static void setMetaDataDao(final MetaDataDao metaDataDao) {
         Resources.metaDataDao = metaDataDao;
     }
+
+    /**
+     *
+     * @return the backEndDao implementation
+     */
+    public static BackendDao getBackEndDao() {
+        return backEndDao;
+    }
+
+    /**
+     *
+     * @param backEndDao the backEndDao implementation to uses
+     */
+    public static void setBackEndDao(final BackendDao backEndDao) {
+        Resources.backEndDao = backEndDao;
+    }
+
 
     public static TaskDescriptionDao getTaskDescriptionDao() {
         return taskDescriptionDao;
