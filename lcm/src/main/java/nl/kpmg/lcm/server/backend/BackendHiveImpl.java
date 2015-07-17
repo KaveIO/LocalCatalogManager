@@ -27,41 +27,36 @@ import java.util.logging.Logger;
 import nl.kpmg.lcm.server.data.MetaData;
 
 /**
- * Backend for Hive 2 server
+ * Backend for Hive 2 server.
  *
  * @author jpavel
  */
 public class BackendHiveImpl extends AbstractBackend {
 
     /**
-     * Address of the Hive server.
      *
-     * @param storagePath is the server address.
+     * @param server is the server address.
      */
     private final String server;
-    private final String URIscheme;
-    private final String port;
-    private final String dbName;
-    private final String user;
-    private final String passwd;
 
-    private final static String driverName = "org.apache.hive.jdbc.HiveDriver";
+    /**
+     * @param DRIVER_NAME is the java hive driver class that is dynamically
+     * loaded
+     */
+    private static final String DRIVER_NAME = "org.apache.hive.jdbc.HiveDriver";
+
+    /**
+     * @param URI_SCHEME is the URI scheme required by JDBC Hive2 client
+     */
+    private static final String URI_SCHEME = "jdbc:hive2://";
 
     /**
      * Default constructor.
      *
-     * @param server
-     * @param dbName
-     * @param storagePath is the server address.
+     * @param server is the hive server address, e.g. 127.0.0.1
      */
-    public BackendHiveImpl(final String uri) throws BackendException {
-        String[] uriInfo = this.getServerDbTableFromUri(uri);
-        this.server = uriInfo[0];
-        this.URIscheme = "jdbc:hive2://";
-        this.port = this.getPortFromUri(uri);
-        this.dbName = uriInfo[1];
-        this.user = this.getUserFromUri(uri);
-        this.passwd = "";
+    public BackendHiveImpl(final String server) {
+        this.server = server;
     }
 
     /**
@@ -75,16 +70,15 @@ public class BackendHiveImpl extends AbstractBackend {
     }
 
     /**
-     * Creates the full path for the connection from the Backend members
+     * Creates the full path for the connection from the specified URI.
      *
-     * @return
+     * @param uri string in the supported format that is transformed to
+     * connection string
+     *
+     * @return the connection string that is used to access the hive2 server
+     * @throws BackendException when the URI is not in a correct format
      */
-    private String makeConnectionString() {
-        String out = this.URIscheme + this.server + ":" + this.port + "/" + this.dbName;
-        return out;
-    }
-
-    private String makeConnectionString(String uri) throws BackendException {
+    private String makeConnectionString(final String uri) throws BackendException {
         String[] uriInfo = this.getServerDbTableFromUri(uri);
         String uriPort = this.getPortFromUri(uri);
         String out = "jdbc:hive2://" + uriInfo[0] + ":" + uriPort + "/" + uriInfo[1];
@@ -92,26 +86,28 @@ public class BackendHiveImpl extends AbstractBackend {
     }
 
     /**
-     * Gathers the host name, dbname and table name from the uri
+     * Gathers the host name, Database name and table name from the URI.
      *
-     * @param uri
-     * @return
-     * @throws BackendException
+     * @param uri string with the path to the server, database and the table
+     * @return String array. First position is the server address, second is
+     * database name and the last is the table name
+     * @throws BackendException when URI is in wrong format and/or does not
+     * contain the requested information
      */
     private String[] getServerDbTableFromUri(final String uri) throws BackendException {
-
-        String[] out = new String[3];
+        final int numOuts = 3;
+        String[] out = new String[numOuts];
         if (uri != null) {
             URI dataUri;
             dataUri = parseUri(uri);
             out[0] = dataUri.getHost();
             String path = dataUri.getPath().substring(1);
-            String[] path_parts = path.split("/", 0);
-            if (path_parts.length != 2) {
+            String[] pathParts = path.split("/", 0);
+            if (pathParts.length != 2) {
                 throw new BackendException("Wrong URI format. Please use hive://[user]@host:port/DBname/TableName");
             }
-            out[1] = path_parts[0];
-            out[2] = path_parts[1];
+            out[1] = pathParts[0];
+            out[2] = pathParts[1];
         } else {
             throw new BackendException("Empty URI!");
         }
@@ -119,11 +115,12 @@ public class BackendHiveImpl extends AbstractBackend {
     }
 
     /**
-     * Gets port number from the URI
+     * Gets port number from the URI.
      *
-     * @param uri
-     * @return
-     * @throws BackendException
+     * @param uri string with the path to the server and a port number
+     * @return string that contains port number
+     * @throws BackendException when URI is in wrong format and/or does not
+     * contain the requested information
      */
     private String getPortFromUri(final String uri) throws BackendException {
         String out = "";
@@ -138,6 +135,14 @@ public class BackendHiveImpl extends AbstractBackend {
         return out;
     }
 
+    /**
+     * Gets user name from the URI.
+     *
+     * @param uri string with the path to the server and a user name
+     * @return string with the user name
+     * @throws BackendException when URI is in wrong format and/or does not
+     * contain the requested information
+     */
     private String getUserFromUri(final String uri) throws BackendException {
         String out = "";
         if (uri != null) {
@@ -149,9 +154,17 @@ public class BackendHiveImpl extends AbstractBackend {
         }
         return out;
     }
-
+/**
+     * Returns information about dataset mentioned in the metadata. It checks if
+     * the referenced data exist and can be accessed. It also gathers
+     * information about the size and modification time.
+     *
+     * @param metadata is investigated {@link MetaData} object
+     * @return filled {@link DataSetInformation} object
+     * @throws BackendException when there is a problem with the URI
+     */
     @Override
-    public DataSetInformation gatherDataSetInformation(MetaData metadata) throws BackendException {
+    public final DataSetInformation gatherDataSetInformation(final MetaData metadata) throws BackendException {
         String uri = metadata.getDataUri();
         DataSetInformation dataSetInformation = new DataSetInformation();
         dataSetInformation.setUri(uri);
@@ -159,34 +172,35 @@ public class BackendHiveImpl extends AbstractBackend {
         String conPath = this.makeConnectionString(uri);
         String user = this.getUserFromUri(uri);
         String passwd = "";
-        String[] uriInfo = this.getServerDbTableFromUri(uri); 
+        String[] uriInfo = this.getServerDbTableFromUri(uri);
         String tabName = uriInfo[2];
         String dbName = uriInfo[1];
-        
+
         try {
-            Class.forName(driverName);
-        }
-        catch (ClassNotFoundException ex) {
+            Class.forName(DRIVER_NAME);
+        } catch (ClassNotFoundException ex) {
             Logger.getLogger(BackendHiveImpl.class.getName()).log(Level.SEVERE, null, ex);
         }
 
-        try(Connection con = DriverManager.getConnection(conPath, user, passwd)){
+        try (Connection con = DriverManager.getConnection(conPath, user, passwd)) {
             Statement stmt = con.createStatement();
-            ResultSet res = stmt.executeQuery("show tables in "+dbName);
+            ResultSet res = stmt.executeQuery("show tables in " + dbName);
             boolean isAttached = false;
-            while (res.next()) {
-                if(res.getString(1)==tabName) isAttached = true;
+            while (res.next() && !isAttached) {
+                String resString = res.getString(1);
+                if (resString.equals(tabName)) {
+                    isAttached = true;
+                }
             }
             dataSetInformation.setAttached(isAttached);
-//         System.out.println(res.getString(1)+" "+res.getString(2)+" "+res.getString(3));
-//        }
-            
-        } catch (SQLException ex) {
+        }
+        catch (SQLException ex) {
             Logger.getLogger(BackendHiveImpl.class.getName()).log(Level.SEVERE, null, ex);
         }
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+
         // analyze table default.test_yahoo2 compute statistics;
         // describe formatted test_yahoo2
+        return dataSetInformation;
     }
 
     @Override

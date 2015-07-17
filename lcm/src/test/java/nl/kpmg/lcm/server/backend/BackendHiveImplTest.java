@@ -21,6 +21,7 @@ import java.sql.DriverManager;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.util.HashMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import nl.kpmg.lcm.server.data.MetaData;
@@ -62,9 +63,9 @@ public class BackendHiveImplTest {
      * Test of getSupportedUriSchema method, of class BackendHiveImpl.
      */
     @Test
-    public void testGetSupportedUriSchema() {
+    public void testGetSupportedUriSchema() throws BackendException {
         System.out.println("getSupportedUriSchema");
-        String server = "jdbc:hive://localhost:10000/default";
+        String server = "hive://localhost:10000/default/table";
         BackendHiveImpl instance = new BackendHiveImpl(server);
         String expResult = "hive";
         String result = instance.getSupportedUriSchema();
@@ -85,25 +86,39 @@ public class BackendHiveImplTest {
             Logger.getLogger(BackendHiveImplTest.class.getName()).log(Level.SEVERE, null, ex);
         }
         
-//        Connection con = DriverManager.getConnection(server, user, passwd);
-//        Statement stmt = con.createStatement();
-//        ResultSet res = stmt.executeQuery("describe formatted default.nyse_stocks");
-//        System.out.println(res.getMetaData().getColumnCount()+" columns");
-//        while (res.next()) {
-//         System.out.println(res.getString(1)+" "+res.getString(2)+" "+res.getString(3));
-//        }
-//        con.close();
+        Connection con = DriverManager.getConnection(server, user, passwd);
+        Statement stmt = con.createStatement();
+        ResultSet res = stmt.executeQuery("describe formatted default.nyse_stocks");
+        System.out.println(res.getMetaData().getColumnCount()+" columns");
+        while (res.next()) {
+         System.out.println(res.getString(1)+" "+res.getString(2)+" "+res.getString(3));
+        }
+        con.close();
         
     }
     
     @Test
-    public final void testGetUriInfo() throws BackendException {
-        System.out.println("getURI");
-        String server = "localhost";
-        BackendHiveImpl instance = new BackendHiveImpl(server);
-        String[] uriInfo = instance.getServerDbTableFromUri("hive://user@server:10000/database/table");
-        System.out.println(uriInfo[0]+" "+uriInfo[1]+" "+uriInfo[2]);
+    public final void testGatherDatasetInformation() throws BackendException {
+        System.out.println("testGatherDatasetInformation");
+        MetaData metaData = new MetaData();
+        final String fileUri = "hive://jpavel@localhost:10000/default/batting";
+        metaData.put("data", new HashMap() { { put("uri", fileUri); } });
+        BackendHiveImpl testBackend = new BackendHiveImpl(fileUri);
+        DataSetInformation dataSetInformation = testBackend.gatherDataSetInformation(metaData);
+        assertEquals(dataSetInformation.isAttached(), true);
     }
+    
+      @Test
+    public final void testGatherDatasetInformation2() throws BackendException {
+        System.out.println("testGatherDatasetInformation");
+        MetaData metaData = new MetaData();
+        final String fileUri = "hive://jpavel@localhost:10000/default/battingNot";
+        metaData.put("data", new HashMap() { { put("uri", fileUri); } });
+        BackendHiveImpl testBackend = new BackendHiveImpl(fileUri);
+        DataSetInformation dataSetInformation = testBackend.gatherDataSetInformation(metaData);
+        assertEquals(dataSetInformation.isAttached(), false);
+    }
+   
     
 
     /**
