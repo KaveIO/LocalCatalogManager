@@ -24,7 +24,7 @@
             <property name="ignoreResourceNotFound" value="true" />
             <property name="locations">
                 <list>
-                    <value>classpath*:application.properties</value>
+                    <value>classpath:application.properties</value>
                     <value>file:config/application.properties</value>
                 </list>
             </property>
