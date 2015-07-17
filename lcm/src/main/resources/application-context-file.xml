@@ -43,6 +43,9 @@
         <bean id="taskScheduleDao" class="nl.kpmg.lcm.server.data.dao.file.TaskScheduleDaoImpl">
             <constructor-arg index="0" type="java.lang.String" value="${lcm.server.storage.file.path}/taskschedule" />
         </bean>
+        <bean id="backendDao" class="nl.kpmg.lcm.server.data.dao.file.BackendDaoImpl">
+            <constructor-arg index="0" type="java.lang.String" value="${lcm.server.storage.file.path}/backend" />
+        </bean>
         
         <!-- Services -->
         <bean id="metaDataService" class="nl.kpmg.lcm.server.data.service.MetaDataService" />

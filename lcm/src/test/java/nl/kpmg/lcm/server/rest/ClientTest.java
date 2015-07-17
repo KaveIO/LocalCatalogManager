@@ -29,6 +29,8 @@ public class ClientTest {
         file.mkdir();
         file = new File(TEST_STORAGE_PATH + "/taskschedule");
         file.mkdir();
+        file = new File(TEST_STORAGE_PATH + "/backend");
+        file.mkdir();
     }
 
     @AfterClass
@@ -41,6 +43,8 @@ public class ClientTest {
         file = new File(TEST_STORAGE_PATH + "/taskdescription");
         file.delete();
         file = new File(TEST_STORAGE_PATH + "/taskschedule");
+        file.delete();
+        file = new File(TEST_STORAGE_PATH + "/backend");
         file.delete();
     }
 

@@ -15,11 +15,13 @@
  */
 package nl.kpmg.lcm.server.backend;
 
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.Date;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import nl.kpmg.lcm.server.data.BackendModel;
 import nl.kpmg.lcm.server.data.MetaData;
 import org.apache.commons.io.IOUtils;
 import org.apache.hadoop.conf.Configuration;
@@ -48,8 +50,8 @@ public class BackendHDFSImpl extends AbstractBackend {
      *
      * @param storagePath is the server address.
      */
-    public BackendHDFSImpl(final String storagePath) {
-        this.storagePath = storagePath;
+    public BackendHDFSImpl(final BackendModel backend) {
+        this.storagePath = (String) backend.getOptions().get("storagePath");
     }
 
     /**
@@ -218,6 +220,14 @@ public class BackendHDFSImpl extends AbstractBackend {
                     .log(Level.SEVERE, "Cannot reach the location " + metadata.getDataUri(), ex);
         }
         return success;
+    }
+
+    /**
+     *
+     * @return storagePath (useful for test)
+     */
+    public String getStoragePath() {
+        return storagePath;
     }
 
 }

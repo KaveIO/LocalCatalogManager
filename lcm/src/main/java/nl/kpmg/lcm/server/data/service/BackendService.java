@@ -15,14 +15,16 @@
  */
 package nl.kpmg.lcm.server.data.service;
 
-import java.io.File;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import nl.kpmg.lcm.server.backend.Backend;
 import nl.kpmg.lcm.server.backend.BackendFileImpl;
+import nl.kpmg.lcm.server.backend.BackendHDFSImpl;
 import nl.kpmg.lcm.server.data.MetaData;
+import nl.kpmg.lcm.server.data.dao.BackendDao;
+import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * Crude service to work with backends.
@@ -31,6 +33,9 @@ import nl.kpmg.lcm.server.data.MetaData;
  */
 public class BackendService {
 
+    @Autowired
+    private BackendDao backendDao;
+
     /**
      * Get a storage backend based on a MetaData object.
      *
@@ -38,6 +43,7 @@ public class BackendService {
      *
      * @param metadata of which the dataUri is used
      * @return the requested backend
+     * @throws nl.kpmg.lcm.server.data.service.ServiceException
      */
     public final Backend getBackend(final MetaData metadata) {
         return getBackend(metadata.getDataUri());
@@ -52,16 +58,31 @@ public class BackendService {
      *
      * @param uri the URI to interpret
      * @return the requested backend
+     * @throws nl.kpmg.lcm.server.data.service.ServiceException
      */
     public final Backend getBackend(final String uri) {
+        String scheme;
+
         try {
             URI parsedUri = new URI(uri);
-            String scheme = parsedUri.getScheme();
+            scheme = parsedUri.getScheme();
 
             switch (scheme) {
                 case "file":
-                    return new BackendFileImpl(new File("/"));
+                    if (parsedUri.getHost() != null)  {
+                       return new BackendFileImpl(backendDao.getByName(parsedUri.getHost()));
+                    } else {
+                       return new BackendFileImpl(backendDao.getByName(parsedUri.getAuthority()));
+                    }
+                case "hdfs":
+                    if (parsedUri.getHost() != null)  {
+                        return new BackendHDFSImpl(backendDao.getByName(parsedUri.getHost()));
+                    } else {
+                        return new BackendHDFSImpl(backendDao.getByName(parsedUri.getAuthority()));
+                    }
+                default : return null;
             }
+
         } catch (URISyntaxException ex) {
             Logger.getLogger(BackendService.class.getName()).log(Level.SEVERE, null, ex);
         }

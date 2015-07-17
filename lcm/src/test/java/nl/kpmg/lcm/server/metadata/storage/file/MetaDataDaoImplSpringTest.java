@@ -57,6 +57,8 @@ public class MetaDataDaoImplSpringTest {
         file.mkdir();
         file = new File(TEST_STORAGE_PATH + "/taskschedule");
         file.mkdir();
+        file = new File(TEST_STORAGE_PATH + "/backend");
+        file.mkdir();
     }
 
     @AfterClass
@@ -69,6 +71,8 @@ public class MetaDataDaoImplSpringTest {
         file = new File(TEST_STORAGE_PATH + "/taskdescription");
         file.delete();
         file = new File(TEST_STORAGE_PATH + "/taskschedule");
+        file.delete();
+        file = new File(TEST_STORAGE_PATH + "/backend");
         file.delete();
     }
 

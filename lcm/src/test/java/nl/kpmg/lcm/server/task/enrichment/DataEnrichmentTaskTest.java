@@ -16,7 +16,10 @@
 package nl.kpmg.lcm.server.task.enrichment;
 
 import java.io.File;
+import java.util.HashMap;
+import nl.kpmg.lcm.server.data.BackendModel;
 import nl.kpmg.lcm.server.data.MetaData;
+import nl.kpmg.lcm.server.data.dao.BackendDao;
 import nl.kpmg.lcm.server.data.dao.MetaDataDao;
 import nl.kpmg.lcm.server.data.service.BackendService;
 import nl.kpmg.lcm.server.task.TaskException;
@@ -51,6 +54,9 @@ public class DataEnrichmentTaskTest implements ApplicationContextAware {
     @Autowired
     private BackendService backendService;
 
+    @Autowired
+    private BackendDao backendDao;
+
     @BeforeClass
     public static void setUpClass() {
         File file;
@@ -61,6 +67,8 @@ public class DataEnrichmentTaskTest implements ApplicationContextAware {
         file = new File(TEST_STORAGE_PATH + "/taskdescription");
         file.mkdir();
         file = new File(TEST_STORAGE_PATH + "/taskschedule");
+        file.mkdir();
+        file = new File(TEST_STORAGE_PATH + "/backend");
         file.mkdir();
     }
 
@@ -75,16 +83,23 @@ public class DataEnrichmentTaskTest implements ApplicationContextAware {
         file.delete();
         file = new File(TEST_STORAGE_PATH + "/taskschedule");
         file.delete();
+        file = new File(TEST_STORAGE_PATH + "/backend");
+        file.delete();
     }
 
     @After
     public void tearDown() {
-        File file = new File(TEST_STORAGE_PATH + "/metadata");
+        File file;
+        file = new File(TEST_STORAGE_PATH + "/metadata");
         for (File metaDataFolder : file.listFiles()) {
             for (File versionFile : metaDataFolder.listFiles()) {
                 versionFile.delete();
             }
             metaDataFolder.delete();
+        }
+        file = new File(TEST_STORAGE_PATH + "/backend");
+        for (File backendFile : file.listFiles()) {
+            backendFile.delete();
         }
     }
 
@@ -100,8 +115,15 @@ public class DataEnrichmentTaskTest implements ApplicationContextAware {
 
     @Test
     public void testExecuteWithExistingMetaData() throws TaskException {
+        BackendModel backendModel = new BackendModel();
+        backendModel.setName("test");
+        backendModel.setOptions(new HashMap());
+        backendModel.getOptions().put("storagePath", TEST_STORAGE_PATH + "/storage");
+        backendDao.persist(backendModel);
+
+
         MetaData metaData = new MetaData();
-        metaData.setDataUri("file:///tmp/test");
+        metaData.setDataUri("file://test/test");
         metaDataDao.persist(metaData);
 
         DataEnrichmentTask dataEnrichmentTask = new DataEnrichmentTask();
