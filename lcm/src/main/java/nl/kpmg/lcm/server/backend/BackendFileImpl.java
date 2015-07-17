@@ -25,6 +25,7 @@ import java.net.URI;
 import java.util.Date;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import nl.kpmg.lcm.server.data.BackendModel;
 import org.apache.commons.io.IOUtils;
 
 import nl.kpmg.lcm.server.data.MetaData;
@@ -42,14 +43,19 @@ public class BackendFileImpl extends AbstractBackend {
      */
     private final File storagePath;
 
-    /**
-     * Default constructor.
-     *
-     * @param storagePath is the directory on a local backend
-     */
-    public BackendFileImpl(final File storagePath) {
-        this.storagePath = storagePath;
+//    /**
+//     * Default constructor.
+//     *
+//     * @param storagePath is the directory on a local backend
+//     */
+//    public BackendFileImpl(final File storagePath) {
+//        this.storagePath = storagePath;
+//    }
+
+    public BackendFileImpl(final BackendModel backend) {
+        this.storagePath = new File((String) backend.getOptions().get("storagePath"));
     }
+
 
     /**
      * Returns a {@link File} specified by the URI. It checks if the URI exists
@@ -201,5 +207,15 @@ public class BackendFileImpl extends AbstractBackend {
         }
         return success;
     }
+
+    /**
+     *
+     * @return storagePath as File (useful for testing)
+     */
+    public File getStoragePath() {
+        return storagePath;
+    }
+
+
 
 }
