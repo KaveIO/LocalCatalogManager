@@ -1,11 +1,11 @@
 package nl.kpmg.lcm.server;
 
-import java.io.IOException;
 import java.net.URI;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import nl.kpmg.lcm.server.data.MetaData;
 import nl.kpmg.lcm.server.data.dao.DaoException;
+import nl.kpmg.lcm.server.data.dao.file.BackendDaoImpl;
 import nl.kpmg.lcm.server.data.dao.file.MetaDataDaoImpl;
 import nl.kpmg.lcm.server.data.dao.file.TaskDescriptionDaoImpl;
 import nl.kpmg.lcm.server.data.dao.file.TaskScheduleDaoImpl;
@@ -36,6 +36,7 @@ public class Server {
 
         try {
             Resources.setMetaDataDao(new MetaDataDaoImpl(String.format("%s/%s", dataPath, "metadata/")));
+            Resources.setBackEndDao(new BackendDaoImpl(String.format("%s/%s", dataPath, "backendModel/")));
             Resources.setTaskDescriptionDao(new TaskDescriptionDaoImpl(String.format("%s/%s", dataPath, "taskdescription/")));
             Resources.setTaskScheduleDao(new TaskScheduleDaoImpl(String.format("%s/%s", dataPath, "taskschedule/")));
 
