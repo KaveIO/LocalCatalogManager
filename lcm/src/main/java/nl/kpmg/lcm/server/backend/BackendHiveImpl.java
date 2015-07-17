@@ -22,6 +22,7 @@ import java.sql.DriverManager;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.util.Date;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import nl.kpmg.lcm.server.data.MetaData;
@@ -154,7 +155,8 @@ public class BackendHiveImpl extends AbstractBackend {
         }
         return out;
     }
-/**
+
+    /**
      * Returns information about dataset mentioned in the metadata. It checks if
      * the referenced data exist and can be accessed. It also gathers
      * information about the size and modification time.
@@ -168,23 +170,26 @@ public class BackendHiveImpl extends AbstractBackend {
         String uri = metadata.getDataUri();
         DataSetInformation dataSetInformation = new DataSetInformation();
         dataSetInformation.setUri(uri);
-
+        
         String conPath = this.makeConnectionString(uri);
         String user = this.getUserFromUri(uri);
         String passwd = "";
         String[] uriInfo = this.getServerDbTableFromUri(uri);
         String tabName = uriInfo[2];
         String dbName = uriInfo[1];
-
+        
         try {
             Class.forName(DRIVER_NAME);
-        } catch (ClassNotFoundException ex) {
+        }
+        catch (ClassNotFoundException ex) {
             Logger.getLogger(BackendHiveImpl.class.getName()).log(Level.SEVERE, null, ex);
         }
-
+        
         try (Connection con = DriverManager.getConnection(conPath, user, passwd)) {
             Statement stmt = con.createStatement();
-            ResultSet res = stmt.executeQuery("show tables in " + dbName);
+            // checking if table exists
+            String sql = "show tables in " + dbName;
+            ResultSet res = stmt.executeQuery(sql);
             boolean isAttached = false;
             while (res.next() && !isAttached) {
                 String resString = res.getString(1);
@@ -193,6 +198,62 @@ public class BackendHiveImpl extends AbstractBackend {
                 }
             }
             dataSetInformation.setAttached(isAttached);
+            // getting further information about the dataset
+            sql = "describe formatted " + tabName;
+            res = stmt.executeQuery(sql);
+            final String protectString = "Protect Mode:";
+            String protectResult = "";
+            final String noProtection = "None";
+            final String t1name = "Table Parameters:";
+            boolean hasStatParams = false;
+            long byteSize = 0;
+            final int lastCol = 3;
+            final String modString = "transient_lastDdlTime";
+            String modDateString = "";
+            while (res.next() && !hasStatParams) {
+                String resString = res.getString(1).trim();
+                if(resString == null) {
+                    //method above can return null string, which causes switch to fail
+                    continue;
+                }
+                switch (resString) {
+                    case t1name:
+                        // detailed info saved, getting the size
+                        hasStatParams = true;
+                        final String paramName = "rawDataSize";
+                        boolean hasSize = false;
+                        boolean hasDate = false;
+                        while (res.next() && (!hasSize || !hasDate)) {
+                            String resPar = res.getString(2).trim();
+                            if (resPar == null) {
+                                //method above can return null string, which causes switch to fail
+                                continue;
+                            }
+                            switch (resPar) {
+                                case paramName:
+                                    byteSize = Long.parseLong(res.getString(lastCol).trim());
+                                    hasSize = true;
+                                    break;
+                                case modString:
+                                    modDateString = res.getString(lastCol).trim();
+                                    hasDate = true;
+                                    break;
+                            }
+                        }   break;
+                    case protectString:
+                        protectResult = res.getString(2).trim();
+                        break;
+                }
+            }
+            dataSetInformation.setReadable(protectResult.equals(noProtection));
+            dataSetInformation.setByteSize(byteSize);
+
+            /**
+             * @TODO missing protection in case the date is not found
+             */
+            long epochSecs = Long.parseLong(modDateString);
+            Date modDate = new Date(epochSecs * 1000); // constructors expects ms
+            dataSetInformation.setModificationTime(modDate);
         }
         catch (SQLException ex) {
             Logger.getLogger(BackendHiveImpl.class.getName()).log(Level.SEVERE, null, ex);
@@ -202,7 +263,7 @@ public class BackendHiveImpl extends AbstractBackend {
         // describe formatted test_yahoo2
         return dataSetInformation;
     }
-
+    
     @Override
     public void store(MetaData metadata, InputStream content) throws BackendException {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
@@ -224,11 +285,11 @@ public class BackendHiveImpl extends AbstractBackend {
         //  INSERT OVERWRITE LOCAL DIRECTORY '/root/testDir3' ROW FORMAT DELIMITED FIELDS TERMINATED BY ',' select * from default.test_yahoo2 limit 10;
         //   INSERT OVERWRITE DIRECTORY '/user/root/testDir4' select * from default.test_yahoo2 limit 10;
     }
-
+    
     @Override
     public boolean delete(MetaData metadata) throws BackendException {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
         //drop table test_yahoo2;
     }
-
+    
 }

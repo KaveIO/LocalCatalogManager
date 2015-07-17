@@ -105,6 +105,9 @@ public class BackendHiveImplTest {
         metaData.put("data", new HashMap() { { put("uri", fileUri); } });
         BackendHiveImpl testBackend = new BackendHiveImpl(fileUri);
         DataSetInformation dataSetInformation = testBackend.gatherDataSetInformation(metaData);
+        System.out.println(dataSetInformation.getModificationTime());
+        System.out.println(dataSetInformation.isReadable());
+        System.out.println(dataSetInformation.getByteSize());
         assertEquals(dataSetInformation.isAttached(), true);
     }
     
