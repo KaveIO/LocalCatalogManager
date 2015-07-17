@@ -113,13 +113,16 @@ public class BackendHiveImplTest {
     
       @Test
     public final void testGatherDatasetInformation2() throws BackendException {
-        System.out.println("testGatherDatasetInformation");
+        System.out.println("testGatherDatasetInformation2");
         MetaData metaData = new MetaData();
-        final String fileUri = "hive://jpavel@localhost:10000/default/battingNot";
+        final String fileUri = "hive://jpavel@localhost:10000/default/test";
         metaData.put("data", new HashMap() { { put("uri", fileUri); } });
         BackendHiveImpl testBackend = new BackendHiveImpl(fileUri);
         DataSetInformation dataSetInformation = testBackend.gatherDataSetInformation(metaData);
-        assertEquals(dataSetInformation.isAttached(), false);
+        System.out.println(dataSetInformation.getModificationTime());
+        System.out.println(dataSetInformation.isReadable());
+        System.out.println(dataSetInformation.getByteSize());
+        assertEquals(dataSetInformation.isAttached(), true);
     }
    
     

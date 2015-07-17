@@ -155,7 +155,78 @@ public class BackendHiveImpl extends AbstractBackend {
         }
         return out;
     }
+    /**
+     * Helper function to extract necessary info from the hive query output.
+     * @param res Hive query output of the type {@link ResultSet}
+     * @param dataSetInformation Information about the dataset
+     * @return Updated {@link DatasetInformation}
+     * @throws SQLException if there is problem with connection or querry execution
+     */
+    private DataSetInformation
+        getDBInfoFromResults(final ResultSet res, final DataSetInformation dataSetInformation) throws SQLException {
+            final String protectString = "Protect Mode:";
+            String protectResult = "";
+            final String noProtection = "None";
+            final String t1name = "Table Parameters:";
+            boolean hasStatParams = false;
+            long byteSize = -1;
+            final int lastCol = 3;
+            final String modString = "transient_lastDdlTime";
+            String modDateString = "0";
+            while (res.next() && !hasStatParams) {
+                String resString = res.getString(1).trim();
+                if (resString == null) {
+                    //method above can return null string, which causes switch to fail
+                    continue;
+                }
+                String trimRes = resString.trim();
+                switch (trimRes) {
+                    case t1name:
+                        // detailed info saved, getting the size
+                        hasStatParams = true;
+                        final String paramName = "rawDataSize";
+                        boolean hasSize = false;
+                        boolean hasDate = false;
+                        while (res.next() && (!hasSize || !hasDate)) {
+                            String resPar = res.getString(2);
+                            if (resPar == null) {
+                                //method above can return null string, which causes switch to fail
+                                continue;
+                            }
+                            String trim = resPar.trim();
+                            switch (trim) {
+                                case paramName:
+                                    byteSize = Long.parseLong(res.getString(lastCol).trim());
+                                    hasSize = true;
+                                    break;
+                                case modString:
+                                    modDateString = res.getString(lastCol).trim();
+                                    hasDate = true;
+                                    break;
+                                default:
+                                    break;
+                            }
+                        }
+                        break;
+                    case protectString:
+                        protectResult = res.getString(2).trim();
+                        break;
+                    default:
+                        break;
+                }
+            }
+            dataSetInformation.setReadable(protectResult.equals(noProtection));
+            dataSetInformation.setByteSize(byteSize);
 
+            /**
+             * @TODO missing protection in case the date is not found
+             */
+            long epochSecs = Long.parseLong(modDateString);
+            final int numms = 1000;
+            Date modDate = new Date(epochSecs * numms); // constructor expects ms
+            dataSetInformation.setModificationTime(modDate);
+        return dataSetInformation;
+    }
     /**
      * Returns information about dataset mentioned in the metadata. It checks if
      * the referenced data exist and can be accessed. It also gathers
@@ -170,21 +241,20 @@ public class BackendHiveImpl extends AbstractBackend {
         String uri = metadata.getDataUri();
         DataSetInformation dataSetInformation = new DataSetInformation();
         dataSetInformation.setUri(uri);
-        
+
         String conPath = this.makeConnectionString(uri);
         String user = this.getUserFromUri(uri);
         String passwd = "";
         String[] uriInfo = this.getServerDbTableFromUri(uri);
         String tabName = uriInfo[2];
         String dbName = uriInfo[1];
-        
+
         try {
             Class.forName(DRIVER_NAME);
-        }
-        catch (ClassNotFoundException ex) {
+        } catch (ClassNotFoundException ex) {
             Logger.getLogger(BackendHiveImpl.class.getName()).log(Level.SEVERE, null, ex);
         }
-        
+
         try (Connection con = DriverManager.getConnection(conPath, user, passwd)) {
             Statement stmt = con.createStatement();
             // checking if table exists
@@ -199,71 +269,26 @@ public class BackendHiveImpl extends AbstractBackend {
             }
             dataSetInformation.setAttached(isAttached);
             // getting further information about the dataset
-            sql = "describe formatted " + tabName;
+            sql = "describe formatted " + dbName+"."+tabName;
             res = stmt.executeQuery(sql);
-            final String protectString = "Protect Mode:";
-            String protectResult = "";
-            final String noProtection = "None";
-            final String t1name = "Table Parameters:";
-            boolean hasStatParams = false;
-            long byteSize = 0;
-            final int lastCol = 3;
-            final String modString = "transient_lastDdlTime";
-            String modDateString = "";
-            while (res.next() && !hasStatParams) {
-                String resString = res.getString(1).trim();
-                if(resString == null) {
-                    //method above can return null string, which causes switch to fail
-                    continue;
-                }
-                switch (resString) {
-                    case t1name:
-                        // detailed info saved, getting the size
-                        hasStatParams = true;
-                        final String paramName = "rawDataSize";
-                        boolean hasSize = false;
-                        boolean hasDate = false;
-                        while (res.next() && (!hasSize || !hasDate)) {
-                            String resPar = res.getString(2).trim();
-                            if (resPar == null) {
-                                //method above can return null string, which causes switch to fail
-                                continue;
-                            }
-                            switch (resPar) {
-                                case paramName:
-                                    byteSize = Long.parseLong(res.getString(lastCol).trim());
-                                    hasSize = true;
-                                    break;
-                                case modString:
-                                    modDateString = res.getString(lastCol).trim();
-                                    hasDate = true;
-                                    break;
-                            }
-                        }   break;
-                    case protectString:
-                        protectResult = res.getString(2).trim();
-                        break;
-                }
+            dataSetInformation = this.getDBInfoFromResults(res, dataSetInformation);
+            if (dataSetInformation.getByteSize() == -1){
+                // detailed information about size, etc. not available
+                String sql2 = "analyze table "+dbName+"."+tabName+" compute statistics";
+                stmt.execute(sql2);
+                res = stmt.executeQuery(sql);
+                dataSetInformation = this.getDBInfoFromResults(res, dataSetInformation);
             }
-            dataSetInformation.setReadable(protectResult.equals(noProtection));
-            dataSetInformation.setByteSize(byteSize);
-
-            /**
-             * @TODO missing protection in case the date is not found
-             */
-            long epochSecs = Long.parseLong(modDateString);
-            Date modDate = new Date(epochSecs * 1000); // constructors expects ms
-            dataSetInformation.setModificationTime(modDate);
         }
         catch (SQLException ex) {
             Logger.getLogger(BackendHiveImpl.class.getName()).log(Level.SEVERE, null, ex);
         }
-
+        
         // analyze table default.test_yahoo2 compute statistics;
         // describe formatted test_yahoo2
         return dataSetInformation;
     }
-    
+
     @Override
     public void store(MetaData metadata, InputStream content) throws BackendException {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
@@ -285,11 +310,11 @@ public class BackendHiveImpl extends AbstractBackend {
         //  INSERT OVERWRITE LOCAL DIRECTORY '/root/testDir3' ROW FORMAT DELIMITED FIELDS TERMINATED BY ',' select * from default.test_yahoo2 limit 10;
         //   INSERT OVERWRITE DIRECTORY '/user/root/testDir4' select * from default.test_yahoo2 limit 10;
     }
-    
+
     @Override
     public boolean delete(MetaData metadata) throws BackendException {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
         //drop table test_yahoo2;
     }
-    
+
 }
