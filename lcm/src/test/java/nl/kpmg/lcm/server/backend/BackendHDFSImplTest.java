@@ -28,6 +28,7 @@ import java.net.URI;
 import java.util.HashMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import nl.kpmg.lcm.server.data.BackendModel;
 import nl.kpmg.lcm.server.data.MetaData;
 import nl.kpmg.lcm.server.data.MetaData;
 import org.apache.commons.io.IOUtils;
@@ -42,34 +43,64 @@ import org.junit.Test;
 import static org.junit.Assert.*;
 
 /**
- *
+ * Test suite for Hortonworks sandbox HDP 2.2.4.
+ * 
+ * It is ignored by default.
  * @author jpavel
  */
 public class BackendHDFSImplTest {
     
-    private static final String TEST_STORAGE_PATH = "temp_test/";
-    
+    /**
+     * Temporary directory in which all the test files will exist.
+     */
+    private static final String TEST_STORAGE_PATH = "hdfs://localhost:8020/";
+    private static final String TEST_DIR = "temp_test/";
+
+    /**
+     * Common access tool for all backends.
+     */
+    private final BackendModel backendModel;
+
+    /**
+     * Default constructor.
+     */
     public BackendHDFSImplTest() {
+        backendModel = new BackendModel();
+        backendModel.setName("test");
+        backendModel.setOptions(new HashMap());
+        backendModel.getOptions().put("storagePath", TEST_STORAGE_PATH);
     }
     
+    /**
+     * Makes a temporary test directory.
+     * @return true if creation successful, false otherwise.
+     * @throws Exception if it is not possible to make a test directory.
+     */
     @BeforeClass
-    public static void setUpClass() {
+    public static void setUpClass() throws Exception {
         // make test temp dir and set storage path
-        File testDir = new File(TEST_STORAGE_PATH);
+        File testDir = new File(TEST_DIR);
         boolean mkdir = testDir.mkdir();
+        if (mkdir) {
+            System.out.println("Setup BackendFileTest successful");
+        } else {
+            System.out.println("Setup BackendFileTest failed");
+        }
     }
     
+    /**
+     * Deletes the temporary test directory and its content, assuming there are
+     *  no subdirectories.
+     */
     @AfterClass
-    public static void tearDownClass() {
+    public static final void tearDownClass() {
+        File file = new File(TEST_DIR);
+         for (File c : file.listFiles()) {
+            c.delete();
+         }
+        file.delete();
     }
     
-    @Before
-    public void setUp() {
-    }
-    
-    @After
-    public void tearDown() {
-    }
 
     /**
      * Test of getSupportedUriSchema method, of class BackendHDFSImpl.
@@ -77,8 +108,7 @@ public class BackendHDFSImplTest {
     @Test
     public final void testGetSupportedUriSchema() {
         System.out.println("getSupportedUriSchema");
-        String server = "hdfs://localhost:9000/";
-        BackendHDFSImpl testBackend = new BackendHDFSImpl(server);
+        BackendHDFSImpl testBackend = new BackendHDFSImpl(backendModel);
         String expResult = "hdfs";
         String result = testBackend.getSupportedUriSchema();
         assertEquals(expResult, result);
@@ -93,8 +123,8 @@ public class BackendHDFSImplTest {
     @Test
     public final void testParseUri() throws BackendException {
         System.out.println("parseUri");
-        String server = "hdfs://localhost:9000/";
-        BackendHDFSImpl testBackend = new BackendHDFSImpl(server);
+        String server = "hdfs://localhost:8020/";
+        BackendHDFSImpl testBackend = new BackendHDFSImpl(backendModel);
         String uri = server + "user/name/temp.csv";
         URI dataUri = testBackend.parseUri(uri);
         String filePath = dataUri.getPath();
@@ -112,7 +142,7 @@ public class BackendHDFSImplTest {
     public final void testParseFileUri() throws BackendException {
         System.out.println("parseFileUri");
         String server = "file:///";
-        BackendHDFSImpl testBackend = new BackendHDFSImpl(server);
+        BackendHDFSImpl testBackend = new BackendHDFSImpl(backendModel);
         String uri = server + "user/name/temp.csv";
         URI dataUri = testBackend.parseUri(uri); 
         // If we got here, we failed to convince the parseUri to throw an exception
@@ -121,11 +151,13 @@ public class BackendHDFSImplTest {
     
     @Test
     public final void testAccess() throws IOException {
-        URI uri = URI.create ("hdfs://localhost:9000/user/jpavel/file.txt");
+        System.out.println("testAcess");
+        URI uri = URI.create ("hdfs://localhost:8020/user/hadoop/filemane.txt");
         Configuration conf = new Configuration ();
-        conf.set("fs.default.name", "hdfs://localhost:9000");
+        String server = (String) backendModel.getOptions().get("storagePath");
+        conf.set("fs.default.name", server);
         FileSystem file = FileSystem.get(conf);
-        System.out.println("get file"+file.exists(new Path(uri)));
+        System.out.println("get file "+file.exists(new Path(uri)));
     }
     
     /**
@@ -138,8 +170,7 @@ public class BackendHDFSImplTest {
     public final void testGatherDatasetInformationEmptyMetadata() throws BackendException {
        System.out.println("testGatherDatasetInformationEmptyMetadata");
         MetaData metaData = new MetaData();
-        String server = "hdfs://localhost:9000/";
-        BackendHDFSImpl testBackend = new BackendHDFSImpl(server);
+        BackendHDFSImpl testBackend = new BackendHDFSImpl(backendModel);
         DataSetInformation dataSetInformation = testBackend.gatherDataSetInformation(metaData);
         fail("testGatherDatasetInformationEmptyMetadata did not thrown BackendException!");
     }
@@ -150,132 +181,131 @@ public class BackendHDFSImplTest {
         MetaData metaData = new MetaData();
         final String fileUri = "NotAnUri";
         metaData.put("data", new HashMap() { { put("uri", fileUri); } });
-        String server = "hdfs://localhost:9000/";
-        BackendHDFSImpl testBackend = new BackendHDFSImpl(server);
+        BackendHDFSImpl testBackend = new BackendHDFSImpl(backendModel);
         DataSetInformation dataSetInformation = testBackend.gatherDataSetInformation(metaData);
         assertEquals(dataSetInformation.isAttached(), false);
     }
-    
-    /**
-     * Tests what happens if {@link BackendFileImp} gathers information using
-     * {@link MetaData} object with valid URI pointing to non-existing location.
-     * The {@link DataSetInformation} object should has isAttached() method equal to false.
-     * 
-     * @throws BackendException if it is not possible to gather information about the
-     *         dataset
-     * @throws IOException if it is not possible to get path of the storage directory
-     */
-    @Test
-    public final void testGatherDatasetInformationWrongLink() throws BackendException, IOException {
-      System.out.println("testGatherDatasetInformationWrongLink");
-        MetaData metaData = new MetaData();
+//    
+//    /**
+//     * Tests what happens if {@link BackendFileImp} gathers information using
+//     * {@link MetaData} object with valid URI pointing to non-existing location.
+//     * The {@link DataSetInformation} object should has isAttached() method equal to false.
+//     * 
+//     * @throws BackendException if it is not possible to gather information about the
+//     *         dataset
+//     * @throws IOException if it is not possible to get path of the storage directory
+//     */
+//    @Test
+//    public final void testGatherDatasetInformationWrongLink() throws BackendException, IOException {
+//      System.out.println("testGatherDatasetInformationWrongLink");
+//        MetaData metaData = new MetaData();
+////        File testDir = new File(TEST_STORAGE_PATH);
+////        // need to make sure that test file does not exist
+////        File testFile = new File(TEST_STORAGE_PATH + "/temp.csv");
+////        testFile.delete();
+//        final String fileUri = "hdfs://localhost:9000/user/jpavel/NoFile";
+//        metaData.put("data", new HashMap() { { put("uri", fileUri); } });
+//        String server = "hdfs://localhost:9000/";
+//        BackendHDFSImpl testBackend = new BackendHDFSImpl(server);
+//        DataSetInformation dataSetInformation = testBackend.gatherDataSetInformation(metaData);
+//        assertEquals(dataSetInformation.isAttached(), false);
+//    }
+//    
+//    @Test
+//    public final void testGatherDatasetInformation() throws BackendException, IOException {
+//        System.out.println("testGatherDatasetInformation");
+//        MetaData metaData = new MetaData();
+////        File testDir = new File(TEST_STORAGE_PATH);
+////        // need to make sure that test file does not exist
+////        File testFile = new File(TEST_STORAGE_PATH + "/temp.csv");
+////        testFile.delete();
+//        final String fileUri = "hdfs://localhost:9000/user/jpavel/file3.txt";
+//        metaData.put("data", new HashMap() { { put("uri", fileUri); } });
+//        String server = "hdfs://localhost:9000/";
+//        BackendHDFSImpl testBackend = new BackendHDFSImpl(server);
+//        DataSetInformation dataSetInformation = testBackend.gatherDataSetInformation(metaData);
+//        System.out.println(dataSetInformation.getModificationTime());
+//        System.out.println(dataSetInformation.isReadable());
+//        System.out.println(dataSetInformation.getByteSize());
+//        assertEquals(dataSetInformation.isAttached(), true);
+//    }
+//    
+//    @Test
+//    public final void testStore() throws IOException, BackendException {
+//        //first make a test file with some content
+//        File testFile = new File(TEST_STORAGE_PATH + "/testFile.csv");
+//        testFile.createNewFile();
+//        try (FileWriter writer = new FileWriter(testFile)) {
+//            final int nLoops = 10;
+//            for (int i = 0; i  < nLoops; i++) {
+//                writer.write("qwertyuiop");
+//                writer.write("\n");
+//                writer.write("asdfghjkl");
+//                writer.write("\n");
+//                writer.write("zxcvbnm,!@#$%^&*()_");
+//                writer.write("\n");
+//                writer.write("1234567890[][;',.");
+//                writer.write("\n");
+//            }
+//            writer.flush();
+//        }
+//        // now make a metadata with uri
 //        File testDir = new File(TEST_STORAGE_PATH);
-//        // need to make sure that test file does not exist
-//        File testFile = new File(TEST_STORAGE_PATH + "/temp.csv");
-//        testFile.delete();
-        final String fileUri = "hdfs://localhost:9000/user/jpavel/NoFile";
-        metaData.put("data", new HashMap() { { put("uri", fileUri); } });
-        String server = "hdfs://localhost:9000/";
-        BackendHDFSImpl testBackend = new BackendHDFSImpl(server);
-        DataSetInformation dataSetInformation = testBackend.gatherDataSetInformation(metaData);
-        assertEquals(dataSetInformation.isAttached(), false);
-    }
-    
-    @Test
-    public final void testGatherDatasetInformation() throws BackendException, IOException {
-        System.out.println("testGatherDatasetInformation");
-        MetaData metaData = new MetaData();
-//        File testDir = new File(TEST_STORAGE_PATH);
-//        // need to make sure that test file does not exist
-//        File testFile = new File(TEST_STORAGE_PATH + "/temp.csv");
-//        testFile.delete();
-        final String fileUri = "hdfs://localhost:9000/user/jpavel/file3.txt";
-        metaData.put("data", new HashMap() { { put("uri", fileUri); } });
-        String server = "hdfs://localhost:9000/";
-        BackendHDFSImpl testBackend = new BackendHDFSImpl(server);
-        DataSetInformation dataSetInformation = testBackend.gatherDataSetInformation(metaData);
-        System.out.println(dataSetInformation.getModificationTime());
-        System.out.println(dataSetInformation.isReadable());
-        System.out.println(dataSetInformation.getByteSize());
-        assertEquals(dataSetInformation.isAttached(), true);
-    }
-    
-    @Test
-    public final void testStore() throws IOException, BackendException {
-        //first make a test file with some content
-        File testFile = new File(TEST_STORAGE_PATH + "/testFile.csv");
-        testFile.createNewFile();
-        try (FileWriter writer = new FileWriter(testFile)) {
-            final int nLoops = 10;
-            for (int i = 0; i  < nLoops; i++) {
-                writer.write("qwertyuiop");
-                writer.write("\n");
-                writer.write("asdfghjkl");
-                writer.write("\n");
-                writer.write("zxcvbnm,!@#$%^&*()_");
-                writer.write("\n");
-                writer.write("1234567890[][;',.");
-                writer.write("\n");
-            }
-            writer.flush();
-        }
-        // now make a metadata with uri
-        File testDir = new File(TEST_STORAGE_PATH);
-        final String fileUri = "hdfs://localhost:9000/user/jpavel/testStore.csv";
-        MetaData metaData = new MetaData();
-        metaData.put("data", new HashMap() { { put("uri", fileUri); } });
-        InputStream is = new FileInputStream(testFile);
-        String server = "hdfs://localhost:9000/";
-        BackendHDFSImpl testBackend = new BackendHDFSImpl(server);
-        testBackend.store(metaData, is);
-//        final File expected = testFile;
-//        
-//        final File output = new File(testDir.getCanonicalPath() + "/testStore.csv");
-//        HashCode hcExp = Files.hash(expected, Hashing.md5());
-//        HashCode hcOut = Files.hash(output, Hashing.md5());
-//        assertEquals(hcExp.toString(), hcOut.toString());
-    }
-    
-    @Test
-    public final void testRead() throws IOException, BackendException {
-        // make a metadata with uri
-        final String fileUri = "hdfs://localhost:9000/user/jpavel/testStore.csv";
-        // make test file to where the content stored in previous test would be read
-        File testFile = new File(TEST_STORAGE_PATH + "/testRead.csv");
-        testFile.createNewFile();
-        MetaData metaData = new MetaData();
-        metaData.put("data", new HashMap() { { put("uri", fileUri); } });
-        // make local data backend in specified directory and read the existing file
-        String server = "hdfs://localhost:9000/";
-        BackendHDFSImpl testBackend = new BackendHDFSImpl(server);
-        try (InputStream is = testBackend.read(metaData)) {
-            try (FileOutputStream fos = new FileOutputStream(testFile)) {
-                int readBytes = IOUtils.copy(is, fos);
-                Logger.getLogger(BackendFileImpl.class.getName())
-                        .log(Level.INFO, "{0} bytes read", readBytes);
-                fos.flush();
-            }
-        }
-//        // check if the files are identical
-//        final File expected = testFile;
-//        final File output = new File(testDir.getCanonicalPath() + "/testStore.csv");
-//        HashCode hcExp = Files.hash(expected, Hashing.md5());
-//        HashCode hcOut = Files.hash(output, Hashing.md5());
-//        assertEquals(hcExp.toString(), hcOut.toString());
-    }
-    
-     @Test
-    public final void testDelete() throws IOException, BackendException {
-        final String fileUri = "hdfs://localhost:9000/user/jpavel/testStore.csv";
-        // make metadata pointing to the file to be deleted
-        MetaData metaData = new MetaData();
-        metaData.put("data", new HashMap() { { put("uri", fileUri); } });
-        // make local data backend in specified directory and delete the existing file
-        String server = "hdfs://localhost:9000/";
-        BackendHDFSImpl testBackend = new BackendHDFSImpl(server);
-        boolean result = testBackend.delete(metaData);
-        assertEquals(result, true);
-    }
+//        final String fileUri = "hdfs://localhost:9000/user/jpavel/testStore.csv";
+//        MetaData metaData = new MetaData();
+//        metaData.put("data", new HashMap() { { put("uri", fileUri); } });
+//        InputStream is = new FileInputStream(testFile);
+//        String server = "hdfs://localhost:9000/";
+//        BackendHDFSImpl testBackend = new BackendHDFSImpl(server);
+//        testBackend.store(metaData, is);
+////        final File expected = testFile;
+////        
+////        final File output = new File(testDir.getCanonicalPath() + "/testStore.csv");
+////        HashCode hcExp = Files.hash(expected, Hashing.md5());
+////        HashCode hcOut = Files.hash(output, Hashing.md5());
+////        assertEquals(hcExp.toString(), hcOut.toString());
+//    }
+//    
+//    @Test
+//    public final void testRead() throws IOException, BackendException {
+//        // make a metadata with uri
+//        final String fileUri = "hdfs://localhost:9000/user/jpavel/testStore.csv";
+//        // make test file to where the content stored in previous test would be read
+//        File testFile = new File(TEST_STORAGE_PATH + "/testRead.csv");
+//        testFile.createNewFile();
+//        MetaData metaData = new MetaData();
+//        metaData.put("data", new HashMap() { { put("uri", fileUri); } });
+//        // make local data backend in specified directory and read the existing file
+//        String server = "hdfs://localhost:9000/";
+//        BackendHDFSImpl testBackend = new BackendHDFSImpl(server);
+//        try (InputStream is = testBackend.read(metaData)) {
+//            try (FileOutputStream fos = new FileOutputStream(testFile)) {
+//                int readBytes = IOUtils.copy(is, fos);
+//                Logger.getLogger(BackendFileImpl.class.getName())
+//                        .log(Level.INFO, "{0} bytes read", readBytes);
+//                fos.flush();
+//            }
+//        }
+////        // check if the files are identical
+////        final File expected = testFile;
+////        final File output = new File(testDir.getCanonicalPath() + "/testStore.csv");
+////        HashCode hcExp = Files.hash(expected, Hashing.md5());
+////        HashCode hcOut = Files.hash(output, Hashing.md5());
+////        assertEquals(hcExp.toString(), hcOut.toString());
+//    }
+//    
+//     @Test
+//    public final void testDelete() throws IOException, BackendException {
+//        final String fileUri = "hdfs://localhost:9000/user/jpavel/testStore.csv";
+//        // make metadata pointing to the file to be deleted
+//        MetaData metaData = new MetaData();
+//        metaData.put("data", new HashMap() { { put("uri", fileUri); } });
+//        // make local data backend in specified directory and delete the existing file
+//        String server = "hdfs://localhost:9000/";
+//        BackendHDFSImpl testBackend = new BackendHDFSImpl(server);
+//        boolean result = testBackend.delete(metaData);
+//        assertEquals(result, true);
+//    }
 
 //    /**
 //     * Test of gatherDataSetInformation method, of class BackendHDFSImpl.

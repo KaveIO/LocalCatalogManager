@@ -74,13 +74,19 @@ public class BackendFileTest {
 
     /**
      * Makes a temporary test directory.
+     * @return true if creation successful, false otherwise.
      * @throws Exception if it is not possible to make a test directory.
      */
     @BeforeClass
-    public static final void setUp() throws Exception {
+    public static final void setUpClass() throws Exception {
         // make test temp dir and set storage path
         File testDir = new File(TEST_STORAGE_PATH);
-        testDir.mkdir();
+        boolean mkdir = testDir.mkdir();
+        if (mkdir) {
+            System.out.println("Setup BackendFileTest successful");
+        } else {
+            System.out.println("Setup BackendFileTest failed");
+        }
     }
 
     /**
@@ -88,7 +94,7 @@ public class BackendFileTest {
      *  no subdirectories.
      */
     @AfterClass
-    public static final void tearDown() {
+    public static final void tearDownClass() {
         File file = new File(TEST_STORAGE_PATH);
          for (File c : file.listFiles()) {
             c.delete();
