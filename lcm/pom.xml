@@ -18,6 +18,8 @@
         <slf4j.version>1.7.10</slf4j.version>
         <mockito.version>1.10.19</mockito.version>
         <jmock.version>2.5.0</jmock.version>
+        <jasyptspring.version>1.9.2</jasyptspring.version>
+        <jasypt.version>1.9.2</jasypt.version>
     </properties>
     
     <dependencyManagement>
@@ -142,6 +144,18 @@
             <artifactId>spring-test</artifactId>
             <version>${spring.version}</version>
             <scope>test</scope>
+        </dependency>
+        
+        <dependency>
+            <groupId>org.jasypt</groupId>
+            <artifactId>jasypt-springsecurity3</artifactId>
+            <version>${jasyptspring.version}</version>            
+        </dependency>
+        
+        <dependency>
+            <groupId>org.jasypt</groupId>
+            <artifactId>jasypt</artifactId>
+            <version>${jasypt.version}</version>            
         </dependency>
         
         <!-- mongodb java driver -->

@@ -1,17 +1,25 @@
 package nl.kpmg.lcm.server.rest;
 
 import java.io.File;
+
 import javax.ws.rs.client.ClientBuilder;
 import javax.ws.rs.client.WebTarget;
+
 import nl.kpmg.lcm.server.Server;
 
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.Test;
-import static org.junit.Assert.assertEquals;
-import org.junit.BeforeClass;
 
+import static org.junit.Assert.assertEquals;
+
+import org.junit.BeforeClass;
+import org.junit.runner.RunWith;
+import org.springframework.test.context.ContextConfiguration;
+import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
+@RunWith(SpringJUnit4ClassRunner.class)
+@ContextConfiguration(locations={"/application-context.xml","/application-context-file.xml"})
 public class ClientTest {
     private static final String TEST_STORAGE_PATH = "test";
 
