@@ -211,7 +211,7 @@ public class BackendHDFSImplIntTest {
     }
 
     /**
-     * Tests what happens if {@link BackendFileImp} gathers information using
+     * Tests what happens if {@link BackendHDFSImp} gathers information using
      * empty {@link MetaData} object. Exception is expected.
      *
      * @throws BackendException if empty metadata are supplied.
@@ -226,7 +226,7 @@ public class BackendHDFSImplIntTest {
     }
 
     /**
-     * Tests what happens if {@link BackendFileImp} gathers information using
+     * Tests what happens if {@link BackendHDFSImp} gathers information using
      * {@link MetaData} object with invalid URI.
      *
      * @throws BackendException if empty metadata are supplied.
@@ -247,7 +247,7 @@ public class BackendHDFSImplIntTest {
     }
 
     /**
-     * Tests what happens if {@link BackendFileImp} gathers information using
+     * Tests what happens if {@link BackendHDFSImp} gathers information using
      * {@link MetaData} object with valid URI pointing to non-existing location.
      * The {@link DataSetInformation} object should has isAttached() method
      * equal to false.
@@ -273,7 +273,7 @@ public class BackendHDFSImplIntTest {
     }
 
     /**
-     * Tests what happens if {@link BackendFileImp} gathers information using
+     * Tests what happens if {@link BackendHDFSImp} gathers information using
      * {@link MetaData} object with valid URI pointing to existing location. The
      * {@link DataSetInformation} object should has isAttached() method equal to
      * true.
@@ -369,7 +369,7 @@ public class BackendHDFSImplIntTest {
         try (InputStream is = testBackend.read(metaData)) {
             try (FileOutputStream fos = new FileOutputStream(output)) {
                 int readBytes = IOUtils.copy(is, fos);
-                Logger.getLogger(BackendFileImpl.class.getName())
+                Logger.getLogger(BackendHDFSImpl.class.getName())
                         .log(Level.INFO, "{0} bytes read", readBytes);
                 fos.flush();
             }
