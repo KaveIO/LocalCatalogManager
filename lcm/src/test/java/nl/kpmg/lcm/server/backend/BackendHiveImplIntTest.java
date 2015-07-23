@@ -91,10 +91,19 @@ public class BackendHiveImplIntTest {
         String result = instance.getSupportedUriSchema();
         assertEquals(expResult, result);
     }
-    
+    /**
+     * Test of connection to the hive server.
+     * Method connects to the hive2 server specified in "storagePath" of backendModel.
+     * It assumes existence of a database called "default" and lists all tables in this
+     * database.
+     *
+     * @throws SQLException if there is a problem with connection or sql query
+     * @throws BackendException if it is not possible to retrieve hive server address from the 
+     * {@link BackendModel} instance that initialized the {@link BackendHiveImp} instance.
+     */
     @Test
-    public void testConnection() throws SQLException, BackendException {
-        System.out.println("testConnection");
+    public final void testConnection() throws SQLException, BackendException {
+        System.out.println("testConnection will print all tables in \'default\' db");
         BackendHiveImpl testBackend = new BackendHiveImpl(backendModel);
         URI hiveUri;
         hiveUri = testBackend.parseUri((String) backendModel.getOptions().get("storagePath"));
@@ -121,34 +130,103 @@ public class BackendHiveImplIntTest {
         con.close();
         
     }
+    /**
+     * Tests what happens if {@link BackendHiveImp} gathers information using
+     * {@link MetaData} object with valid URI pointing to existing location. The
+     * {@link DataSetInformation} object should has isAttached() method equal to
+     * true.
+     *
+     * @throws BackendException if it is not possible to gather information
+     * about the dataset
+     */
+    @Test
+    public final void testGatherDatasetInformation() throws BackendException {
+        System.out.println("testGatherDatasetInformation");
+        MetaData metaData = new MetaData();
+        final String fileUri = "hive://jpavel@localhost:10000/default/batting";
+        metaData.put("data", new HashMap() { { put("uri", fileUri); } });
+        BackendHiveImpl testBackend = new BackendHiveImpl(backendModel);
+        DataSetInformation dataSetInformation = testBackend.gatherDataSetInformation(metaData);
+        System.out.println("modification time: " + dataSetInformation.getModificationTime());
+        System.out.println("is readable: " + dataSetInformation.isReadable());
+        System.out.println("byte size is: " + dataSetInformation.getByteSize());
+        assertEquals(dataSetInformation.isAttached(), true);
+    }
+    
+    /**
+     * Tests what happens if {@link BackendHiveImp} gathers information using
+     * empty {@link MetaData} object. Exception is expected.
+     *
+     * @throws BackendException if empty metadata are supplied.
+     */
+    @Test(expected = BackendException.class)
+    public final void testGatherDatasetInformationEmptyMetadata() throws BackendException {
+        System.out.println("testGatherDatasetInformationEmptyMetadata");
+        MetaData metaData = new MetaData();
+        BackendHiveImpl testBackend = new BackendHiveImpl(backendModel);
+        DataSetInformation dataSetInformation = testBackend.gatherDataSetInformation(metaData);
+        fail("testGatherDatasetInformationEmptyMetadata did not thrown BackendException!");
+    }
 //    
-//    @Test
-//    public final void testGatherDatasetInformation() throws BackendException {
-//        System.out.println("testGatherDatasetInformation");
-//        MetaData metaData = new MetaData();
-//        final String fileUri = "hive://jpavel@localhost:10000/default/batting";
-//        metaData.put("data", new HashMap() { { put("uri", fileUri); } });
-//        BackendHiveImpl testBackend = new BackendHiveImpl(fileUri);
-//        DataSetInformation dataSetInformation = testBackend.gatherDataSetInformation(metaData);
-//        System.out.println(dataSetInformation.getModificationTime());
-//        System.out.println(dataSetInformation.isReadable());
-//        System.out.println(dataSetInformation.getByteSize());
-//        assertEquals(dataSetInformation.isAttached(), true);
-//    }
-//    
-//      @Test
-//    public final void testGatherDatasetInformation2() throws BackendException {
-//        System.out.println("testGatherDatasetInformation2");
-//        MetaData metaData = new MetaData();
-//        final String fileUri = "hive://jpavel@localhost:10000/default/test";
-//        metaData.put("data", new HashMap() { { put("uri", fileUri); } });
-//        BackendHiveImpl testBackend = new BackendHiveImpl(fileUri);
-//        DataSetInformation dataSetInformation = testBackend.gatherDataSetInformation(metaData);
-//        System.out.println(dataSetInformation.getModificationTime());
-//        System.out.println(dataSetInformation.isReadable());
-//        System.out.println(dataSetInformation.getByteSize());
-//        assertEquals(dataSetInformation.isAttached(), true);
-//    }
+    /**
+     * Tests what happens if {@link BackendHiveImp} gathers information using
+     * {@link MetaData} object with invalid URI. The method should fail as well 
+     * because invalid uri scheme is supplied.
+     *
+     * @throws BackendException if invalid URI is supplied.
+     */
+    @Test(expected = BackendException.class)
+    public final void testGatherDatasetInformationWrongMetadata() throws BackendException {
+        System.out.println("testGatherDatasetInformationWrongMetadata");
+        MetaData metaData = new MetaData();
+        final String fileUri = "NotAnUri";
+        metaData.put("data", new HashMap() { { put("uri", fileUri); } });
+        BackendHiveImpl testBackend = new BackendHiveImpl(backendModel);
+        DataSetInformation dataSetInformation = testBackend.gatherDataSetInformation(metaData);
+        fail("testGatherDatasetInformationWrongMetadata did not thrown BackendException!");
+    }
+    
+     /**
+     * Tests what happens if {@link BackendHiveImp} gathers information using
+     * {@link MetaData} object with valid but incomplete URI. The method should fail as well 
+     * because the URI is not complete
+     *
+     * @throws BackendException if incomplete URI is supplied.
+     */
+    @Test(expected = BackendException.class)
+    public final void testGatherDatasetInformationWrongLink() throws BackendException {
+        System.out.println("testGatherDatasetInformationWrongLink");
+        MetaData metaData = new MetaData();
+        final String fileUri = "hive://NoPath";
+        metaData.put("data", new HashMap() { { put("uri", fileUri); } });
+        BackendHiveImpl testBackend = new BackendHiveImpl(backendModel);
+        DataSetInformation dataSetInformation = testBackend.gatherDataSetInformation(metaData);
+       fail("testGatherDatasetInformationWrongLink did not thrown BackendException!");
+    }
+    
+     /**
+     * Tests what happens if {@link BackendHiveImp} gathers information using
+     * {@link MetaData} object with valid URI pointing to non-existing location. The
+     * {@link DataSetInformation} object should has isAttached() method equal to
+     * false.
+     *
+     * @throws BackendException if it is not possible to gather information
+     * about the dataset
+     */
+    @Test
+    public final void testGatherDatasetInformationWrongDest() throws BackendException {
+        System.out.println("testGatherDatasetInformationWrongDest");
+        MetaData metaData = new MetaData();
+        final String fileUri = "hive://jpavel@localhost:10000/default/batling";
+        metaData.put("data", new HashMap() { { put("uri", fileUri); } });
+        BackendHiveImpl testBackend = new BackendHiveImpl(backendModel);
+        DataSetInformation dataSetInformation = testBackend.gatherDataSetInformation(metaData);
+        System.out.println("modification time: " + dataSetInformation.getModificationTime());
+        System.out.println("is readable: " + dataSetInformation.isReadable());
+        System.out.println("byte size is: " + dataSetInformation.getByteSize());
+        assertEquals(dataSetInformation.isAttached(), false);
+    }
+
    
     
 
