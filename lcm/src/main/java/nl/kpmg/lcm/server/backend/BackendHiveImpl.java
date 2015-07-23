@@ -29,6 +29,7 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import nl.kpmg.lcm.server.data.BackendModel;
 import nl.kpmg.lcm.server.data.MetaData;
 
 /**
@@ -62,10 +63,12 @@ public class BackendHiveImpl extends AbstractBackend {
     /**
      * Default constructor.
      *
-     * @param server is the hive server address, e.g. 127.0.0.1
+     * @param backend is {@link BackendModel} that contains the storagePath,
+     * i.e. server address (e.g. 127.0.0.1)
      */
-    public BackendHiveImpl(final String server) {
-        this.server = server;
+    public BackendHiveImpl(final BackendModel backend) {
+        this.server = (String) backend.getOptions().get("storagePath");
+
     }
 
     /**
@@ -358,7 +361,12 @@ public class BackendHiveImpl extends AbstractBackend {
                 put("uri", tabName);
             }
         });
-        BackendHDFSImpl hdfsBackend = new BackendHDFSImpl("hdfs://" + serverName + ":" + HDFS_PORT);
+        BackendModel backendModel = new BackendModel();
+        backendModel.setName("store_helper");
+        backendModel.setOptions(new HashMap());
+        backendModel.getOptions().put("storagePath", "hdfs://" + serverName + ":" + HDFS_PORT);
+
+        BackendHDFSImpl hdfsBackend = new BackendHDFSImpl(backendModel);
         hdfsBackend.store(metaTemp, content);
         // get driver
         try {
@@ -452,7 +460,12 @@ public class BackendHiveImpl extends AbstractBackend {
             }
         });
         // read it with HDFS backend
-        BackendHDFSImpl hdfsBackend = new BackendHDFSImpl(serverName);
+        BackendModel backendModel = new BackendModel();
+        backendModel.setName("store_helper");
+        backendModel.setOptions(new HashMap());
+        backendModel.getOptions().put("storagePath", "hdfs://" + serverName + ":" + HDFS_PORT);
+
+        BackendHDFSImpl hdfsBackend = new BackendHDFSImpl(backendModel);
         InputStream is = hdfsBackend.read(metaTemp);
         return is;
 
