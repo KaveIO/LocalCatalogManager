@@ -74,7 +74,6 @@ public class BackendFileTest {
 
     /**
      * Makes a temporary test directory.
-     * @return true if creation successful, false otherwise.
      * @throws Exception if it is not possible to make a test directory.
      */
     @BeforeClass
