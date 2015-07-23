@@ -46,7 +46,7 @@ public class BackendHiveImpl extends AbstractBackend {
     private final String server;
 
     /**
-     * @param DRIVER_NAME is the java hive driver class that is dynamically
+     * @param DRIVER_NAME is the java hive driver class for hive2 server that is dynamically
      * loaded
      */
     private static final String DRIVER_NAME = "org.apache.hive.jdbc.HiveDriver";
@@ -55,18 +55,21 @@ public class BackendHiveImpl extends AbstractBackend {
      * @param URI_SCHEME is the URI scheme required by JDBC Hive2 client
      */
     private static final String URI_SCHEME = "jdbc:hive2://";
+
     /**
-     * @param HDFS_PORT is the port on which the HDFS file system is accessible
+     * @param hdfsServer is the address of the HDFS server that can be used for file storage
      */
-    private static final String HDFS_PORT = "8020";
+    private final String hdfsServer;
 
     /**
      * Default constructor.
      *
-     * @param backend is {@link BackendModel} that contains the storagePath,
-     * i.e. server address (e.g. 127.0.0.1)
+     * @param backend is {@link BackendModel} that contains
+     *  - the storagePath; full hive server address (e.g. hive://127.0.0.1:10000)
+     *  - the hdfsServer; full address of HDFS server (e.g. hdfs://localhost:8020)
      */
     public BackendHiveImpl(final BackendModel backend) {
+        this.hdfsServer = (String) backend.getOptions().get("hdfsServer");
         this.server = (String) backend.getOptions().get("storagePath");
 
     }
@@ -93,7 +96,7 @@ public class BackendHiveImpl extends AbstractBackend {
     private String makeConnectionString(final String uri) throws BackendException {
         String[] uriInfo = this.getServerDbTableFromUri(uri);
         String uriPort = this.getPortFromUri(uri);
-        String out = "jdbc:hive2://" + uriInfo[0] + ":" + uriPort + "/" + uriInfo[1];
+        String out = URI_SCHEME + uriInfo[0] + ":" + uriPort + "/" + uriInfo[1];
         return out;
     }
 
@@ -364,7 +367,7 @@ public class BackendHiveImpl extends AbstractBackend {
         BackendModel backendModel = new BackendModel();
         backendModel.setName("store_helper");
         backendModel.setOptions(new HashMap());
-        backendModel.getOptions().put("storagePath", "hdfs://" + serverName + ":" + HDFS_PORT);
+        backendModel.getOptions().put("storagePath", hdfsServer);
 
         BackendHDFSImpl hdfsBackend = new BackendHDFSImpl(backendModel);
         hdfsBackend.store(metaTemp, content);
@@ -463,7 +466,7 @@ public class BackendHiveImpl extends AbstractBackend {
         BackendModel backendModel = new BackendModel();
         backendModel.setName("store_helper");
         backendModel.setOptions(new HashMap());
-        backendModel.getOptions().put("storagePath", "hdfs://" + serverName + ":" + HDFS_PORT);
+        backendModel.getOptions().put("storagePath", hdfsServer);
 
         BackendHDFSImpl hdfsBackend = new BackendHDFSImpl(backendModel);
         InputStream is = hdfsBackend.read(metaTemp);
@@ -515,6 +518,22 @@ public class BackendHiveImpl extends AbstractBackend {
         }
         return success;
         //drop table test_yahoo2;
+    }
+
+    /**
+     *
+     * @return URI scheme that is internally used for connection
+     */
+    public final String getURIscheme() {
+        return URI_SCHEME;
+    }
+
+    /**
+     * 
+     * @return name of hive2 driver that is dynamically loaded when connecting
+     */
+    public final String getDriverName() {
+        return DRIVER_NAME;
     }
 
 }
