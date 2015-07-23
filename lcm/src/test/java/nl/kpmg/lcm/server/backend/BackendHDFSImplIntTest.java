@@ -51,7 +51,7 @@ import static org.junit.Assert.*;
  * It is ignored by default and run only during integration.
  * @author jpavel
  */
-public class BackendHDFSImplTest {
+public class BackendHDFSImplIntTest {
     
     /**
      * Temporary directory in which all the test files will exist.
@@ -67,7 +67,7 @@ public class BackendHDFSImplTest {
     /**
      * Default constructor.
      */
-    public BackendHDFSImplTest() {
+    public BackendHDFSImplIntTest() {
         backendModel = new BackendModel();
         backendModel.setName("test");
         backendModel.setOptions(new HashMap());
@@ -84,6 +84,36 @@ public class BackendHDFSImplTest {
         // make test temp dir and set storage path
         File testDir = new File(TEST_DIR);
         boolean mkdir = testDir.mkdir();
+        // make test file
+        File testFile = new File(TEST_DIR + "/testFile.csv");
+        testFile.createNewFile();
+        try (FileWriter writer = new FileWriter(testFile)) {
+            final int nLoops = 10;
+            for (int i = 0; i  < nLoops; i++) {
+                writer.write("qwertyuiop");
+                writer.write("\n");
+                writer.write("asdfghjkl");
+                writer.write("\n");
+                writer.write("zxcvbnm,!@#$%^&*()_");
+                writer.write("\n");
+                writer.write("1234567890[][;',.");
+                writer.write("\n");
+            }
+            writer.flush();
+        }
+        // now create an HDFS test dir and copy the test file
+        Process p;
+        try {
+            p = Runtime.getRuntime().exec("hdfs dfs -mkdir /user");
+            p.waitFor();
+            p = Runtime.getRuntime().exec("hdfs dfs -mkdir /user/test");
+            p.waitFor();
+            p = Runtime.getRuntime().exec("hdfs dfs -copyFromLocal "+ TEST_DIR + "/testFile.csv /user/test");
+            p.waitFor();
+        } catch (IOException|InterruptedException ex) {
+            Logger.getLogger(BackendHDFSImpl.class.getName()).log(Level.SEVERE, "Cannot access the hdfs at " 
+                    + TEST_STORAGE_PATH, ex);
+        }
         if (mkdir) {
             System.out.println("Setup BackendFileTest successful");
         } else {
@@ -97,11 +127,23 @@ public class BackendHDFSImplTest {
      */
     @AfterClass
     public static final void tearDownClass() {
+        // delete the local directory + contents
         File file = new File(TEST_DIR);
          for (File c : file.listFiles()) {
             c.delete();
          }
         file.delete();
+        // delete hdfs directory + contents
+        Process p;
+        try {
+            p = Runtime.getRuntime().exec("hdfs dfs -rm /user/test/*");
+            p.waitFor();
+            p = Runtime.getRuntime().exec("hdfs dfs -rmdir /user/test");
+            p.waitFor();
+        } catch (IOException|InterruptedException ex) {
+            Logger.getLogger(BackendHDFSImpl.class.getName()).log(Level.SEVERE, "Cannot access the hdfs at " 
+                    + TEST_STORAGE_PATH, ex);
+        }
     }
     
 
@@ -155,12 +197,13 @@ public class BackendHDFSImplTest {
     @Test
     public final void testAccess() throws IOException {
         System.out.println("testAcess");
-        URI uri = URI.create ("hdfs://localhost:9000/user/jpavel/file3.txt");
+        URI uri = URI.create ("hdfs://localhost:9000/user/test/testFile.csv");
         Configuration conf = new Configuration ();
         String server = (String) backendModel.getOptions().get("storagePath");
         conf.set("fs.default.name", server);
         FileSystem file = FileSystem.get(conf);
         System.out.println("get file "+file.exists(new Path(uri)));
+        assertEquals(true, file.exists(new Path(uri)));
     }
     
     /**
@@ -228,7 +271,7 @@ public class BackendHDFSImplTest {
     public final void testGatherDatasetInformation() throws BackendException, IOException {
         System.out.println("testGatherDatasetInformation");
         MetaData metaData = new MetaData();
-        final String fileUri = "hdfs://localhost:9000/user/jpavel/file3.txt";
+        final String fileUri = "hdfs://localhost:9000/user/test/testFile.csv";
         metaData.put("data", new HashMap() { { put("uri", fileUri); } });
         BackendHDFSImpl testBackend = new BackendHDFSImpl(backendModel);
         DataSetInformation dataSetInformation = testBackend.gatherDataSetInformation(metaData);
@@ -241,29 +284,31 @@ public class BackendHDFSImplTest {
     @Test
     public final void testStore() throws IOException, BackendException {
         //first make a test file with some content
-        File testFile = new File(TEST_DIR + "/testFile.csv");
-        testFile.createNewFile();
-        try (FileWriter writer = new FileWriter(testFile)) {
-            final int nLoops = 10;
-            for (int i = 0; i  < nLoops; i++) {
-                writer.write("qwertyuiop");
-                writer.write("\n");
-                writer.write("asdfghjkl");
-                writer.write("\n");
-                writer.write("zxcvbnm,!@#$%^&*()_");
-                writer.write("\n");
-                writer.write("1234567890[][;',.");
-                writer.write("\n");
-            }
-            writer.flush();
-        }
+       
         // now make a metadata with uri
-        final String fileUri = "hdfs://localhost:9000/user/jpavel/testStore.csv";
+        final String fileUri = "hdfs://localhost:9000/user/test/testStore.csv";
         MetaData metaData = new MetaData();
         metaData.put("data", new HashMap() { { put("uri", fileUri); } });
+        File testFile = new File(TEST_DIR + "/testFile.csv");
         InputStream is = new FileInputStream(testFile);
         BackendHDFSImpl testBackend = new BackendHDFSImpl(backendModel);
         testBackend.store(metaData, is);
+        // copy the file back to check that it is ok
+        Process p;
+        try {
+            p = Runtime.getRuntime().exec("hdfs dfs -copyToLocal /user/test/testStore.csv "+
+                    TEST_DIR + "/testStore.csv");
+            p.waitFor();
+        } catch (IOException|InterruptedException ex) {
+            Logger.getLogger(BackendHDFSImpl.class.getName()).log(Level.SEVERE, "Cannot access the hdfs at " 
+                    + TEST_STORAGE_PATH, ex);
+        }
+        // check if the files are identical
+        final File expected = testFile;
+        final File output = new File(TEST_DIR + "/testStore.csv");
+        HashCode hcExp = Files.hash(expected, Hashing.md5());
+        HashCode hcOut = Files.hash(output, Hashing.md5());
+        assertEquals(hcExp.toString(), hcOut.toString());
     }
 //    
 //    @Test
