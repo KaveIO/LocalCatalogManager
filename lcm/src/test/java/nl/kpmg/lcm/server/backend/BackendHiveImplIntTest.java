@@ -16,6 +16,7 @@
 package nl.kpmg.lcm.server.backend;
 
 import java.io.InputStream;
+import java.net.URI;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.ResultSet;
@@ -41,7 +42,7 @@ public class BackendHiveImplIntTest {
     
     private static String driverName = "org.apache.hive.jdbc.HiveDriver";
     
-    private final String TEST_STORAGE_PATH = "localhost";
+    private final String TEST_STORAGE_PATH = "hive://localhost:10000";
     
     /**
      * Common access tool for all backends.
@@ -77,42 +78,49 @@ public class BackendHiveImplIntTest {
     
     
     /**
-     * Test of getSupportedUriSchema method, of class BackendHiveImpl.
+     * Test of getSupportedUriSchema method, of class BackendHiveImpl. 
+     * Method returns supported uri schema ("hive") and tests fails if it is 
+     * not the case.
+     * 
      */
     @Test
-    public void testGetSupportedUriSchema() throws BackendException {
+    public void testGetSupportedUriSchema() {
         System.out.println("getSupportedUriSchema");
-        String server = "hive://localhost:10000/default/table";
         BackendHiveImpl instance = new BackendHiveImpl(backendModel);
         String expResult = "hive";
         String result = instance.getSupportedUriSchema();
         assertEquals(expResult, result);
     }
     
-//    @Test
-//    public void testConnection() throws SQLException {
-//        System.out.println("testConnection");
-//        String server = "jdbc:hive2://localhost:10000/default";
-//        String user = "";
-//        String passwd = "";
-//        
-//        try {
-//            Class.forName(driverName);
-//        }
-//        catch (ClassNotFoundException ex) {
-//            Logger.getLogger(BackendHiveImplIntTest.class.getName()).log(Level.SEVERE, null, ex);
-//        }
-//        
-//        Connection con = DriverManager.getConnection(server, user, passwd);
-//        Statement stmt = con.createStatement();
-//        ResultSet res = stmt.executeQuery("describe formatted default.nyse_stocks");
-//        System.out.println(res.getMetaData().getColumnCount()+" columns");
-//        while (res.next()) {
-//         System.out.println(res.getString(1)+" "+res.getString(2)+" "+res.getString(3));
-//        }
-//        con.close();
-//        
-//    }
+    @Test
+    public void testConnection() throws SQLException, BackendException {
+        System.out.println("testConnection");
+        BackendHiveImpl testBackend = new BackendHiveImpl(backendModel);
+        URI hiveUri;
+        hiveUri = testBackend.parseUri((String) backendModel.getOptions().get("storagePath"));
+        String hostName = hiveUri.getHost();
+        String port = Integer.toString(hiveUri.getPort());
+        String server = testBackend.getURIscheme() + hostName + ":" + port + "/default";
+        String user = "";
+        String passwd = "";
+        
+        try {
+            Class.forName(driverName);
+        }
+        catch (ClassNotFoundException ex) {
+            Logger.getLogger(BackendHiveImplIntTest.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        
+        Connection con = DriverManager.getConnection(server, user, passwd);
+        Statement stmt = con.createStatement();
+        ResultSet res = stmt.executeQuery("show tables in default");
+       while (res.next()) {
+                String resString = res.getString(1);
+                System.out.println(resString);
+            }
+        con.close();
+        
+    }
 //    
 //    @Test
 //    public final void testGatherDatasetInformation() throws BackendException {

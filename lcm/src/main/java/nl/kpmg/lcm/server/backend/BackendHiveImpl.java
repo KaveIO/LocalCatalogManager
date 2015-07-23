@@ -342,10 +342,6 @@ public class BackendHiveImpl extends AbstractBackend {
         final String[] uriInfo = this.getServerDbTableFromUri(uri);
         final String tabName = uriInfo[2];
         final String dbName = uriInfo[1];
-        /**
-         * @TODO need to make this more flexible;
-         */
-        final String serverName = uriInfo[0];
         // get the header to be able to make a table
         BufferedReader reader = new BufferedReader(new InputStreamReader(content));
         String firstLine = new String();
@@ -433,10 +429,6 @@ public class BackendHiveImpl extends AbstractBackend {
         final String[] uriInfo = this.getServerDbTableFromUri(uri);
         final String tabName = uriInfo[2];
         final String dbName = uriInfo[1];
-        /**
-         * @TODO need to make this more flexible;
-         */
-        final String serverName = uriInfo[0];
         // get driver
         try {
             Class.forName(DRIVER_NAME);
