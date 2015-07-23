@@ -116,7 +116,11 @@ public class BackendHiveImpl extends AbstractBackend {
             URI dataUri;
             dataUri = parseUri(uri);
             out[0] = dataUri.getHost();
-            String path = dataUri.getPath().substring(1); // remove the leading "/"
+            String path = dataUri.getPath();
+            if (path.length() == 0){
+                throw new BackendException("Wrong URI format. Please use hive://[user]@host:port/DBname/TableName");
+            }
+            path = path.substring(1); // remove the leading "/"
             String[] pathParts = path.split("/", 0);
             if (pathParts.length != 2) {
                 throw new BackendException("Wrong URI format. Please use hive://[user]@host:port/DBname/TableName");
