@@ -117,7 +117,7 @@ public class BackendHiveImpl extends AbstractBackend {
             dataUri = parseUri(uri);
             out[0] = dataUri.getHost();
             String path = dataUri.getPath();
-            if (path.length() == 0){
+            if (path.length() == 0) {
                 throw new BackendException("Wrong URI format. Please use hive://[user]@host:port/DBname/TableName");
             }
             path = path.substring(1); // remove the leading "/"
@@ -291,16 +291,18 @@ public class BackendHiveImpl extends AbstractBackend {
                 }
             }
             dataSetInformation.setAttached(isAttached);
-            // getting further information about the dataset
-            sql = "describe formatted " + dbName + "." + tabName;
-            res = stmt.executeQuery(sql);
-            dataSetInformation = this.getDBInfoFromResults(res, dataSetInformation);
-            if (dataSetInformation.getByteSize() == -1) {
-                // detailed information about size, etc. not available
-                String sql2 = "analyze table " + dbName + "." + tabName + " compute statistics";
-                stmt.execute(sql2);
+            // getting further information about the dataset if it exists
+            if (isAttached) {
+                sql = "describe formatted " + dbName + "." + tabName;
                 res = stmt.executeQuery(sql);
                 dataSetInformation = this.getDBInfoFromResults(res, dataSetInformation);
+                if (dataSetInformation.getByteSize() == -1) {
+                    // detailed information about size, etc. not available
+                    String sql2 = "analyze table " + dbName + "." + tabName + " compute statistics";
+                    stmt.execute(sql2);
+                    res = stmt.executeQuery(sql);
+                    dataSetInformation = this.getDBInfoFromResults(res, dataSetInformation);
+                }
             }
         }
         catch (SQLException ex) {
