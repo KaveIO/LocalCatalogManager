@@ -227,7 +227,39 @@ public class BackendHiveImplIntTest {
         assertEquals(dataSetInformation.isAttached(), false);
     }
 
-   
+    @Test
+    public final void testStore() throws IOException, BackendException {
+        //first make a test file with some content
+
+        // now make a metadata with uri
+        final String fileUri = "hdfs://localhost:9000/user/test/testStore.csv";
+        MetaData metaData = new MetaData();
+        metaData.put("data", new HashMap() {
+            {
+                put("uri", fileUri);
+            }
+        });
+        File testFile = new File(TEST_DIR + "/testFile.csv");
+        InputStream is = new FileInputStream(testFile);
+        BackendHDFSImpl testBackend = new BackendHDFSImpl(backendModel);
+        testBackend.store(metaData, is);
+        // copy the file back to check that it is ok
+        Process p;
+        try {
+            p = Runtime.getRuntime().exec("hdfs dfs -copyToLocal /user/test/testStore.csv "
+                    + TEST_DIR + "/testStore.csv");
+            p.waitFor();
+        } catch (IOException | InterruptedException ex) {
+            Logger.getLogger(BackendHDFSImpl.class.getName()).log(Level.SEVERE, "Cannot access the hdfs at "
+                    + TEST_STORAGE_PATH, ex);
+        }
+//        // check if the files are identical
+//        final File expected = testFile;
+//        final File output = new File(TEST_DIR + "/testStore.csv");
+//        HashCode hcExp = Files.hash(expected, Hashing.md5());
+//        HashCode hcOut = Files.hash(output, Hashing.md5());
+//        assertEquals(hcExp.toString(), hcOut.toString());
+    }
     
 
     /**

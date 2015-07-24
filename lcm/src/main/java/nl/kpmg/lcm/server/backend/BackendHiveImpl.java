@@ -318,7 +318,7 @@ public class BackendHiveImpl extends AbstractBackend {
      * The input stream must have csv format, i.e. table, columns separated by
      * commas and every entry on a new line. The function first create a file in
      * HDFS system in the home directory and gives it the same name as the table
-     * specified by uri using {@link BackendHDFSImp} methods. It also reads the
+     * specified by uri using {@link BackendHDFSImpl} methods. It also reads the
      * first line of the provided input stream and uses it as a header.
      *
      * Then it creates a table using the header, assuming csv format. All
