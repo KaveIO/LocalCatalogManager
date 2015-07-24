@@ -15,6 +15,10 @@
  */
 package nl.kpmg.lcm.server.backend;
 
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileWriter;
+import java.io.IOException;
 import java.io.InputStream;
 import java.net.URI;
 import java.sql.Connection;
@@ -27,6 +31,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import nl.kpmg.lcm.server.data.BackendModel;
 import nl.kpmg.lcm.server.data.MetaData;
+import org.apache.hive.service.cli.HiveSQLException;
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Before;
@@ -39,10 +44,24 @@ import static org.junit.Assert.*;
  * @author jpavel
  */
 public class BackendHiveImplIntTest {
-    
+
+    /**
+     * Class with the hive2 driver that is dynamically loaded.
+     */
     private static String driverName = "org.apache.hive.jdbc.HiveDriver";
-    
-    private final String TEST_STORAGE_PATH = "hive://localhost:10000";
+    /**
+     * Address of the hive2 server.
+     */
+    private final String TEST_STORAGE_PATH = "hive://192.168.56.101:10000";
+    /**
+     * Address of HDFS nameserver.
+     */
+    private final String HDFS_SERVER = "hdfs://192.168.56.101:8020";
+    /**
+     * Temporary directory in which all the test files will exist.
+     */
+    private static final String TEST_DIR = "temp_test/";
+
     
     /**
      * Common access tool for all backends.
@@ -57,10 +76,28 @@ public class BackendHiveImplIntTest {
         backendModel.setName("test");
         backendModel.setOptions(new HashMap());
         backendModel.getOptions().put("storagePath", TEST_STORAGE_PATH);
+        backendModel.getOptions().put("hdfsServer", HDFS_SERVER);
     }
     
     @BeforeClass
-    public static void setUpClass() {
+    public static void setUpClass() throws IOException {
+        // make test temp dir and set storage path
+        File testDir = new File(TEST_DIR);
+        boolean mkdir = testDir.mkdir();
+        // make test csv file
+        File testFile = new File(TEST_DIR + "/testFile.csv");
+        testFile.createNewFile();
+        try (FileWriter writer = new FileWriter(testFile)) {
+            writer.write("Var1,Var2,Var3,Var4");
+            writer.write("\n");
+            writer.write("Val1,Val2,Val3,Val4");
+            writer.write("\n");
+            writer.write("Val5,Val6,Val7,Val8");
+            writer.write("\n");
+            writer.write("Val9,Val10,Val11,Val12");
+            writer.write("\n");
+            writer.flush();
+        }
     }
     
     @AfterClass
@@ -143,7 +180,7 @@ public class BackendHiveImplIntTest {
     public final void testGatherDatasetInformation() throws BackendException {
         System.out.println("testGatherDatasetInformation");
         MetaData metaData = new MetaData();
-        final String fileUri = "hive://jpavel@localhost:10000/default/batting";
+        final String fileUri = TEST_STORAGE_PATH+"/default/batting";
         metaData.put("data", new HashMap() { { put("uri", fileUri); } });
         BackendHiveImpl testBackend = new BackendHiveImpl(backendModel);
         DataSetInformation dataSetInformation = testBackend.gatherDataSetInformation(metaData);
@@ -217,9 +254,9 @@ public class BackendHiveImplIntTest {
     public final void testGatherDatasetInformationWrongDest() throws BackendException {
         System.out.println("testGatherDatasetInformationWrongDest");
         MetaData metaData = new MetaData();
-        final String fileUri = "hive://jpavel@localhost:10000/default/batling";
+        final String fileUri = TEST_STORAGE_PATH+"/default/batling";
         metaData.put("data", new HashMap() { { put("uri", fileUri); } });
-        BackendHiveImpl testBackend = new BackendHiveImpl(backendModel);
+        BackendHiveImpl testBackend = new BackendHiveImpl(backendModel);   
         DataSetInformation dataSetInformation = testBackend.gatherDataSetInformation(metaData);
         System.out.println("modification time: " + dataSetInformation.getModificationTime());
         System.out.println("is readable: " + dataSetInformation.isReadable());
@@ -229,37 +266,35 @@ public class BackendHiveImplIntTest {
 
     @Test
     public final void testStore() throws IOException, BackendException {
-        //first make a test file with some content
+        
 
         // now make a metadata with uri
-        final String fileUri = "hdfs://localhost:9000/user/test/testStore.csv";
+        final String fileUri = TEST_STORAGE_PATH + "/default/test_table4";
         MetaData metaData = new MetaData();
-        metaData.put("data", new HashMap() {
-            {
-                put("uri", fileUri);
-            }
-        });
+        metaData.put("data", new HashMap() { { put("uri", fileUri); } });
+        // connect to the csv file 
         File testFile = new File(TEST_DIR + "/testFile.csv");
         InputStream is = new FileInputStream(testFile);
-        BackendHDFSImpl testBackend = new BackendHDFSImpl(backendModel);
+        
+        BackendHiveImpl testBackend = new BackendHiveImpl(backendModel);   
         testBackend.store(metaData, is);
-        // copy the file back to check that it is ok
-        Process p;
-        try {
-            p = Runtime.getRuntime().exec("hdfs dfs -copyToLocal /user/test/testStore.csv "
-                    + TEST_DIR + "/testStore.csv");
-            p.waitFor();
-        } catch (IOException | InterruptedException ex) {
-            Logger.getLogger(BackendHDFSImpl.class.getName()).log(Level.SEVERE, "Cannot access the hdfs at "
-                    + TEST_STORAGE_PATH, ex);
-        }
+//        // copy the file back to check that it is ok
+//        Process p;
+//        try {
+//            p = Runtime.getRuntime().exec("hdfs dfs -copyToLocal /user/test/testStore.csv "
+//                    + TEST_DIR + "/testStore.csv");
+//            p.waitFor();
+//        } catch (IOException | InterruptedException ex) {
+//            Logger.getLogger(BackendHDFSImpl.class.getName()).log(Level.SEVERE, "Cannot access the hdfs at "
+//                    + TEST_STORAGE_PATH, ex);
+//        }
 //        // check if the files are identical
 //        final File expected = testFile;
 //        final File output = new File(TEST_DIR + "/testStore.csv");
 //        HashCode hcExp = Files.hash(expected, Hashing.md5());
 //        HashCode hcOut = Files.hash(output, Hashing.md5());
 //        assertEquals(hcExp.toString(), hcOut.toString());
-    }
+  }
     
 
     /**

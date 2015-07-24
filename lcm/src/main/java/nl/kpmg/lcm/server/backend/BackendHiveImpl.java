@@ -353,7 +353,7 @@ public class BackendHiveImpl extends AbstractBackend {
         String firstLine = new String();
         try {
             firstLine = reader.readLine();
-            reader.close();
+           // reader.close();
         } catch (IOException ex) {
             Logger.getLogger(BackendHiveImpl.class.getName()).log(Level.SEVERE, null, ex);
         }
