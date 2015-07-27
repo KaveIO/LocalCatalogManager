@@ -289,7 +289,7 @@ public class BackendHiveImpl extends AbstractBackend {
             boolean isAttached = false;
             while (res.next() && !isAttached) {
                 String resString = res.getString(1);
-                if (resString.equals(tabName)) {
+                if (resString.equalsIgnoreCase(tabName)) { //Hive is case-insensitive
                     isAttached = true;
                 }
             }
