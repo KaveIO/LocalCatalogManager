@@ -168,6 +168,9 @@ public class BackendHiveImpl extends AbstractBackend {
             URI dataUri;
             dataUri = parseUri(uri);
             out = dataUri.getUserInfo();
+            if (out == null) {
+                out = System.getProperty("user.name");
+            }
         } else {
             throw new BackendException("Empty URI!");
         }
@@ -325,8 +328,11 @@ public class BackendHiveImpl extends AbstractBackend {
      *
      * Then it creates a table using the header, assuming csv format. All
      * columns (variables) are assumed to be of a STRING type. Finally, it loads
-     * the HDFS file into hive. This operation should delete the temporary file
-     * in HDFS created by this function
+     * the HDFS file into hive. This operation creates a temporary file in the /tmp
+     * directory in HDFS. 
+     * 
+     * The username can be specified in the uri. If it is not the case, the system
+     * username is used.
      *
      * @param metadata {@link MetaData} object containing the URI of destination
      * table
@@ -344,26 +350,16 @@ public class BackendHiveImpl extends AbstractBackend {
         final String uri = metadata.getDataUri();
         final String conPath = this.makeConnectionString(uri);
         final String user = this.getUserFromUri(uri);
-        final String passwd = "";
+        final String passwd = ""; // @TODO
         final String[] uriInfo = this.getServerDbTableFromUri(uri);
         final String tabName = uriInfo[2];
         final String dbName = uriInfo[1];
-        // get the header to be able to make a table
-        BufferedReader reader = new BufferedReader(new InputStreamReader(content));
-        String firstLine = new String();
-        try {
-            firstLine = reader.readLine();
-           // reader.close();
-        } catch (IOException ex) {
-            Logger.getLogger(BackendHiveImpl.class.getName()).log(Level.SEVERE, null, ex);
-        }
-        // get column headers, assume csv-like formatting
-        String[] headers = firstLine.split(",");
+        
         // store input stream as a file in HDFS
         MetaData metaTemp = new MetaData();
         metaTemp.put("data", new HashMap() {
             {
-                put("uri", tabName);
+                put("uri", "/tmp/" + tabName);
             }
         });
         BackendModel backendModel = new BackendModel();
@@ -373,6 +369,18 @@ public class BackendHiveImpl extends AbstractBackend {
 
         BackendHDFSImpl hdfsBackend = new BackendHDFSImpl(backendModel);
         hdfsBackend.store(metaTemp, content);
+        // get the header to be able to make a table
+        InputStream hdfsStream = hdfsBackend.read(metaTemp);
+        BufferedReader reader = new BufferedReader(new InputStreamReader(hdfsStream));
+        String firstLine = new String();
+        try {
+            firstLine = reader.readLine();
+            reader.close();
+        } catch (IOException ex) {
+            Logger.getLogger(BackendHiveImpl.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        // get column headers, assume csv-like formatting
+        String[] headers = firstLine.split(",");
         // get driver
         try {
             Class.forName(DRIVER_NAME);
@@ -395,7 +403,7 @@ public class BackendHiveImpl extends AbstractBackend {
             sql += "LINES TERMINATED by \'\\n\' STORED AS TEXTFILE";
             stmt.execute(sql);
             // write our local file to hive
-            sql = "LOAD DATA INPATH  \'" + tabName + "\' OVERWRITE INTO TABLE " + tabName;
+            sql = "LOAD DATA INPATH  \'/tmp/" + tabName + "\' OVERWRITE INTO TABLE " + tabName;
             stmt.execute(sql);
         }
         catch (SQLException ex) {
