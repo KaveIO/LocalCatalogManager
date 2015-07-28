@@ -22,6 +22,7 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URI;
+import java.net.URISyntaxException;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.ResultSet;
@@ -50,15 +51,19 @@ public class BackendHiveImplIntTest {
     /**
      * Class with the hive2 driver that is dynamically loaded.
      */
-    private static String driverName = "org.apache.hive.jdbc.HiveDriver";
+    private static final String DRIVER_NAME = "org.apache.hive.jdbc.HiveDriver";
     /**
      * Address of the hive2 server.
      */
-    private final String TEST_STORAGE_PATH = "hive://192.168.56.101:10000";
+    private static final String TEST_STORAGE_PATH = "hive://192.168.56.101:10000";
     /**
      * Address of HDFS nameserver.
      */
-    private final String HDFS_SERVER = "hdfs://192.168.56.101:8020";
+    private static final String HDFS_SERVER = "hdfs://192.168.56.101:8020";
+    /**
+     * Privileged hive user name.
+     */
+    private static final String HIVE_USER = "hive";
     /**
      * Temporary directory in which all the test files will exist.
      */
@@ -79,10 +84,11 @@ public class BackendHiveImplIntTest {
         backendModel.setOptions(new HashMap());
         backendModel.getOptions().put("storagePath", TEST_STORAGE_PATH);
         backendModel.getOptions().put("hdfsServer", HDFS_SERVER);
+        backendModel.getOptions().put("hiveUser", HIVE_USER);
     }
     
     @BeforeClass
-    public static void setUpClass() throws IOException {
+    public static void setUpClass() throws IOException, URISyntaxException, SQLException, BackendException {
         // make test temp dir and set storage path
         File testDir = new File(TEST_DIR);
         boolean mkdir = testDir.mkdir();
@@ -100,10 +106,91 @@ public class BackendHiveImplIntTest {
             writer.write("\n");
             writer.flush();
         }
+        // make test table
+        BackendModel testBackendModel = new BackendModel();
+        testBackendModel.setName("test");
+        testBackendModel.setOptions(new HashMap());
+        testBackendModel.getOptions().put("storagePath", TEST_STORAGE_PATH);
+        testBackendModel.getOptions().put("hdfsServer", HDFS_SERVER);
+        testBackendModel.getOptions().put("hiveUser", HIVE_USER);
+        
+        BackendHiveImpl testBackend = new BackendHiveImpl(testBackendModel);
+        URI hiveUri;
+        hiveUri = testBackend.parseUri((String) testBackendModel.getOptions().get("storagePath"));
+        String hostName = hiveUri.getHost();
+        String port = Integer.toString(hiveUri.getPort());
+        String server = testBackend.getURIscheme() + hostName + ":" + port + "/default";
+        String user = HIVE_USER;
+        String passwd = "";
+        
+        try {
+            Class.forName(DRIVER_NAME);
+        }
+        catch (ClassNotFoundException ex) {
+            Logger.getLogger(BackendHiveImplIntTest.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        
+        Connection con = DriverManager.getConnection(server, user, passwd);
+        Statement stmt = con.createStatement();
+        String sql = "CREATE TABLE default.lcm_test ";
+        sql+= "(Var1 STRING,Var2 STRING,Var3 STRING,Var4 STRING) ROW FORMAT DELIMITED ";
+        sql+= "FIELDS TERMINATED BY \',\' LINES TERMINATED by \'\\n\' STORED AS TEXTFILE";
+        stmt.execute(sql);
+        sql = "INSERT INTO TABLE default.lcm_test "
+                + "(\"Val1\",\"Val2\",\"Val3\",\"Val4\"), "
+                + "(\"Val5\",\"Val6\",\"Val7\",\"Val8\"), "
+                + "(\"Val9\",\"Val10\",\"Val11\",\"Val12\")";
+        stmt.execute(sql);
+        // prepare table for test of deletion
+        sql = "CREATE TABLE default.lcm_test_delete ";
+        sql+= "(Var1 STRING,Var2 STRING,Var3 STRING,Var4 STRING) ROW FORMAT DELIMITED ";
+        sql+= "FIELDS TERMINATED BY \',\' LINES TERMINATED by \'\\n\' STORED AS TEXTFILE";
+        stmt.execute(sql);
+        sql = "INSERT INTO TABLE default.lcm_test_delete "
+                + "(\"Wrong1\",\"Val2\",\"Val3\",\"Val4\"), "
+                + "(\"Val5\",\"Val6\",\"Val7\",\"Val8\"), "
+                + "(\"Val9\",\"Val10\",\"Val11\",\"Val12\")";
+        stmt.execute(sql);
+        con.close();     
+        
     }
     
     @AfterClass
-    public static void tearDownClass() {
+    public static void tearDownClass() throws SQLException, BackendException {
+         // delete the local directory + contents
+        File file = new File(TEST_DIR);
+        for (File c : file.listFiles()) {
+            c.delete();
+        }
+        file.delete();
+        // delete the test table
+        BackendModel testBackendModel = new BackendModel();
+        testBackendModel.setName("test");
+        testBackendModel.setOptions(new HashMap());
+        testBackendModel.getOptions().put("storagePath", TEST_STORAGE_PATH);
+        testBackendModel.getOptions().put("hdfsServer", HDFS_SERVER);
+        testBackendModel.getOptions().put("hiveUser", HIVE_USER);
+        
+        BackendHiveImpl testBackend = new BackendHiveImpl(testBackendModel);
+        URI hiveUri;
+        hiveUri = testBackend.parseUri((String) testBackendModel.getOptions().get("storagePath"));
+        String hostName = hiveUri.getHost();
+        String port = Integer.toString(hiveUri.getPort());
+        String server = testBackend.getURIscheme() + hostName + ":" + port + "/default";
+        String user = HIVE_USER;
+        String passwd = "";
+        
+        try {
+            Class.forName(DRIVER_NAME);
+        }
+        catch (ClassNotFoundException ex) {
+            Logger.getLogger(BackendHiveImplIntTest.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        
+        Connection con = DriverManager.getConnection(server, user, passwd);
+        Statement stmt = con.createStatement();
+        String sql = "DROP TABLE default.lcm_test";
+        stmt.execute(sql);
     }
     
     @Before
@@ -153,7 +240,7 @@ public class BackendHiveImplIntTest {
         String passwd = "";
         
         try {
-            Class.forName(driverName);
+            Class.forName(DRIVER_NAME);
         }
         catch (ClassNotFoundException ex) {
             Logger.getLogger(BackendHiveImplIntTest.class.getName()).log(Level.SEVERE, null, ex);
@@ -182,7 +269,7 @@ public class BackendHiveImplIntTest {
     public final void testGatherDatasetInformation() throws BackendException {
         System.out.println("testGatherDatasetInformation");
         MetaData metaData = new MetaData();
-        final String fileUri = TEST_STORAGE_PATH+"/default/batting";
+        final String fileUri = TEST_STORAGE_PATH+"/default/lcm_test";
         metaData.put("data", new HashMap() { { put("uri", fileUri); } });
         BackendHiveImpl testBackend = new BackendHiveImpl(backendModel);
         DataSetInformation dataSetInformation = testBackend.gatherDataSetInformation(metaData);
@@ -256,7 +343,7 @@ public class BackendHiveImplIntTest {
     public final void testGatherDatasetInformationWrongDest() throws BackendException {
         System.out.println("testGatherDatasetInformationWrongDest");
         MetaData metaData = new MetaData();
-        final String fileUri = TEST_STORAGE_PATH+"/default/batling";
+        final String fileUri = TEST_STORAGE_PATH+"/default/lcm_trest";
         metaData.put("data", new HashMap() { { put("uri", fileUri); } });
         BackendHiveImpl testBackend = new BackendHiveImpl(backendModel);   
         DataSetInformation dataSetInformation = testBackend.gatherDataSetInformation(metaData);
@@ -271,7 +358,7 @@ public class BackendHiveImplIntTest {
         
 
         // now make a metadata with uri
-        final String fileUri = TEST_STORAGE_PATH + "/default/test_tableH8";
+        final String fileUri = TEST_STORAGE_PATH + "/default/test_tableStore";
         MetaData metaData = new MetaData();
         metaData.put("data", new HashMap() { { put("uri", fileUri); } });
         // connect to the csv file 
@@ -315,7 +402,7 @@ public class BackendHiveImplIntTest {
     @Test
     public final void testRead() throws IOException, BackendException {
         // make a metadata with uri
-        final String fileUri = TEST_STORAGE_PATH + "/default/test_tableH4";
+        final String fileUri = TEST_STORAGE_PATH + "/default/lcm_test";
         // make test file to where the content stored in setup would be read
         File output = new File(TEST_DIR + "/testRead.csv");
         output.createNewFile();
