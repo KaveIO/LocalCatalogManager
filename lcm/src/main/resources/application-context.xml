@@ -33,4 +33,5 @@
         <bean id="encryption" class="org.jasypt.encryption.pbe.StandardPBEStringEncryptor">
         	<property name="password" value="${lcm.server.password}"/>
         </bean>
+        <bean id="authenticationManager" class="nl.kpmg.lcm.server.AuthenticationManager" scope="prototype"/>
 </beans>

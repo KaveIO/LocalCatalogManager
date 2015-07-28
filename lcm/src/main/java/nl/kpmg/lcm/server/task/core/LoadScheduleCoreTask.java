@@ -163,7 +163,7 @@ public class LoadScheduleCoreTask extends CoreTask {
      */
     private void removeTasks() throws SchedulerException {
         Scheduler scheduler = getScheduler();
-        Set<JobKey> jobKeys = scheduler.getJobKeys((GroupMatcher<JobKey>) groupEquals(GROUP_KEY));
+        Set<JobKey> jobKeys = scheduler.getJobKeys((GroupMatcher<JobKey>) GroupMatcher.jobGroupEquals(GROUP_KEY));
 
         for (JobKey jobKey : jobKeys) {
             try {

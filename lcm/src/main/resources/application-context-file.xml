@@ -30,9 +30,22 @@
         <bean id="backendDao" class="nl.kpmg.lcm.server.data.dao.file.BackendDaoImpl">
             <constructor-arg index="0" type="java.lang.String" value="${lcm.server.storage.file.path}/backend" />
         </bean>
+        <bean id="userDao" class="nl.kpmg.lcm.server.data.dao.file.UserDaoImpl">
+            <constructor-arg index="0" type="java.lang.String" value="${lcm.server.storage.file.path}/users" />
+        </bean>
+        
+        <bean id="userGroupDao" class="nl.kpmg.lcm.server.data.dao.file.UserGroupDaoImpl">
+            <constructor-arg index="0" type="java.lang.String" value="${lcm.server.storage.file.path}/userGroups" />
+        </bean>
         
         <!-- Services -->
         <bean id="metaDataService" class="nl.kpmg.lcm.server.data.service.MetaDataService" />
         <bean id="backendService" class="nl.kpmg.lcm.server.data.service.BackendService" />
         <bean id="encryptDecryptService" class="nl.kpmg.lcm.server.data.service.EncryptDecryptService" />
+        <bean id="userService" class="nl.kpmg.lcm.server.data.service.UserService">
+        	<property name="userDao" ref="userDao"/>
+        </bean>
+        <bean id="userGroupService" class="nl.kpmg.lcm.server.data.service.UserGroupService">
+        	<property name="userGroupDao" ref="userGroupDao"/>
+        </bean>
 </beans>
