@@ -17,6 +17,7 @@ package nl.kpmg.lcm.server.backend;
 
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileOutputStream;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStream;
@@ -31,6 +32,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import nl.kpmg.lcm.server.data.BackendModel;
 import nl.kpmg.lcm.server.data.MetaData;
+import org.apache.commons.io.IOUtils;
 import org.apache.hive.service.cli.HiveSQLException;
 import org.junit.After;
 import org.junit.AfterClass;
@@ -269,7 +271,7 @@ public class BackendHiveImplIntTest {
         
 
         // now make a metadata with uri
-        final String fileUri = TEST_STORAGE_PATH + "/default/test_table4";
+        final String fileUri = TEST_STORAGE_PATH + "/default/test_tableH8";
         MetaData metaData = new MetaData();
         metaData.put("data", new HashMap() { { put("uri", fileUri); } });
         // connect to the csv file 
@@ -278,6 +280,9 @@ public class BackendHiveImplIntTest {
         
         BackendHiveImpl testBackend = new BackendHiveImpl(backendModel);   
         testBackend.store(metaData, is);
+        /**
+         * @TODO Implement reading the table, and comparing with the initial file
+         */
 //        // copy the file back to check that it is ok
 //        Process p;
 //        try {
@@ -298,62 +303,65 @@ public class BackendHiveImplIntTest {
     
 
     /**
-     * Test of gatherDataSetInformation method, of class BackendHiveImpl.
+     * Tests read() method of {@link BackendHDFSImp}. Test reads a text file
+     * created by setup and stores in the new text file. Then it tests if the 2
+     * files are identical using md5.
+     *
+     * @throws IOException if there are problems with creating local file or
+     * writing to it
+     * @throws BackendException if it is not possible to read from the test
+     * backend
      */
-//    @Test
-//    public void testGatherDataSetInformation() throws Exception {
-//        System.out.println("gatherDataSetInformation");
-//        MetaData metadata = null;
-//        BackendHiveImpl instance = new BackendHiveImpl();
-//        DataSetInformation expResult = null;
-//        DataSetInformation result = instance.gatherDataSetInformation(metadata);
-//        assertEquals(expResult, result);
-//        // TODO review the generated test code and remove the default call to fail.
-//        fail("The test case is a prototype.");
-//    }
-//
-//    /**
-//     * Test of store method, of class BackendHiveImpl.
-//     */
-//    @Test
-//    public void testStore() throws Exception {
-//        System.out.println("store");
-//        MetaData metadata = null;
-//        InputStream content = null;
-//        BackendHiveImpl instance = new BackendHiveImpl();
-//        instance.store(metadata, content);
-//        // TODO review the generated test code and remove the default call to fail.
-//        fail("The test case is a prototype.");
-//    }
-//
-//    /**
-//     * Test of read method, of class BackendHiveImpl.
-//     */
-//    @Test
-//    public void testRead() throws Exception {
-//        System.out.println("read");
-//        MetaData metadata = null;
-//        BackendHiveImpl instance = new BackendHiveImpl();
-//        InputStream expResult = null;
-//        InputStream result = instance.read(metadata);
-//        assertEquals(expResult, result);
-//        // TODO review the generated test code and remove the default call to fail.
-//        fail("The test case is a prototype.");
-//    }
-//
-//    /**
-//     * Test of delete method, of class BackendHiveImpl.
-//     */
-//    @Test
-//    public void testDelete() throws Exception {
-//        System.out.println("delete");
-//        MetaData metadata = null;
-//        BackendHiveImpl instance = new BackendHiveImpl();
-//        boolean expResult = false;
-//        boolean result = instance.delete(metadata);
-//        assertEquals(expResult, result);
-//        // TODO review the generated test code and remove the default call to fail.
-//        fail("The test case is a prototype.");
-//    }
+    @Test
+    public final void testRead() throws IOException, BackendException {
+        // make a metadata with uri
+        final String fileUri = TEST_STORAGE_PATH + "/default/test_tableH4";
+        // make test file to where the content stored in setup would be read
+        File output = new File(TEST_DIR + "/testRead.csv");
+        output.createNewFile();
+        MetaData metaData = new MetaData();
+        metaData.put("data", new HashMap() {
+            {
+                put("uri", fileUri);
+            }
+        });
+        // make local data backend in specified directory and read the existing file
+        BackendHiveImpl testBackend = new BackendHiveImpl(backendModel); 
+        try (InputStream is = testBackend.read(metaData)) {
+            try (FileOutputStream fos = new FileOutputStream(output)) {
+                int readBytes = IOUtils.copy(is, fos);
+                Logger.getLogger(BackendHDFSImpl.class.getName())
+                        .log(Level.INFO, "{0} bytes read", readBytes);
+                fos.flush();
+            }
+        }
+         /**
+         * @TODO Implement saving the table, and comparing with the initial file
+         */
+//        // check if the files are identical
+//        File testFile = new File(TEST_DIR + "/testFile.csv");
+//        final File expected = testFile;
+//        HashCode hcExp = Files.hash(expected, Hashing.md5());
+//        HashCode hcOut = Files.hash(output, Hashing.md5());
+//        assertEquals(hcExp.toString(), hcOut.toString());
+    }
+    
+    @Test
+    public final void testDelete() throws IOException, BackendException {
+        // make a metadata with uri
+        final String fileUri = TEST_STORAGE_PATH + "/default/test_tableH6";
+        
+        MetaData metaData = new MetaData();
+        metaData.put("data", new HashMap() {
+            {
+                put("uri", fileUri);
+            }
+        });
+        // make local data backend in specified directory and read the existing file
+        BackendHiveImpl testBackend = new BackendHiveImpl(backendModel); 
+        boolean result = testBackend.delete(metaData);
+        assertEquals(result, true);
+    }
+   
     
 }
