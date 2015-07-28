@@ -110,8 +110,6 @@ public class BackendHDFSImplIntTest {
         // now create an HDFS test dir and copy the test file
         Process p;
         try {
-//            p = Runtime.getRuntime().exec("hdfs dfs -mkdir /user");
-//            p.waitFor();
             p = Runtime.getRuntime().exec("hdfs dfs -mkdir " + TEST_STORAGE_PATH
                     + "user/test");
             p.waitFor();
@@ -342,8 +340,7 @@ public class BackendHDFSImplIntTest {
                     + "user/test/testStore.csv "
                     + TEST_DIR + "/testStore.csv");
             p.waitFor();
-        }
-        catch (IOException | InterruptedException ex) {
+        } catch (IOException | InterruptedException ex) {
             Logger.getLogger(BackendHDFSImpl.class.getName()).log(Level.SEVERE, "Cannot access the hdfs at "
                     + TEST_STORAGE_PATH, ex);
         }
