@@ -15,6 +15,9 @@
  */
 package nl.kpmg.lcm.server.backend;
 
+import com.google.common.hash.HashCode;
+import com.google.common.hash.Hashing;
+import com.google.common.io.Files;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
@@ -26,6 +29,7 @@ import java.net.URISyntaxException;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.ResultSet;
+import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.HashMap;
@@ -136,7 +140,7 @@ public class BackendHiveImplIntTest {
         sql+= "(Var1 STRING,Var2 STRING,Var3 STRING,Var4 STRING) ROW FORMAT DELIMITED ";
         sql+= "FIELDS TERMINATED BY \',\' LINES TERMINATED by \'\\n\' STORED AS TEXTFILE";
         stmt.execute(sql);
-        sql = "INSERT INTO TABLE default.lcm_test "
+        sql = "INSERT INTO TABLE default.lcm_test VALUES "
                 + "(\"Val1\",\"Val2\",\"Val3\",\"Val4\"), "
                 + "(\"Val5\",\"Val6\",\"Val7\",\"Val8\"), "
                 + "(\"Val9\",\"Val10\",\"Val11\",\"Val12\")";
@@ -146,7 +150,7 @@ public class BackendHiveImplIntTest {
         sql+= "(Var1 STRING,Var2 STRING,Var3 STRING,Var4 STRING) ROW FORMAT DELIMITED ";
         sql+= "FIELDS TERMINATED BY \',\' LINES TERMINATED by \'\\n\' STORED AS TEXTFILE";
         stmt.execute(sql);
-        sql = "INSERT INTO TABLE default.lcm_test_delete "
+        sql = "INSERT INTO TABLE default.lcm_test_delete VALUES"
                 + "(\"Wrong1\",\"Val2\",\"Val3\",\"Val4\"), "
                 + "(\"Val5\",\"Val6\",\"Val7\",\"Val8\"), "
                 + "(\"Val9\",\"Val10\",\"Val11\",\"Val12\")";
@@ -190,6 +194,10 @@ public class BackendHiveImplIntTest {
         Connection con = DriverManager.getConnection(server, user, passwd);
         Statement stmt = con.createStatement();
         String sql = "DROP TABLE default.lcm_test";
+        stmt.execute(sql);
+        sql = "DROP TABLE default.lcm_test_delete";
+        stmt.execute(sql);
+        sql = "DROP TABLE default.test_tableStore";
         stmt.execute(sql);
     }
     
@@ -354,9 +362,8 @@ public class BackendHiveImplIntTest {
     }
 
     @Test
-    public final void testStore() throws IOException, BackendException {
-        
-
+    public final void testStore() throws IOException, BackendException, SQLException {
+        System.out.println("testStore");
         // now make a metadata with uri
         final String fileUri = TEST_STORAGE_PATH + "/default/test_tableStore";
         MetaData metaData = new MetaData();
@@ -367,25 +374,48 @@ public class BackendHiveImplIntTest {
         
         BackendHiveImpl testBackend = new BackendHiveImpl(backendModel);   
         testBackend.store(metaData, is);
-        /**
-         * @TODO Implement reading the table, and comparing with the initial file
-         */
-//        // copy the file back to check that it is ok
-//        Process p;
-//        try {
-//            p = Runtime.getRuntime().exec("hdfs dfs -copyToLocal /user/test/testStore.csv "
-//                    + TEST_DIR + "/testStore.csv");
-//            p.waitFor();
-//        } catch (IOException | InterruptedException ex) {
-//            Logger.getLogger(BackendHDFSImpl.class.getName()).log(Level.SEVERE, "Cannot access the hdfs at "
-//                    + TEST_STORAGE_PATH, ex);
-//        }
-//        // check if the files are identical
-//        final File expected = testFile;
-//        final File output = new File(TEST_DIR + "/testStore.csv");
-//        HashCode hcExp = Files.hash(expected, Hashing.md5());
-//        HashCode hcOut = Files.hash(output, Hashing.md5());
-//        assertEquals(hcExp.toString(), hcOut.toString());
+      
+        // get the content of the test_tableStore table and store it in output file
+        URI hiveUri;
+        hiveUri = testBackend.parseUri((String) backendModel.getOptions().get("storagePath"));
+        String hostName = hiveUri.getHost();
+        String port = Integer.toString(hiveUri.getPort());
+        String server = testBackend.getURIscheme() + hostName + ":" + port + "/default";
+        String user = "";
+        String passwd = "";
+        
+        try {
+            Class.forName(DRIVER_NAME);
+        }
+        catch (ClassNotFoundException ex) {
+            Logger.getLogger(BackendHiveImplIntTest.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        
+        Connection con = DriverManager.getConnection(server, user, passwd);
+        Statement stmt = con.createStatement();
+        ResultSet res = stmt.executeQuery("select * from default.test_tableStore");
+        int numCol = res.getMetaData().getColumnCount();
+        File output = new File(TEST_DIR + "/testStore.csv");
+        output.createNewFile();
+        try (FileWriter writer = new FileWriter(output)) {
+            while (res.next()) {
+                String row = "";
+                for (int iString = 1; iString < numCol; iString++)
+                {
+                    row+=res.getString(iString)+",";
+                }
+                row+=res.getString(numCol)+"\n";
+                writer.write(row);
+            }
+            writer.flush();
+        }
+        
+        // check if the files are identical
+        final File expected = testFile;
+        final File obtained = output;
+        HashCode hcExp = Files.hash(expected, Hashing.md5());
+        HashCode hcOut = Files.hash(obtained, Hashing.md5());
+        assertEquals(hcExp.toString(), hcOut.toString());
   }
     
 
@@ -436,7 +466,7 @@ public class BackendHiveImplIntTest {
     @Test
     public final void testDelete() throws IOException, BackendException {
         // make a metadata with uri
-        final String fileUri = TEST_STORAGE_PATH + "/default/test_tableH6";
+        final String fileUri = TEST_STORAGE_PATH + "/default/lcm_test_delete";
         
         MetaData metaData = new MetaData();
         metaData.put("data", new HashMap() {
