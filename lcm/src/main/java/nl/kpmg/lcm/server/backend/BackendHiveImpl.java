@@ -46,8 +46,8 @@ public class BackendHiveImpl extends AbstractBackend {
     private final String server;
 
     /**
-     * @param DRIVER_NAME is the java hive driver class for hive2 server that is dynamically
-     * loaded
+     * @param DRIVER_NAME is the java hive driver class for hive2 server that is
+     * dynamically loaded
      */
     private static final String DRIVER_NAME = "org.apache.hive.jdbc.HiveDriver";
 
@@ -57,21 +57,29 @@ public class BackendHiveImpl extends AbstractBackend {
     private static final String URI_SCHEME = "jdbc:hive2://";
 
     /**
-     * @param hdfsServer is the address of the HDFS server that can be used for file storage
+     * @param hdfsServer is the address of the HDFS server that can be used for
+     * file storage
      */
     private final String hdfsServer;
 
     /**
+     * @param hiveUser is the name of the user who has rights to write tables
+     * from hove to hdfs
+     */
+    private final String hiveUser;
+
+    /**
      * Default constructor.
      *
-     * @param backend is {@link BackendModel} that contains
-     *  - the storagePath; full hive server address (e.g. hive://127.0.0.1:10000)
-     *  - the hdfsServer; full address of HDFS server (e.g. hdfs://localhost:8020)
+     * @param backend is {@link BackendModel} that contains - - the storagePath;
+     * full hive server address (e.g. hive://127.0.0.1:10000) - the hdfsServer;
+     * full address of HDFS server (e.g. hdfs://localhost:8020) - the hiveUser;
+     * name of the user who can export tables from hive to hdfs
      */
     public BackendHiveImpl(final BackendModel backend) {
         this.hdfsServer = (String) backend.getOptions().get("hdfsServer");
         this.server = (String) backend.getOptions().get("storagePath");
-
+        this.hiveUser = (String) backend.getOptions().get("hiveUser");
     }
 
     /**
@@ -328,11 +336,11 @@ public class BackendHiveImpl extends AbstractBackend {
      *
      * Then it creates a table using the header, assuming csv format. All
      * columns (variables) are assumed to be of a STRING type. Finally, it loads
-     * the HDFS file into hive. This operation creates a temporary file in the /tmp
-     * directory in HDFS. 
-     * 
-     * The username can be specified in the uri. If it is not the case, the system
-     * username is used.
+     * the HDFS file into hive. This operation creates a temporary file in the
+     * /tmp directory in HDFS.
+     *
+     * The username can be specified in the uri. If it is not the case, the
+     * system username is used.
      *
      * @param metadata {@link MetaData} object containing the URI of destination
      * table
@@ -354,7 +362,7 @@ public class BackendHiveImpl extends AbstractBackend {
         final String[] uriInfo = this.getServerDbTableFromUri(uri);
         final String tabName = uriInfo[2];
         final String dbName = uriInfo[1];
-        
+
         // store input stream as a file in HDFS
         MetaData metaTemp = new MetaData();
         metaTemp.put("data", new HashMap() {
@@ -413,7 +421,6 @@ public class BackendHiveImpl extends AbstractBackend {
         // CREATE TABLE test_yahoo2
         // (Date STRING,Open STRING,High STRING,Low STRING,Close STRING,Volume STRING,Adj_Close STRING)
         // ROW FORMAT DELIMITED FIELDS TERMINATED BY ',' LINES TERMINATED by '\n' STORED AS TEXTFILE;
-
         // LOAD DATA INPATH  '/user/root/yahoo_stocks.csv' OVERWRITE INTO TABLE test_yahoo2;
     }
 
@@ -438,7 +445,7 @@ public class BackendHiveImpl extends AbstractBackend {
         // collect information from metadata
         final String uri = metadata.getDataUri();
         final String conPath = this.makeConnectionString(uri);
-        final String user = "hive";//this.getUserFromUri(uri);
+        final String user = this.hiveUser; //user with the right to write
         final String passwd = "";
         final String[] uriInfo = this.getServerDbTableFromUri(uri);
         final String tabName = uriInfo[2];
@@ -454,7 +461,7 @@ public class BackendHiveImpl extends AbstractBackend {
             Statement stmt = con.createStatement();
             // store table in HDFS
             String sql = // this is not very efficient...
-            "INSERT OVERWRITE DIRECTORY \'/tmp/" + tabName + "\' ";
+                    "INSERT OVERWRITE DIRECTORY \'/tmp/" + tabName + "\' ";
             sql += "SELECT * FROM " + dbName + "." + tabName;
             stmt.execute(sql);
             // Closing connection. The file will be read using HDFS backend
@@ -467,7 +474,7 @@ public class BackendHiveImpl extends AbstractBackend {
 
         metaTemp.put("data", new HashMap() {
             {
-                put("uri", "/tmp/"+tabName+"/000000_0");
+                put("uri", "/tmp/" + tabName + "/000000_0");
             }
         });
         // read it with HDFS backend
@@ -482,15 +489,15 @@ public class BackendHiveImpl extends AbstractBackend {
 
         //  INSERT OVERWRITE LOCAL DIRECTORY '/root/testDir3' ROW FORMAT DELIMITED
         // FIELDS TERMINATED BY ',' select * from default.test_yahoo2 limit 10;
-        
-        //"EXPORT TABLE " + dbName + "." + tabName + " TO \'"+tabName+"\' "; 
+        //"EXPORT TABLE " + dbName + "." + tabName + " TO \'"+tabName+"\' ";
         //   INSERT OVERWRITE DIRECTORY '/user/root/testDir4' select * from default.test_yahoo2 limit 10;
     }
 
     /**
      * Deletes table specified in metadata.
      *
-     * @param metadata {@link MetaData} object containing the URI of table to be deleted
+     * @param metadata {@link MetaData} object containing the URI of table to be
+     * deleted
      * @return true if operation was success, false otherwise
      * @throws BackendException if there is something wrong with the metadata or
      * URI
@@ -501,7 +508,6 @@ public class BackendHiveImpl extends AbstractBackend {
         if (!dataSetInformation.isAttached()) {
             throw new BackendException("No dataset attached.");
         }
-        boolean success = false;
         // collect information from metadata
         final String uri = metadata.getDataUri();
         final String conPath = this.makeConnectionString(uri);
@@ -520,11 +526,13 @@ public class BackendHiveImpl extends AbstractBackend {
         try (Connection con = DriverManager.getConnection(conPath, user, passwd)) {
             Statement stmt = con.createStatement();
             String sql = "DROP TABLE " + dbName + "." + tabName;
-            success = stmt.execute(sql);
+            stmt.execute(sql);
         }
         catch (SQLException ex) {
             Logger.getLogger(BackendHiveImpl.class.getName()).log(Level.SEVERE, null, ex);
         }
+        dataSetInformation = gatherDataSetInformation(metadata);
+        boolean success = !dataSetInformation.isAttached();
         return success;
         //drop table test_yahoo2;
     }
@@ -538,7 +546,7 @@ public class BackendHiveImpl extends AbstractBackend {
     }
 
     /**
-     * 
+     *
      * @return name of hive2 driver that is dynamically loaded when connecting
      */
     public final String getDriverName() {
