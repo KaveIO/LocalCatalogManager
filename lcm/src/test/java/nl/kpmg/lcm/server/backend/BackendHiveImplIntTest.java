@@ -360,7 +360,16 @@ public class BackendHiveImplIntTest {
         System.out.println("byte size is: " + dataSetInformation.getByteSize());
         assertEquals(dataSetInformation.isAttached(), false);
     }
-
+    /**
+     * Tests store() method of {@link BackendHiveImp}. Test tries to store text
+     * file created during setup as a table in hive, then it queries its
+     * content and saves it to local text file and finally tests if the new text file
+     * is identical to the original using md5.
+     *
+     * @throws BackendException if there is a problem in storing in hive
+     * @throws IOException if it is not possible to read from or write to the local file
+     * @throws SQLException if there is a problem with querying the test table.
+     */
     @Test
     public final void testStore() throws IOException, BackendException, SQLException {
         System.out.println("testStore");
