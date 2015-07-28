@@ -438,7 +438,7 @@ public class BackendHiveImpl extends AbstractBackend {
         // collect information from metadata
         final String uri = metadata.getDataUri();
         final String conPath = this.makeConnectionString(uri);
-        final String user = this.getUserFromUri(uri);
+        final String user = "hive";//this.getUserFromUri(uri);
         final String passwd = "";
         final String[] uriInfo = this.getServerDbTableFromUri(uri);
         final String tabName = uriInfo[2];
@@ -453,7 +453,8 @@ public class BackendHiveImpl extends AbstractBackend {
         try (Connection con = DriverManager.getConnection(conPath, user, passwd)) {
             Statement stmt = con.createStatement();
             // store table in HDFS
-            String sql = "INSERT OVERWRITE DIRECTORY \'" + tabName + "\' ";
+            String sql = // this is not very efficient...
+            "INSERT OVERWRITE DIRECTORY \'/tmp/" + tabName + "\' ";
             sql += "SELECT * FROM " + dbName + "." + tabName;
             stmt.execute(sql);
             // Closing connection. The file will be read using HDFS backend
@@ -463,9 +464,10 @@ public class BackendHiveImpl extends AbstractBackend {
         }
         // now make metadata pointing to a new file
         MetaData metaTemp = new MetaData();
+
         metaTemp.put("data", new HashMap() {
             {
-                put("uri", tabName);
+                put("uri", "/tmp/"+tabName+"/000000_0");
             }
         });
         // read it with HDFS backend
@@ -480,7 +482,8 @@ public class BackendHiveImpl extends AbstractBackend {
 
         //  INSERT OVERWRITE LOCAL DIRECTORY '/root/testDir3' ROW FORMAT DELIMITED
         // FIELDS TERMINATED BY ',' select * from default.test_yahoo2 limit 10;
-
+        
+        //"EXPORT TABLE " + dbName + "." + tabName + " TO \'"+tabName+"\' "; 
         //   INSERT OVERWRITE DIRECTORY '/user/root/testDir4' select * from default.test_yahoo2 limit 10;
     }
 
