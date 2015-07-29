@@ -26,6 +26,7 @@ import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.Reader;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.sql.Connection;
@@ -141,7 +142,7 @@ public class BackendHiveImplIntTest {
         String sql = "CREATE TABLE default.lcm_test ";
         sql+= "(var1 STRING,var2 STRING,var3 STRING,var4 STRING) ROW FORMAT DELIMITED ";
         sql+= "FIELDS TERMINATED BY \',\' LINES TERMINATED by \'\\n\' STORED AS TEXTFILE";
-        sql += " tblproperties (\"skip.header.line.count\"=\"1\")";
+      //  sql += " tblproperties (\"skip.header.line.count\"=\"1\")";
         stmt.execute(sql);
         sql = "INSERT INTO TABLE default.lcm_test VALUES "
                 + "(\"Val1\",\"Val2\",\"Val3\",\"Val4\"), "
@@ -152,7 +153,7 @@ public class BackendHiveImplIntTest {
         sql = "CREATE TABLE default.lcm_test_delete ";
         sql+= "(var1 STRING,var2 STRING,var3 STRING,var4 STRING) ROW FORMAT DELIMITED ";
         sql+= "FIELDS TERMINATED BY \',\' LINES TERMINATED by \'\\n\' STORED AS TEXTFILE";
-        sql += " tblproperties (\"skip.header.line.count\"=\"1\")";
+      // sql += " tblproperties (\"skip.header.line.count\"=\"1\")";
         stmt.execute(sql);
         sql = "INSERT INTO TABLE default.lcm_test_delete VALUES"
                 + "(\"Wrong1\",\"Val2\",\"Val3\",\"Val4\"), "
@@ -476,17 +477,25 @@ public class BackendHiveImplIntTest {
                 fos.flush();
             }
         }
-        // replace ^A characters in the output file
-        // quick and dirty solution using Unix system commands
-        Process p;
-         p = Runtime.getRuntime().exec("sed -i \'s/\\x01/,/g\' "+ TEST_DIR + "/testRead.csv");
-         p.waitFor();
+
+        Reader fr = new FileReader(output);
+        BufferedReader br = new BufferedReader(fr);
+        File output2 = new File(TEST_DIR + "/testRead_2.csv");
+        output2.createNewFile();
+        try (FileWriter writer = new FileWriter(output2)) {
+            while(br.ready()){
+                String line = br.readLine();
+                String newline = line.replaceAll("\u0001", ",");
+                writer.write(newline+"\n");
+            }
+            writer.flush();
+        }
         
         // check if the files are identical
         File testFile = new File(TEST_DIR + "/testFile.csv");
         final File expected = testFile;
         HashCode hcExp = Files.hash(expected, Hashing.md5());
-        HashCode hcOut = Files.hash(output, Hashing.md5());
+        HashCode hcOut = Files.hash(output2, Hashing.md5());
        assertEquals(hcExp.toString(), hcOut.toString());
     }
     
