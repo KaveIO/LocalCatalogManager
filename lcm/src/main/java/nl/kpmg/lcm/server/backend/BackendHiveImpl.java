@@ -409,6 +409,7 @@ public class BackendHiveImpl extends AbstractBackend {
             }
             sql += ") ROW FORMAT DELIMITED FIELDS TERMINATED BY \',\' ";
             sql += "LINES TERMINATED by \'\\n\' STORED AS TEXTFILE";
+            sql += " tblproperties (\"skip.header.line.count\"=\"1\")"; // not to save header as data entry
             stmt.execute(sql);
             // write our local file to hive
             sql = "LOAD DATA INPATH  \'/tmp/" + tabName + "\' OVERWRITE INTO TABLE " + tabName;
