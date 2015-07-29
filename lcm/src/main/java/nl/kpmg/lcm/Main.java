@@ -3,12 +3,11 @@ package nl.kpmg.lcm;
 import java.io.IOException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import nl.kpmg.lcm.server.Configuration;
 
 import nl.kpmg.lcm.server.Server;
+import nl.kpmg.lcm.server.ServerException;
 
 import org.apache.commons.lang.ArrayUtils;
-import nl.kpmg.lcm.server.ServerException;
 
 /**
  * Main class.
@@ -19,7 +18,7 @@ public class Main {
     private static final Logger LOG = Logger.getLogger(Main.class.getName());
 
     // Base URI the Grizzly HTTP server will listen on
-    public static final String BASE_URI = "http://localhost:8080/myapp/";
+    public static final String BASE_URI = "http://localhost:8080/";
 
     /**
      * Main method.

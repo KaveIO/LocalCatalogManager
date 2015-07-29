@@ -8,9 +8,12 @@ import javax.ws.rs.PUT;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
+import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.Response;
 
+import nl.kpmg.lcm.server.AuthenticationManager;
 import nl.kpmg.lcm.server.data.User;
+import nl.kpmg.lcm.server.data.service.EncryptDecryptService;
 import nl.kpmg.lcm.server.data.service.UserService;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -20,11 +23,18 @@ import org.springframework.stereotype.Component;
 @Path("client/v0/users")
 public class UserController {
 	
-	private UserService userService;
+	private UserService userService;	
+	private AuthenticationManager am;
+	//private EncryptDecryptService encdecService;
 	
 	@Autowired
 	public void setUserService(UserService userService){
 		this.userService = userService;
+	}
+	
+	@Autowired
+	public void setAuthenticationManager(AuthenticationManager am){
+		this.am = am;
 	}
 	
 	@GET
@@ -38,9 +48,13 @@ public class UserController {
 	@Produces({"application/json"})
 	@Path("/{username}")
 	//@Authenticate(Role="USER")
-	public Response getUser(@PathParam("username") String username){
-		
+	public Response getUser(@PathParam("username") String username,@QueryParam("serviceKey") String serviceKey){
+		am.getAuthentication(username, "admin", serviceKey);
+		if(am.isAuthenticated()){
 		return Response.status(200).entity(userService.getUserDao().getUser(username)).build();
+		} else {
+			return Response.status(403).build();
+		}
 	}
 	
 	@PUT

@@ -6,10 +6,9 @@ import javax.ws.rs.client.ClientBuilder;
 import javax.ws.rs.client.WebTarget;
 
 import nl.kpmg.lcm.server.Server;
+import nl.kpmg.lcm.server.ServerException;
 
-import org.junit.After;
 import org.junit.AfterClass;
-import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.runner.RunWith;
 import org.springframework.test.context.ContextConfiguration;
@@ -21,8 +20,8 @@ import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 public class LCMBaseTest {
     private static final String TEST_STORAGE_PATH = "test";
 
-    protected Server server;
-    protected WebTarget target;
+    protected static Server server;
+    protected static WebTarget target;
 
     @BeforeClass
     public static void setUpClass() {
@@ -39,6 +38,21 @@ public class LCMBaseTest {
         file.mkdir();
         file = new File(TEST_STORAGE_PATH + "/users");
         file.mkdir();
+        file = new File(TEST_STORAGE_PATH + "/userGroups");
+        file.mkdir();
+        // start the server
+        try {
+			server = new Server();
+			server.start();
+		} catch (ServerException e) {
+			
+			e.printStackTrace();
+		}        
+       
+
+        // create the client
+        target = ClientBuilder.newClient().target(server.getBaseUri());
+
     }
 
     @AfterClass
@@ -56,21 +70,9 @@ public class LCMBaseTest {
         file.delete();
         file = new File(TEST_STORAGE_PATH + "/users");
         file.delete();
-    }
-
-    @Before
-    public void setUp() throws Exception {
-        // start the server
-        server = new Server();
-        server.start();
-
-        // create the client
-        target = ClientBuilder.newClient().target(server.getBaseUri());
-    }
-
-    @After
-    public void tearDown() throws Exception {
+        file = new File(TEST_STORAGE_PATH + "/userGroups");
+        file.delete();
         server.stop();
     }
-    
+       
 }

@@ -5,8 +5,10 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
+import nl.kpmg.lcm.server.AuthenticationManager;
 import nl.kpmg.lcm.server.JacksonJsonProvider;
 import nl.kpmg.lcm.server.data.User;
+import nl.kpmg.lcm.server.data.service.EncryptDecryptService;
 import nl.kpmg.lcm.server.data.service.UserService;
 import nl.kpmg.lcm.server.rest.client.version0.UserController;
 
@@ -20,6 +22,10 @@ public class UserControllerClientTest extends LCMBaseTest {
    
 	@Autowired
 	private UserService userService;
+	@Autowired
+	private AuthenticationManager am;
+	@Autowired
+	private EncryptDecryptService encdecService;
 	
     /**
      * Test to see that the client interface returns the interface versions.
@@ -28,50 +34,45 @@ public class UserControllerClientTest extends LCMBaseTest {
     public void testGetUsers() {
     	UserController uc = new UserController();
     	uc.setUserService(userService);
-    	uc.getUsers();
-    	
-        System.out.println(uc.getUsers());
+    	uc.getUsers();    	       
     }
     
-    //@Test
+    @Test
     public void testGetUser(){
     	UserController uc = new UserController();
     	uc.setUserService(userService);
-    	uc.getUser("testUser1");
-    	
-        System.out.println(uc.getUser("testUser1"));
+    	uc.setAuthenticationManager(am);
+    	uc.getUser("testUser1","ABC123");    	        
     }
-    
-    
-    //@Test
+        
+    @Test
     public void testSaveUser(){
     	User user = new User();
     	user.setUsername("testUser1");
     	user.setPassword("testPassword");
     	UserController uc = new UserController();
     	uc.setUserService(userService);
-    	uc.saveUser(user);
-        System.out.println(uc.getUser("testUser1"));    	
+    	uc.saveUser(user);            	
     }
     
-    //@Test
+    @Test
     public void testModifyUser(){
     	User user = new User();
     	user.setUsername("testUser1");
     	user.setPassword("testPassword");
     	UserController uc = new UserController();
     	uc.setUserService(userService);
-    	uc.saveUser(user);
-        System.out.println(uc.getUser("testUser1"));
-    	
+    	uc.modifyUser(user);            
     }
    
-    //@Test
+    @Test
     public void testDeleteUser(){
-    	
+    	UserController uc = new UserController();
+    	uc.setUserService(userService);
+    	uc.deleteUser("testUser1");
     }
     
-    //@Test
+    @Test
     public void testJSONConversion(){
     	User user = new User();
     	user.setUsername("testUser1");
@@ -87,10 +88,8 @@ public class UserControllerClientTest extends LCMBaseTest {
     	ObjectMapper mapper = jsonp.getContext(List.class);
     	try {
 			mapper.writeValue(new File("usersList"), users);
-		} catch (IOException e) {
-			// TODO Auto-generated catch block
+		} catch (IOException e) {			
 			e.printStackTrace();
 		}
-    }
-    
+    }    
 }

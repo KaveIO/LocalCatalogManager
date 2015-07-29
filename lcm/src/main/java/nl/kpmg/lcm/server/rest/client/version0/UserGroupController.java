@@ -38,7 +38,7 @@ public class UserGroupController {
 	@Produces({"application/json"})
 	@Path("/{userGroup}")
 	//@Authenticate(Role="USER")
-	public Response getUser(@PathParam("userGroup") String userGroup){
+	public Response getUserGroup(@PathParam("userGroup") String userGroup){
 		
 		return Response.status(200).entity(userGroupService.getUserGroupDao().getUserGroup(userGroup)).build();
 	}
@@ -55,7 +55,7 @@ public class UserGroupController {
 	@POST
 	@Consumes({"application/nl.kpmg.lcm.server.data.UserGroup+json"})
 	@Produces({"application/nl.kpmg.lcm.server.data.UserGroup+json"})
-	public Response modifyUser(final UserGroup userGroup){		
+	public Response modifyUserGroup(final UserGroup userGroup){		
 		userGroupService.getUserGroupDao().modifyUserGroup(userGroup);
 		return Response.status(200).build();
 	}
