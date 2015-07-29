@@ -41,13 +41,13 @@ import java.util.logging.Logger;
 import nl.kpmg.lcm.server.data.BackendModel;
 import nl.kpmg.lcm.server.data.MetaData;
 import org.apache.commons.io.IOUtils;
-import org.apache.hive.service.cli.HiveSQLException;
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.fail;
 
 /**
  *
@@ -76,7 +76,6 @@ public class BackendHiveImplIntTest {
      */
     private static final String TEST_DIR = "temp_test/";
 
-    
     /**
      * Common access tool for all backends.
      */
@@ -93,9 +92,15 @@ public class BackendHiveImplIntTest {
         backendModel.getOptions().put("hdfsServer", HDFS_SERVER);
         backendModel.getOptions().put("hiveUser", HIVE_USER);
     }
-    
+    /**
+     * Method to make a test directory, test file and test tables in hive.
+     * 
+     * @throws IOException if there is a problem during writing test file
+     * @throws SQLException if there is a problem connecting to hive and/or executing queries
+     * @throws BackendException if it is not possible to parse uri of the hive server
+     */
     @BeforeClass
-    public static void setUpClass() throws IOException, URISyntaxException, SQLException, BackendException {
+    public static void setUpClass() throws IOException, SQLException, BackendException {
         // make test temp dir and set storage path
         File testDir = new File(TEST_DIR);
         boolean mkdir = testDir.mkdir();
@@ -120,7 +125,7 @@ public class BackendHiveImplIntTest {
         testBackendModel.getOptions().put("storagePath", TEST_STORAGE_PATH);
         testBackendModel.getOptions().put("hdfsServer", HDFS_SERVER);
         testBackendModel.getOptions().put("hiveUser", HIVE_USER);
-        
+
         BackendHiveImpl testBackend = new BackendHiveImpl(testBackendModel);
         URI hiveUri;
         hiveUri = testBackend.parseUri((String) testBackendModel.getOptions().get("storagePath"));
@@ -129,44 +134,48 @@ public class BackendHiveImplIntTest {
         String server = testBackend.getURIscheme() + hostName + ":" + port + "/default";
         String user = HIVE_USER;
         String passwd = "";
-        
+
         try {
             Class.forName(DRIVER_NAME);
-        }
-        catch (ClassNotFoundException ex) {
+        } catch (ClassNotFoundException ex) {
             Logger.getLogger(BackendHiveImplIntTest.class.getName()).log(Level.SEVERE, null, ex);
         }
-        
-        Connection con = DriverManager.getConnection(server, user, passwd);
-        Statement stmt = con.createStatement();
-        String sql = "CREATE TABLE default.lcm_test ";
-        sql+= "(var1 STRING,var2 STRING,var3 STRING,var4 STRING) ROW FORMAT DELIMITED ";
-        sql+= "FIELDS TERMINATED BY \',\' LINES TERMINATED by \'\\n\' STORED AS TEXTFILE";
-      //  sql += " tblproperties (\"skip.header.line.count\"=\"1\")";
-        stmt.execute(sql);
-        sql = "INSERT INTO TABLE default.lcm_test VALUES "
-                + "(\"Val1\",\"Val2\",\"Val3\",\"Val4\"), "
-                + "(\"Val5\",\"Val6\",\"Val7\",\"Val8\"), "
-                + "(\"Val9\",\"Val10\",\"Val11\",\"Val12\")";
-        stmt.execute(sql);
-        // prepare table for test of deletion
-        sql = "CREATE TABLE default.lcm_test_delete ";
-        sql+= "(var1 STRING,var2 STRING,var3 STRING,var4 STRING) ROW FORMAT DELIMITED ";
-        sql+= "FIELDS TERMINATED BY \',\' LINES TERMINATED by \'\\n\' STORED AS TEXTFILE";
-      // sql += " tblproperties (\"skip.header.line.count\"=\"1\")";
-        stmt.execute(sql);
-        sql = "INSERT INTO TABLE default.lcm_test_delete VALUES"
-                + "(\"Wrong1\",\"Val2\",\"Val3\",\"Val4\"), "
-                + "(\"Val5\",\"Val6\",\"Val7\",\"Val8\"), "
-                + "(\"Val9\",\"Val10\",\"Val11\",\"Val12\")";
-        stmt.execute(sql);
-        con.close();     
-        
+
+        try (Connection con = DriverManager.getConnection(server, user, passwd)) {
+            Statement stmt = con.createStatement();
+            String sql = "CREATE TABLE default.lcm_test ";
+            sql += "(var1 STRING,var2 STRING,var3 STRING,var4 STRING) ROW FORMAT DELIMITED ";
+            sql += "FIELDS TERMINATED BY \',\' LINES TERMINATED by \'\\n\' STORED AS TEXTFILE";
+            //  sql += " tblproperties (\"skip.header.line.count\"=\"1\")";
+            stmt.execute(sql);
+            sql = "INSERT INTO TABLE default.lcm_test VALUES "
+                    + "(\"Val1\",\"Val2\",\"Val3\",\"Val4\"), "
+                    + "(\"Val5\",\"Val6\",\"Val7\",\"Val8\"), "
+                    + "(\"Val9\",\"Val10\",\"Val11\",\"Val12\")";
+            stmt.execute(sql);
+            // prepare table for test of deletion
+            sql = "CREATE TABLE default.lcm_test_delete ";
+            sql += "(var1 STRING,var2 STRING,var3 STRING,var4 STRING) ROW FORMAT DELIMITED ";
+            sql += "FIELDS TERMINATED BY \',\' LINES TERMINATED by \'\\n\' STORED AS TEXTFILE";
+            // sql += " tblproperties (\"skip.header.line.count\"=\"1\")";
+            stmt.execute(sql);
+            sql = "INSERT INTO TABLE default.lcm_test_delete VALUES"
+                    + "(\"Wrong1\",\"Val2\",\"Val3\",\"Val4\"), "
+                    + "(\"Val5\",\"Val6\",\"Val7\",\"Val8\"), "
+                    + "(\"Val9\",\"Val10\",\"Val11\",\"Val12\")";
+            stmt.execute(sql);
+        }
+
     }
-    
+    /**
+     * Clean-up class. Deletes test directory and test tables in hive
+     * 
+     * @throws SQLException if there is a problem connecting to hive and/or executing queries
+     * @throws BackendException if it is not possible to parse uri of the hive server
+     */
     @AfterClass
     public static void tearDownClass() throws SQLException, BackendException {
-         // delete the local directory + contents
+        // delete the local directory + contents
         File file = new File(TEST_DIR);
         for (File c : file.listFiles()) {
             c.delete();
@@ -179,7 +188,7 @@ public class BackendHiveImplIntTest {
         testBackendModel.getOptions().put("storagePath", TEST_STORAGE_PATH);
         testBackendModel.getOptions().put("hdfsServer", HDFS_SERVER);
         testBackendModel.getOptions().put("hiveUser", HIVE_USER);
-        
+
         BackendHiveImpl testBackend = new BackendHiveImpl(testBackendModel);
         URI hiveUri;
         hiveUri = testBackend.parseUri((String) testBackendModel.getOptions().get("storagePath"));
@@ -188,14 +197,13 @@ public class BackendHiveImplIntTest {
         String server = testBackend.getURIscheme() + hostName + ":" + port + "/default";
         String user = HIVE_USER;
         String passwd = "";
-        
+
         try {
             Class.forName(DRIVER_NAME);
-        }
-        catch (ClassNotFoundException ex) {
+        } catch (ClassNotFoundException ex) {
             Logger.getLogger(BackendHiveImplIntTest.class.getName()).log(Level.SEVERE, null, ex);
         }
-        
+
         Connection con = DriverManager.getConnection(server, user, passwd);
         Statement stmt = con.createStatement();
         String sql = "DROP TABLE default.lcm_test";
@@ -205,40 +213,32 @@ public class BackendHiveImplIntTest {
         sql = "DROP TABLE default.test_tableStore";
         stmt.execute(sql);
     }
-    
-    @Before
-    public void setUp() {
-    }
-    
-    @After
-    public void tearDown() {
-    }
 
-    
-    
+
     /**
-     * Test of getSupportedUriSchema method, of class BackendHiveImpl. 
-     * Method returns supported uri schema ("hive") and tests fails if it is 
-     * not the case.
-     * 
+     * Test of getSupportedUriSchema method, of class BackendHiveImpl. Method
+     * returns supported uri schema ("hive") and tests fails if it is not the
+     * case.
+     *
      */
     @Test
-    public void testGetSupportedUriSchema() {
+    public final void testGetSupportedUriSchema() {
         System.out.println("getSupportedUriSchema");
         BackendHiveImpl instance = new BackendHiveImpl(backendModel);
         String expResult = "hive";
         String result = instance.getSupportedUriSchema();
         assertEquals(expResult, result);
     }
+
     /**
-     * Test of connection to the hive server.
-     * Method connects to the hive2 server specified in "storagePath" of backendModel.
-     * It assumes existence of a database called "default" and lists all tables in this
-     * database.
+     * Test of connection to the hive server. Method connects to the hive2
+     * server specified in "storagePath" of backendModel. It assumes existence
+     * of a database called "default" and lists all tables in this database.
      *
      * @throws SQLException if there is a problem with connection or sql query
-     * @throws BackendException if it is not possible to retrieve hive server address from the 
-     * {@link BackendModel} instance that initialized the {@link BackendHiveImp} instance.
+     * @throws BackendException if it is not possible to retrieve hive server
+     * address from the {@link BackendModel} instance that initialized the
+     * {@link BackendHiveImp} instance.
      */
     @Test
     public final void testConnection() throws SQLException, BackendException {
@@ -251,24 +251,24 @@ public class BackendHiveImplIntTest {
         String server = testBackend.getURIscheme() + hostName + ":" + port + "/default";
         String user = "";
         String passwd = "";
-        
+
         try {
             Class.forName(DRIVER_NAME);
-        }
-        catch (ClassNotFoundException ex) {
+        } catch (ClassNotFoundException ex) {
             Logger.getLogger(BackendHiveImplIntTest.class.getName()).log(Level.SEVERE, null, ex);
         }
-        
-        Connection con = DriverManager.getConnection(server, user, passwd);
-        Statement stmt = con.createStatement();
-        ResultSet res = stmt.executeQuery("show tables in default");
-       while (res.next()) {
+
+        try (Connection con = DriverManager.getConnection(server, user, passwd)) {
+            Statement stmt = con.createStatement();
+            ResultSet res = stmt.executeQuery("show tables in default");
+            while (res.next()) {
                 String resString = res.getString(1);
                 System.out.println(resString);
             }
-        con.close();
-        
+        }
+
     }
+
     /**
      * Tests what happens if {@link BackendHiveImp} gathers information using
      * {@link MetaData} object with valid URI pointing to existing location. The
@@ -282,8 +282,12 @@ public class BackendHiveImplIntTest {
     public final void testGatherDatasetInformation() throws BackendException {
         System.out.println("testGatherDatasetInformation");
         MetaData metaData = new MetaData();
-        final String fileUri = TEST_STORAGE_PATH+"/default/lcm_test";
-        metaData.put("data", new HashMap() { { put("uri", fileUri); } });
+        final String fileUri = TEST_STORAGE_PATH + "/default/lcm_test";
+        metaData.put("data", new HashMap() {
+            {
+                put("uri", fileUri);
+            }
+        });
         BackendHiveImpl testBackend = new BackendHiveImpl(backendModel);
         DataSetInformation dataSetInformation = testBackend.gatherDataSetInformation(metaData);
         System.out.println("modification time: " + dataSetInformation.getModificationTime());
@@ -291,7 +295,7 @@ public class BackendHiveImplIntTest {
         System.out.println("byte size is: " + dataSetInformation.getByteSize());
         assertEquals(dataSetInformation.isAttached(), true);
     }
-    
+
     /**
      * Tests what happens if {@link BackendHiveImp} gathers information using
      * empty {@link MetaData} object. Exception is expected.
@@ -306,10 +310,10 @@ public class BackendHiveImplIntTest {
         DataSetInformation dataSetInformation = testBackend.gatherDataSetInformation(metaData);
         fail("testGatherDatasetInformationEmptyMetadata did not thrown BackendException!");
     }
-//    
+
     /**
      * Tests what happens if {@link BackendHiveImp} gathers information using
-     * {@link MetaData} object with invalid URI. The method should fail as well 
+     * {@link MetaData} object with invalid URI. The method should fail as well
      * because invalid uri scheme is supplied.
      *
      * @throws BackendException if invalid URI is supplied.
@@ -319,16 +323,20 @@ public class BackendHiveImplIntTest {
         System.out.println("testGatherDatasetInformationWrongMetadata");
         MetaData metaData = new MetaData();
         final String fileUri = "NotAnUri";
-        metaData.put("data", new HashMap() { { put("uri", fileUri); } });
+        metaData.put("data", new HashMap() {
+            {
+                put("uri", fileUri);
+            }
+        });
         BackendHiveImpl testBackend = new BackendHiveImpl(backendModel);
         DataSetInformation dataSetInformation = testBackend.gatherDataSetInformation(metaData);
         fail("testGatherDatasetInformationWrongMetadata did not thrown BackendException!");
     }
-    
-     /**
+
+    /**
      * Tests what happens if {@link BackendHiveImp} gathers information using
-     * {@link MetaData} object with valid but incomplete URI. The method should fail as well 
-     * because the URI is not complete
+     * {@link MetaData} object with valid but incomplete URI. The method should
+     * fail as well because the URI is not complete
      *
      * @throws BackendException if incomplete URI is supplied.
      */
@@ -337,17 +345,21 @@ public class BackendHiveImplIntTest {
         System.out.println("testGatherDatasetInformationWrongLink");
         MetaData metaData = new MetaData();
         final String fileUri = "hive://NoPath";
-        metaData.put("data", new HashMap() { { put("uri", fileUri); } });
+        metaData.put("data", new HashMap() {
+            {
+                put("uri", fileUri);
+            }
+        });
         BackendHiveImpl testBackend = new BackendHiveImpl(backendModel);
         DataSetInformation dataSetInformation = testBackend.gatherDataSetInformation(metaData);
-       fail("testGatherDatasetInformationWrongLink did not thrown BackendException!");
+        fail("testGatherDatasetInformationWrongLink did not thrown BackendException!");
     }
-    
-     /**
+
+    /**
      * Tests what happens if {@link BackendHiveImp} gathers information using
-     * {@link MetaData} object with valid URI pointing to non-existing location. The
-     * {@link DataSetInformation} object should has isAttached() method equal to
-     * false.
+     * {@link MetaData} object with valid URI pointing to non-existing location.
+     * The {@link DataSetInformation} object should has isAttached() method
+     * equal to false.
      *
      * @throws BackendException if it is not possible to gather information
      * about the dataset
@@ -356,23 +368,29 @@ public class BackendHiveImplIntTest {
     public final void testGatherDatasetInformationWrongDest() throws BackendException {
         System.out.println("testGatherDatasetInformationWrongDest");
         MetaData metaData = new MetaData();
-        final String fileUri = TEST_STORAGE_PATH+"/default/lcm_trest";
-        metaData.put("data", new HashMap() { { put("uri", fileUri); } });
-        BackendHiveImpl testBackend = new BackendHiveImpl(backendModel);   
+        final String fileUri = TEST_STORAGE_PATH + "/default/lcm_trest";
+        metaData.put("data", new HashMap() {
+            {
+                put("uri", fileUri);
+            }
+        });
+        BackendHiveImpl testBackend = new BackendHiveImpl(backendModel);
         DataSetInformation dataSetInformation = testBackend.gatherDataSetInformation(metaData);
         System.out.println("modification time: " + dataSetInformation.getModificationTime());
         System.out.println("is readable: " + dataSetInformation.isReadable());
         System.out.println("byte size is: " + dataSetInformation.getByteSize());
         assertEquals(dataSetInformation.isAttached(), false);
     }
+
     /**
      * Tests store() method of {@link BackendHiveImp}. Test tries to store text
-     * file created during setup as a table in hive, then it queries its
-     * content and saves it to local text file and finally tests if the new text file
-     * is identical to the original using md5.
+     * file created during setup as a table in hive, then it queries its content
+     * and saves it to local text file and finally tests if the new text file is
+     * identical to the original using md5.
      *
      * @throws BackendException if there is a problem in storing in hive
-     * @throws IOException if it is not possible to read from or write to the local file
+     * @throws IOException if it is not possible to read from or write to the
+     * local file
      * @throws SQLException if there is a problem with querying the test table.
      */
     @Test
@@ -381,14 +399,18 @@ public class BackendHiveImplIntTest {
         // now make a metadata with uri
         final String fileUri = TEST_STORAGE_PATH + "/default/test_tableStore";
         MetaData metaData = new MetaData();
-        metaData.put("data", new HashMap() { { put("uri", fileUri); } });
-        // connect to the csv file 
+        metaData.put("data", new HashMap() {
+            {
+                put("uri", fileUri);
+            }
+        });
+        // connect to the csv file
         File testFile = new File(TEST_DIR + "/testFile.csv");
         InputStream is = new FileInputStream(testFile);
-        
-        BackendHiveImpl testBackend = new BackendHiveImpl(backendModel);   
+
+        BackendHiveImpl testBackend = new BackendHiveImpl(backendModel);
         testBackend.store(metaData, is);
-      
+
         // get the content of the test_tableStore table and store it in output file
         URI hiveUri;
         hiveUri = testBackend.parseUri((String) backendModel.getOptions().get("storagePath"));
@@ -397,19 +419,18 @@ public class BackendHiveImplIntTest {
         String server = testBackend.getURIscheme() + hostName + ":" + port + "/default";
         String user = "";
         String passwd = "";
-        
+
         try {
             Class.forName(DRIVER_NAME);
-        }
-        catch (ClassNotFoundException ex) {
+        } catch (ClassNotFoundException ex) {
             Logger.getLogger(BackendHiveImplIntTest.class.getName()).log(Level.SEVERE, null, ex);
         }
-        
+
         Connection con = DriverManager.getConnection(server, user, passwd);
         Statement stmt = con.createStatement();
-       
+
         // to prevent printing table name in column headers
-        stmt.execute("set hive.resultset.use.unique.column.names=false"); 
+        stmt.execute("set hive.resultset.use.unique.column.names=false");
         ResultSet res = stmt.executeQuery("select * from default.test_tableStore");
         ResultSetMetaData rsmd = res.getMetaData();
         int numCol = rsmd.getColumnCount();
@@ -417,32 +438,29 @@ public class BackendHiveImplIntTest {
         output.createNewFile();
         try (FileWriter writer = new FileWriter(output)) {
             String header = "";
-            for (int iString = 1; iString < numCol; iString++)
-                {
-                    header+=rsmd.getColumnName(iString)+",";
-                }
-                header+=rsmd.getColumnName(numCol)+"\n";
-            writer.write(header);    
+            for (int iString = 1; iString < numCol; iString++) {
+                header += rsmd.getColumnName(iString) + ",";
+            }
+            header += rsmd.getColumnName(numCol) + "\n";
+            writer.write(header);
             while (res.next()) {
                 String row = "";
-                for (int iString = 1; iString < numCol; iString++)
-                {
-                    row+=res.getString(iString)+",";
+                for (int iString = 1; iString < numCol; iString++) {
+                    row += res.getString(iString) + ",";
                 }
-                row+=res.getString(numCol)+"\n";
+                row += res.getString(numCol) + "\n";
                 writer.write(row);
             }
             writer.flush();
         }
-        
+
         // check if the files are identical
         final File expected = testFile;
         final File obtained = output;
         HashCode hcExp = Files.hash(expected, Hashing.md5());
         HashCode hcOut = Files.hash(obtained, Hashing.md5());
         assertEquals(hcExp.toString(), hcOut.toString());
-  }
-    
+    }
 
     /**
      * Tests read() method of {@link BackendHDFSImp}. Test reads a text file
@@ -455,7 +473,7 @@ public class BackendHiveImplIntTest {
      * backend
      */
     @Test
-    public final void testRead() throws IOException, BackendException, InterruptedException {
+    public final void testRead() throws IOException, BackendException {
         // make a metadata with uri
         final String fileUri = TEST_STORAGE_PATH + "/default/lcm_test";
         // make test file to where the content stored in setup would be read
@@ -468,7 +486,7 @@ public class BackendHiveImplIntTest {
             }
         });
         // make local data backend in specified directory and read the existing file
-        BackendHiveImpl testBackend = new BackendHiveImpl(backendModel); 
+        BackendHiveImpl testBackend = new BackendHiveImpl(backendModel);
         try (InputStream is = testBackend.read(metaData)) {
             try (FileOutputStream fos = new FileOutputStream(output)) {
                 int readBytes = IOUtils.copy(is, fos);
@@ -483,27 +501,33 @@ public class BackendHiveImplIntTest {
         File output2 = new File(TEST_DIR + "/testRead_2.csv");
         output2.createNewFile();
         try (FileWriter writer = new FileWriter(output2)) {
-            while(br.ready()){
+            while (br.ready()) {
                 String line = br.readLine();
                 String newline = line.replaceAll("\u0001", ",");
-                writer.write(newline+"\n");
+                writer.write(newline + "\n");
             }
             writer.flush();
         }
-        
+
         // check if the files are identical
         File testFile = new File(TEST_DIR + "/testFile.csv");
         final File expected = testFile;
         HashCode hcExp = Files.hash(expected, Hashing.md5());
         HashCode hcOut = Files.hash(output2, Hashing.md5());
-       assertEquals(hcExp.toString(), hcOut.toString());
+        assertEquals(hcExp.toString(), hcOut.toString());
     }
-    
+
+    /**
+     * Tests delete() method of {@link BackendHiveImp}. It tries to delete table
+     * created in setup. It fails if it is not possible to.
+     *
+     * @throws BackendException if there is a problem during deletion
+     */
     @Test
-    public final void testDelete() throws IOException, BackendException {
+    public final void testDelete() throws BackendException {
         // make a metadata with uri
         final String fileUri = TEST_STORAGE_PATH + "/default/lcm_test_delete";
-        
+
         MetaData metaData = new MetaData();
         metaData.put("data", new HashMap() {
             {
@@ -511,10 +535,9 @@ public class BackendHiveImplIntTest {
             }
         });
         // make local data backend in specified directory and read the existing file
-        BackendHiveImpl testBackend = new BackendHiveImpl(backendModel); 
+        BackendHiveImpl testBackend = new BackendHiveImpl(backendModel);
         boolean result = testBackend.delete(metaData);
         assertEquals(result, true);
     }
-   
-    
+
 }
