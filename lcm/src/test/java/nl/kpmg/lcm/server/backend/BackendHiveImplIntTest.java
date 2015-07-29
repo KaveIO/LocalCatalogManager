@@ -18,9 +18,11 @@ package nl.kpmg.lcm.server.backend;
 import com.google.common.hash.HashCode;
 import com.google.common.hash.Hashing;
 import com.google.common.io.Files;
+import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
+import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStream;
@@ -100,7 +102,7 @@ public class BackendHiveImplIntTest {
         File testFile = new File(TEST_DIR + "/testFile.csv");
         testFile.createNewFile();
         try (FileWriter writer = new FileWriter(testFile)) {
-            writer.write("Var1,Var2,Var3,Var4");
+            writer.write("var1,var2,var3,var4");
             writer.write("\n");
             writer.write("Val1,Val2,Val3,Val4");
             writer.write("\n");
@@ -137,8 +139,9 @@ public class BackendHiveImplIntTest {
         Connection con = DriverManager.getConnection(server, user, passwd);
         Statement stmt = con.createStatement();
         String sql = "CREATE TABLE default.lcm_test ";
-        sql+= "(Var1 STRING,Var2 STRING,Var3 STRING,Var4 STRING) ROW FORMAT DELIMITED ";
+        sql+= "(var1 STRING,var2 STRING,var3 STRING,var4 STRING) ROW FORMAT DELIMITED ";
         sql+= "FIELDS TERMINATED BY \',\' LINES TERMINATED by \'\\n\' STORED AS TEXTFILE";
+        sql += " tblproperties (\"skip.header.line.count\"=\"1\")";
         stmt.execute(sql);
         sql = "INSERT INTO TABLE default.lcm_test VALUES "
                 + "(\"Val1\",\"Val2\",\"Val3\",\"Val4\"), "
@@ -147,8 +150,9 @@ public class BackendHiveImplIntTest {
         stmt.execute(sql);
         // prepare table for test of deletion
         sql = "CREATE TABLE default.lcm_test_delete ";
-        sql+= "(Var1 STRING,Var2 STRING,Var3 STRING,Var4 STRING) ROW FORMAT DELIMITED ";
+        sql+= "(var1 STRING,var2 STRING,var3 STRING,var4 STRING) ROW FORMAT DELIMITED ";
         sql+= "FIELDS TERMINATED BY \',\' LINES TERMINATED by \'\\n\' STORED AS TEXTFILE";
+        sql += " tblproperties (\"skip.header.line.count\"=\"1\")";
         stmt.execute(sql);
         sql = "INSERT INTO TABLE default.lcm_test_delete VALUES"
                 + "(\"Wrong1\",\"Val2\",\"Val3\",\"Val4\"), "
@@ -402,11 +406,22 @@ public class BackendHiveImplIntTest {
         
         Connection con = DriverManager.getConnection(server, user, passwd);
         Statement stmt = con.createStatement();
+       
+        // to prevent printing table name in column headers
+        stmt.execute("set hive.resultset.use.unique.column.names=false"); 
         ResultSet res = stmt.executeQuery("select * from default.test_tableStore");
-        int numCol = res.getMetaData().getColumnCount();
+        ResultSetMetaData rsmd = res.getMetaData();
+        int numCol = rsmd.getColumnCount();
         File output = new File(TEST_DIR + "/testStore.csv");
         output.createNewFile();
         try (FileWriter writer = new FileWriter(output)) {
+            String header = "";
+            for (int iString = 1; iString < numCol; iString++)
+                {
+                    header+=rsmd.getColumnName(iString)+",";
+                }
+                header+=rsmd.getColumnName(numCol)+"\n";
+            writer.write(header);    
             while (res.next()) {
                 String row = "";
                 for (int iString = 1; iString < numCol; iString++)
@@ -439,7 +454,7 @@ public class BackendHiveImplIntTest {
      * backend
      */
     @Test
-    public final void testRead() throws IOException, BackendException {
+    public final void testRead() throws IOException, BackendException, InterruptedException {
         // make a metadata with uri
         final String fileUri = TEST_STORAGE_PATH + "/default/lcm_test";
         // make test file to where the content stored in setup would be read
@@ -461,15 +476,18 @@ public class BackendHiveImplIntTest {
                 fos.flush();
             }
         }
-         /**
-         * @TODO Implement saving the table, and comparing with the initial file
-         */
-//        // check if the files are identical
-//        File testFile = new File(TEST_DIR + "/testFile.csv");
-//        final File expected = testFile;
-//        HashCode hcExp = Files.hash(expected, Hashing.md5());
-//        HashCode hcOut = Files.hash(output, Hashing.md5());
-//        assertEquals(hcExp.toString(), hcOut.toString());
+        // replace ^A characters in the output file
+        // quick and dirty solution using Unix system commands
+        Process p;
+         p = Runtime.getRuntime().exec("sed -i \'s/\\x01/,/g\' "+ TEST_DIR + "/testRead.csv");
+         p.waitFor();
+        
+        // check if the files are identical
+        File testFile = new File(TEST_DIR + "/testFile.csv");
+        final File expected = testFile;
+        HashCode hcExp = Files.hash(expected, Hashing.md5());
+        HashCode hcOut = Files.hash(output, Hashing.md5());
+       assertEquals(hcExp.toString(), hcOut.toString());
     }
     
     @Test
