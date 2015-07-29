@@ -19,6 +19,7 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.io.SequenceInputStream;
 import java.net.URI;
 import java.sql.Connection;
 import java.sql.DriverManager;
@@ -31,6 +32,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import nl.kpmg.lcm.server.data.BackendModel;
 import nl.kpmg.lcm.server.data.MetaData;
+import org.apache.commons.io.IOUtils;
 
 /**
  * Backend for Hive 2 server.
@@ -191,7 +193,7 @@ public class BackendHiveImpl extends AbstractBackend {
      * @param res Hive query output of the type {@link ResultSet}
      * @param dataSetInformation Information about the dataset
      * @return Updated {@link DatasetInformation}
-     * @throws SQLException if there is problem with connection or querry
+     * @throws SQLException if there is problem with connection or query
      * execution
      */
     private DataSetInformation
@@ -451,6 +453,7 @@ public class BackendHiveImpl extends AbstractBackend {
         final String[] uriInfo = this.getServerDbTableFromUri(uri);
         final String tabName = uriInfo[2];
         final String dbName = uriInfo[1];
+        String header = ""; // to get table header
         // get driver
         try {
             Class.forName(DRIVER_NAME);
@@ -465,6 +468,15 @@ public class BackendHiveImpl extends AbstractBackend {
                     "INSERT OVERWRITE DIRECTORY \'/tmp/" + tabName + "\' ";
             sql += "SELECT * FROM " + dbName + "." + tabName;
             stmt.execute(sql);
+            // getting headers
+            // storing headers in a file is still not implemented in hive (issue HIVE-4346)
+            ResultSet res = stmt.executeQuery("DESCRIBE " + dbName + "." + tabName);
+            while (res.next()) {
+                header += res.getString(1);
+                header += ",";
+            }
+            header = header.substring(0, header.length() - 1); // remove last comma
+            header += "\n"; // finish a line
             // Closing connection. The file will be read using HDFS backend
         }
         catch (SQLException ex) {
@@ -486,7 +498,15 @@ public class BackendHiveImpl extends AbstractBackend {
 
         BackendHDFSImpl hdfsBackend = new BackendHDFSImpl(backendModel);
         InputStream is = hdfsBackend.read(metaTemp);
-        return is;
+        InputStream ih = null;
+        // make input stream with headers
+        try {
+            ih = IOUtils.toInputStream(header, "UTF-8");
+        } catch (IOException ex) {
+            Logger.getLogger(BackendHiveImpl.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        InputStream result = new SequenceInputStream(ih, is);
+        return result;
 
         //  INSERT OVERWRITE LOCAL DIRECTORY '/root/testDir3' ROW FORMAT DELIMITED
         // FIELDS TERMINATED BY ',' select * from default.test_yahoo2 limit 10;
