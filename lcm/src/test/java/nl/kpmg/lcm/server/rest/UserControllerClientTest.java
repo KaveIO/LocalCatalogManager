@@ -7,6 +7,7 @@ import java.util.List;
 
 import nl.kpmg.lcm.server.AuthenticationManager;
 import nl.kpmg.lcm.server.JacksonJsonProvider;
+import nl.kpmg.lcm.server.ServerException;
 import nl.kpmg.lcm.server.data.User;
 import nl.kpmg.lcm.server.data.service.EncryptDecryptService;
 import nl.kpmg.lcm.server.data.service.UserService;
@@ -38,11 +39,11 @@ public class UserControllerClientTest extends LCMBaseTest {
     }
     
     @Test
-    public void testGetUser(){
+    public void testGetUser() throws ServerException{
     	UserController uc = new UserController();
     	uc.setUserService(userService);
     	uc.setAuthenticationManager(am);
-    	uc.getUser("testUser1","ABC123");    	        
+    	uc.getUser("testUser1","AUTH_TOKEN","ABC123");    	        
     }
         
     @Test
@@ -53,6 +54,28 @@ public class UserControllerClientTest extends LCMBaseTest {
     	UserController uc = new UserController();
     	uc.setUserService(userService);
     	uc.saveUser(user);            	
+    }
+    
+    @Test
+    public void testLoginUser() throws ServerException{
+    	User user = new User();
+    	user.setUsername("admin");
+    	user.setPassword("admin");
+    	UserController uc = new UserController();
+    	uc.setUserService(userService);
+    	uc.setAuthenticationManager(am);
+    	uc.login(user, "ABC123");            	
+    }
+    
+    @Test
+    public void testLogoutUser() throws ServerException{
+    	User user = new User();
+    	user.setUsername("admin");
+    	user.setPassword("admin");
+    	UserController uc = new UserController();
+    	uc.setUserService(userService);
+    	uc.setAuthenticationManager(am);
+    	uc.logout("AUTH_TOKEN","ABC123");            	
     }
     
     @Test

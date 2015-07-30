@@ -2,6 +2,7 @@ package nl.kpmg.lcm.server;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.UUID;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -24,28 +25,53 @@ public class AuthenticationManager {
 	
 	Map<String,String> userMap = new HashMap<String,String>();
 	Map<String,String> servicekeyMap = new HashMap<String,String>();
+	Map<String,String> authorizationTokenMap = new HashMap<String,String>();
 	
 	// TODO Need to implement correct storage and fetch for users and service keys.
 	AuthenticationManager(){
 		userMap.put("admin", "admin");
-		userMap.put("venkat", "admin");
-		servicekeyMap.put("admin", "ABC123");
-		servicekeyMap.put("venkat", "ABC123");
+		servicekeyMap.put("ABC123", "admin");
+		authorizationTokenMap.put("AUTH_TOKEN", "admin");
 	}
 	
 	
-	public void getAuthentication(String username,String password, String servicekey){
+	public String getAuthentication(String username,String password, String servicekey) throws ServerException{		
 		if(servicekey == null) {
 			this.getAuthentication(username, password);
 		} else {
-			if(servicekey.equals(servicekeyMap.get(username))){
-				if(username != null || username != "" && encryptDecryptService.decrypt(password).equals(userMap.get(username))){
-					this.auth = true;
-					
+			if(servicekeyMap.containsKey(servicekey)){
+				String usernameMatch = servicekeyMap.get(servicekey);
+				if(usernameMatch.equals(username)&& userMap.containsKey(username)){
+					String passwordMatch = userMap.get(username);
+					if(passwordMatch.equals(password)){
+						this.auth = true;
+						String authorizationToken = UUID.randomUUID().toString();
+						authorizationTokenMap.put(authorizationToken, username);
+						return authorizationToken;
+					}
 				}
 				
 			}
 		}
+		throw new ServerException("Authentication Failed");
+	}
+	
+	public boolean isAuthorizationTokenValid(String serviceKey, String authourizationToken){
+		if(isServiceKeyValid(serviceKey)){
+			String usernameMatch1 = servicekeyMap.get(serviceKey);
+			if(authorizationTokenMap.containsKey(authourizationToken)){
+				String usernameMatch2 = authorizationTokenMap.get(authourizationToken);
+				if(usernameMatch1.equals(usernameMatch2)){
+					return true;
+				}
+			}
+		}
+		return false;
+	}
+	
+	
+	public boolean isServiceKeyValid(String serviceKey){		
+		return servicekeyMap.containsKey(serviceKey);
 	}
 	
 	private void getAuthentication(String username,String password){
@@ -57,6 +83,16 @@ public class AuthenticationManager {
 	
 	public boolean isAuthenticated(){
 		return auth;
+	}
+
+
+	public boolean logout(String serviceKey, String authourizationToken)
+			throws ServerException {
+		if(authorizationTokenMap.containsKey(authourizationToken)){
+		authorizationTokenMap.remove(authourizationToken);
+		return true;
+		}
+		throw new ServerException("logout Failed");
 	}
 
 }
