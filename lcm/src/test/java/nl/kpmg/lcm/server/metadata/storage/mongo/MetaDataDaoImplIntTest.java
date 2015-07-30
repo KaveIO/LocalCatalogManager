@@ -22,7 +22,7 @@ import static org.junit.Assert.*;
  */
 
 
-public class MetaDataDaoImplTest {
+public class MetaDataDaoImplIntTest {
     
      @Test
      public void testConstruction() throws DaoException, UnknownHostException {
