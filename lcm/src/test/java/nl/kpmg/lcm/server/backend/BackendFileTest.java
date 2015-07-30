@@ -357,7 +357,23 @@ public class BackendFileTest {
     @Test
     public final void testDelete() throws IOException, BackendException {
         File testDir = new File(TEST_STORAGE_PATH);
-        final String fileUri = "file://" + testDir.getCanonicalPath() + "/testStore.csv";
+        File testFile = new File(TEST_STORAGE_PATH + "/testDelete.csv");
+        testFile.createNewFile();
+        try (FileWriter writer = new FileWriter(testFile)) {
+            final int nLoops = 10;
+            for (int i = 0; i  < nLoops; i++) {
+                writer.write("qwertyuiop");
+                writer.write("\n");
+                writer.write("asdfghjkl");
+                writer.write("\n");
+                writer.write("zxcvbnm,!@#$%^&*()_");
+                writer.write("\n");
+                writer.write("1234567890[][;',.");
+                writer.write("\n");
+            }
+            writer.flush();
+        }
+        final String fileUri = "file://" + testDir.getCanonicalPath() + "/testDelete.csv";
         // make metadata pointing to the file to be deleted
         MetaData metaData = new MetaData();
         metaData.put("data", new HashMap() { { put("uri", fileUri); } });
