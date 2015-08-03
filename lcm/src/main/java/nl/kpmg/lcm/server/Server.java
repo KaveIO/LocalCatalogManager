@@ -3,8 +3,12 @@ package nl.kpmg.lcm.server;
 import java.net.URI;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+
+import nl.kpmg.lcm.server.rest.LCMRESTRequestFilter;
+import nl.kpmg.lcm.server.rest.LCMRESTResponseFilter;
 import nl.kpmg.lcm.server.task.TaskManager;
 import nl.kpmg.lcm.server.task.TaskManagerException;
+
 import org.glassfish.grizzly.http.server.HttpServer;
 import org.glassfish.jersey.grizzly2.httpserver.GrizzlyHttpServerFactory;
 import org.glassfish.jersey.server.ResourceConfig;
@@ -77,6 +81,8 @@ public class Server {
                 .registerClasses(JacksonJsonProvider.class)
                 .registerClasses(LoggingExceptionMapper.class)
                 .register(DeclarativeLinkingFeature.class)
+                .register(LCMRESTRequestFilter.class)
+                .register(LCMRESTResponseFilter.class)
                 .property("contextConfig", context);
 
         // create and start a new instance of grizzly http server

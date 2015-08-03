@@ -1,5 +1,7 @@
 package nl.kpmg.lcm.server.rest;
 
+import static org.junit.Assert.assertEquals;
+
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -28,6 +30,16 @@ public class UserControllerClientTest extends LCMBaseTest {
 	@Autowired
 	private EncryptDecryptService encdecService;
 	
+	
+	//@Test
+    public void testGetUserTarget() {
+        String expected = "";
+        String actual = target
+                .path("client\\v0\\users\\admin")
+                .request()
+                .get(String.class);
+        assertEquals(expected, actual);
+    }
     /**
      * Test to see that the client interface returns the interface versions.
      */
@@ -41,19 +53,19 @@ public class UserControllerClientTest extends LCMBaseTest {
     @Test
     public void testGetUser() throws ServerException{
     	UserController uc = new UserController();
-    	uc.setUserService(userService);
-    	uc.setAuthenticationManager(am);
-    	uc.getUser("testUser1","AUTH_TOKEN","ABC123");    	        
+    	uc.setUserService(userService);    	
+    	uc.getUser("testUser1");    	        
     }
         
     @Test
-    public void testSaveUser(){
+    public void testSaveUser() throws ServerException{
     	User user = new User();
     	user.setUsername("testUser1");
     	user.setPassword("testPassword");
     	UserController uc = new UserController();
     	uc.setUserService(userService);
-    	uc.saveUser(user);            	
+    	uc.setAuthenticationManager(am);
+    	uc.saveUser(user,"AUTH_TOKEN","ABC123");            	
     }
     
     @Test
@@ -79,20 +91,22 @@ public class UserControllerClientTest extends LCMBaseTest {
     }
     
     @Test
-    public void testModifyUser(){
+    public void testModifyUser() throws ServerException{
     	User user = new User();
     	user.setUsername("testUser1");
     	user.setPassword("testPassword");
     	UserController uc = new UserController();
     	uc.setUserService(userService);
-    	uc.modifyUser(user);            
+    	uc.setAuthenticationManager(am);
+    	uc.modifyUser(user,"AUTH_TOKEN","ABC123");            
     }
    
     @Test
-    public void testDeleteUser(){
+    public void testDeleteUser() throws ServerException{
     	UserController uc = new UserController();
     	uc.setUserService(userService);
-    	uc.deleteUser("testUser1");
+    	uc.setAuthenticationManager(am);
+    	uc.deleteUser("testUser1","AUTH_TOKEN","ABC123");
     }
     
     @Test
