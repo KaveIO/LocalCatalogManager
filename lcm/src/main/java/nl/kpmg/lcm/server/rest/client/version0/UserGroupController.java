@@ -1,5 +1,8 @@
 package nl.kpmg.lcm.server.rest.client.version0;
 
+import javax.annotation.security.DenyAll;
+import javax.annotation.security.PermitAll;
+import javax.annotation.security.RolesAllowed;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.DELETE;
 import javax.ws.rs.GET;
@@ -11,7 +14,6 @@ import javax.ws.rs.Produces;
 import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.Response;
 
-import nl.kpmg.lcm.server.AuthenticationManager;
 import nl.kpmg.lcm.server.ServerException;
 import nl.kpmg.lcm.server.data.UserGroup;
 import nl.kpmg.lcm.server.data.service.UserGroupService;
@@ -24,20 +26,21 @@ import org.springframework.stereotype.Component;
 public class UserGroupController {
 
 	private UserGroupService userGroupService;
-	private AuthenticationManager am;
+	//private AuthenticationManager am;
 
 	@Autowired
 	public void setUserGroupService(UserGroupService userGroupService) {
 		this.userGroupService = userGroupService;
 	}
 
-	@Autowired
-	public void setAuthenticationManager(AuthenticationManager am) {
-		this.am = am;
-	}
+	//@Autowired
+	//public void setAuthenticationManager(AuthenticationManager am) {
+	//	this.am = am;
+	//}
 
 	@GET
 	@Produces({ "application/json" })
+	@RolesAllowed({"apiUser","administrator"})
 	public Response getUserGroups() {
 
 		return Response.status(200)
@@ -48,6 +51,7 @@ public class UserGroupController {
 	@GET
 	@Produces({ "application/json" })
 	@Path("/{userGroup}")	
+	@RolesAllowed({"apiUser","administrator"})
 	public Response getUserGroup(@PathParam("userGroup") String userGroup) {
 
 		return Response
@@ -59,6 +63,7 @@ public class UserGroupController {
 	@PUT
 	@Consumes({ "application/nl.kpmg.lcm.server.data.UserGroup+json" })
 	@Path("/{userGroup}")	
+	@RolesAllowed({"administrator"})
 	public Response saveUserGroup(final UserGroup userGroup,
 			@QueryParam("authourizationToken") String authourizationToken,
 			@QueryParam("serviceKey") String serviceKey) throws ServerException {
@@ -71,6 +76,7 @@ public class UserGroupController {
 	@POST
 	@Consumes({ "application/nl.kpmg.lcm.server.data.UserGroup+json" })
 	@Produces({ "application/nl.kpmg.lcm.server.data.UserGroup+json" })
+	@RolesAllowed({"administrator"})
 	public Response modifyUserGroup(final UserGroup userGroup,
 			@QueryParam("authourizationToken") String authourizationToken,
 			@QueryParam("serviceKey") String serviceKey) throws ServerException {
@@ -82,6 +88,7 @@ public class UserGroupController {
 	@DELETE
 	@Consumes({ "application/json" })
 	@Path("/{userGroup}")
+	@RolesAllowed({"administrator"})
 	public Response deleteUserGroup(@PathParam("userGroup") String userGroup,
 			@QueryParam("authourizationToken") String authourizationToken,
 			@QueryParam("serviceKey") String serviceKey) throws ServerException {

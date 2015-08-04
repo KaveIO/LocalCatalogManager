@@ -30,8 +30,14 @@ public class AuthenticationManager {
 	// TODO Need to implement correct storage and fetch for users and service keys.
 	AuthenticationManager(){
 		userMap.put("admin", "admin");
+		userMap.put("administrator", "admin");
+		userMap.put("apiUser", "apiUser");
 		servicekeyMap.put("ABC123", "admin");
+		servicekeyMap.put("ABC123", "administrator");
+		servicekeyMap.put("ABC123", "apiUser");
 		authorizationTokenMap.put("AUTH_TOKEN", "admin");
+		authorizationTokenMap.put("AUTH_TOKEN", "administrator");
+		authorizationTokenMap.put("AUTH_TOKEN", "apiUser");
 	}
 	
 	

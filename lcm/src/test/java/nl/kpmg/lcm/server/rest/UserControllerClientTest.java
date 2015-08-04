@@ -31,13 +31,14 @@ public class UserControllerClientTest extends LCMBaseTest {
 	private EncryptDecryptService encdecService;
 	
 	
-	//@Test
+	@Test
     public void testGetUserTarget() {
         String expected = "";
         String actual = target
                 .path("client\\v0\\users\\admin")
                 .request()
                 .get(String.class);
+        System.out.println("*****************"+actual);
         assertEquals(expected, actual);
     }
     /**
@@ -109,7 +110,7 @@ public class UserControllerClientTest extends LCMBaseTest {
     	uc.deleteUser("testUser1","AUTH_TOKEN","ABC123");
     }
     
-    @Test
+    //@Test
     public void testJSONConversion(){
     	User user = new User();
     	user.setUsername("testUser1");

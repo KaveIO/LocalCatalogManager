@@ -1,5 +1,6 @@
 package nl.kpmg.lcm.server;
 
+import java.lang.annotation.Annotation;
 import java.net.URI;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -14,6 +15,9 @@ import org.glassfish.jersey.grizzly2.httpserver.GrizzlyHttpServerFactory;
 import org.glassfish.jersey.server.ResourceConfig;
 import org.glassfish.jersey.jackson.JacksonFeature;
 import org.glassfish.jersey.linking.DeclarativeLinkingFeature;
+import org.glassfish.jersey.message.filtering.EntityFilteringFeature;
+import org.glassfish.jersey.message.filtering.SecurityAnnotations;
+import org.glassfish.jersey.message.filtering.SecurityEntityFilteringFeature;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
 
@@ -83,6 +87,8 @@ public class Server {
                 .register(DeclarativeLinkingFeature.class)
                 .register(LCMRESTRequestFilter.class)
                 .register(LCMRESTResponseFilter.class)
+                .register(SecurityEntityFilteringFeature.class)
+                .property(EntityFilteringFeature.ENTITY_FILTERING_SCOPE, new Annotation[]{SecurityAnnotations.rolesAllowed(new String[]{"administrator","apiUser"})})
                 .property("contextConfig", context);
 
         // create and start a new instance of grizzly http server

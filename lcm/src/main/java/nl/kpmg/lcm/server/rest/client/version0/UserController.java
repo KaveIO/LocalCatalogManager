@@ -1,5 +1,6 @@
 package nl.kpmg.lcm.server.rest.client.version0;
 
+import javax.annotation.security.RolesAllowed;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.DELETE;
 import javax.ws.rs.GET;
@@ -55,21 +56,24 @@ public class UserController {
 	}
 	
 	@GET
-	@Produces({"application/json"})	
+	@Produces({"application/json"})
+	@RolesAllowed({"apiUser","administrator"})
 	public Response getUsers(){		
 		return Response.status(200).entity(userService.getUserDao().getUsers()).build();
 	}
 	
 	@GET
 	@Produces({"application/json"})
-	@Path("/{username}")	
+	@Path("/{username}")
+	@RolesAllowed({"apiUser","administrator"})
 	public Response getUser(@PathParam("username") String username) {				
 		return Response.status(200).entity(userService.getUserDao().getUser(username)).build();				
 	}
 	
 	@PUT
 	@Consumes({"application/nl.kpmg.lcm.server.data.User+json"})
-	@Path("/{username}")	
+	@Path("/{username}")
+	@RolesAllowed({"administrator"})
 	public Response saveUser(final User user,@QueryParam("authourizationToken") String authourizationToken,@QueryParam("serviceKey") String serviceKey) throws ServerException{				
 		userService.getUserDao().saveUser(user);
 		return Response.status(200).entity("User "+user.getUsername() + " saved successfully.").build();				
@@ -78,6 +82,7 @@ public class UserController {
 	@POST
 	@Consumes({"application/nl.kpmg.lcm.server.data.User+json"})
 	@Produces({"application/nl.kpmg.lcm.server.data.User+json"})
+	@RolesAllowed({"administrator"})
 	public Response modifyUser(final User user,@QueryParam("authourizationToken") String authourizationToken,@QueryParam("serviceKey") String serviceKey) throws ServerException{		
 		
 		userService.getUserDao().modifyUser(user);
@@ -87,6 +92,7 @@ public class UserController {
 	@DELETE
 	@Consumes({"application/json"})
 	@Path("/{username}")
+	@RolesAllowed({"apiUser","administrator"})
 	public Response deleteUser(@PathParam("username") String username,@QueryParam("authourizationToken") String authourizationToken,@QueryParam("serviceKey") String serviceKey) throws ServerException{		
 		userService.getUserDao().deleteUser(username);
 		return Response.status(200).entity("Deleted User "+username+" Successfully.").build();		

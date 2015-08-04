@@ -17,6 +17,8 @@ package nl.kpmg.lcm.server;
 
 import java.util.logging.Level;
 import java.util.logging.Logger;
+
+import javax.ws.rs.ForbiddenException;
 import javax.ws.rs.NotFoundException;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.ext.ExceptionMapper;
@@ -51,6 +53,10 @@ public class LoggingExceptionMapper  implements ExceptionMapper<Exception> {
         if (NotFoundException.class.isAssignableFrom(ex.getClass())) {
             response = Response.status(Response.Status.NOT_FOUND)
                     .type("text/plain")
+                    .build();
+        } else if (ForbiddenException.class.isAssignableFrom(ex.getClass())) {
+            response = Response.status(Response.Status.FORBIDDEN)
+                    .type("text/plain").entity(" Access is forbidden for the user role.")
                     .build();
         } else {
             LOGGER.log(Level.WARNING, "Request failed", ex);
