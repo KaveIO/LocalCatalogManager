@@ -39,7 +39,7 @@ public class UserGroupController {
 	//}
 
 	@GET
-	@Produces({ "application/json" })
+	@Produces({ "application/json" })	
 	@RolesAllowed({"apiUser","administrator"})
 	public Response getUserGroups() {
 

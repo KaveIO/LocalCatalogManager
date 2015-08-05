@@ -16,7 +16,8 @@ import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 /**
- * @author venkat
+ * User DAO Implementation.
+ * @author venkateswarlub
  *
  */
 public class UserDaoImpl implements UserDao {
@@ -47,8 +48,7 @@ public class UserDaoImpl implements UserDao {
 	public UserDaoImpl(final String storagePath) throws DaoException {
 		storage = new File(storagePath);
 
-		jacksonJsonProvider = new JacksonJsonProvider();
-		// mapper = jacksonJsonProvider.getContext(User.class);
+		jacksonJsonProvider = new JacksonJsonProvider();		
 
 		if (!storage.isDirectory() || !this.storage.canWrite()) {
 			throw new DaoException(String.format(
@@ -67,7 +67,7 @@ public class UserDaoImpl implements UserDao {
 		return path[path.length - 1];
 	}
 
-	@Override
+	@Override	
 	public List<User> getUsers() {
 		File[] userFiles = storage.listFiles();
 		List<User> users = new ArrayList<User>();
@@ -86,7 +86,7 @@ public class UserDaoImpl implements UserDao {
 			if (user != null) {
 				users.add(user);
 			}
-		}
+		}		
 		return users;
 	}
 

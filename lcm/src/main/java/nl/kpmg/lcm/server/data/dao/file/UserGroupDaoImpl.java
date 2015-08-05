@@ -7,7 +7,6 @@ import java.util.List;
 import java.util.logging.Logger;
 
 import nl.kpmg.lcm.server.JacksonJsonProvider;
-import nl.kpmg.lcm.server.data.User;
 import nl.kpmg.lcm.server.data.UserGroup;
 import nl.kpmg.lcm.server.data.dao.DaoException;
 import nl.kpmg.lcm.server.data.dao.UserGroupDao;
@@ -17,7 +16,8 @@ import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 /**
- * @author venkat
+ * UserGroup DAO Implementation.
+ * @author venkateswarlub
  *
  */
 public class UserGroupDaoImpl implements UserGroupDao {

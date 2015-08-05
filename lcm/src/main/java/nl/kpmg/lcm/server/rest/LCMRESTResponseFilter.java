@@ -19,13 +19,14 @@ public class LCMRESTResponseFilter implements ContainerResponseFilter {
 	@Override
 	public void filter(ContainerRequestContext requestContext,
 			ContainerResponseContext responseContext) throws IOException {
-		LOGGER.log(Level.INFO, "LCMRESTResponseFilter called");
+		LOGGER.log(Level.INFO, "LCMRESTResponseFilter called with Entity "+responseContext.getEntity());
 		
 		//responseContext.getHeaders().add("Acces-Control-Allow-Origin", "*");
 		responseContext.getHeaders().add("Acces-Control-Allow-Credentials", "true");
 		responseContext.getHeaders().add("Acces-Control-Allow-Methods", "POST,GET,PUT,DELETE");
 		//responseContext.getHeaders().add("Acces-Control-Allow-Headers", "serviceKey"+", "+"authorizationToken");
-		
+		//LOGGER.log(Level.INFO, responseContext.getEntity().toString());
+	
 	}
 
 }

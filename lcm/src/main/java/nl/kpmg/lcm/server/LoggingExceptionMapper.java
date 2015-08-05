@@ -15,6 +15,7 @@
  */
 package nl.kpmg.lcm.server;
 
+import java.io.IOException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -23,6 +24,8 @@ import javax.ws.rs.NotFoundException;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.ext.ExceptionMapper;
 import javax.ws.rs.ext.Provider;
+
+import com.fasterxml.jackson.databind.JsonMappingException;
 
 /**
  * Catch all exception mapper for the REST interface.
@@ -52,11 +55,23 @@ public class LoggingExceptionMapper  implements ExceptionMapper<Exception> {
         Response response;
         if (NotFoundException.class.isAssignableFrom(ex.getClass())) {
             response = Response.status(Response.Status.NOT_FOUND)
-                    .type("text/plain")
+                    .type("text/plain").entity("Resource not found on server.")
                     .build();
         } else if (ForbiddenException.class.isAssignableFrom(ex.getClass())) {
             response = Response.status(Response.Status.FORBIDDEN)
                     .type("text/plain").entity(" Access is forbidden for the user role.")
+                    .build();
+        } else if (JsonMappingException.class.isAssignableFrom(ex.getClass())) {
+            response = Response.status(Response.Status.INTERNAL_SERVER_ERROR)
+                    .type("text/plain").entity(" Json Mapping Exception "+ex.getMessage())
+                    .build();
+        } else if (RuntimeException.class.isAssignableFrom(ex.getClass())) {
+            response = Response.status(Response.Status.INTERNAL_SERVER_ERROR)
+                    .type("text/plain").entity(" Runtime Exception "+ex.getMessage())
+                    .build();
+        } else if (IOException.class.isAssignableFrom(ex.getClass())) {
+            response = Response.status(Response.Status.INTERNAL_SERVER_ERROR)
+                    .type("text/plain").entity(" IOException "+ex.getMessage())
                     .build();
         } else {
             LOGGER.log(Level.WARNING, "Request failed", ex);

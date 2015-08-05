@@ -15,20 +15,25 @@
  */
 package nl.kpmg.lcm.server;
 
+import java.io.IOException;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+
+import javax.ejb.Singleton;
+import javax.ws.rs.core.Link;
+import javax.ws.rs.ext.ContextResolver;
+import javax.ws.rs.ext.Provider;
+
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
 import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.JsonSerializer;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.databind.SerializerProvider;
 import com.fasterxml.jackson.databind.module.SimpleModule;
-import java.io.IOException;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-import javax.ejb.Singleton;
-import javax.ws.rs.core.Link;
-import javax.ws.rs.ext.ContextResolver;
-import javax.ws.rs.ext.Provider;
+import com.fasterxml.jackson.databind.ser.impl.SimpleBeanPropertyFilter;
+import com.fasterxml.jackson.databind.ser.impl.SimpleFilterProvider;
 
 /**
  * Jackson JSON processor could be controlled via providing a custom Jackson ObjectMapper instance.
@@ -64,7 +69,7 @@ public class JacksonJsonProvider implements ContextResolver<ObjectMapper> {
     private static final ObjectMapper MAPPER = new ObjectMapper() { {
         setSerializationInclusion(Include.NON_EMPTY);
         disable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES);
-
+        disable(SerializationFeature.FLUSH_AFTER_WRITE_VALUE);
         // Add the linkSerializer. Used for pretty printing of hyperlinks in restful media
         SimpleModule linkSerializer = new SimpleModule();
         linkSerializer.addSerializer(Link.class, new LinkSerializer());
@@ -90,7 +95,11 @@ public class JacksonJsonProvider implements ContextResolver<ObjectMapper> {
      */
     @Override
     public final ObjectMapper getContext(final Class<?> type) {
-        LOGGER.log(Level.INFO, "MyJacksonProvider.getContext() called with type: {0}", type);
+        LOGGER.log(Level.INFO, "MyJacksonProvider.getContext() called with type: {0}", type);        
+        
+        MAPPER.setFilters(new SimpleFilterProvider()
+        .addFilter("nl.kpmg.lcm.server.data.User", SimpleBeanPropertyFilter.serializeAllExcept("") )
+        .addFilter("nl.kpmg.lcm.server.data.UserGroup", SimpleBeanPropertyFilter.serializeAllExcept("users") ) );
         return MAPPER;
     }
 

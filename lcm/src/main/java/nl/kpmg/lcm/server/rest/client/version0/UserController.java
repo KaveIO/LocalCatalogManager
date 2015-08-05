@@ -20,6 +20,8 @@ import nl.kpmg.lcm.server.data.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
+import com.fasterxml.jackson.annotation.JsonFilter;
+
 @Component
 @Path("client/v0/users")
 public class UserController {
@@ -56,8 +58,8 @@ public class UserController {
 	}
 	
 	@GET
-	@Produces({"application/json"})
-	@RolesAllowed({"apiUser","administrator"})
+	@Produces({"application/json"})	
+	@RolesAllowed({"apiUser","administrator"})	
 	public Response getUsers(){		
 		return Response.status(200).entity(userService.getUserDao().getUsers()).build();
 	}
