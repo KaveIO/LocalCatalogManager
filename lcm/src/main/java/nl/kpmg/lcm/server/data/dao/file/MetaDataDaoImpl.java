@@ -113,6 +113,26 @@ public class MetaDataDaoImpl implements MetaDataDao {
     }
 
     @Override
+    public void update (MetaData metadata){
+        String name = metadata.getName();
+        String version = metadata.getVersionNumber();
+        MetaData tmpData = getByNameAndVersion(name,version);
+        if (tmpData != null){
+            if (metadata.containsKey("Duplicates")){
+                List<MetaData> mlist = metadata.GetDuplicates();
+                tmpData.put("Duplicates", mlist);
+                try {
+                  mapper.writeValue(getMetaDataFile(name, version), tmpData);
+                  } catch (IOException ex) {
+                   Logger.getLogger(MetaDataDaoImpl.class.getName()).log(Level.SEVERE, null, ex);
+                }
+            }
+        }
+        else
+            LOGGER.warning("MetaData entered is NULL or doesn't have Duplicate field");
+    }
+
+    @Override
     public void persist(MetaData metadata) {
         String name = metadata.getName();
         String versionNumber = "0";
@@ -133,6 +153,7 @@ public class MetaDataDaoImpl implements MetaDataDao {
         }
 
         try {
+            metadata.setVersionNumber(versionNumber);
             mapper.writeValue(getMetaDataFile(name, versionNumber), metadata);
         } catch (IOException ex) {
             Logger.getLogger(MetaDataDaoImpl.class.getName()).log(Level.SEVERE, null, ex);

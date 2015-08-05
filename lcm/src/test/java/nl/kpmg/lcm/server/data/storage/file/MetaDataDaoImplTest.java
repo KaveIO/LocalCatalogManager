@@ -18,6 +18,7 @@ package nl.kpmg.lcm.server.data.storage.file;
 import nl.kpmg.lcm.server.data.dao.file.MetaDataDaoImpl;
 import nl.kpmg.lcm.server.data.dao.DaoException;
 import java.io.File;
+import java.util.List;
 import nl.kpmg.lcm.server.data.MetaData;
 import org.junit.After;
 import org.junit.AfterClass;
@@ -132,5 +133,35 @@ public class MetaDataDaoImplTest {
 
         metadata = metaDataDao.getByName("test");
         assertNull(metadata);
+    }
+
+    @Test
+    public void testUpdateMetaDetaWithDuplicates() {
+        MetaData mdata2 = new MetaData();
+        mdata2.setName("testM2");
+        MetaData mnested = new MetaData();
+        mnested.setName("testM2_v1");
+        mnested.setDataUri("file://testM2_v1/bla/bla");
+        mdata2.AddDuplicate(mnested);
+        MetaData mnested2 = new MetaData();
+        mnested2.setName("testM2_v2");
+        mnested2.setDataUri("file://testM2_v2/bla/bla");
+        mdata2.AddDuplicate(mnested2);
+        MetaData mnested3 = new MetaData();
+        mnested3.setName("testM2_v3");
+        mnested3.setDataUri("file://testM2_v3/bla/bla");
+        metaDataDao.persist(mdata2);
+
+        mdata2 = metaDataDao.getByName("testM2");
+        mdata2.AddDuplicate(mnested3);
+        metaDataDao.update(mdata2);
+        MetaData mtest = metaDataDao.getByName("testM2");
+        //for (String fieldNames : (List<String>) mtest.keySet()){
+
+        List<MetaData> metaData = mtest.GetDuplicates();
+
+        assertEquals("testM2_v1",metaData.get(0).getName());
+        assertEquals("testM2_v2",metaData.get(1).getName());
+
     }
 }
