@@ -74,6 +74,7 @@ public class JacksonJsonProvider implements ContextResolver<ObjectMapper> {
         SimpleModule linkSerializer = new SimpleModule();
         linkSerializer.addSerializer(Link.class, new LinkSerializer());
         registerModule(linkSerializer);
+        setFilters(new NotFilteringFilterProvider());
     } };
 
     /**
@@ -95,11 +96,7 @@ public class JacksonJsonProvider implements ContextResolver<ObjectMapper> {
      */
     @Override
     public final ObjectMapper getContext(final Class<?> type) {
-        LOGGER.log(Level.INFO, "MyJacksonProvider.getContext() called with type: {0}", type);        
-        
-        MAPPER.setFilters(new SimpleFilterProvider()
-        .addFilter("nl.kpmg.lcm.server.data.User", SimpleBeanPropertyFilter.serializeAllExcept("") )
-        .addFilter("nl.kpmg.lcm.server.data.UserGroup", SimpleBeanPropertyFilter.serializeAllExcept("users") ) );
+        LOGGER.log(Level.INFO, "MyJacksonProvider.getContext() called with type: {0}", type);
         return MAPPER;
     }
 
