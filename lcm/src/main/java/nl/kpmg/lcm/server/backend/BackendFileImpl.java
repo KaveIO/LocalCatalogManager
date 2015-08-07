@@ -43,15 +43,12 @@ public class BackendFileImpl extends AbstractBackend {
      */
     private final File storagePath;
 
-//    /**
-//     * Default constructor.
-//     *
-//     * @param storagePath is the directory on a local backend
-//     */
-//    public BackendFileImpl(final File storagePath) {
-//        this.storagePath = storagePath;
-//    }
 
+    /**
+     * Default constructor.
+     * 
+     * @param backend is {@link BackendModel} that contains the storagePath
+     */
     public BackendFileImpl(final BackendModel backend) {
         this.storagePath = new File((String) backend.getOptions().get("storagePath"));
     }
@@ -173,8 +170,7 @@ public class BackendFileImpl extends AbstractBackend {
         try {
             InputStream is = new FileInputStream(file);
             return is;
-        }
-        catch (FileNotFoundException ex) {
+        } catch (FileNotFoundException ex) {
             Logger.getLogger(BackendFileImpl.class.getName())
                     .log(Level.SEVERE, "Did not find file: " + metadata.getDataUri()
                             + ". Returning null.", ex);
@@ -212,7 +208,7 @@ public class BackendFileImpl extends AbstractBackend {
      *
      * @return storagePath as File (useful for testing)
      */
-    public File getStoragePath() {
+    public final File getStoragePath() {
         return storagePath;
     }
 

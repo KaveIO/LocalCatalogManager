@@ -15,7 +15,6 @@
  */
 package nl.kpmg.lcm.server.backend;
 
-import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.Date;
@@ -48,7 +47,7 @@ public class BackendHDFSImpl extends AbstractBackend {
     /**
      * Default constructor.
      *
-     * @param storagePath is the server address.
+     * @param backend is {@link BackendModel} that contains the storagePath
      */
     public BackendHDFSImpl(final BackendModel backend) {
         this.storagePath = (String) backend.getOptions().get("storagePath");
@@ -180,8 +179,7 @@ public class BackendHDFSImpl extends AbstractBackend {
             InputStream is = file.open(filePath);
             return is;
             // The file is not closed, because we need to keep connection open in order to stream from is.
-        }
-        catch (IOException ex) {
+        } catch (IOException ex) {
             Logger.getLogger(BackendFileImpl.class.getName())
                     .log(Level.SEVERE, "Couldn't find path: " + metadata.getDataUri()
                             + ". Returning null.", ex);
@@ -226,7 +224,7 @@ public class BackendHDFSImpl extends AbstractBackend {
      *
      * @return storagePath (useful for test)
      */
-    public String getStoragePath() {
+    public final String getStoragePath() {
         return storagePath;
     }
 

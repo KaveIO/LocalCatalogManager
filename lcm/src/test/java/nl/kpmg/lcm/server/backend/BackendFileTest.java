@@ -17,9 +17,6 @@
 package nl.kpmg.lcm.server.backend;
 
 
-import nl.kpmg.lcm.server.backend.BackendException;
-import nl.kpmg.lcm.server.backend.BackendFileImpl;
-import nl.kpmg.lcm.server.backend.DataSetInformation;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
@@ -42,7 +39,6 @@ import nl.kpmg.lcm.server.data.MetaData;
 import org.apache.commons.io.IOUtils;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
-import org.junit.Ignore;
 
 
 
@@ -51,7 +47,6 @@ import org.junit.Ignore;
  * @author Pavel Jez
  */
 
-@Ignore
 public class BackendFileTest {
 
     /**
@@ -59,8 +54,14 @@ public class BackendFileTest {
      */
     private static final String TEST_STORAGE_PATH = "temp_test/";
 
-    private BackendModel backendModel;
+    /**
+     * Common access tool for all backends.
+     */
+    private final BackendModel backendModel;
 
+    /**
+     * Default constructor.
+     */
     public BackendFileTest() {
         backendModel = new BackendModel();
         backendModel.setName("test");
@@ -76,10 +77,15 @@ public class BackendFileTest {
      * @throws Exception if it is not possible to make a test directory.
      */
     @BeforeClass
-    public static final void setUp() throws Exception {
+    public static final void setUpClass() throws Exception {
         // make test temp dir and set storage path
         File testDir = new File(TEST_STORAGE_PATH);
-        testDir.mkdir();
+        boolean mkdir = testDir.mkdir();
+        if (mkdir) {
+            System.out.println("Setup BackendFileTest successful");
+        } else {
+            System.out.println("Setup BackendFileTest failed");
+        }
     }
 
     /**
@@ -87,7 +93,7 @@ public class BackendFileTest {
      *  no subdirectories.
      */
     @AfterClass
-    public static final void tearDown() {
+    public static final void tearDownClass() {
         File file = new File(TEST_STORAGE_PATH);
          for (File c : file.listFiles()) {
             c.delete();
@@ -293,23 +299,40 @@ public class BackendFileTest {
      * Then it tests if the 2 files are identical using md5.
      *
      * @throws java.io.IOException if the canonical path of the storage location cannot be resolved
-     * @throws nl.kpmg.lcm.server.data.BackendException if it is not possible to read
+     * @throws BackendException if it is not possible to read
      *         from the test backend
      */
     @Test
     public final void testRead() throws IOException, BackendException {
+        //first make a test file with some content
+        File testFile = new File(TEST_STORAGE_PATH + "/testContent.csv");
+        testFile.createNewFile();
+        try (FileWriter writer = new FileWriter(testFile)) {
+            final int nLoops = 10;
+            for (int i = 0; i  < nLoops; i++) {
+                writer.write("qwertyuiop");
+                writer.write("\n");
+                writer.write("asdfghjkl");
+                writer.write("\n");
+                writer.write("zxcvbnm,!@#$%^&*()_");
+                writer.write("\n");
+                writer.write("1234567890[][;',.");
+                writer.write("\n");
+            }
+            writer.flush();
+        }
         // make a metadata with uri
         File testDir = new File(TEST_STORAGE_PATH);
-        final String fileUri = "file://" + testDir.getCanonicalPath() + "/testStore.csv";
+        final String fileUri = "file://" + testDir.getCanonicalPath() + "/testContent.csv";
         // make test file to where the content stored in previous test would be read
-        File testFile = new File(TEST_STORAGE_PATH + "/testRead.csv");
-        testFile.createNewFile();
+        File testFileOut = new File(TEST_STORAGE_PATH + "/testRead.csv");
+        testFileOut.createNewFile();
         MetaData metaData = new MetaData();
         metaData.put("data", new HashMap() { { put("uri", fileUri); } });
         // make local data backend in specified directory and read the existing file
         BackendFileImpl testBackend = new BackendFileImpl(backendModel);
         try (InputStream is = testBackend.read(metaData)) {
-            try (FileOutputStream fos = new FileOutputStream(testFile)) {
+            try (FileOutputStream fos = new FileOutputStream(testFileOut)) {
                 int readBytes = IOUtils.copy(is, fos);
                 Logger.getLogger(BackendFileImpl.class.getName())
                         .log(Level.INFO, "{0} bytes read", readBytes);
@@ -318,7 +341,7 @@ public class BackendFileTest {
         }
         // check if the files are identical
         final File expected = testFile;
-        final File output = new File(testDir.getCanonicalPath() + "/testStore.csv");
+        final File output = testFileOut;
         HashCode hcExp = Files.hash(expected, Hashing.md5());
         HashCode hcOut = Files.hash(output, Hashing.md5());
         assertEquals(hcExp.toString(), hcOut.toString());
@@ -334,7 +357,23 @@ public class BackendFileTest {
     @Test
     public final void testDelete() throws IOException, BackendException {
         File testDir = new File(TEST_STORAGE_PATH);
-        final String fileUri = "file://" + testDir.getCanonicalPath() + "/testStore.csv";
+        File testFile = new File(TEST_STORAGE_PATH + "/testDelete.csv");
+        testFile.createNewFile();
+        try (FileWriter writer = new FileWriter(testFile)) {
+            final int nLoops = 10;
+            for (int i = 0; i  < nLoops; i++) {
+                writer.write("qwertyuiop");
+                writer.write("\n");
+                writer.write("asdfghjkl");
+                writer.write("\n");
+                writer.write("zxcvbnm,!@#$%^&*()_");
+                writer.write("\n");
+                writer.write("1234567890[][;',.");
+                writer.write("\n");
+            }
+            writer.flush();
+        }
+        final String fileUri = "file://" + testDir.getCanonicalPath() + "/testDelete.csv";
         // make metadata pointing to the file to be deleted
         MetaData metaData = new MetaData();
         metaData.put("data", new HashMap() { { put("uri", fileUri); } });

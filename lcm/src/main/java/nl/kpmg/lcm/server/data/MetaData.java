@@ -16,6 +16,8 @@
 package nl.kpmg.lcm.server.data;
 
 import java.util.HashMap;
+import java.util.LinkedList;
+import java.util.List;
 import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -29,6 +31,13 @@ import org.springframework.data.mongodb.core.mapping.Document;
  */
 @Document(collection="mdCollection")
 public class MetaData extends HashMap {
+
+    public MetaData() {
+    }
+
+    public MetaData(Map m) {
+        super(m);
+    }
 
     public <T> T get(String path) {
         try {
@@ -108,4 +117,31 @@ public class MetaData extends HashMap {
     public void setDataUri(String dataUri) {
         set("data.uri", dataUri);
     }
+
+    public void AddDuplicate(MetaData duplicate){
+        List<MetaData> lmdata = new LinkedList<>();
+        if (GetDuplicates() != null){
+            lmdata = this.GetDuplicates();
+            lmdata.add(duplicate);
+            this.put("Duplicates", lmdata);
+        }
+        else{
+            lmdata.add(duplicate);
+            this.put("Duplicates", lmdata);
+
+        }
+    }
+
+    public List<MetaData> GetDuplicates(){
+        List<MetaData> lmdata = new LinkedList<>();
+        if (this.containsKey("Duplicates")){
+            List<Map> nested = this.get("Duplicates");
+            for (Map thisDuplicate : nested) {
+                lmdata.add(new MetaData(thisDuplicate));
+            }
+            return lmdata;
+        }
+        else
+            return null;
+ }
 }

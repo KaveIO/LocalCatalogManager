@@ -22,21 +22,21 @@ import static org.junit.Assert.*;
  */
 
 
-public class MetaDataDaoImplTest {
-
+public class MetaDataDaoImplIntTest {
+    
      @Test
      public void testConstruction() throws DaoException, UnknownHostException {
          MetaDataDaoImpl metaDataDaoImpl = new MetaDataDaoImpl("probablyDoesntExist","collectionname");
      }
-
+     
      @Test
      public void testGetAllReturnsEmptyListOnEmptyDatabase() throws DaoException, UnknownHostException {
          MetaDataDaoImpl metaDataDaoImpl = new MetaDataDaoImpl("probablyDoesntExist","collectionname");
          List<MetaData> all = metaDataDaoImpl.getAll();
-
+         
          assertEquals(0, all.size());
      }
-
+     
 //     @Test
 //     public void makeAndPersistMetaDataFirst() throws StorageException {
 //         MetaData metadata = new MetaData();
@@ -47,45 +47,26 @@ public class MetaDataDaoImplTest {
 //         MetaDataDaoImpl metaDataDaoImpl = new MetaDataDaoImpl("local","mycollection");
 //         metaDataDaoImpl.persist(metadata);
 //         testMetaData = metaDataDaoImpl.getByName("Mark");
-//
+//         
 //         assertEquals("Mark",testMetaData.getName() );
 //         //System.out.print(testMetaData.getName());
 //         System.out.println(testMetaData.getName());
 //         System.out.println(testMetaData);
 //     }
-
-//     @Test
-//     public void getByNameAndGetByVersion() throws DaoException, UnknownHostException {
-//         MetaData metadata1 = new MetaData();
-//         MetaData metadata2 = new MetaData();
-//         MetaData metadata3 = new MetaData();
-//         MetaData metadata4 = new MetaData();
-//         MetaDataDaoImpl metaDataDaoImpl = new MetaDataDaoImpl("local","mycollection");
-//         metadata1 = metaDataDaoImpl.getByName("Mark");
-//         metadata2 = metaDataDaoImpl.getByNameAndVersion("Mark","8");
-//         metadata3 = metaDataDaoImpl.getByNameAndVersion("Ben","8");
-//         metadata4 = metaDataDaoImpl.getByNameAndVersion("Lou","1");
-//     }
+     
      @Test
-     public void persistAndUpdateWithList() throws DaoException, UnknownHostException {
-         MetaData mdata2 = new MetaData();
-         mdata2.setName("testM2");
-         mdata2.setDataUri("file://testM2/bla/bla");
-         MetaData mnested = new MetaData();
-         mnested.setName("testM2_v1");
-         mnested.setDataUri("file://testM2_v1/bla/bla");
-         mdata2.AddDuplicate(mnested);
+     public void getByNameAndGetByVersion() throws DaoException, UnknownHostException {
+         MetaData metadata1 = new MetaData();
+         MetaData metadata2 = new MetaData();
+         MetaData metadata3 = new MetaData();
+         MetaData metadata4 = new MetaData();
          MetaDataDaoImpl metaDataDaoImpl = new MetaDataDaoImpl("local","mycollection");
-         metaDataDaoImpl.persist(mdata2);
-         mdata2 = metaDataDaoImpl.getByNameAndVersion("testM2","2");
-         MetaData mnested2 = new MetaData();
-         mnested2.setName("testM2_v2");
-         mnested2.setDataUri("file://testM2_v2/bla/bla");
-         mdata2.AddDuplicate(mnested2);
-         
-         metaDataDaoImpl.update(mdata2);
-
+         metadata1 = metaDataDaoImpl.getByName("Mark");
+         metadata2 = metaDataDaoImpl.getByNameAndVersion("Mark","8");
+         metadata3 = metaDataDaoImpl.getByNameAndVersion("Ben","8");
+         metadata4 = metaDataDaoImpl.getByNameAndVersion("Lou","1");
      }
+     
 //     @Test
 //     public void makeAndPersistMetaDataMultiple() throws StorageException {
 //         MetaData metadata1 = new MetaData();

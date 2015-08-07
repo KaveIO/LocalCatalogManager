@@ -15,6 +15,7 @@
  */
 package nl.kpmg.lcm.server.data.dao.mongo;
 
+import com.mongodb.BasicDBList;
 import java.net.UnknownHostException;
 import java.util.LinkedList;
 import java.util.logging.Logger;
@@ -28,9 +29,12 @@ import com.mongodb.DBCollection;
 import com.mongodb.DBCursor;
 import com.mongodb.DBObject;
 import com.mongodb.MongoClient;
+import static com.sun.jersey.core.header.FormDataContentDisposition.name;
+import java.io.IOException;
 
 import java.util.List;
 import java.util.Set;
+import java.util.logging.Level;
 
 import nl.kpmg.lcm.server.data.dao.DaoException;
 
@@ -43,17 +47,17 @@ public class MetaDataDaoImpl implements MetaDataDao {
      * The logger for this class.
      */
     private static final Logger LOGGER = Logger.getLogger(MetaDataDaoImpl.class.getName());
-    
+
 
     private static MongoClient mongoClient;
     private static DB db;
-    
+
     private static DBCursor cursor;
     private static DBCollection dBCollection;
     private List<DBObject> myList;
     /**
      * @param storagePath The path where the metaData is stored
-     * @throws UnknownHostException 
+     * @throws UnknownHostException
      * @throws StorageException when the storagePath doesn't exist
      */
     public MetaDataDaoImpl(final String databaseName, final String collectionName) throws DaoException, UnknownHostException {
@@ -61,19 +65,19 @@ public class MetaDataDaoImpl implements MetaDataDao {
        db = mongoClient.getDB(databaseName);
        dBCollection = db.getCollection(collectionName);
        myList = null;
-    
-       
-       
+
+
+
 
         if (dBCollection.count() == 0) {
             LOGGER.severe(String.format(
                     "The database %s is empty.", databaseName));
         }
-    }   
-        
+    }
+
     @Override
     public List<MetaData> getAll() {
-       LinkedList<MetaData> result = new LinkedList(); 
+       LinkedList<MetaData> result = new LinkedList();
        MetaData metaData;
        Set<String> allFieldNames;
        cursor = dBCollection.find();
@@ -85,17 +89,17 @@ public class MetaDataDaoImpl implements MetaDataDao {
                     metaData.put(fieldName,cursor.curr().get(fieldName));
                 }
                 result.add(metaData);
-            }    
+            }
         } finally {
             cursor.close();
         }
        return result;
-    }   
+    }
 
     @Override
     public MetaData getByName(String name) {
         MetaData result = new MetaData();
-        
+
         BasicDBObject nquery;
         Set<String> allFieldNames;
         BasicDBObject sortByVersion = new BasicDBObject("version",-1);
@@ -105,7 +109,9 @@ public class MetaDataDaoImpl implements MetaDataDao {
            allFieldNames = cursor.next().keySet();
                 for (String fieldName : allFieldNames){
                     result.put(fieldName,cursor.curr().get(fieldName));
-                } 
+                }
+
+
         }
         return result;
     }
@@ -117,18 +123,64 @@ public class MetaDataDaoImpl implements MetaDataDao {
         BasicDBObject nquery;
         Set<String> allFieldNames;
         nquery = new BasicDBObject("name",name).append("version",verNum);
-     
+
         cursor = dBCollection.find(nquery);
         if (cursor.count() > 0){
             allFieldNames = cursor.next().keySet();
                 for (String fieldName : allFieldNames){
                     result.put(fieldName,cursor.curr().get(fieldName));
-                } 
-            
+                }
+
         }
      return result;
     }
 
+    private BasicDBObject getDBObjectByNameAndVersion(String name, String versionNumber){
+        BasicDBObject result = new BasicDBObject();
+        int verNum = Integer.valueOf(versionNumber);
+        BasicDBObject nquery;
+        nquery = new BasicDBObject("name",name).append("version",verNum);
+        cursor = dBCollection.find(nquery);
+        Set<String> keyNames = cursor.next().keySet();
+        for (String fieldName : keyNames){
+            result.put(fieldName, cursor.curr().get(fieldName));
+
+        }
+        return result;
+
+    }
+
+    @Override
+    public void update(final MetaData metadata) {
+        BasicDBList dbl = new BasicDBList();
+        String version = "" + metadata.get("version");
+        String name = metadata.getName();
+        MetaData tmpData = this.getByNameAndVersion(name,version);
+        BasicDBObject currentObject = this.getDBObjectByNameAndVersion(name, version);
+        if (tmpData != null){
+            if (metadata.containsKey("Duplicates")){
+                List<MetaData> mlist = metadata.GetDuplicates();
+                for (MetaData thisData : mlist){
+                     BasicDBObject myobject= new BasicDBObject();
+                     Set<String> allFieldNames;
+                     allFieldNames = thisData.keySet();
+                     for (String fieldName : allFieldNames){
+                        myobject.put(fieldName, thisData.get(fieldName));
+                     }
+                     dbl.add(myobject);
+
+                }
+                BasicDBObject nquery;
+                nquery = new BasicDBObject("name",name).append("version",Integer.valueOf(version));
+               dBCollection.update(nquery,currentObject.append("Duplicates",dbl));
+
+            }
+            else
+               LOGGER.warning("MetaData entered doesn't have Duplicate field");
+        }
+        else
+            LOGGER.warning("MetaData entered is NULL");
+    }
     @Override
     public void persist(final MetaData metadata) {
         BasicDBObject nquery;
@@ -137,7 +189,7 @@ public class MetaDataDaoImpl implements MetaDataDao {
         String name = metadata.getName();
         nquery = new BasicDBObject("name",name);
         myobject = new BasicDBObject();
-        
+
         Set<String> allFieldNames;
         if (dBCollection.find(nquery).count() == 0){
             newVersion = 1;
@@ -156,10 +208,10 @@ public class MetaDataDaoImpl implements MetaDataDao {
               myobject.put(fieldName, metadata.get(fieldName));
             }
             dBCollection.insert(myobject.append("version",newVersion));
-            
+
         }
     }
-    
+
 
     @Override
     public void delete(MetaData metadata) {
