@@ -117,7 +117,7 @@ public class Server {
     }
 
     public void stop() {
-        restServer.stop();
+        restServer.shutdownNow();
         taskManager.stop();
     }
 

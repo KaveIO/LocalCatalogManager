@@ -47,5 +47,5 @@
         </bean>
         <bean id="userGroupService" class="nl.kpmg.lcm.server.data.service.UserGroupService">
         	<property name="userGroupDao" ref="userGroupDao"/>
-        </bean>
+        </bean>        
 </beans>

@@ -4,11 +4,12 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
 
+import nl.kpmg.lcm.server.data.User;
+import nl.kpmg.lcm.server.data.service.UserService;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-
-import nl.kpmg.lcm.server.data.service.EncryptDecryptService;
 
 /**
  * Authentication Manager
@@ -16,32 +17,81 @@ import nl.kpmg.lcm.server.data.service.EncryptDecryptService;
  *
  */
 public class AuthenticationManager {
-	
+		
 	private static final Logger LOGGER = LoggerFactory.getLogger(AuthenticationManager.class);
-	private boolean auth = false;
+	private boolean auth = false;	
 	
-	@Autowired
-	private EncryptDecryptService encryptDecryptService;
+	//@Autowired
+	//private EncryptDecryptService encryptDecryptService;	
+	
+	private UserService userService;
+
+	private String serviceKeyKey;
+	
+	private String serviceKeyValue;
+	
+	private String authorizationTokenKey;
+	
+	private String authorizationTokenValue;
+	
 	
 	Map<String,String> userMap = new HashMap<String,String>();
 	Map<String,String> servicekeyMap = new HashMap<String,String>();
 	Map<String,String> authorizationTokenMap = new HashMap<String,String>();
-	
-	// TODO Need to implement correct storage and fetch for users and service keys.
-	AuthenticationManager(){
-		userMap.put("admin", "admin");
-		userMap.put("administrator", "admin");
-		userMap.put("apiUser", "apiUser");
-		servicekeyMap.put("ABC123", "admin");
-		servicekeyMap.put("ABC123", "administrator");
-		servicekeyMap.put("ABC123", "apiUser");
-		authorizationTokenMap.put("AUTH_TOKEN", "admin");
-		authorizationTokenMap.put("AUTH_TOKEN", "administrator");
-		authorizationTokenMap.put("AUTH_TOKEN", "apiUser");
+			
+	AuthenticationManager() {
+				
+	}
+	private void init() {
+		servicekeyMap.put(serviceKeyKey, serviceKeyValue);		
+		authorizationTokenMap.put(authorizationTokenKey, authorizationTokenValue);
+				
+		for (User user : userService.getUserDao().getUsers()) {						
+			userMap.put(user.getUsername(), user.getPassword());
+		}	
+	}
+
+	@Autowired
+	public void setUserService(UserService userService){
+		this.userService = userService;
 	}
 	
 	
-	public String getAuthentication(String username,String password, String servicekey) throws ServerException{		
+
+	public String getServiceKeyKey() {
+		return serviceKeyKey;
+	}
+
+	public void setServiceKeyKey(String serviceKeyKey) {
+		this.serviceKeyKey = serviceKeyKey;
+	}
+
+	public String getServiceKeyValue() {
+		return serviceKeyValue;
+	}
+
+	public void setServiceKeyValue(String serviceKeyValue) {
+		this.serviceKeyValue = serviceKeyValue;
+	}	
+
+	public String getAuthorizationTokenKey() {
+		return authorizationTokenKey;
+	}
+
+	public void setAuthorizationTokenKey(String authorizationTokenKey) {
+		this.authorizationTokenKey = authorizationTokenKey;
+	}
+
+	public String getAuthorizationTokenValue() {
+		return authorizationTokenValue;
+	}
+
+	public void setAuthorizationTokenValue(String authorizationTokenValue) {
+		this.authorizationTokenValue = authorizationTokenValue;
+	}
+
+	public String getAuthentication(String username,String password, String servicekey) throws ServerException{				
+		init();
 		if(servicekey == null) {
 			this.getAuthentication(username, password);
 		} else {

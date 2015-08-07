@@ -15,12 +15,11 @@ import javax.ws.rs.core.Response;
 import nl.kpmg.lcm.server.AuthenticationManager;
 import nl.kpmg.lcm.server.ServerException;
 import nl.kpmg.lcm.server.data.User;
+import nl.kpmg.lcm.server.data.dao.DaoException;
 import nl.kpmg.lcm.server.data.service.UserService;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
-
-import com.fasterxml.jackson.annotation.JsonFilter;
 
 @Component
 @Path("client/v0/users")
@@ -43,7 +42,7 @@ public class UserController {
 	@Consumes({"application/nl.kpmg.lcm.server.data.User+json"})
 	@Produces({"application/json"})
 	@Path("/login")
-	public Response login(final User user, @QueryParam("serviceKey") String serviceKey) throws ServerException{
+	public Response login(final User user, @QueryParam("serviceKey") String serviceKey) throws ServerException {
 		String authorizationToken = am.getAuthentication(user.getUsername(), user.getPassword(), serviceKey);		
 		return Response.status(200).entity(authorizationToken).build();		
 	}

@@ -32,8 +32,6 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.databind.SerializerProvider;
 import com.fasterxml.jackson.databind.module.SimpleModule;
-import com.fasterxml.jackson.databind.ser.impl.SimpleBeanPropertyFilter;
-import com.fasterxml.jackson.databind.ser.impl.SimpleFilterProvider;
 
 /**
  * Jackson JSON processor could be controlled via providing a custom Jackson ObjectMapper instance.
@@ -66,7 +64,8 @@ public class JacksonJsonProvider implements ContextResolver<ObjectMapper> {
      *
      * Added a custom Link serializer to facilitate pretty HATEOAS links.
      */
-    private static final ObjectMapper MAPPER = new ObjectMapper() { {
+    @SuppressWarnings("serial")
+	private static final ObjectMapper MAPPER = new ObjectMapper() { {
         setSerializationInclusion(Include.NON_EMPTY);
         disable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES);
         disable(SerializationFeature.FLUSH_AFTER_WRITE_VALUE);
