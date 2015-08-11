@@ -8,7 +8,6 @@ import java.util.ArrayList;
 import java.util.List;
 
 import javax.ws.rs.client.Entity;
-import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
 import nl.kpmg.lcm.server.AuthenticationManager;
@@ -46,11 +45,11 @@ public class UserControllerClientTest extends LCMBaseTest {
                 .path("client/v0/users/login").queryParam("serviceKey", "ABC123")
                 .request().post(entity);
         Response res1 = target
-                .path("client/v0/users").queryParam("serviceKey", "ABC123").queryParam("authorizationToken", "AUTH_TOKEN")
-                .request().post(entity);
+                .path("client/v0/users/test").queryParam("serviceKey", "ABC123").queryParam("authorizationToken", "AUTH_TOKEN")
+                .request().get();
         
         System.out.println("Response"+res.toString()+"*****************"+res1.toString());
-        assertEquals(200, res.getStatus());
+        assertEquals("OK", res.getStatusInfo().getReasonPhrase());
         assertEquals(200, res1.getStatus());
     }
     /**
@@ -64,10 +63,86 @@ public class UserControllerClientTest extends LCMBaseTest {
     }
     
     @Test
+    public void testGetUsersWebTarget() throws ServerException{
+    	User user = new User();
+        user.setUsername("admin");
+        user.setPassword("admin");
+        Entity<User> entity = Entity.entity(user, "application/nl.kpmg.lcm.server.data.User+json");
+        am.getAuthentication(user.getUsername(), user.getPassword(), "ABC123");
+        Response res = target
+                .path("client/v0/users/login").queryParam("serviceKey", "ABC123")
+                .request().post(entity);
+        Response res1 = target
+                .path("client/v0/users").queryParam("serviceKey", "ABC123").queryParam("authorizationToken", "AUTH_TOKEN")
+                .request().get();
+        
+        System.out.println("Response"+res.toString()+"*****"+" "+"************"+res1.toString());
+        assertEquals(200, res.getStatus());
+        assertEquals(200, res1.getStatus());            	
+    }
+    
+    @Test
     public void testGetUser() throws ServerException{
     	UserController uc = new UserController();
     	uc.setUserService(userService);    	
     	uc.getUser("testUser1");    	        
+    }
+    
+    @Test
+    public void testGetUserWebTarget() throws ServerException{
+    	User user = new User();
+        user.setUsername("admin");
+        user.setPassword("admin");
+        Entity<User> entity = Entity.entity(user, "application/nl.kpmg.lcm.server.data.User+json");
+        am.getAuthentication(user.getUsername(), user.getPassword(), "ABC123");
+        Response res = target
+                .path("client/v0/users/login").queryParam("serviceKey", "ABC123")
+                .request().post(entity);
+        Response res1 = target
+                .path("client/v0/users/admin").queryParam("serviceKey", "ABC123").queryParam("authorizationToken", "AUTH_TOKEN")
+                .request().get();
+        
+        System.out.println("Response"+res.toString()+"*****"+" "+"************"+res1.toString());
+        assertEquals(200, res.getStatus());
+        assertEquals(200, res1.getStatus());            	
+    }
+    
+    @Test
+    public void testSaveUserWebTarget() throws ServerException{
+    	User user = new User();
+        user.setUsername("admin");
+        user.setPassword("admin");
+        Entity<User> entity = Entity.entity(user, "application/nl.kpmg.lcm.server.data.User+json");
+        am.getAuthentication(user.getUsername(), user.getPassword(), "ABC123");
+        Response res = target
+                .path("client/v0/users/login").queryParam("serviceKey", "ABC123")
+                .request().post(entity);
+        Response res1 = target
+                .path("client/v0/users/admin").queryParam("serviceKey", "ABC123").queryParam("authorizationToken", "AUTH_TOKEN")
+                .request().put(entity);
+        
+        System.out.println("Response"+res.toString()+"*****"+" "+"************"+res1.toString());
+        assertEquals(200, res.getStatus());
+        assertEquals(200, res1.getStatus());            	
+    }
+    
+    @Test
+    public void testDeleteUserWebTarget() throws ServerException{
+    	User user = new User();
+        user.setUsername("admin");
+        user.setPassword("admin");
+        Entity<User> entity = Entity.entity(user, "application/nl.kpmg.lcm.server.data.User+json");
+        am.getAuthentication(user.getUsername(), user.getPassword(), "ABC123");
+        Response res = target
+                .path("client/v0/users/login").queryParam("serviceKey", "ABC123")
+                .request().post(entity);
+        Response res1 = target
+                .path("client/v0/users/admin").queryParam("serviceKey", "ABC123").queryParam("authorizationToken", "AUTH_TOKEN")
+                .request().delete();
+        
+        System.out.println("Response"+res.toString()+"*****"+" "+"************"+res1.toString());
+        assertEquals(200, res.getStatus());
+        assertEquals(200, res1.getStatus());            	
     }
         
     @Test
