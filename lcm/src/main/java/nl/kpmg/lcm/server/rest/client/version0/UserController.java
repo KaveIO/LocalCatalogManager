@@ -41,7 +41,7 @@ public class UserController {
 	@POST
 	@Consumes({"application/nl.kpmg.lcm.server.data.User+json"})
 	@Produces({"application/json"})
-	@Path("/login")
+	@Path("/login")	
 	public Response login(final User user, @QueryParam("serviceKey") String serviceKey) throws ServerException {
 		String authorizationToken = am.getAuthentication(user.getUsername(), user.getPassword(), serviceKey);		
 		return Response.status(200).entity(authorizationToken).build();		
@@ -50,7 +50,7 @@ public class UserController {
 	@POST
 	@Consumes({"application/json"})
 	@Produces({"application/json"})
-	@Path("/logout")
+	@Path("/logout")	
 	public Response logout(@QueryParam("authorizationToken") String authorizationToken, @QueryParam("serviceKey") String serviceKey) throws ServerException{
 			am.logout(serviceKey,authorizationToken);
 			return Response.ok().entity("Logged Out Successfully.").build();		

@@ -34,6 +34,10 @@ public class AuthenticationManager {
 	
 	private String authorizationTokenValue;
 	
+	private String adminUser;
+	
+	private String adminPassword;
+	
 	
 	Map<String,String> userMap = new HashMap<String,String>();
 	Map<String,String> servicekeyMap = new HashMap<String,String>();
@@ -45,7 +49,7 @@ public class AuthenticationManager {
 	private void init() {
 		servicekeyMap.put(serviceKeyKey, serviceKeyValue);		
 		authorizationTokenMap.put(authorizationTokenKey, authorizationTokenValue);
-				
+		userMap.put(adminUser, adminPassword);		
 		for (User user : userService.getUserDao().getUsers()) {						
 			userMap.put(user.getUsername(), user.getPassword());
 		}	
@@ -88,8 +92,16 @@ public class AuthenticationManager {
 
 	public void setAuthorizationTokenValue(String authorizationTokenValue) {
 		this.authorizationTokenValue = authorizationTokenValue;
-	}
+	}		
 
+	
+	public void setAdminUser(String adminUser) {
+		this.adminUser = adminUser;
+	}
+	
+	public void setAdminPassword(String adminPassword) {
+		this.adminPassword = adminPassword;
+	}
 	public String getAuthentication(String username,String password, String servicekey) throws ServerException{				
 		init();
 		if(servicekey == null) {
@@ -113,6 +125,9 @@ public class AuthenticationManager {
 	}
 	
 	public boolean isAuthorizationTokenValid(String serviceKey, String authourizationToken){
+		if(servicekeyMap.isEmpty()){
+			init();
+		}
 		if(isServiceKeyValid(serviceKey)){
 			String usernameMatch1 = servicekeyMap.get(serviceKey);
 			if(authorizationTokenMap.containsKey(authourizationToken)){
@@ -127,6 +142,9 @@ public class AuthenticationManager {
 	
 	
 	public boolean isServiceKeyValid(String serviceKey){		
+		if(servicekeyMap.isEmpty()){
+			init();
+		}
 		return servicekeyMap.containsKey(serviceKey);
 	}
 	

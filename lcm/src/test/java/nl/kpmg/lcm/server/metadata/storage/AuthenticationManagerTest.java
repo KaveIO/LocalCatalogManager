@@ -5,9 +5,9 @@ import static org.junit.Assert.assertEquals;
 import java.io.File;
 
 import nl.kpmg.lcm.server.AuthenticationManager;
+import nl.kpmg.lcm.server.ServerException;
 import nl.kpmg.lcm.server.data.service.EncryptDecryptService;
 
-import org.jasypt.encryption.pbe.StandardPBEStringEncryptor;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -61,7 +61,7 @@ public class AuthenticationManagerTest {
     }
     
     @Test
-    public void testServiceKeyValid(){
+    public void testServiceKeyValid() throws ServerException{
     	String servicekey = "ABC123";
     	authenticationManager.getAuthentication("admin","admin", servicekey);
     	assertEquals(true,authenticationManager.isAuthenticated());

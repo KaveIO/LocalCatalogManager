@@ -7,6 +7,10 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
+import javax.ws.rs.client.Entity;
+import javax.ws.rs.core.MediaType;
+import javax.ws.rs.core.Response;
+
 import nl.kpmg.lcm.server.AuthenticationManager;
 import nl.kpmg.lcm.server.JacksonJsonProvider;
 import nl.kpmg.lcm.server.ServerException;
@@ -32,14 +36,22 @@ public class UserControllerClientTest extends LCMBaseTest {
 	
 	
 	@Test
-    public void testGetUserTarget() {
-        String expected = "";
-        String actual = target
-                .path("client\\v0\\users\\admin")
-                .request()
-                .get(String.class);
-        System.out.println("*****************"+actual);
-        assertEquals(expected, actual);
+    public void testGetUserTarget() throws ServerException {        
+        User user = new User();
+        user.setUsername("admin");
+        user.setPassword("admin");
+        Entity<User> entity = Entity.entity(user, "application/nl.kpmg.lcm.server.data.User+json");
+        am.getAuthentication(user.getUsername(), user.getPassword(), "ABC123");
+        Response res = target
+                .path("client/v0/users/login").queryParam("serviceKey", "ABC123")
+                .request().post(entity);
+        Response res1 = target
+                .path("client/v0/users").queryParam("serviceKey", "ABC123").queryParam("authorizationToken", "AUTH_TOKEN")
+                .request().post(entity);
+        
+        System.out.println("Response"+res.toString()+"*****************"+res1.toString());
+        assertEquals(200, res.getStatus());
+        assertEquals(200, res1.getStatus());
     }
     /**
      * Test to see that the client interface returns the interface versions.
@@ -83,12 +95,20 @@ public class UserControllerClientTest extends LCMBaseTest {
     @Test
     public void testLogoutUser() throws ServerException{
     	User user = new User();
-    	user.setUsername("admin");
-    	user.setPassword("admin");
-    	UserController uc = new UserController();
-    	uc.setUserService(userService);
-    	uc.setAuthenticationManager(am);
-    	uc.logout("AUTH_TOKEN","ABC123");            	
+        user.setUsername("admin");
+        user.setPassword("admin");
+        Entity<User> entity = Entity.entity(user, "application/nl.kpmg.lcm.server.data.User+json");
+        am.getAuthentication(user.getUsername(), user.getPassword(), "ABC123");
+        Response res = target
+                .path("client/v0/users/login").queryParam("serviceKey", "ABC123")
+                .request().post(entity);
+        Response res1 = target
+                .path("client/v0/logout").queryParam("serviceKey", "ABC123").queryParam("authorizationToken", "AUTH_TOKEN")
+                .request().post(entity);
+        
+        System.out.println("Response"+res.toString()+"*****"+" "+"************"+res1.toString());
+        assertEquals(200, res.getStatus());
+        assertEquals(404, res1.getStatus());            	
     }
     
     @Test

@@ -40,7 +40,7 @@ public class UserGroupControllerClientTest extends LCMBaseTest {
     	userGroup.setUserGroup("testUserGroup1");    	
     	UserGroupController uc = new UserGroupController();
     	uc.setUserGroupService(userGroupService);
-    	uc.setAuthenticationManager(am);
+    	//uc.setAuthenticationManager(am);
     	uc.saveUserGroup(userGroup,"AUTH_TOKEN","ABC123");            	
     }
     
@@ -51,7 +51,7 @@ public class UserGroupControllerClientTest extends LCMBaseTest {
     	
     	UserGroupController uc = new UserGroupController();
     	uc.setUserGroupService(userGroupService);
-    	uc.setAuthenticationManager(am);
+    	//uc.setAuthenticationManager(am);
     	uc.modifyUserGroup(userGroup,"AUTH_TOKEN","ABC123");            
     }
    
@@ -59,7 +59,7 @@ public class UserGroupControllerClientTest extends LCMBaseTest {
     public void testDeleteUserGroup() throws ServerException{
     	UserGroupController uc = new UserGroupController();
     	uc.setUserGroupService(userGroupService);
-    	uc.setAuthenticationManager(am);
+    	//uc.setAuthenticationManager(am);
     	uc.deleteUserGroup("testUserGroup1","AUTH_TOKEN","ABC123");
     }        
 }
