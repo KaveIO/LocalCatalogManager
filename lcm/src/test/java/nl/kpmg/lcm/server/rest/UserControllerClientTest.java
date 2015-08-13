@@ -126,6 +126,25 @@ public class UserControllerClientTest extends LCMBaseTest {
         assertEquals(200, res1.getStatus());            	
     }
     
+    //@Test
+    public void testModifyUserWebTarget() throws ServerException{
+    	User user = new User();
+        user.setUsername("admin");
+        user.setPassword("admin");
+        Entity<User> entity = Entity.entity(user, "application/nl.kpmg.lcm.server.data.User+json");
+        am.getAuthentication(user.getUsername(), user.getPassword(), "ABC123");
+        Response res = target
+                .path("client/v0/users/login").queryParam("serviceKey", "ABC123")
+                .request().post(entity);
+        Response res1 = target
+                .path("client/v0/users/admin").queryParam("serviceKey", "ABC123").queryParam("authorizationToken", "AUTH_TOKEN")
+                .request().post(entity);
+        
+        System.out.println("Response"+res.toString()+"*****"+" "+"************"+res1.toString());
+        assertEquals(200, res.getStatus());
+        assertEquals(200, res1.getStatus());            	
+    }
+    
     @Test
     public void testDeleteUserWebTarget() throws ServerException{
     	User user = new User();
