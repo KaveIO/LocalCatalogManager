@@ -39,11 +39,11 @@ public class AuthenticationManager {
 	private String adminPassword;
 	
 	
-	Map<String,String> userMap = new HashMap<String,String>();
-	Map<String,String> servicekeyMap = new HashMap<String,String>();
-	Map<String,String> authorizationTokenMap = new HashMap<String,String>();
+	private Map<String,String> userMap = new HashMap<String,String>();
+	private Map<String,String> servicekeyMap = new HashMap<String,String>();
+	private Map<String,String> authorizationTokenMap = new HashMap<String,String>();
 			
-	AuthenticationManager() {
+	public AuthenticationManager() {
 				
 	}
 	private void init() {
@@ -101,6 +101,26 @@ public class AuthenticationManager {
 	
 	public void setAdminPassword(String adminPassword) {
 		this.adminPassword = adminPassword;
+	}
+	
+	
+	public Map<String, String> getUserMap() {
+		return userMap;
+	}
+	public void setUserMap(Map<String, String> userMap) {
+		this.userMap = userMap;
+	}
+	public Map<String, String> getServicekeyMap() {
+		return servicekeyMap;
+	}
+	public void setServicekeyMap(Map<String, String> servicekeyMap) {
+		this.servicekeyMap = servicekeyMap;
+	}
+	public Map<String, String> getAuthorizationTokenMap() {
+		return authorizationTokenMap;
+	}
+	public void setAuthorizationTokenMap(Map<String, String> authorizationTokenMap) {
+		this.authorizationTokenMap = authorizationTokenMap;
 	}
 	public String getAuthentication(String username,String password, String servicekey) throws ServerException{				
 		init();

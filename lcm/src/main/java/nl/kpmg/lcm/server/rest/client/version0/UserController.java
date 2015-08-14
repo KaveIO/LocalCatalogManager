@@ -40,7 +40,7 @@ public class UserController {
 	
 	@POST
 	@Consumes({"application/nl.kpmg.lcm.server.data.User+json"})
-	@Produces({"application/json"})
+	@Produces({"text/plain"})
 	@Path("/login")	
 	public Response login(final User user, @QueryParam("serviceKey") String serviceKey) throws ServerException {
 		String authorizationToken = am.getAuthentication(user.getUsername(), user.getPassword(), serviceKey);		
@@ -49,7 +49,7 @@ public class UserController {
 	
 	@POST
 	@Consumes({"application/json"})
-	@Produces({"application/json"})
+	@Produces({"text/plain"})
 	@Path("/logout")	
 	public Response logout(@QueryParam("authorizationToken") String authorizationToken, @QueryParam("serviceKey") String serviceKey) throws ServerException{
 			am.logout(serviceKey,authorizationToken);
@@ -82,7 +82,7 @@ public class UserController {
 	
 	@POST
 	@Consumes({"application/nl.kpmg.lcm.server.data.User+json"})
-	@Produces({"application/nl.kpmg.lcm.server.data.User+json"})
+	@Produces({"text/plain"})
 	@RolesAllowed({"administrator"})
 	public Response modifyUser(final User user,@QueryParam("authourizationToken") String authourizationToken,@QueryParam("serviceKey") String serviceKey) throws ServerException{		
 		

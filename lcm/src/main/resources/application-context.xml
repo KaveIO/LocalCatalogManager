@@ -33,13 +33,5 @@
         <bean id="encryption" class="org.jasypt.encryption.pbe.StandardPBEStringEncryptor">
         	<property name="password" value="${lcm.server.password}"/>
         </bean>
-        <bean id="authenticationManager" class="nl.kpmg.lcm.server.AuthenticationManager" scope="prototype">        	
-            <property name="userService" ref="userService"/>
-            <property name="serviceKeyKey" value="${lcm.server.serviceKey.key}"/>
-            <property name="serviceKeyValue" value="${lcm.server.serviceKey.value}"/>
-            <property name="authorizationTokenKey" value="${lcm.server.authorizationToken.key}"/>
-            <property name="authorizationTokenValue" value="${lcm.server.authorizationToken.value}"/>
-            <property name="adminUser" value="${lcm.server.adminUser}"/>
-            <property name="adminPassword" value="${lcm.server.adminPassword}"/>             
-        </bean>
+        
 </beans>

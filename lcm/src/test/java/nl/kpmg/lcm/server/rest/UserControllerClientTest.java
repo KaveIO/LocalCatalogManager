@@ -44,8 +44,9 @@ public class UserControllerClientTest extends LCMBaseTest {
         Response res = target
                 .path("client/v0/users/login").queryParam("serviceKey", "ABC123")
                 .request().post(entity);
+        String authToken = res.readEntity(String.class);
         Response res1 = target
-                .path("client/v0/users/test").queryParam("serviceKey", "ABC123").queryParam("authorizationToken", "AUTH_TOKEN")
+                .path("client/v0/users/test").queryParam("serviceKey", "ABC123").queryParam("authorizationToken", authToken)
                 .request().get();
         
         System.out.println("Response"+res.toString()+"*****************"+res1.toString());
@@ -72,8 +73,9 @@ public class UserControllerClientTest extends LCMBaseTest {
         Response res = target
                 .path("client/v0/users/login").queryParam("serviceKey", "ABC123")
                 .request().post(entity);
+        String authToken = res.readEntity(String.class);
         Response res1 = target
-                .path("client/v0/users").queryParam("serviceKey", "ABC123").queryParam("authorizationToken", "AUTH_TOKEN")
+                .path("client/v0/users").queryParam("serviceKey", "ABC123").queryParam("authorizationToken", authToken)
                 .request().get();
         
         System.out.println("Response"+res.toString()+"*****"+" "+"************"+res1.toString());
@@ -98,8 +100,9 @@ public class UserControllerClientTest extends LCMBaseTest {
         Response res = target
                 .path("client/v0/users/login").queryParam("serviceKey", "ABC123")
                 .request().post(entity);
+        String authToken = res.readEntity(String.class);
         Response res1 = target
-                .path("client/v0/users/admin").queryParam("serviceKey", "ABC123").queryParam("authorizationToken", "AUTH_TOKEN")
+                .path("client/v0/users/admin").queryParam("serviceKey", "ABC123").queryParam("authorizationToken", authToken)
                 .request().get();
         
         System.out.println("Response"+res.toString()+"*****"+" "+"************"+res1.toString());
@@ -117,8 +120,9 @@ public class UserControllerClientTest extends LCMBaseTest {
         Response res = target
                 .path("client/v0/users/login").queryParam("serviceKey", "ABC123")
                 .request().post(entity);
+        String authToken = res.readEntity(String.class);
         Response res1 = target
-                .path("client/v0/users/admin").queryParam("serviceKey", "ABC123").queryParam("authorizationToken", "AUTH_TOKEN")
+                .path("client/v0/users/admin").queryParam("serviceKey", "ABC123").queryParam("authorizationToken", authToken)
                 .request().put(entity);
         
         System.out.println("Response"+res.toString()+"*****"+" "+"************"+res1.toString());
@@ -126,19 +130,24 @@ public class UserControllerClientTest extends LCMBaseTest {
         assertEquals(200, res1.getStatus());            	
     }
     
-    //@Test
+    @Test
     public void testModifyUserWebTarget() throws ServerException{
     	User user = new User();
         user.setUsername("admin");
         user.setPassword("admin");
         Entity<User> entity = Entity.entity(user, "application/nl.kpmg.lcm.server.data.User+json");
-        am.getAuthentication(user.getUsername(), user.getPassword(), "ABC123");
+        am.getAuthentication(user.getUsername(), user.getPassword(), "ABC123");        
         Response res = target
                 .path("client/v0/users/login").queryParam("serviceKey", "ABC123")
                 .request().post(entity);
+        String authToken = res.readEntity(String.class);
+        
+        user.setPassword("admin");
+        Entity<User> entity1 = Entity.entity(user, "application/nl.kpmg.lcm.server.data.User+json");
+       
         Response res1 = target
-                .path("client/v0/users/admin").queryParam("serviceKey", "ABC123").queryParam("authorizationToken", "AUTH_TOKEN")
-                .request().post(entity);
+                .path("client/v0/users/admin").queryParam("serviceKey", "ABC123").queryParam("authorizationToken", authToken)
+                .request().put(entity1);
         
         System.out.println("Response"+res.toString()+"*****"+" "+"************"+res1.toString());
         assertEquals(200, res.getStatus());
@@ -155,8 +164,9 @@ public class UserControllerClientTest extends LCMBaseTest {
         Response res = target
                 .path("client/v0/users/login").queryParam("serviceKey", "ABC123")
                 .request().post(entity);
+        String authToken = res.readEntity(String.class);
         Response res1 = target
-                .path("client/v0/users/admin").queryParam("serviceKey", "ABC123").queryParam("authorizationToken", "AUTH_TOKEN")
+                .path("client/v0/users/admin").queryParam("serviceKey", "ABC123").queryParam("authorizationToken", authToken)
                 .request().delete();
         
         System.out.println("Response"+res.toString()+"*****"+" "+"************"+res1.toString());
@@ -196,13 +206,14 @@ public class UserControllerClientTest extends LCMBaseTest {
         Response res = target
                 .path("client/v0/users/login").queryParam("serviceKey", "ABC123")
                 .request().post(entity);
+        String authToken = res.readEntity(String.class);
         Response res1 = target
-                .path("client/v0/logout").queryParam("serviceKey", "ABC123").queryParam("authorizationToken", "AUTH_TOKEN")
-                .request().post(entity);
+                .path("client/v0/users/logout").queryParam("serviceKey", "ABC123").queryParam("authorizationToken", authToken)
+                .request().put(entity);
         
         System.out.println("Response"+res.toString()+"*****"+" "+"************"+res1.toString());
         assertEquals(200, res.getStatus());
-        assertEquals(404, res1.getStatus());            	
+        assertEquals(200, res1.getStatus());            	
     }
     
     @Test

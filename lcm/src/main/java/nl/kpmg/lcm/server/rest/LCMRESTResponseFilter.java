@@ -16,6 +16,7 @@ import javax.ws.rs.ext.Provider;
 public class LCMRESTResponseFilter implements ContainerResponseFilter {
 
 	private static final Logger LOGGER = Logger.getLogger(LCMRESTResponseFilter.class.getName());
+	
 	@Override
 	public void filter(ContainerRequestContext requestContext,
 			ContainerResponseContext responseContext) throws IOException {
@@ -24,9 +25,7 @@ public class LCMRESTResponseFilter implements ContainerResponseFilter {
 		//responseContext.getHeaders().add("Acces-Control-Allow-Origin", "*");
 		responseContext.getHeaders().add("Acces-Control-Allow-Credentials", "true");
 		responseContext.getHeaders().add("Acces-Control-Allow-Methods", "POST,GET,PUT,DELETE");
-		//responseContext.getHeaders().add("Acces-Control-Allow-Headers", "serviceKey"+", "+"authorizationToken");
-		//LOGGER.log(Level.INFO, responseContext.getEntity().toString());
-	
+		//responseContext.getHeaders().add("Acces-Control-Allow-Headers", "serviceKey"+", "+"authorizationToken");				
 	}
 
 }
