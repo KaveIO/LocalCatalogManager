@@ -15,7 +15,6 @@ import javax.ws.rs.core.Response;
 import nl.kpmg.lcm.server.AuthenticationManager;
 import nl.kpmg.lcm.server.ServerException;
 import nl.kpmg.lcm.server.data.User;
-import nl.kpmg.lcm.server.data.dao.DaoException;
 import nl.kpmg.lcm.server.data.service.UserService;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -48,12 +47,12 @@ public class UserController {
 	}
 	
 	@POST
-	@Consumes({"application/json"})
+	@Consumes({"application/nl.kpmg.lcm.server.data.User+json"})
 	@Produces({"text/plain"})
 	@Path("/logout")	
-	public Response logout(@QueryParam("authorizationToken") String authorizationToken, @QueryParam("serviceKey") String serviceKey) throws ServerException{
-			am.logout(serviceKey,authorizationToken);
-			return Response.ok().entity("Logged Out Successfully.").build();		
+	public Response logout(final User user,@QueryParam("authorizationToken") String authorizationToken, @QueryParam("serviceKey") String serviceKey) throws ServerException{
+			am.logout(user.getUsername(),serviceKey,authorizationToken);
+			return Response.ok().entity("Logged Out user "+user.getUsername()+" Successfully.").build();		
 	}
 	
 	@GET

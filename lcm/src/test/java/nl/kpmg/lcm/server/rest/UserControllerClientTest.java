@@ -209,7 +209,7 @@ public class UserControllerClientTest extends LCMBaseTest {
         String authToken = res.readEntity(String.class);
         Response res1 = target
                 .path("client/v0/users/logout").queryParam("serviceKey", "ABC123").queryParam("authorizationToken", authToken)
-                .request().put(entity);
+                .request().post(entity);
         
         System.out.println("Response"+res.toString()+"*****"+" "+"************"+res1.toString());
         assertEquals(200, res.getStatus());

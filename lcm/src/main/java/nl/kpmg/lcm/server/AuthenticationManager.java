@@ -180,7 +180,7 @@ public class AuthenticationManager {
 	}
 
 
-	public boolean logout(String serviceKey, String authourizationToken)
+	public boolean logout(String username,String serviceKey, String authourizationToken)
 			throws ServerException {
 		if(authorizationTokenMap.containsKey(authourizationToken)){
 		authorizationTokenMap.remove(authourizationToken);
