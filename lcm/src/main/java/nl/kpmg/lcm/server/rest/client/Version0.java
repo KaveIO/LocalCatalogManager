@@ -22,8 +22,10 @@ public class Version0 {
      * @return String "ok" as niceness
      */
     @GET
-    @Produces(MediaType.TEXT_PLAIN)
+    @Produces(MediaType.TEXT_HTML)
     public String getIndex() {
-        return "ok";
+        String index = "<html><head><title>Welcome to LCM</title></head><body><p><h1>Local Catalog Manager</h1></p><form name=\"loginForm\" method=\"GET\">User Name  :<input id=\"username\" type=\"text\" value=\"Enter User Name\"></input> <br> Password     :<input id=\"password\" type=\"password\"></input><br><input id=\"submit\" type=\"button\" value=\"Login\"></input></form></body></html>";
+    	
+    	return index;
     }
 }

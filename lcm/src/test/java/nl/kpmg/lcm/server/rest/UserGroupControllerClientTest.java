@@ -59,8 +59,9 @@ public class UserGroupControllerClientTest extends LCMBaseTest {
         Response res = target
                 .path("client/v0/users/login").queryParam("serviceKey", "ABC123")
                 .request().post(entity);
+        String authToken = res.readEntity(String.class);
         Response res1 = target
-                .path("client/v0/userGroups").queryParam("serviceKey", "ABC123").queryParam("authorizationToken", "AUTH_TOKEN")
+                .path("client/v0/userGroups").queryParam("serviceKey", "ABC123").queryParam("authorizationToken", authToken)
                 .request().get();
         
         System.out.println("Response"+res.toString()+"*****"+" "+"************"+res1.toString());
@@ -84,8 +85,9 @@ public class UserGroupControllerClientTest extends LCMBaseTest {
         Response res = target
                 .path("client/v0/users/login").queryParam("serviceKey", "ABC123")
                 .request().post(entity);
+        String authToken = res.readEntity(String.class);
         Response res1 = target
-                .path("client/v0/userGroups/admin").queryParam("serviceKey", "ABC123").queryParam("authorizationToken", "AUTH_TOKEN")
+                .path("client/v0/userGroups/admin").queryParam("serviceKey", "ABC123").queryParam("authorizationToken", authToken)
                 .request().get();
         
         System.out.println("Response"+res.toString()+"*****"+" "+"************"+res1.toString());
@@ -119,9 +121,10 @@ public class UserGroupControllerClientTest extends LCMBaseTest {
         Response res = target
                 .path("client/v0/users/login").queryParam("serviceKey", "ABC123")
                 .request().post(entity);
+        String authToken = res.readEntity(String.class);
         Entity<UserGroup> entity1 = Entity.entity(userGroup, "application/nl.kpmg.lcm.server.data.UserGroup+json");
         Response res1 = target
-                .path("client/v0/userGroups/testUserGroup").queryParam("serviceKey", "ABC123").queryParam("authorizationToken", "AUTH_TOKEN")
+                .path("client/v0/userGroups/testUserGroup").queryParam("serviceKey", "ABC123").queryParam("authorizationToken", authToken)
                 .request().put(entity1);
         
         System.out.println("Response"+res.toString()+"*****"+" "+"************"+res1.toString());
@@ -140,7 +143,7 @@ public class UserGroupControllerClientTest extends LCMBaseTest {
     	uc.modifyUserGroup(userGroup,"AUTH_TOKEN","ABC123");            
     }
     
-    //@Test
+    @Test
     public void testModifyUserGroupWebTarget() throws ServerException{
     	List<User> users = new ArrayList<User>();
     	User user = new User();
@@ -156,10 +159,13 @@ public class UserGroupControllerClientTest extends LCMBaseTest {
         Response res = target
                 .path("client/v0/users/login").queryParam("serviceKey", "ABC123")
                 .request().post(entity);
+        
+        String authToken = res.readEntity(String.class);
+        userGroup.setId(105);
         Entity<UserGroup> entity1 = Entity.entity(userGroup, "application/nl.kpmg.lcm.server.data.UserGroup+json");
         Response res1 = target
-                .path("client/v0/userGroups/testUserGroup").queryParam("serviceKey", "ABC123").queryParam("authorizationToken", "AUTH_TOKEN")
-                .request().post(entity1);
+                .path("client/v0/userGroups/testUserGroup").queryParam("serviceKey", "ABC123").queryParam("authorizationToken", authToken)
+                .request().put(entity1);
         
         System.out.println("Response"+res.toString()+"*****"+" "+"************"+res1.toString());
         assertEquals(200, res.getStatus());
@@ -190,12 +196,13 @@ public class UserGroupControllerClientTest extends LCMBaseTest {
         Response res = target
                 .path("client/v0/users/login").queryParam("serviceKey", "ABC123")
                 .request().post(entity);
+        String authToken = res.readEntity(String.class);
         Entity<UserGroup> entity1 = Entity.entity(userGroup, "application/nl.kpmg.lcm.server.data.UserGroup+json");
         Response res1 = target
-                .path("client/v0/userGroups/testUserGroup1").queryParam("serviceKey", "ABC123").queryParam("authorizationToken", "AUTH_TOKEN")
+                .path("client/v0/userGroups/testUserGroup1").queryParam("serviceKey", "ABC123").queryParam("authorizationToken", authToken)
                 .request().put(entity1);
         Response res2 = target
-                .path("client/v0/userGroups/testUserGroup1").queryParam("serviceKey", "ABC123").queryParam("authorizationToken", "AUTH_TOKEN")
+                .path("client/v0/userGroups/testUserGroup1").queryParam("serviceKey", "ABC123").queryParam("authorizationToken", authToken)
                 .request().delete();
         
         System.out.println("Response"+res.toString()+"*****"+" "+"************"+res1.toString()+"****"+res2.toString());

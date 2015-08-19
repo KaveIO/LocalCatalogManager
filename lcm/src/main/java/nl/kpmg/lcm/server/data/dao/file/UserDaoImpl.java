@@ -126,6 +126,7 @@ public class UserDaoImpl implements UserDao {
 				try {
 					mapper = jacksonJsonProvider.getContext(User.class);
 					userFromFile = mapper.readValue(userFile, User.class);
+					userFromFile.setUsername(user.getUsername());
 					userFromFile.setPassword(user.getPassword());
 					mapper.writeValue(userFile, userFromFile);
 				} catch (JsonParseException e) {

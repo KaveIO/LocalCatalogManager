@@ -127,6 +127,9 @@ public class UserGroupDaoImpl implements UserGroupDao {
 				try {
 					mapper = jacksonJsonProvider.getContext(UserGroup.class);
 					userGroupFromFile = mapper.readValue(userFile, UserGroup.class);					
+					userGroupFromFile.setId(userGroup.getId());
+					userGroupFromFile.setUserGroup(userGroup.getUserGroup());
+					userGroupFromFile.setUsers(userGroup.getUsers());
 					mapper.writeValue(userFile, userGroupFromFile);
 				} catch (JsonParseException e) {
 					LOGGER.warning(e.getMessage());

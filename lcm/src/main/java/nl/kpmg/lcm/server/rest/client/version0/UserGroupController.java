@@ -73,7 +73,7 @@ public class UserGroupController {
 
 	@POST
 	@Consumes({ "application/nl.kpmg.lcm.server.data.UserGroup+json" })
-	@Produces({ "application/nl.kpmg.lcm.server.data.UserGroup+json" })
+	@Produces({ "text/plain" })
 	@RolesAllowed({"administrator"})
 	public Response modifyUserGroup(final UserGroup userGroup,
 			@QueryParam("authourizationToken") String authourizationToken,

@@ -141,7 +141,7 @@ public class UserControllerClientTest extends LCMBaseTest {
                 .path("client/v0/users/login").queryParam("serviceKey", "ABC123")
                 .request().post(entity);
         String authToken = res.readEntity(String.class);
-        
+        user.setUsername("admin123");
         user.setPassword("admin");
         Entity<User> entity1 = Entity.entity(user, "application/nl.kpmg.lcm.server.data.User+json");
        
