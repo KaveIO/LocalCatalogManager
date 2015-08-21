@@ -68,7 +68,7 @@ public class UserDaoImpl implements UserDao {
 	}
 
 	@Override	
-	public List<User> getUsers() {
+	public List<User> getAll() {
 		File[] userFiles = storage.listFiles();
 		List<User> users = new ArrayList<User>();
 		for (File userFile : userFiles) {
@@ -91,7 +91,7 @@ public class UserDaoImpl implements UserDao {
 	}
 
 	@Override
-	public User getUser(String username) {
+	public User getByName(String username) {
 		File[] userFiles = storage.listFiles();
 		User user = null;
 		for (File userFile : userFiles) {
@@ -117,7 +117,7 @@ public class UserDaoImpl implements UserDao {
 	}
 
 	@Override
-	public void modifyUser(User user) {
+	public void update(User user) {
 		File[] userFiles = storage.listFiles();
 		User userFromFile = null;
 		for (File userFile : userFiles) {
@@ -142,11 +142,11 @@ public class UserDaoImpl implements UserDao {
 	}
 
 	@Override
-	public void deleteUser(String username) {
+	public void delete(User user) {
 		File[] userFiles = storage.listFiles();		
 		for (File userFile : userFiles) {
 
-			if (getUsernameFromPath(userFile.getName()).equals(username)) {
+			if (getUsernameFromPath(userFile.getName()).equals(user.getUsername())) {
 				try {
 					userFile.delete();
 				} catch (Exception e) {
@@ -157,7 +157,7 @@ public class UserDaoImpl implements UserDao {
 	}
 
 	@Override
-	public void saveUser(User user) {
+	public void persist(User user) {
 		File userFile = getUserFile(user.getUsername());
 
 		try {
@@ -171,6 +171,12 @@ public class UserDaoImpl implements UserDao {
 			LOGGER.warning(e.getMessage());
 		}
 
+	}
+
+	@Override
+	public User getById(Integer id) {
+		// TODO Auto-generated method stub
+		return null;
 	}
 
 }

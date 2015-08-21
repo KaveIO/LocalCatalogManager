@@ -16,12 +16,14 @@
 package nl.kpmg.lcm.server.data.dao.file;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+
 import java.io.File;
 import java.io.IOException;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+
 import nl.kpmg.lcm.server.JacksonJsonProvider;
 import nl.kpmg.lcm.server.data.dao.DaoException;
 import nl.kpmg.lcm.server.data.dao.TaskScheduleDao;
@@ -128,4 +130,16 @@ public class TaskScheduleDaoImpl implements TaskScheduleDao {
         File taskScheduleFile = getTaskScheduleFile(taskSchedule.getId());
         taskScheduleFile.delete();
     }
+
+	@Override
+	public TaskSchedule getByName(String name) {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public void update(TaskSchedule obj) {
+		// TODO Auto-generated method stub
+		
+	}
 }

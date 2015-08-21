@@ -157,6 +157,7 @@ public class UserControllerClientTest extends LCMBaseTest {
     @Test
     public void testDeleteUserWebTarget() throws ServerException{
     	User user = new User();
+    	user.setId(1);
         user.setUsername("admin");
         user.setPassword("admin");
         Entity<User> entity = Entity.entity(user, "application/nl.kpmg.lcm.server.data.User+json");
@@ -232,6 +233,9 @@ public class UserControllerClientTest extends LCMBaseTest {
     	UserController uc = new UserController();
     	uc.setUserService(userService);
     	uc.setAuthenticationManager(am);
+    	User user = new User();
+    	user.setUsername("testUser1");
+    	user.setPassword("testPassword1");
     	uc.deleteUser("testUser1","AUTH_TOKEN","ABC123");
     }
     

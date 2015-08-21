@@ -42,7 +42,7 @@ public class UserGroupController {
 	public Response getUserGroups() {
 
 		return Response.status(200)
-				.entity(userGroupService.getUserGroupDao().getUserGroups())
+				.entity(userGroupService.getUserGroupDao().getAll())
 				.build();
 	}
 
@@ -54,7 +54,7 @@ public class UserGroupController {
 
 		return Response
 				.status(200)
-				.entity(userGroupService.getUserGroupDao().getUserGroup(
+				.entity(userGroupService.getUserGroupDao().getByName(
 						userGroup)).build();
 	}
 
@@ -66,7 +66,7 @@ public class UserGroupController {
 			@QueryParam("authourizationToken") String authourizationToken,
 			@QueryParam("serviceKey") String serviceKey) throws ServerException {
 		
-		userGroupService.getUserGroupDao().saveUserGroup(userGroup);
+		userGroupService.getUserGroupDao().persist(userGroup);
 		return Response.status(200).entity("Saved User Group "+userGroup.getUserGroup()+" Successfully.").build();
 		
 	}
@@ -79,20 +79,25 @@ public class UserGroupController {
 			@QueryParam("authourizationToken") String authourizationToken,
 			@QueryParam("serviceKey") String serviceKey) throws ServerException {
 			
-		userGroupService.getUserGroupDao().modifyUserGroup(userGroup);
+		userGroupService.getUserGroupDao().update(userGroup);
 		return Response.status(200).entity("Modified User Group "+ userGroup.getUserGroup()+" Successfully.").build();		
 	}
 
 	@DELETE
 	@Consumes({ "application/json" })
+	@Produces({ "text/plain" })
 	@Path("/{userGroup}")
 	@RolesAllowed({"administrator"})
-	public Response deleteUserGroup(@PathParam("userGroup") String userGroup,
+	public Response deleteUserGroup(@PathParam("userGroup") String userGroupName,
 			@QueryParam("authourizationToken") String authourizationToken,
 			@QueryParam("serviceKey") String serviceKey) throws ServerException {
+		UserGroup userGroup = userGroupService.getUserGroupDao().getByName(userGroupName);
 		
-		userGroupService.getUserGroupDao().deleteUserGroup(userGroup);
-		return Response.status(200).entity("Deleted User Group "+userGroup+" Successfully.").build();
+		if(userGroup == null){
+			return Response.status(404).entity("User Group "+userGroup+" doesn't exist.").build();
+		}
+		userGroupService.getUserGroupDao().delete(userGroup);
+		return Response.status(200).entity("Deleted User Group "+userGroup.getUserGroup()+" Successfully.").build();
 		
 	}
 

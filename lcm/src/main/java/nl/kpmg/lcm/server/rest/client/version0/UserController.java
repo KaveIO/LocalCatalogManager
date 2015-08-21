@@ -59,7 +59,7 @@ public class UserController {
 	@Produces({"application/json"})	
 	@RolesAllowed({"apiUser","administrator"})	
 	public Response getUsers(){		
-		return Response.status(200).entity(userService.getUserDao().getUsers()).build();
+		return Response.status(200).entity(userService.getUserDao().getAll()).build();
 	}
 	
 	@GET
@@ -67,7 +67,7 @@ public class UserController {
 	@Path("/{username}")
 	@RolesAllowed({"apiUser","administrator"})
 	public Response getUser(@PathParam("username") String username) {				
-		return Response.status(200).entity(userService.getUserDao().getUser(username)).build();				
+		return Response.status(200).entity(userService.getUserDao().getByName(username)).build();				
 	}
 	
 	@PUT
@@ -75,7 +75,7 @@ public class UserController {
 	@Path("/{username}")
 	@RolesAllowed({"administrator"})
 	public Response saveUser(final User user,@QueryParam("authourizationToken") String authourizationToken,@QueryParam("serviceKey") String serviceKey) throws ServerException{				
-		userService.getUserDao().saveUser(user);
+		userService.getUserDao().persist(user);
 		return Response.status(200).entity("User "+user.getUsername() + " saved successfully.").build();				
 	}
 	
@@ -85,16 +85,21 @@ public class UserController {
 	@RolesAllowed({"administrator"})
 	public Response modifyUser(final User user,@QueryParam("authourizationToken") String authourizationToken,@QueryParam("serviceKey") String serviceKey) throws ServerException{		
 		
-		userService.getUserDao().modifyUser(user);
+		userService.getUserDao().update(user);
 		return Response.status(200).entity("Modified User "+user.getUsername()+" successfully.").build();		
 	}
 	
 	@DELETE
 	@Consumes({"application/json"})
+	@Produces({"text/plain"})
 	@Path("/{username}")
 	@RolesAllowed({"apiUser","administrator"})
-	public Response deleteUser(@PathParam("username") String username,@QueryParam("authourizationToken") String authourizationToken,@QueryParam("serviceKey") String serviceKey) throws ServerException{		
-		userService.getUserDao().deleteUser(username);
-		return Response.status(200).entity("Deleted User "+username+" Successfully.").build();		
+	public Response deleteUser(@PathParam("username") String username, @QueryParam("authourizationToken") String authourizationToken,@QueryParam("serviceKey") String serviceKey) throws ServerException{				
+		User user = userService.getUserDao().getByName(username);
+		if(user == null){
+			return Response.status(404).entity("User "+username+" doesn't exist.").build();
+		}
+		userService.getUserDao().delete(user);
+		return Response.status(200).entity("Deleted User "+user.getUsername()+" Successfully.").build();		
 	}
 }

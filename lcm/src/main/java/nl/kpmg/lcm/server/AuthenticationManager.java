@@ -50,7 +50,7 @@ public class AuthenticationManager {
 		servicekeyMap.put(serviceKeyKey, serviceKeyValue);		
 		authorizationTokenMap.put(authorizationTokenKey, authorizationTokenValue);
 		userMap.put(adminUser, adminPassword);		
-		for (User user : userService.getUserDao().getUsers()) {						
+		for (User user : userService.getUserDao().getAll()) {						
 			userMap.put(user.getUsername(), user.getPassword());
 		}	
 	}

@@ -69,7 +69,7 @@ public class UserGroupDaoImpl implements UserGroupDao {
 	}
 
 	@Override
-	public List<UserGroup> getUserGroups() {
+	public List<UserGroup> getAll() {
 		File[] userFiles = storage.listFiles();
 		List<UserGroup> userGroups = new ArrayList<UserGroup>();
 		for (File userFile : userFiles) {
@@ -92,7 +92,7 @@ public class UserGroupDaoImpl implements UserGroupDao {
 	}
 
 	@Override
-	public UserGroup getUserGroup(String userGroupName) {
+	public UserGroup getByName(String userGroupName) {
 		File[] userFiles = storage.listFiles();
 		UserGroup userGroup = null;
 		for (File userFile : userFiles) {
@@ -118,7 +118,7 @@ public class UserGroupDaoImpl implements UserGroupDao {
 	}
 
 	@Override
-	public void modifyUserGroup(UserGroup userGroup) {
+	public void update(UserGroup userGroup) {
 		File[] userFiles = storage.listFiles();
 		UserGroup userGroupFromFile = null;
 		for (File userFile : userFiles) {
@@ -144,11 +144,11 @@ public class UserGroupDaoImpl implements UserGroupDao {
 	}
 
 	@Override
-	public void deleteUserGroup(String userGroupName) {
+	public void delete(UserGroup userGroup) {
 		File[] userFiles = storage.listFiles();		
 		for (File userFile : userFiles) {
 
-			if (getUserGroupFromPath(userFile.getName()).equals(userGroupName)) {
+			if (getUserGroupFromPath(userFile.getName()).equals(userGroup.getUserGroup())) {
 				try {
 					userFile.delete();
 				} catch (Exception e) {
@@ -159,7 +159,7 @@ public class UserGroupDaoImpl implements UserGroupDao {
 	}
 
 	@Override
-	public void saveUserGroup(UserGroup userGroup) {
+	public void persist(UserGroup userGroup) {
 		File userFile = getUserGroupFile(userGroup.getUserGroup());
 
 		try {
@@ -173,6 +173,12 @@ public class UserGroupDaoImpl implements UserGroupDao {
 			LOGGER.warning(e.getMessage());
 		}
 
+	}
+
+	@Override
+	public UserGroup getById(Integer id) {
+		// TODO Auto-generated method stub
+		return null;
 	}
 	
 

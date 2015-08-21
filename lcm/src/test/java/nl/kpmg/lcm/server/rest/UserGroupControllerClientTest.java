@@ -177,6 +177,9 @@ public class UserGroupControllerClientTest extends LCMBaseTest {
     	UserGroupController uc = new UserGroupController();
     	uc.setUserGroupService(userGroupService);
     	//uc.setAuthenticationManager(am);
+    	UserGroup userGroup = new UserGroup();
+    	userGroup.setId(101);
+    	userGroup.setUserGroup("testUserGroup1");
     	uc.deleteUserGroup("testUserGroup1","AUTH_TOKEN","ABC123");
     } 
     
@@ -184,6 +187,7 @@ public class UserGroupControllerClientTest extends LCMBaseTest {
     public void testDeleteUserGroupWebTarget() throws ServerException{
     	List<User> users = new ArrayList<User>();
     	User user = new User();
+    	user.setId(1);
     	user.setUsername("admin");
     	user.setPassword("admin");
     	users.add(user);
