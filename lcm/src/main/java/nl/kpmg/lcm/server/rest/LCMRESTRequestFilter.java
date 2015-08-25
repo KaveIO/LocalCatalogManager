@@ -1,6 +1,7 @@
 package nl.kpmg.lcm.server.rest;
 
 import java.io.IOException;
+import java.net.URI;
 import java.security.Principal;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -11,95 +12,102 @@ import javax.ws.rs.container.PreMatching;
 import javax.ws.rs.core.Link;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.SecurityContext;
+import javax.ws.rs.core.UriInfo;
 import javax.ws.rs.ext.Provider;
 
 import nl.kpmg.lcm.server.AuthenticationManager;
+import nl.kpmg.lcm.server.AuthenticationManager.UserSecurityContext;
+import nl.kpmg.lcm.server.data.User;
+import nl.kpmg.lcm.server.data.service.UserService;
 import nl.kpmg.lcm.server.rest.client.version0.UserController;
 
 import org.springframework.beans.factory.annotation.Autowired;
 
+/**
+ * Filter placed in front of all REST calls that handles the authentication of the users.
+ *
+ * @author mhoekstra
+ */
 @Provider
 @PreMatching
 public class LCMRESTRequestFilter implements ContainerRequestFilter {
 
+    /**
+     * The name of the http request header containing the authentication user.
+     */
+    public static final String LCM_AUTHENTICATION_USER_HEADER = "LCM-Authentication-User";
+
+    /**
+     * The name of the http request header containing the authentication token.
+     */
+    public static final String LCM_AUTHENTICATION_TOKEN_HEADER = "LCM-Authentication-Token";
+
+    /**
+     * The class logger.
+     */
     private static final Logger LOGGER = Logger.getLogger(LCMRESTRequestFilter.class.getName());
 
+    /**
+     * The authentication manager.
+     */
+    private final AuthenticationManager authenticationManager;
+
+    /**
+     * The user service.
+     */
+    private final UserService userService;
+
+    /**
+     * The path where the login call on the API is placed.
+     */
     private final String loginPath;
 
-    private AuthenticationManager am;
-
-    public LCMRESTRequestFilter() {
-        // Reflect on the login method so we know what the actuall login path is.
-        loginPath = Link.fromMethod(UserController.class, "login").build().getUri().getPath();
-    }
-
+    /**
+     * Default constructor.
+     *
+     * @param authenticationManager The central manager of authentications
+     * @param userService The service used to find the users for the SecurityContext
+     */
     @Autowired
-    public void setAuthenticationManager(AuthenticationManager am) {
-        this.am = am;
+    public LCMRESTRequestFilter(final AuthenticationManager authenticationManager, final UserService userService) {
+        this.authenticationManager = authenticationManager;
+        this.userService = userService;
+
+        /*
+         * Hard loginPath to allow for anonymous access to the login url. This
+         * should be changed to a role defintion for allowing anonymous access
+         * on certain resources.
+         */
+        loginPath = "client/v0/users/login";
     }
 
     /**
-     * Checks of Authorization Token for all URI's other than Login URI
+     * Checks of Authentication Token for all URI's other than Login URI.
      *
-     * @see
-     * javax.ws.rs.container.ContainerRequestFilter#filter(javax.ws.rs.container.ContainerRequestContext)
+     * @param requestContext describing the call
      */
     @Override
-    public void filter(final ContainerRequestContext requestContext)
-            throws IOException {
-        requestContext.setSecurityContext(new LCMSecurityContext());
-
+    public final void filter(final ContainerRequestContext requestContext) {
         String path = requestContext.getUriInfo().getPath();
-        LOGGER.log(Level.INFO, "LCMRESTRequestFilter called with request path " + path);
+
+        LOGGER.log(Level.INFO, "LCMRESTRequestFilter called with request path {0}", path);
         if (requestContext.getRequest().getMethod().equals("OPTIONS")) {
-            requestContext.abortWith(Response.status(Response.Status.OK).entity("You are not allowed to query OPTIONS.").build());
+            requestContext.abortWith(Response.status(Response.Status.OK).build());
             return;
         }
+        if (!path.equals(loginPath)) {
+            String username = requestContext.getHeaderString(LCM_AUTHENTICATION_USER_HEADER);
+            String authenticationToken = requestContext.getHeaderString(LCM_AUTHENTICATION_TOKEN_HEADER);
 
-        String serviceKey = requestContext.getUriInfo().getQueryParameters().getFirst("serviceKey");
-
-        if (!am.isServiceKeyValid(serviceKey)) {
-            requestContext.abortWith(Response.status(Response.Status.UNAUTHORIZED).entity("You are not Authorized to access LCM due to invalid service key " + serviceKey).build());
-            return;
-        }
-
-        if (!path.startsWith(loginPath)) {
-            String authorizationToken = requestContext.getUriInfo().getQueryParameters().getFirst("authorizationToken");
-            LOGGER.log(Level.INFO, "LCMRESTRequestFilter called with request authorizationToken " + authorizationToken);
-            if (!am.isAuthorizationTokenValid(serviceKey, authorizationToken)) {
-                requestContext.abortWith(Response.status(Response.Status.UNAUTHORIZED).entity("You are not Authorized to access LCM").build());
+            LOGGER.log(Level.INFO, "LCMRESTRequestFilter called with request authorizationToken {0}",
+                    authenticationToken);
+            if (authenticationManager.isAuthenticationTokenValid(username, authenticationToken)) {
+                UserSecurityContext userSecurityContext = authenticationManager.getSecurityContext(authenticationToken);
+                requestContext.setSecurityContext(userSecurityContext);
+            } else {
+                requestContext.abortWith(Response.status(Response.Status.UNAUTHORIZED)
+                        .entity("You are not Authorized to access LCM").build());
             }
         }
     }
-
-    private final class LCMSecurityContext implements SecurityContext {
-
-        @Override
-        public Principal getUserPrincipal() {
-            return new Principal() {
-
-                @Override
-                public String getName() {
-                    return "lcm";
-                }
-            };
-        }
-
-        @Override
-        public boolean isUserInRole(String role) {
-            LOGGER.log(Level.INFO, "LCMRESTRequestFilter::LCMSecurityContext called with role " + role);
-            return "administrator".equals(role);
-        }
-
-        @Override
-        public boolean isSecure() {
-            return false;
-        }
-
-        @Override
-        public String getAuthenticationScheme() {
-            return null;
-        }
-    }
-
 }

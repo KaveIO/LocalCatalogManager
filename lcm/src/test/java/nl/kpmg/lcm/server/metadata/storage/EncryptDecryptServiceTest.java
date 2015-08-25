@@ -3,7 +3,7 @@ package nl.kpmg.lcm.server.metadata.storage;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import nl.kpmg.lcm.server.data.service.EncryptDecryptService;
-import nl.kpmg.lcm.server.rest.LCMBaseTest;
+import nl.kpmg.lcm.server.LCMBaseTest;
 
 import org.jasypt.encryption.pbe.StandardPBEStringEncryptor;
 import org.junit.Test;

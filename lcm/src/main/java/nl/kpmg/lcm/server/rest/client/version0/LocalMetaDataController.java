@@ -25,6 +25,7 @@ import nl.kpmg.lcm.server.rest.client.version0.types.MetaDataOperationRequest;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.annotation.security.RolesAllowed;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.DELETE;
 import javax.ws.rs.GET;
@@ -36,6 +37,7 @@ import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
+import nl.kpmg.lcm.server.AuthenticationManager;
 import nl.kpmg.lcm.server.backend.Backend;
 import nl.kpmg.lcm.server.backend.BackendException;
 import nl.kpmg.lcm.server.data.MetaData;
@@ -69,6 +71,7 @@ public class LocalMetaDataController {
      */
     @GET
     @Produces({"application/json"})
+    @RolesAllowed({AuthenticationManager.Roles.ADMINISTRATOR, AuthenticationManager.Roles.API_USER})
     public final MetaDatasRepresentation getLocalMetaDataOverview() {
         List<MetaData> all = metaDataDao.getAll();
         return new MetaDatasRepresentation(all);
@@ -82,6 +85,7 @@ public class LocalMetaDataController {
      */
     @POST
     @Consumes({"application/nl.kpmg.lcm.server.data.MetaData+json"})
+    @RolesAllowed({AuthenticationManager.Roles.ADMINISTRATOR, AuthenticationManager.Roles.API_USER})
     public final Response createNewMetaData(final MetaData metaData) {
         metaDataDao.persist(metaData);
         return Response.ok().build();
@@ -98,6 +102,7 @@ public class LocalMetaDataController {
     @Path("{metaDataName}")
     @Consumes({"application/json"})
     @Produces(MediaType.TEXT_PLAIN)
+    @RolesAllowed({AuthenticationManager.Roles.ADMINISTRATOR, AuthenticationManager.Roles.API_USER})
     public final Response putLocalMetaData(
             @PathParam("metaDataName") final String metaDataName,
             final MetaData metaData) {
@@ -108,43 +113,14 @@ public class LocalMetaDataController {
         return Response.ok().build();
     }
 
-    @GET
-    @Path("{metaDataName}/download")
-    @Consumes({"application/nl.kpmg.lcm.server.rest.client.version0.types.MetaDataOperationRequest+json"})
-    @Produces(MediaType.APPLICATION_OCTET_STREAM)
-    public final Response metadataOperationFake(
-            @PathParam("metaDataName") final String metaDataName) {
-
-
-        switch ("download") {
-
-            case "download":
-                MetaData metadata = metaDataDao.getByName(metaDataName);
-                Backend backend;
-                backend = backendService.getBackend(metadata);
-                try {
-                    InputStream input = backend.read(metadata);
-                    return Response
-                            .ok(input)
-                            .header("Content-Disposition", String.format("attachment; filename=%s_%s",metadata.getName(),metadata.getVersionNumber()))
-                            .build();
-
-                }
-                catch (BackendException ex) {
-                    return Response.serverError().build();
-                }
-        }
-
-        return null;
-    }
-
     @POST
     @Path("{metaDataName}")
     @Consumes({"application/nl.kpmg.lcm.server.rest.client.version0.types.MetaDataOperationRequest+json"})
     @Produces(MediaType.APPLICATION_OCTET_STREAM)
+    @RolesAllowed({AuthenticationManager.Roles.ADMINISTRATOR, AuthenticationManager.Roles.API_USER})
     public final Response metadataOperation(
-        @PathParam("metaDataName") final String metaDataName,
-        MetaDataOperationRequest request) throws BackendException, URISyntaxException {
+            @PathParam("metaDataName") final String metaDataName,
+            MetaDataOperationRequest request) throws BackendException, URISyntaxException {
 
         MetaData metadata = metaDataDao.getByName(metaDataName);
 
@@ -159,14 +135,14 @@ public class LocalMetaDataController {
                     String fType = (String) request.getParameters().get("type");
                     return Response
                             .ok(input)
-                            .header("Content-Disposition", String.format("attachment; filename=%s_v%s.%s",metadata.getName(),metadata.getVersionNumber(),fType))
+                            .header("Content-Disposition", String.format("attachment; filename=%s_v%s.%s", metadata.getName(), metadata.getVersionNumber(), fType))
                             .build();
 
                 }
                 catch (BackendException ex) {
                     return Response.serverError().build();
                 }
-            case "copy" :
+            case "copy":
                 backend = backendService.getBackend(metadata);
                 String fType = (String) request.getParameters().get("type");
                 String sPath = (String) request.getParameters().get("storagePath");
@@ -176,7 +152,7 @@ public class LocalMetaDataController {
                     parsedURI = new URI(metadata.getDataUri());
                     String newDataUri = parsedURI.getScheme() + "://" + parsedURI.getHost() + "/" + fPath;
                     InputStream input = backend.read(metadata);
-                    FileOutputStream fos = new FileOutputStream(new File(String.format("%s/%s.%s",sPath,fPath,fType)));
+                    FileOutputStream fos = new FileOutputStream(new File(String.format("%s/%s.%s", sPath, fPath, fType)));
                     int copied = IOUtils.copy(input, fos);
                     MetaData mnested = new MetaData();
                     mnested.setDataUri(newDataUri);
@@ -184,12 +160,10 @@ public class LocalMetaDataController {
                     metaDataDao.update(metadata);
 
                     return Response.ok().build();
-                            
-
                 }
                 catch (IOException ex) {
-                     Logger.getLogger(LocalMetaDataController.class.getName())
-                    .log(Level.SEVERE, "Couldn't find path: " + String.format("%s/%s.%s",sPath,fPath,fType), ex);
+                    Logger.getLogger(LocalMetaDataController.class.getName())
+                            .log(Level.SEVERE, "Couldn't find path: " + String.format("%s/%s.%s", sPath, fPath, fType), ex);
                 }
 
         }
@@ -206,6 +180,7 @@ public class LocalMetaDataController {
     @GET
     @Path("{metaDataName}")
     @Produces({"application/json"})
+    @RolesAllowed({AuthenticationManager.Roles.ADMINISTRATOR, AuthenticationManager.Roles.API_USER})
     public final MetaDataRepresentation getLocalMetaData(
             @PathParam("metaDataName") final String metaDataName) {
 
@@ -226,6 +201,7 @@ public class LocalMetaDataController {
     @DELETE
     @Path("{metaDataName}")
     @Produces({"application/json"})
+    @RolesAllowed({AuthenticationManager.Roles.ADMINISTRATOR, AuthenticationManager.Roles.API_USER})
     public final Response deleteLocalMetaData(
             @PathParam("metaDataName") final String metaDataName) {
 
@@ -250,6 +226,7 @@ public class LocalMetaDataController {
     @Path("{metaDataName}")
     @Consumes({"application/json"})
     @Produces({"application/json"})
+    @RolesAllowed({AuthenticationManager.Roles.ADMINISTRATOR, AuthenticationManager.Roles.API_USER})
     public final String postLocalMetaData(
             @PathParam("metaDataName") final String metaDataName,
             final MetaData metaData) {
@@ -266,6 +243,7 @@ public class LocalMetaDataController {
     @GET
     @Path("{metaDataName}/{version}")
     @Produces({"application/json"})
+    @RolesAllowed({AuthenticationManager.Roles.ADMINISTRATOR, AuthenticationManager.Roles.API_USER})
     public final MetaDataRepresentation getLocalMetaDataByVersion(
             @PathParam("metaDataName") final String metaDataName,
             @PathParam("version") final String version) {
@@ -288,6 +266,7 @@ public class LocalMetaDataController {
     @DELETE
     @Path("{metaDataName}/{version}")
     @Produces({"application/json"})
+    @RolesAllowed({AuthenticationManager.Roles.ADMINISTRATOR, AuthenticationManager.Roles.API_USER})
     public final Response deleteLocalMetaDataByVersion(
             @PathParam("metaDataName") final String metaDataName,
             @PathParam("version") final String version) {
@@ -306,6 +285,7 @@ public class LocalMetaDataController {
     @Path("{metadata}/{version}")
     @Consumes({"application/json"})
     @Produces({"application/json"})
+    @RolesAllowed({AuthenticationManager.Roles.ADMINISTRATOR, AuthenticationManager.Roles.API_USER})
     public final Response postLocalMetaDataByVersion(
             @PathParam("metaDataName") final String metaDataName,
             @PathParam("version") final String version,

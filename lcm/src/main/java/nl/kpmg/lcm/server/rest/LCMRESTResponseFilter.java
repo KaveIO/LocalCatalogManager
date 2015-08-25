@@ -1,6 +1,5 @@
 package nl.kpmg.lcm.server.rest;
 
-import java.io.IOException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -10,22 +9,35 @@ import javax.ws.rs.container.ContainerResponseFilter;
 import javax.ws.rs.container.PreMatching;
 import javax.ws.rs.ext.Provider;
 
-
+/**
+ * Filter placed on all REST responses that modifies the headers sent to the client.
+ *
+ * @author mhoekstra
+ */
 @Provider
 @PreMatching
 public class LCMRESTResponseFilter implements ContainerResponseFilter {
 
-	private static final Logger LOGGER = Logger.getLogger(LCMRESTResponseFilter.class.getName());
-	
-	@Override
-	public void filter(ContainerRequestContext requestContext,
-			ContainerResponseContext responseContext) throws IOException {
-		LOGGER.log(Level.INFO, "LCMRESTResponseFilter called with Entity "+responseContext.getEntity());
-		
-		//responseContext.getHeaders().add("Acces-Control-Allow-Origin", "*");
-		responseContext.getHeaders().add("Acces-Control-Allow-Credentials", "true");
-		responseContext.getHeaders().add("Acces-Control-Allow-Methods", "POST,GET,PUT,DELETE");
-		//responseContext.getHeaders().add("Acces-Control-Allow-Headers", "serviceKey"+", "+"authorizationToken");				
-	}
+    /**
+     * The class logger.
+     */
+    private static final Logger LOGGER = Logger.getLogger(LCMRESTResponseFilter.class.getName());
+
+    /**
+     * Filters the responses and adds the appropriate authentication headers.
+     *
+     * @param requestContext the request
+     * @param responseContext the response
+     */
+    @Override
+    public final void filter(final ContainerRequestContext requestContext,
+            final ContainerResponseContext responseContext) {
+        LOGGER.log(Level.FINE, "LCMRESTResponseFilter called with Entity {0}", responseContext.getEntity());
+
+        responseContext.getHeaders().add("Acces-Control-Allow-Headers",
+                String.format("%s, %s",
+                LCMRESTRequestFilter.LCM_AUTHENTICATION_USER_HEADER,
+                LCMRESTRequestFilter.LCM_AUTHENTICATION_TOKEN_HEADER));
+    }
 
 }

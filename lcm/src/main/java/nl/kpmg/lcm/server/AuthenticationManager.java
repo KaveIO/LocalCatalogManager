@@ -1,8 +1,12 @@
 package nl.kpmg.lcm.server;
 
+import java.security.Principal;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
+import java.util.logging.Level;
+import javax.ws.rs.core.SecurityContext;
 
 import nl.kpmg.lcm.server.data.User;
 import nl.kpmg.lcm.server.data.service.UserService;
@@ -12,181 +16,237 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
- * Authentication Manager
- * @author venkateswarlub
+ * Authentication Manager.
  *
+ * @author venkateswarlub
  */
 public class AuthenticationManager {
-		
-	private static final Logger LOGGER = LoggerFactory.getLogger(AuthenticationManager.class);
-	private boolean auth = false;	
-	
-	//@Autowired
-	//private EncryptDecryptService encryptDecryptService;	
-	
-	private UserService userService;
 
-	private String serviceKeyKey;
-	
-	private String serviceKeyValue;
-	
-	private String authorizationTokenKey;
-	
-	private String authorizationTokenValue;
-	
-	private String adminUser;
-	
-	private String adminPassword;
-	
-	
-	private Map<String,String> userMap = new HashMap<String,String>();
-	private Map<String,String> servicekeyMap = new HashMap<String,String>();
-	private Map<String,String> authorizationTokenMap = new HashMap<String,String>();
-			
-	public AuthenticationManager() {
-				
-	}
-	private void init() {
-		servicekeyMap.put(serviceKeyKey, serviceKeyValue);		
-		authorizationTokenMap.put(authorizationTokenKey, authorizationTokenValue);
-		userMap.put(adminUser, adminPassword);		
-		for (User user : userService.getUserDao().getUsers()) {						
-			userMap.put(user.getUsername(), user.getPassword());
-		}	
-	}
+    /**
+     * The logger.
+     */
+    private static final Logger LOGGER = LoggerFactory.getLogger(AuthenticationManager.class);
 
-	@Autowired
-	public void setUserService(UserService userService){
-		this.userService = userService;
-	}
-	
-	
+    /**
+     * The user service.
+     */
+    private final UserService userService;
 
-	public String getServiceKeyKey() {
-		return serviceKeyKey;
-	}
+    /**
+     * the hard admin username provided by the properties file.
+     */
+    private String hardAdminUser;
 
-	public void setServiceKeyKey(String serviceKeyKey) {
-		this.serviceKeyKey = serviceKeyKey;
-	}
+    /**
+     * the hard admin password provided by the properties file.
+     */
+    private String hardAdminPassword;
 
-	public String getServiceKeyValue() {
-		return serviceKeyValue;
-	}
+    /**
+     * The map containing all users that have been properly authenticated.
+     */
+    private final Map<String, Session> authenticationTokenMap = new HashMap();
 
-	public void setServiceKeyValue(String serviceKeyValue) {
-		this.serviceKeyValue = serviceKeyValue;
-	}	
+    /**
+     * Default constructor.
+     *
+     * @param userService the user service
+     */
+    @Autowired
+    public AuthenticationManager(final UserService userService) {
+        this.userService = userService;
+    }
 
-	public String getAuthorizationTokenKey() {
-		return authorizationTokenKey;
-	}
+    @Autowired
+    public final void setAdminUser(final String adminUser) {
+        this.hardAdminUser = adminUser;
+    }
 
-	public void setAuthorizationTokenKey(String authorizationTokenKey) {
-		this.authorizationTokenKey = authorizationTokenKey;
-	}
+    @Autowired
+    public final void setAdminPassword(final String adminPassword) {
+        this.hardAdminPassword = adminPassword;
+    }
 
-	public String getAuthorizationTokenValue() {
-		return authorizationTokenValue;
-	}
+    /**
+     * Validate username and password, and return authentication token if
+     * successful.
+     *
+     * @param username of the logging in user
+     * @param password of the logging in user
+     * @return the authentication token
+     * @throws LoginException if the authentication fails
+     */
+    public final String getAuthenticationToken(final String username, final String password)
+            throws LoginException {
+        if (username.equals(hardAdminUser)) {
+            LOGGER.info("Caught login attempt for admin user");
+            if (password.equals(hardAdminPassword)) {
+                return createAuthenticationToken(hardAdminUser, Roles.ADMINISTRATOR, UserOrigin.CONFIGURED);
+            }
+        } else {
+            LOGGER.info("Caught login attempt for regular user");
+            User user = userService.getUserDao().getUser(username);
 
-	public void setAuthorizationTokenValue(String authorizationTokenValue) {
-		this.authorizationTokenValue = authorizationTokenValue;
-	}		
+            if (user != null && user.passwordEquals(password)) {
+                return createAuthenticationToken(username, user.getRole(), UserOrigin.LOCAL);
+            }
+        }
+        throw new LoginException("Authentication Failed");
+    }
 
-	
-	public void setAdminUser(String adminUser) {
-		this.adminUser = adminUser;
-	}
-	
-	public void setAdminPassword(String adminPassword) {
-		this.adminPassword = adminPassword;
-	}
-	
-	
-	public Map<String, String> getUserMap() {
-		return userMap;
-	}
-	public void setUserMap(Map<String, String> userMap) {
-		this.userMap = userMap;
-	}
-	public Map<String, String> getServicekeyMap() {
-		return servicekeyMap;
-	}
-	public void setServicekeyMap(Map<String, String> servicekeyMap) {
-		this.servicekeyMap = servicekeyMap;
-	}
-	public Map<String, String> getAuthorizationTokenMap() {
-		return authorizationTokenMap;
-	}
-	public void setAuthorizationTokenMap(Map<String, String> authorizationTokenMap) {
-		this.authorizationTokenMap = authorizationTokenMap;
-	}
-	public String getAuthentication(String username,String password, String servicekey) throws ServerException{				
-		init();
-		if(servicekey == null) {
-			this.getAuthentication(username, password);
-		} else {
-			if(servicekeyMap.containsKey(servicekey)){
-				String usernameMatch = servicekeyMap.get(servicekey);
-				if(usernameMatch.equals(username)&& userMap.containsKey(username)){
-					String passwordMatch = userMap.get(username);
-					if(passwordMatch.equals(password)){
-						this.auth = true;
-						String authorizationToken = UUID.randomUUID().toString();
-						authorizationTokenMap.put(authorizationToken, username);
-						return authorizationToken;
-					}
-				}
-				
-			}
-		}
-		throw new ServerException("Authentication Failed");
-	}
-	
-	public boolean isAuthorizationTokenValid(String serviceKey, String authourizationToken){
-		if(servicekeyMap.isEmpty()){
-			init();
-		}
-		if(isServiceKeyValid(serviceKey)){
-			String usernameMatch1 = servicekeyMap.get(serviceKey);
-			if(authorizationTokenMap.containsKey(authourizationToken)){
-				String usernameMatch2 = authorizationTokenMap.get(authourizationToken);
-				if(usernameMatch1.equals(usernameMatch2)){
-					return true;
-				}
-			}
-		}
-		return false;
-	}
-	
-	
-	public boolean isServiceKeyValid(String serviceKey){		
-		if(servicekeyMap.isEmpty()){
-			init();
-		}
-		return servicekeyMap.containsKey(serviceKey);
-	}
-	
-	private void getAuthentication(String username,String password){
-		if(username != null || username != "" && password.equals(userMap.get(username))){
-			
-			LOGGER.info("Please use valid service key");
-		}
-	}
-	
-	public boolean isAuthenticated(){
-		return auth;
-	}
+    /**
+     * Checks if given authentication token is valid for given user.
+     *
+     * @param username to check
+     * @param authenticationToken the validate against
+     * @return True if the token is valid
+     */
+    public final boolean isAuthenticationTokenValid(final String username, final String authenticationToken) {
+        if (authenticationTokenMap.containsKey(authenticationToken)) {
+            Session session = authenticationTokenMap.get(authenticationToken);
+            if (username.equals(session.getUsername())) {
+                session.updateLastSeen();
+                return true;
+            }
+        }
+        return false;
+    }
 
+    /**
+     * Removes given authentication token from the authentication token map.
+     *
+     * @param authenticationToken the token to log out
+     * @throws LogoutException if the token didn't exist
+     */
+    public final void logout(final String authenticationToken) throws LogoutException {
+        LOGGER.info(String.format("Removing authentication token %s", authenticationToken));
+        if (authenticationTokenMap.containsKey(authenticationToken)) {
+            authenticationTokenMap.remove(authenticationToken);
+            return;
+        }
+        throw new LogoutException("logout Failed");
+    }
 
-	public boolean logout(String username,String serviceKey, String authourizationToken)
-			throws ServerException {
-		if(authorizationTokenMap.containsKey(authourizationToken)){
-		authorizationTokenMap.remove(authourizationToken);
-		return true;
-		}
-		throw new ServerException("logout Failed");
-	}
+    /**
+     * Creates a new token for given username and registers it in the the token
+     * map.
+     *
+     * @param username the username to create token for
+     * @return the registered authentication token.
+     */
+    private String createAuthenticationToken(final String username, String role, UserOrigin userOrigin) {
+        LOGGER.info(String.format("Creating new authentication token for %s", username));
+        String authenticationToken = UUID.randomUUID().toString();
+        authenticationTokenMap.put(authenticationToken, new Session(username, role, userOrigin));
+        return authenticationToken;
+    }
 
+    public UserSecurityContext getSecurityContext(String authenticationToken) {
+        if (authenticationTokenMap.containsKey(authenticationToken)) {
+            Session session = authenticationTokenMap.get(authenticationToken);
+            return new UserSecurityContext(session);
+        }
+        return null;
+    }
+
+    public static final class Roles {
+        public static final String ADMINISTRATOR = "administrator";
+        public static final String API_USER = "apiUser";
+    }
+
+    private enum UserOrigin {
+        CONFIGURED,
+        LOCAL,
+        LDAP;
+    }
+
+    public final class Session {
+
+        private final String username;
+
+        private final String role;
+
+        private final UserOrigin userOrigin;
+
+        private final Date loginSince;
+
+        private Date lastSeen;
+
+        public Session(String username, String role, UserOrigin userOrigin) {
+            this.username = username;
+            this.role = role;
+            this.userOrigin = userOrigin;
+            this.loginSince = new Date();
+            this.lastSeen = new Date();
+        }
+
+        public void updateLastSeen() {
+            this.lastSeen = new Date();
+        }
+
+        public String getUsername() {
+            return username;
+        }
+
+        public String getRole() {
+            return role;
+        }
+
+        public UserOrigin getUserOrigin() {
+            return userOrigin;
+        }
+
+        public Date getLoginSince() {
+            return loginSince;
+        }
+
+        public Date getLastSeen() {
+            return lastSeen;
+        }
+    }
+
+    /**
+     * Inner class containing a SecurityContext based on the LCM stored users.
+     */
+    public final class UserSecurityContext implements SecurityContext {
+
+        /**
+         * The principal user.
+         */
+        private final AuthenticationManager.Session session;
+
+        /**
+         * Creates a security context based on a User Object.
+         * @param user the principal
+         */
+        private UserSecurityContext(AuthenticationManager.Session session) {
+            this.session = session;
+        }
+
+        @Override
+        public Principal getUserPrincipal() {
+            return new Principal() {
+                @Override
+                public String getName() {
+                    return session.getUsername();
+                }
+            };
+        }
+
+        @Override
+        public boolean isUserInRole(final String role) {
+            LOGGER.info(String.format("LCMRESTRequestFilter::LCMSecurityContext called with role %s", role));
+            return session.getRole().equals(role);
+        }
+
+        @Override
+        public boolean isSecure() {
+            return false;
+        }
+
+        @Override
+        public String getAuthenticationScheme() {
+            return null;
+        }
+    }
 }

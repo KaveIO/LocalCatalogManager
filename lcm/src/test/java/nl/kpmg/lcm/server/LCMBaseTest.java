@@ -1,4 +1,4 @@
-package nl.kpmg.lcm.server.rest;
+package nl.kpmg.lcm.server;
 
 import java.io.File;
 

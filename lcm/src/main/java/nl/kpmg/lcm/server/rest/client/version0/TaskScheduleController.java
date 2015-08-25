@@ -15,12 +15,14 @@
  */
 package nl.kpmg.lcm.server.rest.client.version0;
 
+import javax.annotation.security.RolesAllowed;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.GET;
 import javax.ws.rs.POST;
 import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
 import javax.ws.rs.core.Response;
+import nl.kpmg.lcm.server.AuthenticationManager;
 import nl.kpmg.lcm.server.data.TaskSchedule;
 import nl.kpmg.lcm.server.data.dao.TaskScheduleDao;
 import nl.kpmg.lcm.server.rest.client.version0.types.TaskScheduleRepresentation;
@@ -44,6 +46,7 @@ public class TaskScheduleController {
      */
     @GET
     @Produces({"application/json" })
+    @RolesAllowed({AuthenticationManager.Roles.ADMINISTRATOR, AuthenticationManager.Roles.API_USER})
     public final TaskScheduleRepresentation getCurrent() {
         TaskSchedule taskSchedule = taskScheduleDao.getCurrent();
 
@@ -60,7 +63,8 @@ public class TaskScheduleController {
      * @return 200 OK if successful
      */
     @POST
-    @Consumes({"application/x-nl.kpmg.lcm.server.data.TaskSchedule+json" })
+    @Consumes({"application/nl.kpmg.lcm.server.data.TaskSchedule+json" })
+    @RolesAllowed({AuthenticationManager.Roles.ADMINISTRATOR })
     public final Response createTaskSchedule(final TaskSchedule taskSchedule) {
         taskSchedule.setId(null);
         taskScheduleDao.persist(taskSchedule);
