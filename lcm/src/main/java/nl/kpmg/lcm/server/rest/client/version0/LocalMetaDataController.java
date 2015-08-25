@@ -156,7 +156,7 @@ public class LocalMetaDataController {
                     int copied = IOUtils.copy(input, fos);
                     MetaData mnested = new MetaData();
                     mnested.setDataUri(newDataUri);
-                    metadata.AddDuplicate(mnested);
+                    metadata.addDuplicate(mnested);
                     metaDataDao.update(metadata);
 
                     return Response.ok().build();

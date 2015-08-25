@@ -16,57 +16,23 @@
 package nl.kpmg.lcm.server.data.storage.file;
 
 import nl.kpmg.lcm.server.data.dao.file.MetaDataDaoImpl;
-import nl.kpmg.lcm.server.data.dao.DaoException;
-import java.io.File;
 import java.util.List;
+import nl.kpmg.lcm.server.LCMBaseTest;
 import nl.kpmg.lcm.server.data.MetaData;
-import org.junit.After;
-import org.junit.AfterClass;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
-import org.junit.BeforeClass;
 import org.junit.Test;
+import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  *
  * @author mhoekstra
  */
-public class MetaDataDaoImplTest {
-    private static final String TEST_STORAGE_PATH = "test/";
+public class MetaDataDaoImplTest extends LCMBaseTest {
 
-    private final MetaDataDaoImpl metaDataDao;
-
-    public MetaDataDaoImplTest() throws DaoException {
-        File file = new File(TEST_STORAGE_PATH);
-        file.mkdir();
-
-        metaDataDao = new MetaDataDaoImpl(TEST_STORAGE_PATH);
-    }
-
-    @BeforeClass
-    public static void setUpClass() {
-        File file = new File(TEST_STORAGE_PATH);
-        file.mkdir();
-    }
-
-    @AfterClass
-    public static void tearDownClass() {
-        File file = new File(TEST_STORAGE_PATH);
-        file.delete();
-    }
-
-    @After
-    public void tearDown() {
-        File file = new File(TEST_STORAGE_PATH);
-        for (File metaDataFolder : file.listFiles()) {
-            for (File versionFile : metaDataFolder.listFiles()) {
-                versionFile.delete();
-            }
-            metaDataFolder.delete();
-        }
-    }
-
+    @Autowired
+    private MetaDataDaoImpl metaDataDao;
 
     @Test
     public void testPersist() {
@@ -142,26 +108,26 @@ public class MetaDataDaoImplTest {
         MetaData mnested = new MetaData();
         mnested.setName("testM2_v1");
         mnested.setDataUri("file://testM2_v1/bla/bla");
-        mdata2.AddDuplicate(mnested);
+        mdata2.addDuplicate(mnested);
         MetaData mnested2 = new MetaData();
         mnested2.setName("testM2_v2");
         mnested2.setDataUri("file://testM2_v2/bla/bla");
-        mdata2.AddDuplicate(mnested2);
+        mdata2.addDuplicate(mnested2);
         MetaData mnested3 = new MetaData();
         mnested3.setName("testM2_v3");
         mnested3.setDataUri("file://testM2_v3/bla/bla");
         metaDataDao.persist(mdata2);
 
         mdata2 = metaDataDao.getByName("testM2");
-        mdata2.AddDuplicate(mnested3);
+        mdata2.addDuplicate(mnested3);
+
         metaDataDao.update(mdata2);
+
         MetaData mtest = metaDataDao.getByName("testM2");
-        //for (String fieldNames : (List<String>) mtest.keySet()){
 
-        List<MetaData> metaData = mtest.GetDuplicates();
+        List<MetaData> metaData = mtest.getDuplicates();
 
-        assertEquals("testM2_v1",metaData.get(0).getName());
-        assertEquals("testM2_v2",metaData.get(1).getName());
-
+        assertEquals("testM2_v1", metaData.get(0).getName());
+        assertEquals("testM2_v2", metaData.get(1).getName());
     }
 }

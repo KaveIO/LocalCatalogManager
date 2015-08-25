@@ -74,14 +74,14 @@ public class MetaDataDaoImplTest {
          MetaData mnested = new MetaData();
          mnested.setName("testM2_v1");
          mnested.setDataUri("file://testM2_v1/bla/bla");
-         mdata2.AddDuplicate(mnested);
+         mdata2.addDuplicate(mnested);
          MetaDataDaoImpl metaDataDaoImpl = new MetaDataDaoImpl("local","mycollection");
          metaDataDaoImpl.persist(mdata2);
          mdata2 = metaDataDaoImpl.getByNameAndVersion("testM2","2");
          MetaData mnested2 = new MetaData();
          mnested2.setName("testM2_v2");
          mnested2.setDataUri("file://testM2_v2/bla/bla");
-         mdata2.AddDuplicate(mnested2);
+         mdata2.addDuplicate(mnested2);
          
          metaDataDaoImpl.update(mdata2);
 

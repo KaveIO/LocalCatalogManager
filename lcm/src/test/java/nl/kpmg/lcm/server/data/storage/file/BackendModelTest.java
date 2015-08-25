@@ -3,6 +3,7 @@ package nl.kpmg.lcm.server.data.storage.file;
 import java.io.File;
 import java.util.HashMap;
 import java.util.List;
+import nl.kpmg.lcm.server.LCMBaseTest;
 import nl.kpmg.lcm.server.backend.Backend;
 import nl.kpmg.lcm.server.backend.BackendFileImpl;
 import nl.kpmg.lcm.server.backend.BackendHDFSImpl;
@@ -10,70 +11,22 @@ import nl.kpmg.lcm.server.data.BackendModel;
 import nl.kpmg.lcm.server.data.dao.DaoException;
 import nl.kpmg.lcm.server.data.dao.file.BackendDaoImpl;
 import nl.kpmg.lcm.server.data.service.BackendService;
-import org.junit.After;
-import org.junit.AfterClass;
 import static org.junit.Assert.assertEquals;
-import org.junit.BeforeClass;
 import org.junit.Ignore;
 import org.junit.Test;
-import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.test.context.ContextConfiguration;
-import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
 /**
  *
  * @author kos
  */
-@RunWith(SpringJUnit4ClassRunner.class)
-@ContextConfiguration(locations = {"/application-context-file.xml"})
-public class BackendModelTest {
-
-    private static final String TEST_STORAGE_PATH = "test";
+public class BackendModelTest extends LCMBaseTest {
 
     @Autowired
     private BackendDaoImpl backEndDao;
 
     @Autowired
     private BackendService backendService;
-
-    @BeforeClass
-    public static void setUpClass() {
-        File file;
-        file = new File(TEST_STORAGE_PATH);
-        file.mkdir();
-        file = new File(TEST_STORAGE_PATH + "/metadata");
-        file.mkdir();
-        file = new File(TEST_STORAGE_PATH + "/taskdescription");
-        file.mkdir();
-        file = new File(TEST_STORAGE_PATH + "/taskschedule");
-        file.mkdir();
-        file = new File(TEST_STORAGE_PATH + "/backend");
-        file.mkdir();
-    }
-
-    @AfterClass
-    public static void tearDownClass() {
-        File file;
-        file = new File(TEST_STORAGE_PATH);
-        file.delete();
-        file = new File(TEST_STORAGE_PATH + "/metadata");
-        file.delete();
-        file = new File(TEST_STORAGE_PATH + "/taskdescription");
-        file.delete();
-        file = new File(TEST_STORAGE_PATH + "/taskschedule");
-        file.delete();
-        file = new File(TEST_STORAGE_PATH + "/backend");
-        file.delete();
-    }
-
-    @After
-    public void tearDown() {
-        File file = new File(TEST_STORAGE_PATH + "/backend");
-        for (File backendFile : file.listFiles()) {
-            backendFile.delete();
-        }
-    }
 
     @Ignore
     @Test

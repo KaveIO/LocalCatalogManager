@@ -1,6 +1,5 @@
 package nl.kpmg.lcm.server.rest;
 
-import nl.kpmg.lcm.server.LCMBaseTest;
 import static org.junit.Assert.assertEquals;
 
 import java.util.ArrayList;
@@ -9,7 +8,7 @@ import java.util.List;
 import javax.ws.rs.client.Entity;
 import javax.ws.rs.core.Response;
 
-import nl.kpmg.lcm.server.AuthenticationManager;
+import nl.kpmg.lcm.server.LCMBaseServerTest;
 import nl.kpmg.lcm.server.LoginException;
 import nl.kpmg.lcm.server.ServerException;
 import nl.kpmg.lcm.server.data.User;
@@ -22,7 +21,7 @@ import org.junit.Before;
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 
-public class UserGroupControllerClientTest extends LCMBaseTest {
+public class UserGroupControllerClientTest extends LCMBaseServerTest {
 
     @Autowired
     private UserGroupService userGroupService;

@@ -65,7 +65,7 @@ public class JacksonJsonProvider implements ContextResolver<ObjectMapper> {
      * Added a custom Link serializer to facilitate pretty HATEOAS links.
      */
     @SuppressWarnings("serial")
-	private static final ObjectMapper MAPPER = new ObjectMapper() { {
+    private static final ObjectMapper MAPPER = new ObjectMapper() { {
         setSerializationInclusion(Include.NON_EMPTY);
         disable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES);
         disable(SerializationFeature.FLUSH_AFTER_WRITE_VALUE);
@@ -86,17 +86,24 @@ public class JacksonJsonProvider implements ContextResolver<ObjectMapper> {
     }
 
     /**
-     * Returns the requested ObjectMapper.
+     * Returns a copy of the requested ObjectMapper.
      *
-     * Since we only have one static ObjectMapper the response is rather simple.
+     * Since we only have one static ObjectMapper the response would be rather
+     * simple. However somewhere in the the frameworks we use there is a call
+     * that changes the state of the ObjectMapper. This causes subtle and
+     * extremely hard to debug problems. Until we can solve this we return a
+     * copy of the actual mapper. This is a safe solution however does
+     * theoretically damage performance.
      *
      * @param type the class for which a mapper is requested
-     * @return the ObjectMapper
+     * @return a copy of the ObjectMapper
      */
     @Override
     public final ObjectMapper getContext(final Class<?> type) {
         LOGGER.log(Level.INFO, "MyJacksonProvider.getContext() called with type: {0}", type);
-        return MAPPER;
+
+        ObjectMapper objectMapperCopy = new ObjectMapper(MAPPER.getFactory().copy());
+        return objectMapperCopy;
     }
 
     /**

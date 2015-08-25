@@ -1,29 +1,19 @@
 package nl.kpmg.lcm.server;
 
 import java.io.File;
-
-import javax.ws.rs.client.ClientBuilder;
-import javax.ws.rs.client.WebTarget;
-
-import nl.kpmg.lcm.server.Server;
-import nl.kpmg.lcm.server.ServerException;
+import org.junit.After;
 
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
-import org.junit.Ignore;
 import org.junit.runner.RunWith;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
-
 @RunWith(SpringJUnit4ClassRunner.class)
-@ContextConfiguration(locations={"/application-context.xml","/application-context-file.xml"})
-@Ignore
-public class LCMBaseTest {
-    private static final String TEST_STORAGE_PATH = "test";
+@ContextConfiguration(locations = {"/application-context.xml", "/application-context-file.xml"})
+public abstract class LCMBaseTest {
 
-    protected static Server server;
-    protected static WebTarget target;
+    protected static final String TEST_STORAGE_PATH = "test";
 
     @BeforeClass
     public static void setUpClass() {
@@ -42,19 +32,6 @@ public class LCMBaseTest {
         file.mkdir();
         file = new File(TEST_STORAGE_PATH + "/userGroups");
         file.mkdir();
-        // start the server
-        try {
-			server = new Server();
-			server.start();
-		} catch (ServerException e) {
-			
-			e.printStackTrace();
-		}        
-       
-
-        // create the client
-        target = ClientBuilder.newClient().target(server.getBaseUri());
-
     }
 
     @AfterClass
@@ -74,7 +51,22 @@ public class LCMBaseTest {
         file.delete();
         file = new File(TEST_STORAGE_PATH + "/userGroups");
         file.delete();
-        server.stop();
     }
-       
+
+    @After
+    public void tearDown() {
+        File file = new File(TEST_STORAGE_PATH);
+        for (File storageMainFolder : file.listFiles()) {
+            for (File storageItem : storageMainFolder.listFiles()) {
+                if (storageItem.isDirectory()) {
+                    for (File versionFile : storageItem.listFiles()) {
+                        versionFile.delete();
+                    }
+                    storageItem.delete();
+                } else if (storageItem.isFile()) {
+                    storageItem.delete();
+                }
+            }
+        }
+    }
 }

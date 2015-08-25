@@ -1,34 +1,26 @@
 package nl.kpmg.lcm.server.rest;
 
-import nl.kpmg.lcm.server.LCMBaseTest;
 import static org.junit.Assert.assertEquals;
 
-import java.io.File;
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
 
 import javax.ws.rs.client.Entity;
 import javax.ws.rs.core.Response;
 
 import nl.kpmg.lcm.server.AuthenticationManager;
-import nl.kpmg.lcm.server.JacksonJsonProvider;
-import nl.kpmg.lcm.server.ServerException;
 import nl.kpmg.lcm.server.data.User;
 import nl.kpmg.lcm.server.data.service.EncryptDecryptService;
 import nl.kpmg.lcm.server.data.service.UserService;
-import nl.kpmg.lcm.server.rest.client.version0.UserController;
 
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
+import nl.kpmg.lcm.server.LCMBaseServerTest;
 import nl.kpmg.lcm.server.LoginException;
 import nl.kpmg.lcm.server.rest.client.version0.types.LoginRequest;
 import org.junit.After;
 import org.junit.Before;
 
-public class UserControllerClientTest extends LCMBaseTest {
+public class UserControllerClientTest extends LCMBaseServerTest {
 
     @Autowired
     private UserService userService;
@@ -73,7 +65,7 @@ public class UserControllerClientTest extends LCMBaseTest {
                 .header("LCM-Authentication-User", "admin")
                 .header("LCM-Authentication-Token", authenticationToken)
                 .get();
-        
+
         assertEquals(200, res1.getStatus());
     }
 

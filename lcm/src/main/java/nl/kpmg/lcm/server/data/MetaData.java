@@ -29,7 +29,7 @@ import org.springframework.data.mongodb.core.mapping.Document;
  *
  * @author mhoekstra
  */
-@Document(collection="mdCollection")
+@Document(collection = "mdCollection")
 public class MetaData extends HashMap {
 
     public MetaData() {
@@ -43,7 +43,8 @@ public class MetaData extends HashMap {
         try {
             String[] split = path.split("\\.");
             return get(this, split);
-        } catch (Exception ex) {
+        }
+        catch (Exception ex) {
             Logger.getLogger(MetaData.class.getName()).log(Level.SEVERE, "Couldn't find path: " + path, ex);
             return null;
         }
@@ -69,7 +70,8 @@ public class MetaData extends HashMap {
         try {
             String[] split = path.split("\\.");
             set(this, split, value);
-        } catch (Exception ex) {
+        }
+        catch (Exception ex) {
             Logger.getLogger(MetaData.class.getName()).log(Level.SEVERE, "Couldn't find path: " + path, ex);
         }
 
@@ -118,30 +120,29 @@ public class MetaData extends HashMap {
         set("data.uri", dataUri);
     }
 
-    public void AddDuplicate(MetaData duplicate){
-        List<MetaData> lmdata = new LinkedList<>();
-        if (GetDuplicates() != null){
-            lmdata = this.GetDuplicates();
+    public void addDuplicate(MetaData duplicate) {
+        List<MetaData> lmdata = new LinkedList();
+        if (getDuplicates() != null) {
+            lmdata = this.getDuplicates();
             lmdata.add(duplicate);
             this.put("Duplicates", lmdata);
-        }
-        else{
+        } else {
             lmdata.add(duplicate);
             this.put("Duplicates", lmdata);
 
         }
     }
 
-    public List<MetaData> GetDuplicates(){
-        List<MetaData> lmdata = new LinkedList<>();
-        if (this.containsKey("Duplicates")){
+    public List<MetaData> getDuplicates() {
+        List<MetaData> lmdata = new LinkedList();
+        if (this.containsKey("Duplicates")) {
             List<Map> nested = this.get("Duplicates");
             for (Map thisDuplicate : nested) {
                 lmdata.add(new MetaData(thisDuplicate));
             }
             return lmdata;
-        }
-        else
+        } else {
             return null;
- }
+        }
+    }
 }

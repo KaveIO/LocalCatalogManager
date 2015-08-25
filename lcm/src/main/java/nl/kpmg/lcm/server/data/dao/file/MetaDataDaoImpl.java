@@ -15,8 +15,12 @@
  */
 package nl.kpmg.lcm.server.data.dao.file;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
+import com.fasterxml.jackson.databind.DeserializationFeature;
 import nl.kpmg.lcm.server.data.dao.DaoException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.SerializationFeature;
+import com.fasterxml.jackson.databind.module.SimpleModule;
 import java.io.File;
 import java.io.IOException;
 import java.util.Arrays;
@@ -24,7 +28,9 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.ws.rs.core.Link;
 import nl.kpmg.lcm.server.JacksonJsonProvider;
+import nl.kpmg.lcm.server.NotFilteringFilterProvider;
 import nl.kpmg.lcm.server.data.MetaData;
 import nl.kpmg.lcm.server.data.dao.MetaDataDao;
 
@@ -106,30 +112,31 @@ public class MetaDataDaoImpl implements MetaDataDao {
             metaData.setName(name);
             metaData.setVersionNumber(versionNumber);
             return metaData;
-        } catch (IOException ex) {
+        }
+        catch (IOException ex) {
             Logger.getLogger(MetaDataDaoImpl.class.getName()).log(Level.SEVERE, null, ex);
             return null;
         }
     }
 
     @Override
-    public void update (MetaData metadata){
+    public void update(MetaData metadata) {
         String name = metadata.getName();
         String version = metadata.getVersionNumber();
-        MetaData tmpData = getByNameAndVersion(name,version);
-        if (tmpData != null){
-            if (metadata.containsKey("Duplicates")){
-                List<MetaData> mlist = metadata.GetDuplicates();
+        MetaData tmpData = getByNameAndVersion(name, version);
+        if (tmpData != null) {
+            if (metadata.containsKey("Duplicates")) {
+                List<MetaData> mlist = metadata.getDuplicates();
                 tmpData.put("Duplicates", mlist);
                 try {
-                  mapper.writeValue(getMetaDataFile(name, version), tmpData);
-                  } catch (IOException ex) {
-                   Logger.getLogger(MetaDataDaoImpl.class.getName()).log(Level.SEVERE, null, ex);
+                    mapper.writeValue(getMetaDataFile(name, version), tmpData);
+                } catch (IOException ex) {
+                    Logger.getLogger(MetaDataDaoImpl.class.getName()).log(Level.SEVERE, null, ex);
                 }
             }
-        }
-        else
+        } else {
             LOGGER.warning("MetaData entered is NULL or doesn't have Duplicate field");
+        }
     }
 
     @Override
@@ -145,7 +152,10 @@ public class MetaDataDaoImpl implements MetaDataDao {
 
             if (versionNumber == null) {
                 LOGGER.warning("Previous version found be no version number could be parsed.");
-                versionNumber = "0"; /** @TODO quick and dirty. Should throw */
+                versionNumber = "0";
+                /**
+                 * @TODO quick and dirty. Should throw
+                 */
             } else {
                 int previousVersionNumber = Integer.parseInt(versionNumber);
                 versionNumber = "" + (previousVersionNumber + 1);
@@ -155,7 +165,8 @@ public class MetaDataDaoImpl implements MetaDataDao {
         try {
             metadata.setVersionNumber(versionNumber);
             mapper.writeValue(getMetaDataFile(name, versionNumber), metadata);
-        } catch (IOException ex) {
+        }
+        catch (IOException ex) {
             Logger.getLogger(MetaDataDaoImpl.class.getName()).log(Level.SEVERE, null, ex);
         }
     }

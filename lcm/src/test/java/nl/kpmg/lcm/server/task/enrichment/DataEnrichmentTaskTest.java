@@ -17,6 +17,7 @@ package nl.kpmg.lcm.server.task.enrichment;
 
 import java.io.File;
 import java.util.HashMap;
+import nl.kpmg.lcm.server.LCMBaseTest;
 import nl.kpmg.lcm.server.data.BackendModel;
 import nl.kpmg.lcm.server.data.MetaData;
 import nl.kpmg.lcm.server.data.dao.BackendDao;
@@ -41,10 +42,7 @@ import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
  *
  * @author mhoekstra
  */
-@RunWith(SpringJUnit4ClassRunner.class)
-@ContextConfiguration(locations={"/application-context-file.xml"})
-public class DataEnrichmentTaskTest implements ApplicationContextAware {
-    private static final String TEST_STORAGE_PATH = "test";
+public class DataEnrichmentTaskTest extends LCMBaseTest implements ApplicationContextAware {
 
     private ApplicationContext context;
 
@@ -56,52 +54,6 @@ public class DataEnrichmentTaskTest implements ApplicationContextAware {
 
     @Autowired
     private BackendDao backendDao;
-
-    @BeforeClass
-    public static void setUpClass() {
-        File file;
-        file = new File(TEST_STORAGE_PATH);
-        file.mkdir();
-        file = new File(TEST_STORAGE_PATH + "/metadata");
-        file.mkdir();
-        file = new File(TEST_STORAGE_PATH + "/taskdescription");
-        file.mkdir();
-        file = new File(TEST_STORAGE_PATH + "/taskschedule");
-        file.mkdir();
-        file = new File(TEST_STORAGE_PATH + "/backend");
-        file.mkdir();
-    }
-
-    @AfterClass
-    public static void tearDownClass() {
-        File file;
-        file = new File(TEST_STORAGE_PATH);
-        file.delete();
-        file = new File(TEST_STORAGE_PATH + "/metadata");
-        file.delete();
-        file = new File(TEST_STORAGE_PATH + "/taskdescription");
-        file.delete();
-        file = new File(TEST_STORAGE_PATH + "/taskschedule");
-        file.delete();
-        file = new File(TEST_STORAGE_PATH + "/backend");
-        file.delete();
-    }
-
-    @After
-    public void tearDown() {
-        File file;
-        file = new File(TEST_STORAGE_PATH + "/metadata");
-        for (File metaDataFolder : file.listFiles()) {
-            for (File versionFile : metaDataFolder.listFiles()) {
-                versionFile.delete();
-            }
-            metaDataFolder.delete();
-        }
-        file = new File(TEST_STORAGE_PATH + "/backend");
-        for (File backendFile : file.listFiles()) {
-            backendFile.delete();
-        }
-    }
 
     @Override
     public void setApplicationContext(ApplicationContext context) throws BeansException {

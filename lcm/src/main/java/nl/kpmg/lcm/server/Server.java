@@ -81,23 +81,23 @@ public class Server {
         // in nl.kpmg.lcm.server.rest
         final ResourceConfig rc = new ResourceConfig()
                 .packages("nl.kpmg.lcm.server.rest")
-                .property(EntityFilteringFeature.ENTITY_FILTERING_SCOPE, new Annotation[]{SecurityAnnotations.rolesAllowed(new String[]{"administrator","apiUser"})})                
+                .property(EntityFilteringFeature.ENTITY_FILTERING_SCOPE, new Annotation[]{SecurityAnnotations.rolesAllowed(new String[]{"administrator","apiUser"})})
                 .property("contextConfig", context)
                 .register(LCMRESTRequestFilter.class)
                 .register(LCMRESTResponseFilter.class)
-                .register(SecurityEntityFilteringFeature.class)                
+                .register(SecurityEntityFilteringFeature.class)
                 .registerClasses(JacksonFeature.class)
                 .registerClasses(JacksonJsonProvider.class)
                 .registerClasses(LoggingExceptionMapper.class)
                 .register(DeclarativeLinkingFeature.class);
-                
+
         // create and start a new instance of grizzly http server
         // exposing the Jersey application at BASE_URI
         return GrizzlyHttpServerFactory.createHttpServer(URI.create(baseUri), rc);
     }
 
     public TaskManager startTaskManager() throws TaskManagerException {
-        TaskManager taskManager = TaskManager.getInstance();
+        TaskManager taskManager = new TaskManager();
         taskManager.initialize(context);
         return taskManager;
     }

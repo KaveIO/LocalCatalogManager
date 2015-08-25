@@ -44,11 +44,6 @@ import org.springframework.scheduling.quartz.SchedulerFactoryBean;
 public final class TaskManager {
 
     /**
-     * The singleton instance.
-     */
-    private static TaskManager instance;
-
-    /**
      * The group key which is used to register the task which drive the core
      * of the TaskManager logic.
      */
@@ -58,23 +53,6 @@ public final class TaskManager {
      * The quartz scheduler that actually takes care of the execution of tasks.
      */
     private Scheduler scheduler;
-
-    /**
-     * Private constructor for Singleton purposes.
-     */
-    private TaskManager() { }
-
-    /**
-     * The Singleton instance returner.
-     *
-     * @return The only instance
-     */
-    public static TaskManager getInstance() {
-        if (instance == null) {
-            instance = new TaskManager();
-        }
-        return instance;
-    }
 
     /**
      * @return true if the scheduler is initialized.

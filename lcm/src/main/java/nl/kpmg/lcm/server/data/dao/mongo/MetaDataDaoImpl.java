@@ -159,7 +159,7 @@ public class MetaDataDaoImpl implements MetaDataDao {
         BasicDBObject currentObject = this.getDBObjectByNameAndVersion(name, version);
         if (tmpData != null){
             if (metadata.containsKey("Duplicates")){
-                List<MetaData> mlist = metadata.GetDuplicates();
+                List<MetaData> mlist = metadata.getDuplicates();
                 for (MetaData thisData : mlist){
                      BasicDBObject myobject= new BasicDBObject();
                      Set<String> allFieldNames;
