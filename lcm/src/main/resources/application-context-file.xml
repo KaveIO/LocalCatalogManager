@@ -49,7 +49,7 @@
         	<property name="userGroupDao" ref="userGroupDao"/>
         </bean>  
         
-        <bean id="authenticationManager" class="nl.kpmg.lcm.server.AuthenticationManager">        	
+        <bean id="authenticationManager" class="nl.kpmg.lcm.server.authentication.AuthenticationManager">        	
             <property name="adminUser" value="${lcm.server.adminUser}"/>
             <property name="adminPassword" value="${lcm.server.adminPassword}"/>             
         </bean>      

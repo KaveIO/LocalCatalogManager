@@ -1,5 +1,11 @@
-package nl.kpmg.lcm.server;
+package nl.kpmg.lcm.server.authentication;
 
+import java.security.NoSuchAlgorithmException;
+import java.security.spec.InvalidKeySpecException;
+import nl.kpmg.lcm.server.LCMBaseTest;
+import nl.kpmg.lcm.server.LoginException;
+import nl.kpmg.lcm.server.LogoutException;
+import nl.kpmg.lcm.server.authentication.AuthenticationManager;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.assertFalse;
@@ -59,10 +65,10 @@ public class AuthenticationManagerTest extends LCMBaseTest {
     }
 
     @Test
-    public void testGetAuthenticationTokenUsesUserObjects() throws LoginException, LogoutException {
+    public void testGetAuthenticationTokenUsesUserObjects() throws LoginException, LogoutException, NoSuchAlgorithmException, InvalidKeySpecException {
         User user = new User();
         user.setUsername("testUser");
-        user.setPassword("testPassword");
+        user.setPassword("testPassword", false);
         userService.getUserDao().saveUser(user);
 
         String authenticationToken = authenticationManager.getAuthenticationToken("testUser", "testPassword");
@@ -70,10 +76,10 @@ public class AuthenticationManagerTest extends LCMBaseTest {
     }
 
     @Test
-    public void testGetAuthenticationTokenPrefersConfiguredUserOverUserObjects() throws LoginException, LogoutException {
+    public void testGetAuthenticationTokenPrefersConfiguredUserOverUserObjects() throws LoginException, LogoutException, NoSuchAlgorithmException, InvalidKeySpecException {
         User user = new User();
         user.setUsername("admin");
-        user.setPassword("testPassword");
+        user.setPassword("testPassword", false);
         userService.getUserDao().saveUser(user);
 
         String authenticationToken = authenticationManager.getAuthenticationToken("admin", "admin");

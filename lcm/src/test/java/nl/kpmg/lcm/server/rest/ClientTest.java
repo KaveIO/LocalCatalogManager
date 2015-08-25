@@ -5,7 +5,7 @@ import static org.junit.Assert.assertEquals;
 import javax.ws.rs.client.Entity;
 import javax.ws.rs.core.Response;
 
-import nl.kpmg.lcm.server.AuthenticationManager;
+import nl.kpmg.lcm.server.authentication.AuthenticationManager;
 import nl.kpmg.lcm.server.LCMBaseServerTest;
 import nl.kpmg.lcm.server.LoginException;
 import nl.kpmg.lcm.server.ServerException;

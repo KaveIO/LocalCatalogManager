@@ -1,12 +1,14 @@
 package nl.kpmg.lcm.server.rest;
 
+import java.security.NoSuchAlgorithmException;
+import java.security.spec.InvalidKeySpecException;
 import static org.junit.Assert.assertEquals;
 
 
 import javax.ws.rs.client.Entity;
 import javax.ws.rs.core.Response;
 
-import nl.kpmg.lcm.server.AuthenticationManager;
+import nl.kpmg.lcm.server.authentication.AuthenticationManager;
 import nl.kpmg.lcm.server.data.User;
 import nl.kpmg.lcm.server.data.service.EncryptDecryptService;
 import nl.kpmg.lcm.server.data.service.UserService;
@@ -94,10 +96,10 @@ public class UserControllerClientTest extends LCMBaseServerTest {
     }
 
     @Test
-    public void testSaveUserWebTarget() throws LoginException {
+    public void testSaveUserWebTarget() throws LoginException, NoSuchAlgorithmException, InvalidKeySpecException {
         User user = new User();
         user.setUsername("admin");
-        user.setPassword("admin");
+        user.setPassword("admin", false);
         Entity<User> entity = Entity.entity(user, "application/nl.kpmg.lcm.server.data.User+json");
         Response res1 = target
                 .path("client/v0/users/admin")
@@ -110,11 +112,11 @@ public class UserControllerClientTest extends LCMBaseServerTest {
     }
 
     @Test
-    public void testModifyUserWebTarget() throws LoginException {
+    public void testModifyUserWebTarget() throws LoginException, NoSuchAlgorithmException, InvalidKeySpecException {
         User user = new User();
 
         user.setUsername("admin123");
-        user.setPassword("admin");
+        user.setPassword("admin", false);
         Entity<User> entity1 = Entity.entity(user, "application/nl.kpmg.lcm.server.data.User+json");
 
         Response res1 = target
@@ -128,10 +130,10 @@ public class UserControllerClientTest extends LCMBaseServerTest {
     }
 
     @Test
-    public void testDeleteUserWebTarget() throws LoginException {
+    public void testDeleteUserWebTarget() throws LoginException, NoSuchAlgorithmException, InvalidKeySpecException {
         User user = new User();
         user.setUsername("admin");
-        user.setPassword("admin");
+        user.setPassword("admin", false);
         Entity<User> entity = Entity.entity(user, "application/nl.kpmg.lcm.server.data.User+json");
 
         Response res1 = target
@@ -145,10 +147,10 @@ public class UserControllerClientTest extends LCMBaseServerTest {
     }
 
     @Test
-    public void testLogoutUser() throws LoginException {
+    public void testLogoutUser() throws LoginException, NoSuchAlgorithmException, InvalidKeySpecException {
         User user = new User();
         user.setUsername("admin");
-        user.setPassword("admin");
+        user.setPassword("admin", false);
         Entity<User> entity = Entity.entity(user, "application/nl.kpmg.lcm.server.data.User+json");
 
         Response res1 = target

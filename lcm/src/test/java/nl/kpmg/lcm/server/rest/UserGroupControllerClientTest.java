@@ -1,5 +1,7 @@
 package nl.kpmg.lcm.server.rest;
 
+import java.security.NoSuchAlgorithmException;
+import java.security.spec.InvalidKeySpecException;
 import static org.junit.Assert.assertEquals;
 
 import java.util.ArrayList;
@@ -79,11 +81,11 @@ public class UserGroupControllerClientTest extends LCMBaseServerTest {
     }
 
     @Test
-    public void testSaveUserGroupWebTarget() throws LoginException {
+    public void testSaveUserGroupWebTarget() throws LoginException, NoSuchAlgorithmException, InvalidKeySpecException {
         List<User> users = new ArrayList<User>();
         User user = new User();
         user.setUsername("admin");
-        user.setPassword("admin");
+        user.setPassword("admin", false);
         users.add(user);
         UserGroup userGroup = new UserGroup();
         userGroup.setId(100);
@@ -102,11 +104,11 @@ public class UserGroupControllerClientTest extends LCMBaseServerTest {
     }
 
     @Test
-    public void testModifyUserGroupWebTarget() throws LoginException {
+    public void testModifyUserGroupWebTarget() throws LoginException, NoSuchAlgorithmException, InvalidKeySpecException {
         List<User> users = new ArrayList<User>();
         User user = new User();
         user.setUsername("admin");
-        user.setPassword("admin");
+        user.setPassword("admin", false);
         users.add(user);
         UserGroup userGroup = new UserGroup();
         userGroup.setId(101);
@@ -126,11 +128,11 @@ public class UserGroupControllerClientTest extends LCMBaseServerTest {
     }
 
     @Test
-    public void testDeleteUserGroupWebTarget() throws LoginException {
+    public void testDeleteUserGroupWebTarget() throws LoginException, NoSuchAlgorithmException, InvalidKeySpecException {
         List<User> users = new ArrayList<User>();
         User user = new User();
         user.setUsername("admin");
-        user.setPassword("admin");
+        user.setPassword("admin", false);
         users.add(user);
         UserGroup userGroup = new UserGroup();
         userGroup.setId(100);

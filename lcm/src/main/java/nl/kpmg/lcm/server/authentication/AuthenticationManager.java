@@ -1,12 +1,16 @@
-package nl.kpmg.lcm.server;
+package nl.kpmg.lcm.server.authentication;
 
+import java.security.NoSuchAlgorithmException;
 import java.security.Principal;
+import java.security.spec.InvalidKeySpecException;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
 import java.util.logging.Level;
 import javax.ws.rs.core.SecurityContext;
+import nl.kpmg.lcm.server.LoginException;
+import nl.kpmg.lcm.server.LogoutException;
 
 import nl.kpmg.lcm.server.data.User;
 import nl.kpmg.lcm.server.data.service.UserService;
@@ -87,8 +91,13 @@ public class AuthenticationManager {
             LOGGER.info("Caught login attempt for regular user");
             User user = userService.getUserDao().getUser(username);
 
-            if (user != null && user.passwordEquals(password)) {
-                return createAuthenticationToken(username, user.getRole(), UserOrigin.LOCAL);
+            try {
+                if (user != null && user.passwordEquals(password)) {
+                    return createAuthenticationToken(username, user.getRole(), UserOrigin.LOCAL);
+                }
+            } catch (NoSuchAlgorithmException | InvalidKeySpecException ex) {
+                LOGGER.error("Something went wrong with the password hashing algorithm", ex);
+                throw new LoginException("Authentication Failed", ex);
             }
         }
         throw new LoginException("Authentication Failed");

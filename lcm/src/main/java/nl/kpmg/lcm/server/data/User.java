@@ -1,5 +1,8 @@
 package nl.kpmg.lcm.server.data;
 
+import java.security.NoSuchAlgorithmException;
+import java.security.spec.InvalidKeySpecException;
+import nl.kpmg.lcm.server.authentication.PasswordHash;
 import org.springframework.data.mongodb.core.mapping.Document;
 
 /**
@@ -25,12 +28,20 @@ public class User {
         this.username = username;
     }
 
-    public String getPassword() {
-        return password;
+    public void setPassword(String password) throws NoSuchAlgorithmException, InvalidKeySpecException {
+        this.setPassword(password, true);
     }
 
-    public void setPassword(String password) {
-        this.password = password;
+    public void setPassword(String password, boolean hashPassword) throws NoSuchAlgorithmException, InvalidKeySpecException {
+        if (hashPassword) {
+            this.password = PasswordHash.createHash(password);
+        } else {
+            this.password = password;
+        }
+    }
+
+    public String getPassword() {
+        return password;
     }
 
     public String getRole() {
@@ -41,9 +52,9 @@ public class User {
         this.role = role;
     }
 
-    public boolean passwordEquals(String password) {
+    public boolean passwordEquals(String password) throws NoSuchAlgorithmException, InvalidKeySpecException {
         if (this.password != null && password != null) {
-            return this.password.equals(password);
+            return PasswordHash.validatePassword(password, this.password);
         }
         return false;
     }

@@ -15,8 +15,8 @@ import javax.ws.rs.core.SecurityContext;
 import javax.ws.rs.core.UriInfo;
 import javax.ws.rs.ext.Provider;
 
-import nl.kpmg.lcm.server.AuthenticationManager;
-import nl.kpmg.lcm.server.AuthenticationManager.UserSecurityContext;
+import nl.kpmg.lcm.server.authentication.AuthenticationManager;
+import nl.kpmg.lcm.server.authentication.AuthenticationManager.UserSecurityContext;
 import nl.kpmg.lcm.server.data.User;
 import nl.kpmg.lcm.server.data.service.UserService;
 import nl.kpmg.lcm.server.rest.client.version0.UserController;
