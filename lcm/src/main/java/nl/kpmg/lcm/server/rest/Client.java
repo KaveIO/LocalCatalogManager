@@ -15,9 +15,19 @@
  */
 package nl.kpmg.lcm.server.rest;
 
+import javax.ws.rs.Consumes;
 import javax.ws.rs.GET;
+import javax.ws.rs.HeaderParam;
+import javax.ws.rs.POST;
 import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
+import javax.ws.rs.core.Response;
+import nl.kpmg.lcm.server.LoginException;
+import nl.kpmg.lcm.server.LogoutException;
+import nl.kpmg.lcm.server.authentication.AuthenticationManager;
+import nl.kpmg.lcm.server.data.service.UserService;
+import nl.kpmg.lcm.server.rest.types.LoginRequest;
+import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  *
@@ -25,18 +35,76 @@ import javax.ws.rs.Produces;
  */
 @Path("client")
 public class Client {
-    
+
+    /**
+     * The authentication manager.
+     */
+    private final AuthenticationManager authenticationManager;
+
+    /**
+     * Default constructor.
+     *
+     * @param userService providing user DAO access
+     * @param authenticationManager for authentication of users
+     */
+    @Autowired
+    public Client(final UserService userService, final AuthenticationManager authenticationManager) {
+        this.authenticationManager = authenticationManager;
+    }
+
     /**
      * Method returning the versions of the client interface available.
-     * The returned object will be sent to the client as "application/json" 
-     * media type. 
+     * The returned object will be sent to the client as "application/json"
+     * media type.
      *
      * @return String that will be returned as a application/json response.
      */
     @GET
-    @Produces({"application/json"})
-    public String[] getIndex() {
+    @Produces({"application/json" })
+    public final String[] getIndex() {
         /** @TODO  Should scan for classes in the client package */
         return new String[]{"v0"};
     }
+
+        /**
+     * Tries to log in based on provided credentials.
+     *
+     * @param loginRequest request containing username and password
+     * @return Authorization token if successful. status 400 if not.
+     */
+    @POST
+    @Consumes({"application/nl.kpmg.lcm.server.rest.client.version0.types.LoginRequest+json" })
+    @Produces({"text/plain" })
+    @Path("/login")
+    public final Response login(final LoginRequest loginRequest) {
+        String authorizationToken;
+        try {
+            authorizationToken = authenticationManager.getAuthenticationToken(
+                    loginRequest.getUsername(),
+                    loginRequest.getPassword());
+            return Response.ok().entity(authorizationToken).build();
+        } catch (LoginException ex) {
+            return Response.status(Response.Status.BAD_REQUEST).entity("login unsuccessful").build();
+        }
+    }
+
+    /**
+     * Logs the current user out.
+     *
+     * @param authenticationToken provided via the header
+     * @return 200 if successful, 400 Bad Request if the user couldn't be logged out
+     */
+    @POST
+    @Produces({"text/plain" })
+    @Path("/logout")
+    public final Response logout(
+            @HeaderParam(LCMRESTRequestFilter.LCM_AUTHENTICATION_TOKEN_HEADER) final String authenticationToken) {
+        try {
+            authenticationManager.logout(authenticationToken);
+            return Response.ok().build();
+        } catch (LogoutException ex) {
+            return Response.status(Response.Status.BAD_REQUEST).entity("logout unsuccessful").build();
+        }
+    }
+
 }

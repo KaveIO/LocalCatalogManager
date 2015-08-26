@@ -21,7 +21,7 @@ import nl.kpmg.lcm.server.authentication.Roles;
 import nl.kpmg.lcm.server.data.User;
 import nl.kpmg.lcm.server.data.service.UserService;
 import nl.kpmg.lcm.server.rest.LCMRESTRequestFilter;
-import nl.kpmg.lcm.server.rest.client.version0.types.LoginRequest;
+import nl.kpmg.lcm.server.rest.types.LoginRequest;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
@@ -34,67 +34,20 @@ import org.springframework.stereotype.Component;
 @Component
 @Path("client/v0/users")
 public class UserController {
+
     /**
      * The user service.
      */
     private final UserService userService;
 
     /**
-     * The authentication manager.
-     */
-    private final AuthenticationManager authenticationManager;
-
-    /**
      * Default constructor.
      *
      * @param userService providing user DAO access
-     * @param authenticationManager for authentication of users
      */
     @Autowired
-    public UserController(final UserService userService, final AuthenticationManager authenticationManager) {
+    public UserController(final UserService userService) {
         this.userService = userService;
-        this.authenticationManager = authenticationManager;
-    }
-
-    /**
-     * Tries to log in based on provided credentials.
-     *
-     * @param loginRequest request containing username and password
-     * @return Authorization token if successful. status 400 if not.
-     */
-    @POST
-    @Consumes({"application/nl.kpmg.lcm.server.rest.client.version0.types.LoginRequest+json" })
-    @Produces({"text/plain" })
-    @Path("/login")
-    public final Response login(final LoginRequest loginRequest) {
-        String authorizationToken;
-        try {
-            authorizationToken = authenticationManager.getAuthenticationToken(
-                    loginRequest.getUsername(),
-                    loginRequest.getPassword());
-            return Response.ok().entity(authorizationToken).build();
-        } catch (LoginException ex) {
-            return Response.status(Response.Status.BAD_REQUEST).entity("login unsuccessful").build();
-        }
-    }
-
-    /**
-     * Logs the current user out.
-     *
-     * @param authenticationToken provided via the header
-     * @return 200 if successful, 400 Bad Request if the user couldn't be logged out
-     */
-    @POST
-    @Produces({"text/plain" })
-    @Path("/logout")
-    public final Response logout(
-            @HeaderParam(LCMRESTRequestFilter.LCM_AUTHENTICATION_TOKEN_HEADER) final String authenticationToken) {
-        try {
-            authenticationManager.logout(authenticationToken);
-            return Response.ok().build();
-        } catch (LogoutException ex) {
-            return Response.status(Response.Status.BAD_REQUEST).entity("logout unsuccessful").build();
-        }
     }
 
     @GET

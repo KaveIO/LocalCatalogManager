@@ -9,7 +9,7 @@ import nl.kpmg.lcm.server.authentication.AuthenticationManager;
 import nl.kpmg.lcm.server.LCMBaseServerTest;
 import nl.kpmg.lcm.server.LoginException;
 import nl.kpmg.lcm.server.ServerException;
-import nl.kpmg.lcm.server.rest.client.version0.types.LoginRequest;
+import nl.kpmg.lcm.server.rest.types.LoginRequest;
 
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -36,7 +36,7 @@ public class ClientTest extends LCMBaseServerTest {
         Entity<LoginRequest> entity = Entity.entity(loginRequest,
                 "application/nl.kpmg.lcm.server.rest.client.version0.types.LoginRequest+json");
         Response res = target
-                .path("client/v0/users/login")
+                .path("client/login")
                 .request()
                 .post(entity);
 

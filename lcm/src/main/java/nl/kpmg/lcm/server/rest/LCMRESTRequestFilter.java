@@ -1,25 +1,17 @@
 package nl.kpmg.lcm.server.rest;
 
-import java.io.IOException;
-import java.net.URI;
-import java.security.Principal;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import javax.ws.rs.container.ContainerRequestContext;
 import javax.ws.rs.container.ContainerRequestFilter;
 import javax.ws.rs.container.PreMatching;
-import javax.ws.rs.core.Link;
 import javax.ws.rs.core.Response;
-import javax.ws.rs.core.SecurityContext;
-import javax.ws.rs.core.UriInfo;
 import javax.ws.rs.ext.Provider;
 
 import nl.kpmg.lcm.server.authentication.AuthenticationManager;
 import nl.kpmg.lcm.server.authentication.UserSecurityContext;
-import nl.kpmg.lcm.server.data.User;
 import nl.kpmg.lcm.server.data.service.UserService;
-import nl.kpmg.lcm.server.rest.client.version0.UserController;
 
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -78,7 +70,7 @@ public class LCMRESTRequestFilter implements ContainerRequestFilter {
          * should be changed to a role defintion for allowing anonymous access
          * on certain resources.
          */
-        loginPath = "client/v0/users/login";
+        loginPath = "client/login";
     }
 
     /**

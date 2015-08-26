@@ -16,7 +16,7 @@ import nl.kpmg.lcm.server.ServerException;
 import nl.kpmg.lcm.server.data.User;
 import nl.kpmg.lcm.server.data.UserGroup;
 import nl.kpmg.lcm.server.data.service.UserGroupService;
-import nl.kpmg.lcm.server.rest.client.version0.types.LoginRequest;
+import nl.kpmg.lcm.server.rest.types.LoginRequest;
 import org.junit.After;
 import org.junit.Before;
 
@@ -40,7 +40,7 @@ public class UserGroupControllerClientTest extends LCMBaseServerTest {
         Entity<LoginRequest> entity = Entity.entity(loginRequest,
                 "application/nl.kpmg.lcm.server.rest.client.version0.types.LoginRequest+json");
         Response res = target
-                .path("client/v0/users/login")
+                .path("client/login")
                 .request()
                 .post(entity);
         authenticationToken = res.readEntity(String.class);
@@ -49,7 +49,7 @@ public class UserGroupControllerClientTest extends LCMBaseServerTest {
     @After
     public void afterTest() {
         target
-                .path("client/v0/users/logout")
+                .path("client/logout")
                 .request()
                 .header("LCM-Authentication-User", "admin")
                 .header("LCM-Authentication-Token", authenticationToken)
@@ -127,7 +127,7 @@ public class UserGroupControllerClientTest extends LCMBaseServerTest {
     public void testDeleteUserGroupWebTarget() throws LoginException, NoSuchAlgorithmException, InvalidKeySpecException {
          List<String> users = new ArrayList();
         users.add("admin");
-        
+
         UserGroup userGroup = new UserGroup();
         userGroup.setId(100);
         userGroup.setUserGroup("testUserGroup1");

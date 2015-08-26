@@ -1,4 +1,4 @@
-package nl.kpmg.lcm.server.rest.client.version0.types;
+package nl.kpmg.lcm.server.rest.types;
 
 /**
  *

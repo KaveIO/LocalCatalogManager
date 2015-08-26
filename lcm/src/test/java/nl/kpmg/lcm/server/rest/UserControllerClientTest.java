@@ -18,7 +18,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 
 import nl.kpmg.lcm.server.LCMBaseServerTest;
 import nl.kpmg.lcm.server.LoginException;
-import nl.kpmg.lcm.server.rest.client.version0.types.LoginRequest;
+import nl.kpmg.lcm.server.rest.types.LoginRequest;
 import org.junit.After;
 import org.junit.Before;
 
@@ -43,7 +43,7 @@ public class UserControllerClientTest extends LCMBaseServerTest {
         Entity<LoginRequest> entity = Entity.entity(loginRequest,
                 "application/nl.kpmg.lcm.server.rest.client.version0.types.LoginRequest+json");
         Response res = target
-                .path("client/v0/users/login")
+                .path("client/login")
                 .request()
                 .post(entity);
         authenticationToken = res.readEntity(String.class);
@@ -52,7 +52,7 @@ public class UserControllerClientTest extends LCMBaseServerTest {
     @After
     public void afterTest() {
         target
-                .path("client/v0/users/logout")
+                .path("client/logout")
                 .request()
                 .header("LCM-Authentication-User", "admin")
                 .header("LCM-Authentication-Token", authenticationToken)
@@ -154,7 +154,7 @@ public class UserControllerClientTest extends LCMBaseServerTest {
         Entity<User> entity = Entity.entity(user, "application/nl.kpmg.lcm.server.data.User+json");
 
         Response res1 = target
-                .path("client/v0/users/logout")
+                .path("client/logout")
                 .request()
                 .header("LCM-Authentication-User", "admin")
                 .header("LCM-Authentication-Token", authenticationToken)
