@@ -82,11 +82,9 @@ public class UserGroupControllerClientTest extends LCMBaseServerTest {
 
     @Test
     public void testSaveUserGroupWebTarget() throws LoginException, NoSuchAlgorithmException, InvalidKeySpecException {
-        List<User> users = new ArrayList<User>();
-        User user = new User();
-        user.setUsername("admin");
-        user.setPassword("admin", false);
-        users.add(user);
+        List<String> users = new ArrayList();
+        users.add("admin");
+
         UserGroup userGroup = new UserGroup();
         userGroup.setId(100);
         userGroup.setUserGroup("testUserGroup");
@@ -105,11 +103,9 @@ public class UserGroupControllerClientTest extends LCMBaseServerTest {
 
     @Test
     public void testModifyUserGroupWebTarget() throws LoginException, NoSuchAlgorithmException, InvalidKeySpecException {
-        List<User> users = new ArrayList<User>();
-        User user = new User();
-        user.setUsername("admin");
-        user.setPassword("admin", false);
-        users.add(user);
+        List<String> users = new ArrayList();
+        users.add("admin");
+
         UserGroup userGroup = new UserGroup();
         userGroup.setId(101);
         userGroup.setUserGroup("testUserGroup");
@@ -129,11 +125,9 @@ public class UserGroupControllerClientTest extends LCMBaseServerTest {
 
     @Test
     public void testDeleteUserGroupWebTarget() throws LoginException, NoSuchAlgorithmException, InvalidKeySpecException {
-        List<User> users = new ArrayList<User>();
-        User user = new User();
-        user.setUsername("admin");
-        user.setPassword("admin", false);
-        users.add(user);
+         List<String> users = new ArrayList();
+        users.add("admin");
+        
         UserGroup userGroup = new UserGroup();
         userGroup.setId(100);
         userGroup.setUserGroup("testUserGroup1");
