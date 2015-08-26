@@ -17,6 +17,7 @@ import nl.kpmg.lcm.server.authentication.AuthenticationManager;
 import nl.kpmg.lcm.server.LoginException;
 import nl.kpmg.lcm.server.LogoutException;
 import nl.kpmg.lcm.server.ServerException;
+import nl.kpmg.lcm.server.authentication.Roles;
 import nl.kpmg.lcm.server.data.User;
 import nl.kpmg.lcm.server.data.service.UserService;
 import nl.kpmg.lcm.server.rest.LCMRESTRequestFilter;
@@ -98,7 +99,7 @@ public class UserController {
 
     @GET
     @Produces({"application/json"})
-    @RolesAllowed({AuthenticationManager.Roles.ADMINISTRATOR, AuthenticationManager.Roles.API_USER})
+    @RolesAllowed({Roles.ADMINISTRATOR, Roles.API_USER})
     public Response getUsers() {
         return Response.status(200).entity(userService.getUserDao().getUsers()).build();
     }
@@ -106,7 +107,7 @@ public class UserController {
     @GET
     @Produces({"application/json"})
     @Path("/{username}")
-    @RolesAllowed({AuthenticationManager.Roles.ADMINISTRATOR, AuthenticationManager.Roles.API_USER})
+    @RolesAllowed({Roles.ADMINISTRATOR, Roles.API_USER})
     public Response getUser(@PathParam("username") String username) {
         return Response.status(200).entity(userService.getUserDao().getUser(username)).build();
     }
@@ -114,7 +115,7 @@ public class UserController {
     @PUT
     @Consumes({"application/nl.kpmg.lcm.server.data.User+json"})
     @Path("/{username}")
-    @RolesAllowed({AuthenticationManager.Roles.ADMINISTRATOR})
+    @RolesAllowed({Roles.ADMINISTRATOR})
     public Response saveUser(final User user, @QueryParam("authourizationToken") String authourizationToken, @QueryParam("serviceKey") String serviceKey) throws ServerException {
         userService.getUserDao().saveUser(user);
         return Response.status(200).entity("User " + user.getUsername() + " saved successfully.").build();
@@ -123,7 +124,7 @@ public class UserController {
     @POST
     @Consumes({"application/nl.kpmg.lcm.server.data.User+json"})
     @Produces({"text/plain"})
-    @RolesAllowed({AuthenticationManager.Roles.ADMINISTRATOR})
+    @RolesAllowed({Roles.ADMINISTRATOR})
     public Response modifyUser(final User user, @QueryParam("authourizationToken") String authourizationToken, @QueryParam("serviceKey") String serviceKey) throws ServerException {
 
         userService.getUserDao().modifyUser(user);
@@ -133,7 +134,7 @@ public class UserController {
     @DELETE
     @Consumes({"application/json"})
     @Path("/{username}")
-    @RolesAllowed({AuthenticationManager.Roles.ADMINISTRATOR})
+    @RolesAllowed({Roles.ADMINISTRATOR})
     public Response deleteUser(@PathParam("username") String username, @QueryParam("authourizationToken") String authourizationToken, @QueryParam("serviceKey") String serviceKey) throws ServerException {
         userService.getUserDao().deleteUser(username);
         return Response.status(200).entity("Deleted User " + username + " Successfully.").build();

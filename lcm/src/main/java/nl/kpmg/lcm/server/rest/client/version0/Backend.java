@@ -23,6 +23,7 @@ import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import nl.kpmg.lcm.server.authentication.AuthenticationManager;
+import nl.kpmg.lcm.server.authentication.Roles;
 import org.apache.commons.lang.NotImplementedException;
 
 /**
@@ -39,7 +40,7 @@ public class Backend {
      */
     @GET
     @Produces({"application/json"})
-    @RolesAllowed({AuthenticationManager.Roles.ADMINISTRATOR, AuthenticationManager.Roles.API_USER })
+    @RolesAllowed({Roles.ADMINISTRATOR, Roles.API_USER })
     public String getStorage() {
         throw new NotImplementedException();
     }
@@ -53,7 +54,7 @@ public class Backend {
     @GET
     @Path("{storage_handler_name}")
     @Produces({"application/json"})
-    @RolesAllowed({AuthenticationManager.Roles.ADMINISTRATOR, AuthenticationManager.Roles.API_USER })
+    @RolesAllowed({Roles.ADMINISTRATOR, Roles.API_USER })
     public String getStorageHandler(
             @PathParam("storage_handler_name") String storageHandlerName) {
         throw new NotImplementedException();
@@ -68,7 +69,7 @@ public class Backend {
     @DELETE
     @Path("{storage_handler_name}")
     @Produces({"application/json"})
-    @RolesAllowed({AuthenticationManager.Roles.ADMINISTRATOR })
+    @RolesAllowed({Roles.ADMINISTRATOR })
     public String deleteStorageHandler(
             @PathParam("storage_handler_name") String storageHandlerName) {
         throw new NotImplementedException();
@@ -83,7 +84,7 @@ public class Backend {
     @PUT
     @Path("{storage_handler_name}")
     @Produces({"application/json"})
-    @RolesAllowed({AuthenticationManager.Roles.ADMINISTRATOR })
+    @RolesAllowed({Roles.ADMINISTRATOR })
     public String putStorageHandler(
             @PathParam("storage_handler_name") String storageHandlerName) {
         throw new NotImplementedException();

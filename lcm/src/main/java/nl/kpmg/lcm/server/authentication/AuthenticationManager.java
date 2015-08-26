@@ -7,7 +7,6 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
-import java.util.logging.Level;
 import javax.ws.rs.core.SecurityContext;
 import nl.kpmg.lcm.server.LoginException;
 import nl.kpmg.lcm.server.LogoutException;
@@ -39,12 +38,12 @@ public class AuthenticationManager {
     /**
      * the hard admin username provided by the properties file.
      */
-    private String hardAdminUser;
+    private String adminUser;
 
     /**
      * the hard admin password provided by the properties file.
      */
-    private String hardAdminPassword;
+    private String adminPassword;
 
     /**
      * The map containing all users that have been properly authenticated.
@@ -63,12 +62,12 @@ public class AuthenticationManager {
 
     @Autowired
     public final void setAdminUser(final String adminUser) {
-        this.hardAdminUser = adminUser;
+        this.adminUser = adminUser;
     }
 
     @Autowired
     public final void setAdminPassword(final String adminPassword) {
-        this.hardAdminPassword = adminPassword;
+        this.adminPassword = adminPassword;
     }
 
     /**
@@ -82,10 +81,10 @@ public class AuthenticationManager {
      */
     public final String getAuthenticationToken(final String username, final String password)
             throws LoginException {
-        if (username.equals(hardAdminUser)) {
+        if (username.equals(adminUser)) {
             LOGGER.info("Caught login attempt for admin user");
-            if (password.equals(hardAdminPassword)) {
-                return createAuthenticationToken(hardAdminUser, Roles.ADMINISTRATOR, UserOrigin.CONFIGURED);
+            if (password.equals(adminPassword)) {
+                return createAuthenticationToken(adminUser, Roles.ADMINISTRATOR, UserOrigin.CONFIGURED);
             }
         } else {
             LOGGER.info("Caught login attempt for regular user");
@@ -156,106 +155,5 @@ public class AuthenticationManager {
             return new UserSecurityContext(session);
         }
         return null;
-    }
-
-    public static final class Roles {
-        public static final String ADMINISTRATOR = "administrator";
-        public static final String API_USER = "apiUser";
-    }
-
-    private enum UserOrigin {
-        CONFIGURED,
-        LOCAL,
-        LDAP;
-    }
-
-    public final class Session {
-
-        private final String username;
-
-        private final String role;
-
-        private final UserOrigin userOrigin;
-
-        private final Date loginSince;
-
-        private Date lastSeen;
-
-        public Session(String username, String role, UserOrigin userOrigin) {
-            this.username = username;
-            this.role = role;
-            this.userOrigin = userOrigin;
-            this.loginSince = new Date();
-            this.lastSeen = new Date();
-        }
-
-        public void updateLastSeen() {
-            this.lastSeen = new Date();
-        }
-
-        public String getUsername() {
-            return username;
-        }
-
-        public String getRole() {
-            return role;
-        }
-
-        public UserOrigin getUserOrigin() {
-            return userOrigin;
-        }
-
-        public Date getLoginSince() {
-            return loginSince;
-        }
-
-        public Date getLastSeen() {
-            return lastSeen;
-        }
-    }
-
-    /**
-     * Inner class containing a SecurityContext based on the LCM stored users.
-     */
-    public final class UserSecurityContext implements SecurityContext {
-
-        /**
-         * The principal user.
-         */
-        private final AuthenticationManager.Session session;
-
-        /**
-         * Creates a security context based on a User Object.
-         * @param user the principal
-         */
-        private UserSecurityContext(AuthenticationManager.Session session) {
-            this.session = session;
-        }
-
-        @Override
-        public Principal getUserPrincipal() {
-            return new Principal() {
-                @Override
-                public String getName() {
-                    return session.getUsername();
-                }
-            };
-        }
-
-        @Override
-        public boolean isUserInRole(final String role) {
-            LOGGER.info(String.format("LCMRESTRequestFilter::LCMSecurityContext called with role %s", role));
-            return session.getRole().equals(role);
-        }
-
-        @Override
-        public boolean isSecure() {
-            return false;
-        }
-
-        @Override
-        public String getAuthenticationScheme() {
-            return null;
-        }
     }
 }

@@ -23,6 +23,7 @@ import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import nl.kpmg.lcm.server.authentication.AuthenticationManager;
+import nl.kpmg.lcm.server.authentication.Roles;
 import org.apache.commons.lang.NotImplementedException;
 
 /**
@@ -39,7 +40,7 @@ public class RemoteMetaDataController {
      */
     @GET
     @Produces({"application/json"})
-    @RolesAllowed({AuthenticationManager.Roles.ADMINISTRATOR, AuthenticationManager.Roles.API_USER})
+    @RolesAllowed({Roles.ADMINISTRATOR, Roles.API_USER})
     public String getRemote() {
         throw new NotImplementedException();
     }
@@ -53,7 +54,7 @@ public class RemoteMetaDataController {
     @PUT
     @Path("{remote_lcm_name}")
     @Produces({"application/json"})
-    @RolesAllowed({AuthenticationManager.Roles.ADMINISTRATOR})
+    @RolesAllowed({Roles.ADMINISTRATOR})
     public String putRemoteLcmConnection(
             @PathParam("remote_lcm_name") String remoteLcmName) {
         throw new NotImplementedException();
@@ -68,7 +69,7 @@ public class RemoteMetaDataController {
     @GET
     @Path("{remote_lcm_name}")
     @Produces({"application/json"})
-    @RolesAllowed({AuthenticationManager.Roles.ADMINISTRATOR, AuthenticationManager.Roles.API_USER})
+    @RolesAllowed({Roles.ADMINISTRATOR, Roles.API_USER})
     public String getRemoteMetaDataOverview(
             @PathParam("remote_lcm_name") String remoteLcmName) {
         throw new NotImplementedException();
@@ -84,7 +85,7 @@ public class RemoteMetaDataController {
     @GET
     @Path("{remote_lcm_name}/{remote_meta_data}")
     @Produces({"application/json"})
-    @RolesAllowed({AuthenticationManager.Roles.ADMINISTRATOR, AuthenticationManager.Roles.API_USER})
+    @RolesAllowed({Roles.ADMINISTRATOR, Roles.API_USER})
     public String getRemoteMetaData(
             @PathParam("remote_lcm_name") String remoteLcmName,
             @PathParam("remote_meta_data") String remoteMetaDataName) {
@@ -102,7 +103,7 @@ public class RemoteMetaDataController {
     @GET
     @Path("{remote_lcm_name}/{remote_meta_data}/{version}")
     @Produces({"application/json"})
-    @RolesAllowed({AuthenticationManager.Roles.ADMINISTRATOR, AuthenticationManager.Roles.API_USER})
+    @RolesAllowed({Roles.ADMINISTRATOR, Roles.API_USER})
     public String getRemoteMetaDataByVersion(
             @PathParam("remote_lcm_name") String remoteLcmName,
             @PathParam("remote_meta_data") String remoteMetaDataName,
@@ -122,7 +123,7 @@ public class RemoteMetaDataController {
     @POST
     @Path("{remote_lcm_name}/{remote_meta_data}")
     @Produces({"application/json"})
-    @RolesAllowed({AuthenticationManager.Roles.ADMINISTRATOR, AuthenticationManager.Roles.API_USER})
+    @RolesAllowed({Roles.ADMINISTRATOR, Roles.API_USER})
     public String postRemoteAttachMetaData(
             @PathParam("remote_lcm_name") String remoteLcmName,
             @PathParam("remote_meta_data") String remoteMetaDataName,

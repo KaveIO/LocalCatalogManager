@@ -14,6 +14,7 @@ import javax.ws.rs.core.Response;
 import nl.kpmg.lcm.server.authentication.AuthenticationManager;
 
 import nl.kpmg.lcm.server.ServerException;
+import nl.kpmg.lcm.server.authentication.Roles;
 import nl.kpmg.lcm.server.data.UserGroup;
 import nl.kpmg.lcm.server.data.service.UserGroupService;
 
@@ -34,7 +35,7 @@ public class UserGroupController {
 
     @GET
     @Produces({"application/json"})
-    @RolesAllowed({AuthenticationManager.Roles.ADMINISTRATOR, AuthenticationManager.Roles.API_USER})
+    @RolesAllowed({Roles.ADMINISTRATOR, Roles.API_USER})
     public Response getUserGroups() {
         return Response.status(200)
                 .entity(userGroupService.getUserGroupDao().getUserGroups())
@@ -44,7 +45,7 @@ public class UserGroupController {
     @GET
     @Produces({"application/json"})
     @Path("/{userGroup}")
-    @RolesAllowed({AuthenticationManager.Roles.ADMINISTRATOR, AuthenticationManager.Roles.API_USER})
+    @RolesAllowed({Roles.ADMINISTRATOR, Roles.API_USER})
     public Response getUserGroup(@PathParam("userGroup") String userGroup) {
         return Response
                 .status(200)
@@ -55,7 +56,7 @@ public class UserGroupController {
     @PUT
     @Consumes({"application/nl.kpmg.lcm.server.data.UserGroup+json"})
     @Path("/{userGroup}")
-    @RolesAllowed({AuthenticationManager.Roles.ADMINISTRATOR})
+    @RolesAllowed({Roles.ADMINISTRATOR})
     public Response saveUserGroup(final UserGroup userGroup,
             @QueryParam("authourizationToken") String authourizationToken,
             @QueryParam("serviceKey") String serviceKey) throws ServerException {
@@ -68,7 +69,7 @@ public class UserGroupController {
     @POST
     @Consumes({"application/nl.kpmg.lcm.server.data.UserGroup+json"})
     @Produces({"text/plain"})
-    @RolesAllowed({AuthenticationManager.Roles.ADMINISTRATOR})
+    @RolesAllowed({Roles.ADMINISTRATOR})
     public Response modifyUserGroup(final UserGroup userGroup,
             @QueryParam("authourizationToken") String authourizationToken,
             @QueryParam("serviceKey") String serviceKey) throws ServerException {
@@ -80,7 +81,7 @@ public class UserGroupController {
     @DELETE
     @Consumes({"application/json"})
     @Path("/{userGroup}")
-    @RolesAllowed({AuthenticationManager.Roles.ADMINISTRATOR})
+    @RolesAllowed({Roles.ADMINISTRATOR})
     public Response deleteUserGroup(@PathParam("userGroup") String userGroup,
             @QueryParam("authourizationToken") String authourizationToken,
             @QueryParam("serviceKey") String serviceKey) throws ServerException {

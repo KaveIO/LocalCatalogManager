@@ -38,6 +38,7 @@ import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import nl.kpmg.lcm.server.authentication.AuthenticationManager;
+import nl.kpmg.lcm.server.authentication.Roles;
 import nl.kpmg.lcm.server.backend.Backend;
 import nl.kpmg.lcm.server.backend.BackendException;
 import nl.kpmg.lcm.server.data.MetaData;
@@ -71,7 +72,7 @@ public class LocalMetaDataController {
      */
     @GET
     @Produces({"application/json"})
-    @RolesAllowed({AuthenticationManager.Roles.ADMINISTRATOR, AuthenticationManager.Roles.API_USER})
+    @RolesAllowed({Roles.ADMINISTRATOR, Roles.API_USER})
     public final MetaDatasRepresentation getLocalMetaDataOverview() {
         List<MetaData> all = metaDataDao.getAll();
         return new MetaDatasRepresentation(all);
@@ -85,7 +86,7 @@ public class LocalMetaDataController {
      */
     @POST
     @Consumes({"application/nl.kpmg.lcm.server.data.MetaData+json"})
-    @RolesAllowed({AuthenticationManager.Roles.ADMINISTRATOR, AuthenticationManager.Roles.API_USER})
+    @RolesAllowed({Roles.ADMINISTRATOR, Roles.API_USER})
     public final Response createNewMetaData(final MetaData metaData) {
         metaDataDao.persist(metaData);
         return Response.ok().build();
@@ -102,7 +103,7 @@ public class LocalMetaDataController {
     @Path("{metaDataName}")
     @Consumes({"application/json"})
     @Produces(MediaType.TEXT_PLAIN)
-    @RolesAllowed({AuthenticationManager.Roles.ADMINISTRATOR, AuthenticationManager.Roles.API_USER})
+    @RolesAllowed({Roles.ADMINISTRATOR, Roles.API_USER})
     public final Response putLocalMetaData(
             @PathParam("metaDataName") final String metaDataName,
             final MetaData metaData) {
@@ -117,7 +118,7 @@ public class LocalMetaDataController {
     @Path("{metaDataName}")
     @Consumes({"application/nl.kpmg.lcm.server.rest.client.version0.types.MetaDataOperationRequest+json"})
     @Produces(MediaType.APPLICATION_OCTET_STREAM)
-    @RolesAllowed({AuthenticationManager.Roles.ADMINISTRATOR, AuthenticationManager.Roles.API_USER})
+    @RolesAllowed({Roles.ADMINISTRATOR, Roles.API_USER})
     public final Response metadataOperation(
             @PathParam("metaDataName") final String metaDataName,
             MetaDataOperationRequest request) throws BackendException, URISyntaxException {
@@ -180,7 +181,7 @@ public class LocalMetaDataController {
     @GET
     @Path("{metaDataName}")
     @Produces({"application/json"})
-    @RolesAllowed({AuthenticationManager.Roles.ADMINISTRATOR, AuthenticationManager.Roles.API_USER})
+    @RolesAllowed({Roles.ADMINISTRATOR, Roles.API_USER})
     public final MetaDataRepresentation getLocalMetaData(
             @PathParam("metaDataName") final String metaDataName) {
 
@@ -201,7 +202,7 @@ public class LocalMetaDataController {
     @DELETE
     @Path("{metaDataName}")
     @Produces({"application/json"})
-    @RolesAllowed({AuthenticationManager.Roles.ADMINISTRATOR, AuthenticationManager.Roles.API_USER})
+    @RolesAllowed({Roles.ADMINISTRATOR, Roles.API_USER})
     public final Response deleteLocalMetaData(
             @PathParam("metaDataName") final String metaDataName) {
 
@@ -226,7 +227,7 @@ public class LocalMetaDataController {
     @Path("{metaDataName}")
     @Consumes({"application/json"})
     @Produces({"application/json"})
-    @RolesAllowed({AuthenticationManager.Roles.ADMINISTRATOR, AuthenticationManager.Roles.API_USER})
+    @RolesAllowed({Roles.ADMINISTRATOR, Roles.API_USER})
     public final String postLocalMetaData(
             @PathParam("metaDataName") final String metaDataName,
             final MetaData metaData) {
@@ -243,7 +244,7 @@ public class LocalMetaDataController {
     @GET
     @Path("{metaDataName}/{version}")
     @Produces({"application/json"})
-    @RolesAllowed({AuthenticationManager.Roles.ADMINISTRATOR, AuthenticationManager.Roles.API_USER})
+    @RolesAllowed({Roles.ADMINISTRATOR, Roles.API_USER})
     public final MetaDataRepresentation getLocalMetaDataByVersion(
             @PathParam("metaDataName") final String metaDataName,
             @PathParam("version") final String version) {
@@ -266,7 +267,7 @@ public class LocalMetaDataController {
     @DELETE
     @Path("{metaDataName}/{version}")
     @Produces({"application/json"})
-    @RolesAllowed({AuthenticationManager.Roles.ADMINISTRATOR, AuthenticationManager.Roles.API_USER})
+    @RolesAllowed({Roles.ADMINISTRATOR, Roles.API_USER})
     public final Response deleteLocalMetaDataByVersion(
             @PathParam("metaDataName") final String metaDataName,
             @PathParam("version") final String version) {
@@ -285,7 +286,7 @@ public class LocalMetaDataController {
     @Path("{metadata}/{version}")
     @Consumes({"application/json"})
     @Produces({"application/json"})
-    @RolesAllowed({AuthenticationManager.Roles.ADMINISTRATOR, AuthenticationManager.Roles.API_USER})
+    @RolesAllowed({Roles.ADMINISTRATOR, Roles.API_USER})
     public final Response postLocalMetaDataByVersion(
             @PathParam("metaDataName") final String metaDataName,
             @PathParam("version") final String version,

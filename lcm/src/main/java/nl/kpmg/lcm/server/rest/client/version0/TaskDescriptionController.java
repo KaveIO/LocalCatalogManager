@@ -30,6 +30,7 @@ import javax.ws.rs.QueryParam;
 import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.Response;
 import nl.kpmg.lcm.server.authentication.AuthenticationManager;
+import nl.kpmg.lcm.server.authentication.Roles;
 import nl.kpmg.lcm.server.data.TaskDescription;
 import nl.kpmg.lcm.server.data.dao.TaskDescriptionDao;
 import nl.kpmg.lcm.server.rest.client.version0.types.TaskDescriptionRepresentation;
@@ -58,7 +59,7 @@ public class TaskDescriptionController {
      */
     @GET
     @Produces({"application/json"})
-    @RolesAllowed({AuthenticationManager.Roles.ADMINISTRATOR, AuthenticationManager.Roles.API_USER})
+    @RolesAllowed({Roles.ADMINISTRATOR, Roles.API_USER})
     public final TaskDescriptionsRepresentation getOverview(
             @DefaultValue("ALL") @QueryParam("status") final TaskDescriptionStatusFilter status) {
 
@@ -99,7 +100,7 @@ public class TaskDescriptionController {
      */
     @POST
     @Consumes({"application/x-nl.kpmg.lcm.server.data.TaskDescription+json"})
-    @RolesAllowed({AuthenticationManager.Roles.ADMINISTRATOR, AuthenticationManager.Roles.API_USER})
+    @RolesAllowed({Roles.ADMINISTRATOR, Roles.API_USER})
     public final Response createTask(final TaskDescription taskDescription) {
         taskDescription.setId(null);
         taskDescription.setStatus(TaskDescription.TaskStatus.PENDING);
@@ -121,7 +122,7 @@ public class TaskDescriptionController {
     @GET
     @Path("{tasks_id}")
     @Produces({"application/json"})
-    @RolesAllowed({AuthenticationManager.Roles.ADMINISTRATOR, AuthenticationManager.Roles.API_USER})
+    @RolesAllowed({Roles.ADMINISTRATOR, Roles.API_USER})
     public final TaskDescriptionRepresentation getTask(@PathParam("tasks_id") final Integer taskDescriptionId) {
         TaskDescription taskDescriptions = taskDescriptionDao.getById(taskDescriptionId);
 
@@ -140,7 +141,7 @@ public class TaskDescriptionController {
     @DELETE
     @Path("{tasks_id}")
     @Produces({"application/json"})
-    @RolesAllowed({AuthenticationManager.Roles.ADMINISTRATOR, AuthenticationManager.Roles.API_USER})
+    @RolesAllowed({Roles.ADMINISTRATOR, Roles.API_USER})
     public final Response deleteCommand(@PathParam("tasks_id") final Integer taskDescriptionId) {
         TaskDescription taskDescriptions = taskDescriptionDao.getById(taskDescriptionId);
 
