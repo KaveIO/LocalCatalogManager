@@ -15,8 +15,6 @@
  */
 package nl.kpmg.lcm.server.data.dao.file;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-
 import java.io.File;
 import java.io.IOException;
 import java.util.LinkedList;
@@ -25,14 +23,16 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import nl.kpmg.lcm.server.JacksonJsonProvider;
+import nl.kpmg.lcm.server.data.TaskSchedule;
 import nl.kpmg.lcm.server.data.dao.DaoException;
 import nl.kpmg.lcm.server.data.dao.TaskScheduleDao;
-import nl.kpmg.lcm.server.data.TaskSchedule;
+
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 /**
  * Implementation of a file based TaskSchedule DAO.
  */
-public class TaskScheduleDaoImpl implements TaskScheduleDao {
+public class TaskScheduleDaoImpl extends AbstractGenericFileDaoImpl<TaskSchedule> implements TaskScheduleDao {
 
     /**
      * The logger for this class.
@@ -54,7 +54,8 @@ public class TaskScheduleDaoImpl implements TaskScheduleDao {
      * @throws DaoException when the storagePath doesn't exist
      */
     public TaskScheduleDaoImpl(final String storagePath) throws DaoException {
-        storage = new File(storagePath);
+        super(storagePath);
+    	storage = new File(storagePath);
 
         JacksonJsonProvider jacksonJsonProvider = new JacksonJsonProvider();
         mapper = jacksonJsonProvider.getContext(TaskSchedule.class);
@@ -132,14 +133,8 @@ public class TaskScheduleDaoImpl implements TaskScheduleDao {
     }
 
 	@Override
-	public TaskSchedule getByName(String name) {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
-	@Override
-	public void update(TaskSchedule obj) {
-		// TODO Auto-generated method stub
-		
+	protected void update(TaskSchedule original, TaskSchedule update) {
+		original.setName(update.getName());
+		original.setItems(update.getItems());		
 	}
 }

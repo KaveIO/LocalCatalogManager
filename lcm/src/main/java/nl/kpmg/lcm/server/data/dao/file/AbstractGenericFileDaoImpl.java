@@ -7,7 +7,7 @@ import java.util.List;
 import java.util.logging.Logger;
 
 import nl.kpmg.lcm.server.JacksonJsonProvider;
-import nl.kpmg.lcm.server.data.User;
+import nl.kpmg.lcm.server.data.AbstractModel;
 import nl.kpmg.lcm.server.data.dao.DaoException;
 import nl.kpmg.lcm.server.data.dao.GenericDao;
 
@@ -15,7 +15,7 @@ import com.fasterxml.jackson.core.JsonParseException;
 import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
-public abstract class  AbstractGenericFileDaoImpl<T> implements GenericDao<T>  {
+public abstract class  AbstractGenericFileDaoImpl<T extends AbstractModel> implements GenericDao<T>  {
 	/**
 	 * The logger for this class.
 	 */
@@ -46,8 +46,20 @@ public abstract class  AbstractGenericFileDaoImpl<T> implements GenericDao<T>  {
 	}
 	@Override
 	public T getById(Integer id) {
-		// TODO Auto-generated method stub
-		return null;
+		File objFile = new File(String.format("%s/%s", storage, id));							
+		T obj = null;
+		Class<T> obj1 = null;
+		try {
+			mapper = jacksonJsonProvider.getContext(AbstractModel.class);
+			obj = (T) mapper.readValue(objFile, AbstractModel.class );
+		} catch (JsonParseException e) {
+			LOGGER.warning(e.getMessage());
+		} catch (JsonMappingException e) {
+			LOGGER.warning(e.getMessage());
+		} catch (IOException e) {
+			LOGGER.warning(e.getMessage());
+		}
+		return obj;
 	}
 
 	@Override
@@ -55,11 +67,10 @@ public abstract class  AbstractGenericFileDaoImpl<T> implements GenericDao<T>  {
 		File[] objFiles = storage.listFiles();
 		List<T> objs = new ArrayList<T>();
 		for (File objFile : objFiles) {
-			T obj = null;
-			Class<T> obj1 = null;
+			T obj = null;			
 			try {
-				mapper = jacksonJsonProvider.getContext(obj1);
-				obj = mapper.readValue(objFile, obj1 );
+				mapper = jacksonJsonProvider.getContext(AbstractModel.class);
+				obj = (T) mapper.readValue(objFile, AbstractModel.class );
 			} catch (JsonParseException e) {
 				LOGGER.warning(e.getMessage());
 			} catch (JsonMappingException e) {
@@ -76,17 +87,35 @@ public abstract class  AbstractGenericFileDaoImpl<T> implements GenericDao<T>  {
 
 	@Override
 	public T getByName(String name) {
-		// TODO Auto-generated method stub
+		File[] objFiles = storage.listFiles();
+		List<T> objs = new ArrayList<T>();
+		for (File objFile : objFiles) {
+			T obj = null;			
+			try {
+				mapper = jacksonJsonProvider.getContext(AbstractModel.class);
+				obj = (T) mapper.readValue(objFile, AbstractModel.class );
+				if((obj.getName()).equals(name)){
+					return obj;
+				}
+			} catch (JsonParseException e) {
+				LOGGER.warning(e.getMessage());
+			} catch (JsonMappingException e) {
+				LOGGER.warning(e.getMessage());
+			} catch (IOException e) {
+				LOGGER.warning(e.getMessage());
+			}
+			
+		}		
 		return null;
 	}
 
 	@Override
-	public void persist(T obj) {
-		File objFile = new File(String.format("%s/%s", storage, obj.toString()));					
-		Class<T> obj1 = (Class) obj;		
+	public void persist(T  obj) {
+		File objFile = new File(String.format("%s/%s", storage, obj.getId()));					
+				
 		try {
-			mapper = jacksonJsonProvider.getContext(obj1);
-			mapper.writeValue(objFile, obj1);
+			mapper = jacksonJsonProvider.getContext(AbstractModel.class);
+			mapper.writeValue(objFile, obj.getClass());
 		} catch (JsonParseException e) {
 			LOGGER.warning(e.getMessage());
 		} catch (JsonMappingException e) {
@@ -99,13 +128,52 @@ public abstract class  AbstractGenericFileDaoImpl<T> implements GenericDao<T>  {
 
 	@Override
 	public void update(T obj) {
-		// TODO Auto-generated method stub
-		
+		File[] objFiles = storage.listFiles();
+		List<T> objs = new ArrayList<T>();
+		for (File objFile : objFiles) {
+			T obj1 = null;
+			
+			try {
+				mapper = jacksonJsonProvider.getContext(AbstractModel.class);
+				obj1 = (T) mapper.readValue(objFile,AbstractModel.class);
+				if(obj1.equals(obj)){					
+					update(obj1, obj);
+					
+					mapper.writeValue(objFile, obj1);
+				}
+			} catch (JsonParseException e) {
+				LOGGER.warning(e.getMessage());
+			} catch (JsonMappingException e) {
+				LOGGER.warning(e.getMessage());
+			} catch (IOException e) {
+				LOGGER.warning(e.getMessage());
+			}			
+		}				
 	}
 
+	protected abstract void update (T original, T update); 
+	
 	@Override
 	public void delete(T obj) {
-		// TODO Auto-generated method stub
+		File[] objFiles = storage.listFiles();
+		List<T> objs = new ArrayList<T>();
+		for (File objFile : objFiles) {
+			T obj1 = null;			
+			try {
+				mapper = jacksonJsonProvider.getContext(AbstractModel.class);
+				obj1 = (T) mapper.readValue(objFile, AbstractModel.class );
+				if(obj1.equals(obj)){
+					objFile.delete();
+				}
+			} catch (JsonParseException e) {
+				LOGGER.warning(e.getMessage());
+			} catch (JsonMappingException e) {
+				LOGGER.warning(e.getMessage());
+			} catch (IOException e) {
+				LOGGER.warning(e.getMessage());
+			}
+			
+		}		
 		
 	}
 		

@@ -24,10 +24,10 @@ public class ClientTest extends LCMBaseTest {
     public void testGetClientInterfaceVersions() throws ServerException {
         String expected = "[\"v0\"]";
         User user = new User();
-        user.setUsername("admin");
+        user.setName("admin");
         user.setPassword("admin");
         Entity<User> entity = Entity.entity(user, "application/nl.kpmg.lcm.server.data.User+json");
-        am.getAuthentication(user.getUsername(), user.getPassword(), "ABC123");
+        am.getAuthentication(user.getName(), user.getPassword(), "ABC123");
         Response res = target
                 .path("client/v0/users/login").queryParam("serviceKey", "ABC123")
                 .request().post(entity);

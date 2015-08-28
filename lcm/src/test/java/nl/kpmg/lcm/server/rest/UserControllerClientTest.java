@@ -37,10 +37,11 @@ public class UserControllerClientTest extends LCMBaseTest {
 	@Test
     public void testGetUserTarget() throws ServerException {        
         User user = new User();
-        user.setUsername("admin");
+        user.setId(100);
+        user.setName("admin");
         user.setPassword("admin");
         Entity<User> entity = Entity.entity(user, "application/nl.kpmg.lcm.server.data.User+json");
-        am.getAuthentication(user.getUsername(), user.getPassword(), "ABC123");
+        am.getAuthentication(user.getName(), user.getPassword(), "ABC123");
         Response res = target
                 .path("client/v0/users/login").queryParam("serviceKey", "ABC123")
                 .request().post(entity);
@@ -66,10 +67,11 @@ public class UserControllerClientTest extends LCMBaseTest {
     @Test
     public void testGetUsersWebTarget() throws ServerException{
     	User user = new User();
-        user.setUsername("admin");
+    	user.setId(100);
+    	user.setName("admin");
         user.setPassword("admin");
         Entity<User> entity = Entity.entity(user, "application/nl.kpmg.lcm.server.data.User+json");
-        am.getAuthentication(user.getUsername(), user.getPassword(), "ABC123");
+        am.getAuthentication(user.getName(), user.getPassword(), "ABC123");
         Response res = target
                 .path("client/v0/users/login").queryParam("serviceKey", "ABC123")
                 .request().post(entity);
@@ -93,10 +95,11 @@ public class UserControllerClientTest extends LCMBaseTest {
     @Test
     public void testGetUserWebTarget() throws ServerException{
     	User user = new User();
-        user.setUsername("admin");
+    	user.setId(100);
+    	user.setName("admin");
         user.setPassword("admin");
         Entity<User> entity = Entity.entity(user, "application/nl.kpmg.lcm.server.data.User+json");
-        am.getAuthentication(user.getUsername(), user.getPassword(), "ABC123");
+        am.getAuthentication(user.getName(), user.getPassword(), "ABC123");
         Response res = target
                 .path("client/v0/users/login").queryParam("serviceKey", "ABC123")
                 .request().post(entity);
@@ -113,10 +116,11 @@ public class UserControllerClientTest extends LCMBaseTest {
     @Test
     public void testSaveUserWebTarget() throws ServerException{
     	User user = new User();
-        user.setUsername("admin");
+    	user.setId(100);
+    	user.setName("admin");
         user.setPassword("admin");
         Entity<User> entity = Entity.entity(user, "application/nl.kpmg.lcm.server.data.User+json");
-        am.getAuthentication(user.getUsername(), user.getPassword(), "ABC123");
+        am.getAuthentication(user.getName(), user.getPassword(), "ABC123");
         Response res = target
                 .path("client/v0/users/login").queryParam("serviceKey", "ABC123")
                 .request().post(entity);
@@ -133,15 +137,17 @@ public class UserControllerClientTest extends LCMBaseTest {
     @Test
     public void testModifyUserWebTarget() throws ServerException{
     	User user = new User();
-        user.setUsername("admin");
+    	user.setId(100);
+    	user.setName("admin");
         user.setPassword("admin");
         Entity<User> entity = Entity.entity(user, "application/nl.kpmg.lcm.server.data.User+json");
-        am.getAuthentication(user.getUsername(), user.getPassword(), "ABC123");        
+        am.getAuthentication(user.getName(), user.getPassword(), "ABC123");        
         Response res = target
                 .path("client/v0/users/login").queryParam("serviceKey", "ABC123")
                 .request().post(entity);
         String authToken = res.readEntity(String.class);
-        user.setUsername("admin123");
+        user.setId(100);
+        user.setName("admin123");
         user.setPassword("admin");
         Entity<User> entity1 = Entity.entity(user, "application/nl.kpmg.lcm.server.data.User+json");
        
@@ -157,11 +163,11 @@ public class UserControllerClientTest extends LCMBaseTest {
     @Test
     public void testDeleteUserWebTarget() throws ServerException{
     	User user = new User();
-    	user.setId(1);
-        user.setUsername("admin");
+    	user.setId(100);
+        user.setName("admin");
         user.setPassword("admin");
         Entity<User> entity = Entity.entity(user, "application/nl.kpmg.lcm.server.data.User+json");
-        am.getAuthentication(user.getUsername(), user.getPassword(), "ABC123");
+        am.getAuthentication(user.getName(), user.getPassword(), "ABC123");
         Response res = target
                 .path("client/v0/users/login").queryParam("serviceKey", "ABC123")
                 .request().post(entity);
@@ -178,7 +184,8 @@ public class UserControllerClientTest extends LCMBaseTest {
     @Test
     public void testSaveUser() throws ServerException{
     	User user = new User();
-    	user.setUsername("testUser1");
+    	user.setId(100);
+    	user.setName("testUser1");
     	user.setPassword("testPassword");
     	UserController uc = new UserController();
     	uc.setUserService(userService);
@@ -189,7 +196,8 @@ public class UserControllerClientTest extends LCMBaseTest {
     @Test
     public void testLoginUser() throws ServerException{
     	User user = new User();
-    	user.setUsername("admin");
+    	user.setId(100);
+    	user.setName("admin");
     	user.setPassword("admin");
     	UserController uc = new UserController();
     	uc.setUserService(userService);
@@ -200,10 +208,11 @@ public class UserControllerClientTest extends LCMBaseTest {
     @Test
     public void testLogoutUser() throws ServerException{
     	User user = new User();
-        user.setUsername("admin");
+    	user.setId(100);
+    	user.setName("admin");
         user.setPassword("admin");
         Entity<User> entity = Entity.entity(user, "application/nl.kpmg.lcm.server.data.User+json");
-        am.getAuthentication(user.getUsername(), user.getPassword(), "ABC123");
+        am.getAuthentication(user.getName(), user.getPassword(), "ABC123");
         Response res = target
                 .path("client/v0/users/login").queryParam("serviceKey", "ABC123")
                 .request().post(entity);
@@ -220,7 +229,8 @@ public class UserControllerClientTest extends LCMBaseTest {
     @Test
     public void testModifyUser() throws ServerException{
     	User user = new User();
-    	user.setUsername("testUser1");
+    	user.setId(100);
+    	user.setName("testUser1");
     	user.setPassword("testPassword");
     	UserController uc = new UserController();
     	uc.setUserService(userService);
@@ -234,7 +244,8 @@ public class UserControllerClientTest extends LCMBaseTest {
     	uc.setUserService(userService);
     	uc.setAuthenticationManager(am);
     	User user = new User();
-    	user.setUsername("testUser1");
+    	user.setId(100);
+    	user.setName("testUser1");
     	user.setPassword("testPassword1");
     	uc.deleteUser("testUser1","AUTH_TOKEN","ABC123");
     }
@@ -242,10 +253,12 @@ public class UserControllerClientTest extends LCMBaseTest {
     //@Test
     public void testJSONConversion(){
     	User user = new User();
-    	user.setUsername("testUser1");
+    	user.setId(100);
+    	user.setName("testUser1");
     	user.setPassword("testPassword1");
     	User user1 = new User();
-    	user1.setUsername("testUser2");
+    	user1.setId(101);
+    	user1.setName("testUser2");
     	user1.setPassword("testPassword2");
     	List<User> users = new ArrayList<User>();
     	users.add(user);

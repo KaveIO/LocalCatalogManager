@@ -1,22 +1,24 @@
 package nl.kpmg.lcm.server.data.dao.file;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import java.io.File;
 import java.io.IOException;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+
 import nl.kpmg.lcm.server.JacksonJsonProvider;
 import nl.kpmg.lcm.server.data.BackendModel;
 import nl.kpmg.lcm.server.data.dao.BackendDao;
 import nl.kpmg.lcm.server.data.dao.DaoException;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+
 /**
  *
  * @author kos
  */
-public class BackendDaoImpl implements BackendDao {
+public class BackendDaoImpl extends AbstractGenericFileDaoImpl<BackendModel> implements BackendDao {
 
     /**
      * The logger for this class.
@@ -38,7 +40,8 @@ public class BackendDaoImpl implements BackendDao {
      * @throws DaoException when the storagePath doesn't exist
      */
     public BackendDaoImpl(final String storagePath) throws DaoException {
-        storage = new File(storagePath);
+        super(storagePath);
+    	storage = new File(storagePath);
 
         JacksonJsonProvider jacksonJsonProvider = new JacksonJsonProvider();
         mapper = jacksonJsonProvider.getContext(BackendModel.class);
@@ -111,5 +114,11 @@ public class BackendDaoImpl implements BackendDao {
         File backEndFile = getBackendFile(backend.getName());
         backEndFile.delete();
     }
+	
+	@Override
+	protected void update(BackendModel original, BackendModel update) {
+		original.setName(update.getName());
+		original.setOptions(update.getOptions());	
+	}
 
 }

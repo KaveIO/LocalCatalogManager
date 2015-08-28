@@ -67,7 +67,7 @@ public class UserGroupController {
 			@QueryParam("serviceKey") String serviceKey) throws ServerException {
 		
 		userGroupService.getUserGroupDao().persist(userGroup);
-		return Response.status(200).entity("Saved User Group "+userGroup.getUserGroup()+" Successfully.").build();
+		return Response.status(200).entity("Saved User Group "+userGroup.getName()+" Successfully.").build();
 		
 	}
 
@@ -80,7 +80,7 @@ public class UserGroupController {
 			@QueryParam("serviceKey") String serviceKey) throws ServerException {
 			
 		userGroupService.getUserGroupDao().update(userGroup);
-		return Response.status(200).entity("Modified User Group "+ userGroup.getUserGroup()+" Successfully.").build();		
+		return Response.status(200).entity("Modified User Group "+ userGroup.getName()+" Successfully.").build();		
 	}
 
 	@DELETE
@@ -97,7 +97,7 @@ public class UserGroupController {
 			return Response.status(404).entity("User Group "+userGroup+" doesn't exist.").build();
 		}
 		userGroupService.getUserGroupDao().delete(userGroup);
-		return Response.status(200).entity("Deleted User Group "+userGroup.getUserGroup()+" Successfully.").build();
+		return Response.status(200).entity("Deleted User Group "+userGroup.getName()+" Successfully.").build();
 		
 	}
 

@@ -15,8 +15,6 @@
  */
 package nl.kpmg.lcm.server.data.dao.file;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-
 import java.io.File;
 import java.io.IOException;
 import java.util.LinkedList;
@@ -25,14 +23,16 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import nl.kpmg.lcm.server.JacksonJsonProvider;
+import nl.kpmg.lcm.server.data.TaskDescription;
 import nl.kpmg.lcm.server.data.dao.DaoException;
 import nl.kpmg.lcm.server.data.dao.TaskDescriptionDao;
-import nl.kpmg.lcm.server.data.TaskDescription;
+
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 /**
  * Implementation of a file based Task DAO.
  */
-public class TaskDescriptionDaoImpl implements TaskDescriptionDao {
+public class TaskDescriptionDaoImpl extends AbstractGenericFileDaoImpl<TaskDescription> implements TaskDescriptionDao {
 
     /**
      * The logger for this class.
@@ -54,7 +54,8 @@ public class TaskDescriptionDaoImpl implements TaskDescriptionDao {
      * @throws DaoException when the storagePath doesn't exist
      */
     public TaskDescriptionDaoImpl(final String storagePath) throws DaoException {
-        storage = new File(storagePath);
+        super(storagePath);
+    	storage = new File(storagePath);
 
         JacksonJsonProvider jacksonJsonProvider = new JacksonJsonProvider();
         mapper = jacksonJsonProvider.getContext(TaskDescription.class);
@@ -135,16 +136,15 @@ public class TaskDescriptionDaoImpl implements TaskDescriptionDao {
         File taskDescriptionFile = getTaskFile(task.getId());
         taskDescriptionFile.delete();
     }
-
+	
 	@Override
-	public TaskDescription getByName(String name) {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
-	@Override
-	public void update(TaskDescription obj) {
-		// TODO Auto-generated method stub
-		
+	protected void update(TaskDescription original, TaskDescription update) {
+		original.setName(update.getName());
+		original.setJob(update.getJob());
+		original.setStatus(update.getStatus());
+		original.setOutput(update.getOutput());
+		original.setTarget(update.getTarget());
+		original.setStartTime(update.getStartTime());
+		original.setEndTime(update.getEndTime());		
 	}
 }

@@ -2,6 +2,8 @@ package nl.kpmg.lcm.server.data.dao;
 
 import java.util.List;
 
+import nl.kpmg.lcm.server.data.AbstractModel;
+
 /**
  * Generic Dao class
  * 
@@ -9,7 +11,7 @@ import java.util.List;
  *
  * @param <T> Specific Dao class
  */
-public interface GenericDao<T> {
+public interface GenericDao<T extends AbstractModel> {
 	 	
 		public T getById(Integer id);
 	    

@@ -47,15 +47,16 @@ public class UserGroupControllerClientTest extends LCMBaseTest {
     public void testGetUserGroupsWebTarget() throws ServerException{
     	List<User> users = new ArrayList<User>();
     	User user = new User();
-    	user.setUsername("admin");
+    	user.setId(100);
+    	user.setName("admin");
     	user.setPassword("admin");
     	users.add(user);
     	UserGroup userGroup = new UserGroup();
     	userGroup.setId(100);
-    	userGroup.setUserGroup("administrator");
+    	userGroup.setName("administrator");
     	userGroup.setUsers(users);
         Entity<User> entity = Entity.entity(user, "application/nl.kpmg.lcm.server.data.User+json");
-        am.getAuthentication(user.getUsername(), user.getPassword(), "ABC123");
+        am.getAuthentication(user.getName(), user.getPassword(), "ABC123");
         Response res = target
                 .path("client/v0/users/login").queryParam("serviceKey", "ABC123")
                 .request().post(entity);
@@ -73,15 +74,16 @@ public class UserGroupControllerClientTest extends LCMBaseTest {
     public void testGetUserGroupWebTarget() throws ServerException{
     	List<User> users = new ArrayList<User>();
     	User user = new User();
-    	user.setUsername("admin");
+    	user.setId(100);
+    	user.setName("admin");
     	user.setPassword("admin");
     	users.add(user);
     	UserGroup userGroup = new UserGroup();
     	userGroup.setId(100);
-    	userGroup.setUserGroup("administrator");
+    	userGroup.setName("administrator");
     	userGroup.setUsers(users);
         Entity<User> entity = Entity.entity(user, "application/nl.kpmg.lcm.server.data.User+json");
-        am.getAuthentication(user.getUsername(), user.getPassword(), "ABC123");
+        am.getAuthentication(user.getName(), user.getPassword(), "ABC123");
         Response res = target
                 .path("client/v0/users/login").queryParam("serviceKey", "ABC123")
                 .request().post(entity);
@@ -98,7 +100,7 @@ public class UserGroupControllerClientTest extends LCMBaseTest {
     @Test
     public void testSaveUserGroup() throws ServerException{
     	UserGroup userGroup = new UserGroup();
-    	userGroup.setUserGroup("testUserGroup1");    	
+    	userGroup.setName("testUserGroup1");    	
     	UserGroupController uc = new UserGroupController();
     	uc.setUserGroupService(userGroupService);
     	//uc.setAuthenticationManager(am);
@@ -109,15 +111,16 @@ public class UserGroupControllerClientTest extends LCMBaseTest {
     public void testSaveUserGroupWebTarget() throws ServerException{
     	List<User> users = new ArrayList<User>();
     	User user = new User();
-    	user.setUsername("admin");
+    	user.setId(100);
+    	user.setName("admin");
     	user.setPassword("admin");
     	users.add(user);
     	UserGroup userGroup = new UserGroup();
     	userGroup.setId(100);
-    	userGroup.setUserGroup("testUserGroup");
+    	userGroup.setName("testUserGroup");
     	userGroup.setUsers(users);
         Entity<User> entity = Entity.entity(user, "application/nl.kpmg.lcm.server.data.User+json");
-        am.getAuthentication(user.getUsername(), user.getPassword(), "ABC123");
+        am.getAuthentication(user.getName(), user.getPassword(), "ABC123");
         Response res = target
                 .path("client/v0/users/login").queryParam("serviceKey", "ABC123")
                 .request().post(entity);
@@ -135,7 +138,7 @@ public class UserGroupControllerClientTest extends LCMBaseTest {
     @Test
     public void testModifyUserGroup() throws ServerException{
     	UserGroup userGroup = new UserGroup();
-    	userGroup.setUserGroup("testUserGroup1");
+    	userGroup.setName("testUserGroup1");
     	
     	UserGroupController uc = new UserGroupController();
     	uc.setUserGroupService(userGroupService);
@@ -147,15 +150,15 @@ public class UserGroupControllerClientTest extends LCMBaseTest {
     public void testModifyUserGroupWebTarget() throws ServerException{
     	List<User> users = new ArrayList<User>();
     	User user = new User();
-    	user.setUsername("admin");
+    	user.setName("admin");
     	user.setPassword("admin");
     	users.add(user);
     	UserGroup userGroup = new UserGroup();
     	userGroup.setId(101);
-    	userGroup.setUserGroup("testUserGroup");
+    	userGroup.setName("testUserGroup");
     	userGroup.setUsers(users);
         Entity<User> entity = Entity.entity(user, "application/nl.kpmg.lcm.server.data.User+json");
-        am.getAuthentication(user.getUsername(), user.getPassword(), "ABC123");
+        am.getAuthentication(user.getName(), user.getPassword(), "ABC123");
         Response res = target
                 .path("client/v0/users/login").queryParam("serviceKey", "ABC123")
                 .request().post(entity);
@@ -179,7 +182,7 @@ public class UserGroupControllerClientTest extends LCMBaseTest {
     	//uc.setAuthenticationManager(am);
     	UserGroup userGroup = new UserGroup();
     	userGroup.setId(101);
-    	userGroup.setUserGroup("testUserGroup1");
+    	userGroup.setName("testUserGroup1");
     	uc.deleteUserGroup("testUserGroup1","AUTH_TOKEN","ABC123");
     } 
     
@@ -188,15 +191,15 @@ public class UserGroupControllerClientTest extends LCMBaseTest {
     	List<User> users = new ArrayList<User>();
     	User user = new User();
     	user.setId(1);
-    	user.setUsername("admin");
+    	user.setName("admin");
     	user.setPassword("admin");
     	users.add(user);
     	UserGroup userGroup = new UserGroup();
     	userGroup.setId(100);
-    	userGroup.setUserGroup("testUserGroup1");
+    	userGroup.setName("testUserGroup1");
     	userGroup.setUsers(users);
         Entity<User> entity = Entity.entity(user, "application/nl.kpmg.lcm.server.data.User+json");
-        am.getAuthentication(user.getUsername(), user.getPassword(), "ABC123");
+        am.getAuthentication(user.getName(), user.getPassword(), "ABC123");
         Response res = target
                 .path("client/v0/users/login").queryParam("serviceKey", "ABC123")
                 .request().post(entity);

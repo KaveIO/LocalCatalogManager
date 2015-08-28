@@ -42,7 +42,7 @@ public class UserController {
 	@Produces({"text/plain"})
 	@Path("/login")	
 	public Response login(final User user, @QueryParam("serviceKey") String serviceKey) throws ServerException {
-		String authorizationToken = am.getAuthentication(user.getUsername(), user.getPassword(), serviceKey);		
+		String authorizationToken = am.getAuthentication(user.getName(), user.getPassword(), serviceKey);		
 		return Response.status(200).entity(authorizationToken).build();		
 	}
 	
@@ -51,8 +51,8 @@ public class UserController {
 	@Produces({"text/plain"})
 	@Path("/logout")	
 	public Response logout(final User user,@QueryParam("authorizationToken") String authorizationToken, @QueryParam("serviceKey") String serviceKey) throws ServerException{
-			am.logout(user.getUsername(),serviceKey,authorizationToken);
-			return Response.ok().entity("Logged Out user "+user.getUsername()+" Successfully.").build();		
+			am.logout(user.getName(),serviceKey,authorizationToken);
+			return Response.ok().entity("Logged Out user "+user.getName()+" Successfully.").build();		
 	}
 	
 	@GET
@@ -76,7 +76,7 @@ public class UserController {
 	@RolesAllowed({"administrator"})
 	public Response saveUser(final User user,@QueryParam("authourizationToken") String authourizationToken,@QueryParam("serviceKey") String serviceKey) throws ServerException{				
 		userService.getUserDao().persist(user);
-		return Response.status(200).entity("User "+user.getUsername() + " saved successfully.").build();				
+		return Response.status(200).entity("User "+user.getName() + " saved successfully.").build();				
 	}
 	
 	@POST
@@ -86,7 +86,7 @@ public class UserController {
 	public Response modifyUser(final User user,@QueryParam("authourizationToken") String authourizationToken,@QueryParam("serviceKey") String serviceKey) throws ServerException{		
 		
 		userService.getUserDao().update(user);
-		return Response.status(200).entity("Modified User "+user.getUsername()+" successfully.").build();		
+		return Response.status(200).entity("Modified User "+user.getName()+" successfully.").build();		
 	}
 	
 	@DELETE
@@ -100,6 +100,6 @@ public class UserController {
 			return Response.status(404).entity("User "+username+" doesn't exist.").build();
 		}
 		userService.getUserDao().delete(user);
-		return Response.status(200).entity("Deleted User "+user.getUsername()+" Successfully.").build();		
+		return Response.status(200).entity("Deleted User "+user.getName()+" Successfully.").build();		
 	}
 }
