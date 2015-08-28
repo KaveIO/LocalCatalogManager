@@ -27,9 +27,15 @@ public class UserDaoImpl extends AbstractGenericFileDaoImpl<User>  implements Us
 	 *             when the storagePath doesn't exist
 	 */
 	public UserDaoImpl(final String storagePath) throws DaoException {
-		super(storagePath);		
+		super(storagePath,User.class);		
 	}
 	
+	/**
+	 * Update the original User with updated User
+	 * @param original User
+	 * @param update User
+	 * @see nl.kpmg.lcm.server.data.dao.file.AbstractGenericFileDaoImpl#update(nl.kpmg.lcm.server.data.AbstractModel, nl.kpmg.lcm.server.data.AbstractModel)
+	 */
 	@Override
 	protected void update(User original, User update) {
 		original.setName(update.getName());

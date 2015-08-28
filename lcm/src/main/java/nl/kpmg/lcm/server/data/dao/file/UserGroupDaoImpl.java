@@ -26,11 +26,17 @@ public class UserGroupDaoImpl extends AbstractGenericFileDaoImpl<UserGroup> impl
 	 *             when the storagePath doesn't exist
 	 */
 	public UserGroupDaoImpl(final String storagePath) throws DaoException {
-		super(storagePath);		
+		super(storagePath,UserGroup.class);		
 	}
 
 
 
+	/**
+	 * Update the original UserGroup with updated UserGroup 
+	 * @param original UserGroup
+	 * @param update UserGroup 
+	 * @see nl.kpmg.lcm.server.data.dao.file.AbstractGenericFileDaoImpl#update(nl.kpmg.lcm.server.data.AbstractModel, nl.kpmg.lcm.server.data.AbstractModel)
+	 */
 	@Override
 	protected void update(UserGroup original, UserGroup update) {		
 		original.setName(update.getName());

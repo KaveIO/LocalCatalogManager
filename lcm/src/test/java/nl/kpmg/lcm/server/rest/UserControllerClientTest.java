@@ -89,7 +89,7 @@ public class UserControllerClientTest extends LCMBaseTest {
     public void testGetUser() throws ServerException{
     	UserController uc = new UserController();
     	uc.setUserService(userService);    	
-    	uc.getUser("testUser1");    	        
+    	uc.getUser(1000);    	        
     }
     
     @Test
@@ -247,7 +247,7 @@ public class UserControllerClientTest extends LCMBaseTest {
     	user.setId(100);
     	user.setName("testUser1");
     	user.setPassword("testPassword1");
-    	uc.deleteUser("testUser1","AUTH_TOKEN","ABC123");
+    	uc.deleteUser(100,"AUTH_TOKEN","ABC123");
     }
     
     //@Test

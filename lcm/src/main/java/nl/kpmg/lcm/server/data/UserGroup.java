@@ -12,8 +12,8 @@ import org.springframework.data.mongodb.core.mapping.Document;
 @Document(collection="userGroups")
 public class UserGroup extends AbstractModel {		
 	
-	private List<User> users;
-
+	private List<User> users;	
+	
 	public List<User> getUsers() {
 		return users;
 	}

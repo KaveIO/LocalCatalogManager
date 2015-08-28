@@ -48,19 +48,18 @@ public class UserGroupController {
 
 	@GET
 	@Produces({ "application/json" })
-	@Path("/{userGroup}")	
+	@Path("/{id}")	
 	@RolesAllowed({"apiUser","administrator"})
-	public Response getUserGroup(@PathParam("userGroup") String userGroup) {
+	public Response getUserGroup(@PathParam("id") Integer id) {
 
 		return Response
 				.status(200)
-				.entity(userGroupService.getUserGroupDao().getByName(
-						userGroup)).build();
+				.entity(userGroupService.getUserGroupDao().getById(
+						id)).build();
 	}
 
 	@PUT
-	@Consumes({ "application/nl.kpmg.lcm.server.data.UserGroup+json" })
-	@Path("/{userGroup}")	
+	@Consumes({ "application/nl.kpmg.lcm.server.data.UserGroup+json" })		
 	@RolesAllowed({"administrator"})
 	public Response saveUserGroup(final UserGroup userGroup,
 			@QueryParam("authourizationToken") String authourizationToken,
@@ -86,12 +85,12 @@ public class UserGroupController {
 	@DELETE
 	@Consumes({ "application/json" })
 	@Produces({ "text/plain" })
-	@Path("/{userGroup}")
+	@Path("/{id}")
 	@RolesAllowed({"administrator"})
-	public Response deleteUserGroup(@PathParam("userGroup") String userGroupName,
+	public Response deleteUserGroup(@PathParam("id") Integer id,
 			@QueryParam("authourizationToken") String authourizationToken,
 			@QueryParam("serviceKey") String serviceKey) throws ServerException {
-		UserGroup userGroup = userGroupService.getUserGroupDao().getByName(userGroupName);
+		UserGroup userGroup = userGroupService.getUserGroupDao().getById(id);
 		
 		if(userGroup == null){
 			return Response.status(404).entity("User Group "+userGroup+" doesn't exist.").build();

@@ -40,7 +40,7 @@ public class UserGroupControllerClientTest extends LCMBaseTest {
     public void testGetUserGroup(){
     	UserGroupController uc = new UserGroupController();
     	uc.setUserGroupService(userGroupService);    	
-    	uc.getUserGroup("testUserGroup1");    	        
+    	uc.getUserGroup(1);    	        
     }
     
     @Test
@@ -100,6 +100,7 @@ public class UserGroupControllerClientTest extends LCMBaseTest {
     @Test
     public void testSaveUserGroup() throws ServerException{
     	UserGroup userGroup = new UserGroup();
+    	//userGroup.setId(100);
     	userGroup.setName("testUserGroup1");    	
     	UserGroupController uc = new UserGroupController();
     	uc.setUserGroupService(userGroupService);
@@ -183,7 +184,7 @@ public class UserGroupControllerClientTest extends LCMBaseTest {
     	UserGroup userGroup = new UserGroup();
     	userGroup.setId(101);
     	userGroup.setName("testUserGroup1");
-    	uc.deleteUserGroup("testUserGroup1","AUTH_TOKEN","ABC123");
+    	uc.deleteUserGroup(101,"AUTH_TOKEN","ABC123");
     } 
     
     @Test
@@ -206,10 +207,10 @@ public class UserGroupControllerClientTest extends LCMBaseTest {
         String authToken = res.readEntity(String.class);
         Entity<UserGroup> entity1 = Entity.entity(userGroup, "application/nl.kpmg.lcm.server.data.UserGroup+json");
         Response res1 = target
-                .path("client/v0/userGroups/testUserGroup1").queryParam("serviceKey", "ABC123").queryParam("authorizationToken", authToken)
+                .path("client/v0/userGroups/100").queryParam("serviceKey", "ABC123").queryParam("authorizationToken", authToken)
                 .request().put(entity1);
         Response res2 = target
-                .path("client/v0/userGroups/testUserGroup1").queryParam("serviceKey", "ABC123").queryParam("authorizationToken", authToken)
+                .path("client/v0/userGroups/100").queryParam("serviceKey", "ABC123").queryParam("authorizationToken", authToken)
                 .request().delete();
         
         System.out.println("Response"+res.toString()+"*****"+" "+"************"+res1.toString()+"****"+res2.toString());

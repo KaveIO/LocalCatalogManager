@@ -39,99 +39,30 @@ public class TaskScheduleDaoImpl extends AbstractGenericFileDaoImpl<TaskSchedule
      */
     private static final Logger LOGGER = Logger.getLogger(TaskScheduleDaoImpl.class.getName());
 
-    /**
-     * Path where the taskSchedule is stored.
-     */
-    private final File storage;
-
-    /**
-     * Object mapper used to serialize and de-serialize the taskSchedule.
-     */
-    private final ObjectMapper mapper;
+    
 
     /**
      * @param storagePath The path where the taskSchedule is stored
      * @throws DaoException when the storagePath doesn't exist
      */
     public TaskScheduleDaoImpl(final String storagePath) throws DaoException {
-        super(storagePath);
-    	storage = new File(storagePath);
-
-        JacksonJsonProvider jacksonJsonProvider = new JacksonJsonProvider();
-        mapper = jacksonJsonProvider.getContext(TaskSchedule.class);
-
-        if (!storage.isDirectory() || !this.storage.canWrite()) {
-            throw new DaoException(String.format(
-                    "The storage path %s is not a directory or not writable.", storage.getAbsolutePath()));
-        }
-    }
-
-    private File getTaskScheduleFolder() {
-        return storage;
-    }
-
-    private File getTaskScheduleFile(Integer id) {
-        return new File(String.format("%s/%s", storage, id));
-    }
-
-    @Override
-    public TaskSchedule getById(Integer id) {
-        try {
-            TaskSchedule taskSchedule = mapper.readValue(getTaskScheduleFile(id), TaskSchedule.class);
-            if (taskSchedule != null) {
-                taskSchedule.setId(id);
-            }
-            return taskSchedule;
-        } catch (IOException ex) {
-            Logger.getLogger(TaskScheduleDaoImpl.class.getName()).log(Level.FINER,
-                    String.format("Couldn't construct TaskSchedule with id %s", id), ex);
-            return null;
-        }
-    }
-
-    @Override
-    public List<TaskSchedule> getAll() {
-        String[] allTaskScheduleIds = storage.list();
-        LinkedList<TaskSchedule> result = new LinkedList();
-
-        for (String taskScheduleId : allTaskScheduleIds) {
-            TaskSchedule taskSchedule = getById(Integer.parseInt(taskScheduleId));
-            if (taskSchedule != null) {
-                result.add(taskSchedule);
-            }
-        }
-        return result;
-    }
-
+        super(storagePath,TaskSchedule.class);    	
+    }       
+  
+    /** 
+     * Get the current TaskSchedule from storage
+     * @see nl.kpmg.lcm.server.data.dao.TaskScheduleDao#getCurrent()
+     */
     @Override
     public TaskSchedule getCurrent() {
-        File taskScheduleFolder = getTaskScheduleFolder();
+        File taskScheduleFolder = storage;
         return getById(taskScheduleFolder.list().length);
     }
-
-    @Override
-    public void persist(TaskSchedule taskSchedule) {
-        Integer id = taskSchedule.getId();
-
-        if (id == null) {
-            File taskScheduleFolder = getTaskScheduleFolder();
-            id = taskScheduleFolder.list().length + 1;
-        }
-
-        try {
-            mapper.writeValue(getTaskScheduleFile(id), taskSchedule);
-            taskSchedule.setId(id);
-        } catch (IOException ex) {
-            Logger.getLogger(TaskScheduleDaoImpl.class.getName()).log(Level.SEVERE, null, ex);
-        }
-    }
-
-    @Override
-    public void delete(TaskSchedule taskSchedule) {
-        File taskScheduleFile = getTaskScheduleFile(taskSchedule.getId());
-        taskScheduleFile.delete();
-    }
-
+     
+	/**
+	 * Update original TaskSchedule with updated TaskSchedule 
+	 * @see nl.kpmg.lcm.server.data.dao.file.AbstractGenericFileDaoImpl#update(nl.kpmg.lcm.server.data.AbstractModel, nl.kpmg.lcm.server.data.AbstractModel)
+	 */
 	@Override
 	protected void update(TaskSchedule original, TaskSchedule update) {
 		original.setName(update.getName());

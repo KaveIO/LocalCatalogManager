@@ -11,7 +11,7 @@ import org.springframework.data.mongodb.core.mapping.Document;
 public class User extends AbstractModel{ 		
 			
 	private String password;
-				
+		
 	public String getPassword() {
 		return password;
 	}

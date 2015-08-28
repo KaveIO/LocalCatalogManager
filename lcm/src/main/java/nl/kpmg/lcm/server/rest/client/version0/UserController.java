@@ -64,15 +64,14 @@ public class UserController {
 	
 	@GET
 	@Produces({"application/json"})
-	@Path("/{username}")
+	@Path("/{id}")
 	@RolesAllowed({"apiUser","administrator"})
-	public Response getUser(@PathParam("username") String username) {				
-		return Response.status(200).entity(userService.getUserDao().getByName(username)).build();				
+	public Response getUser(@PathParam("id") Integer id) {				
+		return Response.status(200).entity(userService.getUserDao().getById(id)).build();				
 	}
 	
 	@PUT
-	@Consumes({"application/nl.kpmg.lcm.server.data.User+json"})
-	@Path("/{username}")
+	@Consumes({"application/nl.kpmg.lcm.server.data.User+json"})	
 	@RolesAllowed({"administrator"})
 	public Response saveUser(final User user,@QueryParam("authourizationToken") String authourizationToken,@QueryParam("serviceKey") String serviceKey) throws ServerException{				
 		userService.getUserDao().persist(user);
@@ -92,12 +91,12 @@ public class UserController {
 	@DELETE
 	@Consumes({"application/json"})
 	@Produces({"text/plain"})
-	@Path("/{username}")
+	@Path("/{id}")
 	@RolesAllowed({"apiUser","administrator"})
-	public Response deleteUser(@PathParam("username") String username, @QueryParam("authourizationToken") String authourizationToken,@QueryParam("serviceKey") String serviceKey) throws ServerException{				
-		User user = userService.getUserDao().getByName(username);
+	public Response deleteUser(@PathParam("id") Integer id, @QueryParam("authourizationToken") String authourizationToken,@QueryParam("serviceKey") String serviceKey) throws ServerException{				
+		User user = userService.getUserDao().getById(id);
 		if(user == null){
-			return Response.status(404).entity("User "+username+" doesn't exist.").build();
+			return Response.status(404).entity("User "+id+" doesn't exist.").build();
 		}
 		userService.getUserDao().delete(user);
 		return Response.status(200).entity("Deleted User "+user.getName()+" Successfully.").build();		
