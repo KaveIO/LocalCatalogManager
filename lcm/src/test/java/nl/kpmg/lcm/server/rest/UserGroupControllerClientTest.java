@@ -89,7 +89,7 @@ public class UserGroupControllerClientTest extends LCMBaseTest {
                 .request().post(entity);
         String authToken = res.readEntity(String.class);
         Response res1 = target
-                .path("client/v0/userGroups/admin").queryParam("serviceKey", "ABC123").queryParam("authorizationToken", authToken)
+                .path("client/v0/userGroups/1").queryParam("serviceKey", "ABC123").queryParam("authorizationToken", authToken)
                 .request().get();
         
         System.out.println("Response"+res.toString()+"*****"+" "+"************"+res1.toString());
@@ -128,7 +128,7 @@ public class UserGroupControllerClientTest extends LCMBaseTest {
         String authToken = res.readEntity(String.class);
         Entity<UserGroup> entity1 = Entity.entity(userGroup, "application/nl.kpmg.lcm.server.data.UserGroup+json");
         Response res1 = target
-                .path("client/v0/userGroups/testUserGroup").queryParam("serviceKey", "ABC123").queryParam("authorizationToken", authToken)
+                .path("client/v0/userGroups/10").queryParam("serviceKey", "ABC123").queryParam("authorizationToken", authToken)
                 .request().put(entity1);
         
         System.out.println("Response"+res.toString()+"*****"+" "+"************"+res1.toString());
@@ -139,6 +139,7 @@ public class UserGroupControllerClientTest extends LCMBaseTest {
     @Test
     public void testModifyUserGroup() throws ServerException{
     	UserGroup userGroup = new UserGroup();
+    	userGroup.setId(200);
     	userGroup.setName("testUserGroup1");
     	
     	UserGroupController uc = new UserGroupController();
@@ -151,6 +152,7 @@ public class UserGroupControllerClientTest extends LCMBaseTest {
     public void testModifyUserGroupWebTarget() throws ServerException{
     	List<User> users = new ArrayList<User>();
     	User user = new User();
+    	user.setId(2000);
     	user.setName("admin");
     	user.setPassword("admin");
     	users.add(user);
@@ -168,7 +170,7 @@ public class UserGroupControllerClientTest extends LCMBaseTest {
         userGroup.setId(105);
         Entity<UserGroup> entity1 = Entity.entity(userGroup, "application/nl.kpmg.lcm.server.data.UserGroup+json");
         Response res1 = target
-                .path("client/v0/userGroups/testUserGroup").queryParam("serviceKey", "ABC123").queryParam("authorizationToken", authToken)
+                .path("client/v0/userGroups/101").queryParam("serviceKey", "ABC123").queryParam("authorizationToken", authToken)
                 .request().put(entity1);
         
         System.out.println("Response"+res.toString()+"*****"+" "+"************"+res1.toString());
