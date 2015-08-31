@@ -72,6 +72,7 @@ public class UserController {
 	
 	@PUT
 	@Consumes({"application/nl.kpmg.lcm.server.data.User+json"})	
+	@Path("/{id}")
 	@RolesAllowed({"administrator"})
 	public Response saveUser(final User user,@QueryParam("authourizationToken") String authourizationToken,@QueryParam("serviceKey") String serviceKey) throws ServerException{				
 		userService.getUserDao().persist(user);
@@ -81,6 +82,7 @@ public class UserController {
 	@POST
 	@Consumes({"application/nl.kpmg.lcm.server.data.User+json"})
 	@Produces({"text/plain"})
+	@Path("/{id}")
 	@RolesAllowed({"administrator"})
 	public Response modifyUser(final User user,@QueryParam("authourizationToken") String authourizationToken,@QueryParam("serviceKey") String serviceKey) throws ServerException{		
 		
