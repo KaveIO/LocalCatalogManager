@@ -1,4 +1,4 @@
-package nl.kpmg.lcm.server.rest;
+package nl.kpmg.lcm.server.rest.authentication;
 
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -16,12 +16,12 @@ import javax.ws.rs.ext.Provider;
  */
 @Provider
 @PreMatching
-public class LCMRESTResponseFilter implements ContainerResponseFilter {
+public class ResponseFilter implements ContainerResponseFilter {
 
     /**
      * The class logger.
      */
-    private static final Logger LOGGER = Logger.getLogger(LCMRESTResponseFilter.class.getName());
+    private static final Logger LOGGER = Logger.getLogger(ResponseFilter.class.getName());
 
     /**
      * Filters the responses and adds the appropriate authentication headers.
@@ -36,8 +36,7 @@ public class LCMRESTResponseFilter implements ContainerResponseFilter {
 
         responseContext.getHeaders().add("Acces-Control-Allow-Headers",
                 String.format("%s, %s",
-                LCMRESTRequestFilter.LCM_AUTHENTICATION_USER_HEADER,
-                LCMRESTRequestFilter.LCM_AUTHENTICATION_TOKEN_HEADER));
+                SessionAuthenticationManager.LCM_AUTHENTICATION_USER_HEADER,
+                SessionAuthenticationManager.LCM_AUTHENTICATION_TOKEN_HEADER));
     }
-
 }

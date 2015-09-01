@@ -15,6 +15,7 @@
  */
 package nl.kpmg.lcm.server.rest;
 
+import nl.kpmg.lcm.server.rest.authentication.RequestFilter;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.GET;
 import javax.ws.rs.HeaderParam;
@@ -24,7 +25,7 @@ import javax.ws.rs.Produces;
 import javax.ws.rs.core.Response;
 import nl.kpmg.lcm.server.LoginException;
 import nl.kpmg.lcm.server.LogoutException;
-import nl.kpmg.lcm.server.authentication.AuthenticationManager;
+import nl.kpmg.lcm.server.rest.authentication.SessionAuthenticationManager;
 import nl.kpmg.lcm.server.data.service.UserService;
 import nl.kpmg.lcm.server.rest.types.LoginRequest;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -39,7 +40,7 @@ public class Client {
     /**
      * The authentication manager.
      */
-    private final AuthenticationManager authenticationManager;
+    private final SessionAuthenticationManager authenticationManager;
 
     /**
      * Default constructor.
@@ -48,7 +49,7 @@ public class Client {
      * @param authenticationManager for authentication of users
      */
     @Autowired
-    public Client(final UserService userService, final AuthenticationManager authenticationManager) {
+    public Client(final UserService userService, final SessionAuthenticationManager authenticationManager) {
         this.authenticationManager = authenticationManager;
     }
 
@@ -98,9 +99,9 @@ public class Client {
     @Produces({"text/plain" })
     @Path("/logout")
     public final Response logout(
-            @HeaderParam(LCMRESTRequestFilter.LCM_AUTHENTICATION_TOKEN_HEADER) final String authenticationToken) {
+            @HeaderParam(SessionAuthenticationManager.LCM_AUTHENTICATION_TOKEN_HEADER) final String authenticationToken) {
         try {
-            authenticationManager.logout(authenticationToken);
+            authenticationManager.removeAuthenticationToken(authenticationToken);
             return Response.ok().build();
         } catch (LogoutException ex) {
             return Response.status(Response.Status.BAD_REQUEST).entity("logout unsuccessful").build();

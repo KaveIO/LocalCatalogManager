@@ -1,11 +1,14 @@
 package nl.kpmg.lcm.server.authentication;
 
+import java.lang.reflect.Method;
 import java.security.NoSuchAlgorithmException;
 import java.security.spec.InvalidKeySpecException;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import nl.kpmg.lcm.server.LCMBaseTest;
 import nl.kpmg.lcm.server.LoginException;
 import nl.kpmg.lcm.server.LogoutException;
-import nl.kpmg.lcm.server.authentication.AuthenticationManager;
+import nl.kpmg.lcm.server.rest.authentication.SessionAuthenticationManager;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.assertFalse;
@@ -20,13 +23,28 @@ import org.springframework.beans.factory.annotation.Autowired;
  * @author venkateswarlub
  *
  */
-public class AuthenticationManagerTest extends LCMBaseTest {
+public class SessionAuthenticationManagerTest extends LCMBaseTest {
 
     @Autowired
-    private AuthenticationManager authenticationManager;
+    private SessionAuthenticationManager authenticationManager;
 
     @Autowired
     private UserService userService;
+
+    /**
+     * Used for opening the private method as public for specific tests.
+     */
+    Method isAuthenticationTokenValid;
+
+    public SessionAuthenticationManagerTest() {
+        try {
+            isAuthenticationTokenValid = SessionAuthenticationManager.class.getDeclaredMethod(
+                    "isAuthenticationTokenValid", String.class, String.class);
+            isAuthenticationTokenValid.setAccessible(true);
+        } catch (NoSuchMethodException | SecurityException ex) {
+            Logger.getLogger(SessionAuthenticationManagerTest.class.getName()).log(Level.SEVERE, null, ex);
+        }
+    }
 
     @Test
     public void testGetAuthenticationToken() throws LoginException {
@@ -40,32 +58,32 @@ public class AuthenticationManagerTest extends LCMBaseTest {
     }
 
     @Test
-    public void testAuthenticationTokenIsValid() throws LoginException {
+    public void testAuthenticationTokenIsValid() throws Exception {
         String authenticationToken = authenticationManager.getAuthenticationToken("admin", "admin");
-        assertTrue(authenticationManager.isAuthenticationTokenValid("admin", authenticationToken));
+        assertTrue((boolean) isAuthenticationTokenValid.invoke(authenticationManager, "admin", authenticationToken));
     }
 
     @Test
-    public void testEmptyAuthenticationTokenIsNotValid() {
-        assertFalse(authenticationManager.isAuthenticationTokenValid("admin", ""));
+    public void testEmptyAuthenticationTokenIsNotValid() throws Exception {
+        assertFalse((boolean) isAuthenticationTokenValid.invoke(authenticationManager, "admin", ""));
     }
 
     @Test
-    public void testLogoutInvalidatesAuthenticationToken() throws LoginException, LogoutException {
+    public void testLogoutInvalidatesAuthenticationToken() throws Exception {
         String authenticationToken = authenticationManager.getAuthenticationToken("admin", "admin");
-        assertTrue(authenticationManager.isAuthenticationTokenValid("admin", authenticationToken));
+        assertTrue((boolean) isAuthenticationTokenValid.invoke(authenticationManager, "admin", authenticationToken));
 
-        authenticationManager.logout(authenticationToken);
-        assertFalse(authenticationManager.isAuthenticationTokenValid("admin", authenticationToken));
+        authenticationManager.removeAuthenticationToken(authenticationToken);
+        assertFalse((boolean) isAuthenticationTokenValid.invoke(authenticationManager, "admin", authenticationToken));
     }
 
     @Test(expected = LogoutException.class)
     public void testLogoutThrowsOnInvalidAuthenticationToken() throws LoginException, LogoutException {
-        authenticationManager.logout("");
+        authenticationManager.removeAuthenticationToken("");
     }
 
     @Test
-    public void testGetAuthenticationTokenUsesUserObjects() throws LoginException, LogoutException, NoSuchAlgorithmException, InvalidKeySpecException {
+    public void testGetAuthenticationTokenUsesUserObjects() throws Exception {
         User user = new User();
         user.setUsername("testUser");
         user.setPassword("testPassword", false);
@@ -76,7 +94,7 @@ public class AuthenticationManagerTest extends LCMBaseTest {
     }
 
     @Test
-    public void testGetAuthenticationTokenPrefersConfiguredUserOverUserObjects() throws LoginException, LogoutException, NoSuchAlgorithmException, InvalidKeySpecException {
+    public void testGetAuthenticationTokenPrefersConfiguredUserOverUserObjects() throws Exception {
         User user = new User();
         user.setUsername("admin");
         user.setPassword("testPassword", false);
@@ -93,5 +111,4 @@ public class AuthenticationManagerTest extends LCMBaseTest {
             assertTrue(true);
         }
     }
-
 }

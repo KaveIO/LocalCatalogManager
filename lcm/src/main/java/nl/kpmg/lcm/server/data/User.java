@@ -2,7 +2,7 @@ package nl.kpmg.lcm.server.data;
 
 import java.security.NoSuchAlgorithmException;
 import java.security.spec.InvalidKeySpecException;
-import nl.kpmg.lcm.server.authentication.PasswordHash;
+import nl.kpmg.lcm.server.rest.authentication.PasswordHash;
 import org.springframework.data.mongodb.core.mapping.Document;
 
 /**

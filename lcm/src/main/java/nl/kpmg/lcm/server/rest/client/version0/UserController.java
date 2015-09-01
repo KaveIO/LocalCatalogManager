@@ -13,14 +13,14 @@ import javax.ws.rs.Produces;
 import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.Response;
 
-import nl.kpmg.lcm.server.authentication.AuthenticationManager;
+import nl.kpmg.lcm.server.rest.authentication.SessionAuthenticationManager;
 import nl.kpmg.lcm.server.LoginException;
 import nl.kpmg.lcm.server.LogoutException;
 import nl.kpmg.lcm.server.ServerException;
-import nl.kpmg.lcm.server.authentication.Roles;
+import nl.kpmg.lcm.server.rest.authentication.Roles;
 import nl.kpmg.lcm.server.data.User;
 import nl.kpmg.lcm.server.data.service.UserService;
-import nl.kpmg.lcm.server.rest.LCMRESTRequestFilter;
+import nl.kpmg.lcm.server.rest.authentication.RequestFilter;
 import nl.kpmg.lcm.server.rest.types.LoginRequest;
 
 import org.springframework.beans.factory.annotation.Autowired;

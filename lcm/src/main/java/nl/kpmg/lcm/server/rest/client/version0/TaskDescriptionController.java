@@ -29,8 +29,8 @@ import javax.ws.rs.Produces;
 import javax.ws.rs.QueryParam;
 import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.Response;
-import nl.kpmg.lcm.server.authentication.AuthenticationManager;
-import nl.kpmg.lcm.server.authentication.Roles;
+import nl.kpmg.lcm.server.rest.authentication.SessionAuthenticationManager;
+import nl.kpmg.lcm.server.rest.authentication.Roles;
 import nl.kpmg.lcm.server.data.TaskDescription;
 import nl.kpmg.lcm.server.data.dao.TaskDescriptionDao;
 import nl.kpmg.lcm.server.rest.client.version0.types.TaskDescriptionRepresentation;
@@ -99,7 +99,7 @@ public class TaskDescriptionController {
      * @return 200 OK if successful
      */
     @POST
-    @Consumes({"application/x-nl.kpmg.lcm.server.data.TaskDescription+json"})
+    @Consumes({"application/nl.kpmg.lcm.server.data.TaskDescription+json"})
     @RolesAllowed({Roles.ADMINISTRATOR, Roles.API_USER})
     public final Response createTask(final TaskDescription taskDescription) {
         taskDescription.setId(null);

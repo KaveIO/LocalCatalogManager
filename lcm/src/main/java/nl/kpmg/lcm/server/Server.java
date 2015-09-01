@@ -5,8 +5,8 @@ import java.net.URI;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import nl.kpmg.lcm.server.rest.LCMRESTRequestFilter;
-import nl.kpmg.lcm.server.rest.LCMRESTResponseFilter;
+import nl.kpmg.lcm.server.rest.authentication.RequestFilter;
+import nl.kpmg.lcm.server.rest.authentication.ResponseFilter;
 import nl.kpmg.lcm.server.task.TaskManager;
 import nl.kpmg.lcm.server.task.TaskManagerException;
 
@@ -81,15 +81,18 @@ public class Server {
         // in nl.kpmg.lcm.server.rest
         final ResourceConfig rc = new ResourceConfig()
                 .packages("nl.kpmg.lcm.server.rest")
-                .property(EntityFilteringFeature.ENTITY_FILTERING_SCOPE, new Annotation[]{SecurityAnnotations.rolesAllowed(new String[]{"administrator","apiUser"})})
                 .property("contextConfig", context)
-                .register(LCMRESTRequestFilter.class)
-                .register(LCMRESTResponseFilter.class)
+                .property(EntityFilteringFeature.ENTITY_FILTERING_SCOPE,
+                        new Annotation[]{
+                            SecurityAnnotations.rolesAllowed(new String[]{"administrator", "apiUser"})})
                 .register(SecurityEntityFilteringFeature.class)
+                .register(RequestFilter.class)
+                .register(ResponseFilter.class)
+                .register(DeclarativeLinkingFeature.class)
+                .register(UriBuilderEntityProcessor.class)
                 .registerClasses(JacksonFeature.class)
                 .registerClasses(JacksonJsonProvider.class)
-                .registerClasses(LoggingExceptionMapper.class)
-                .register(DeclarativeLinkingFeature.class);
+                .registerClasses(LoggingExceptionMapper.class);
 
         // create and start a new instance of grizzly http server
         // exposing the Jersey application at BASE_URI

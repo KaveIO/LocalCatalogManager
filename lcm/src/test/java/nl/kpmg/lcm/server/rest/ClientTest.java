@@ -5,7 +5,7 @@ import static org.junit.Assert.assertEquals;
 import javax.ws.rs.client.Entity;
 import javax.ws.rs.core.Response;
 
-import nl.kpmg.lcm.server.authentication.AuthenticationManager;
+import nl.kpmg.lcm.server.rest.authentication.SessionAuthenticationManager;
 import nl.kpmg.lcm.server.LCMBaseServerTest;
 import nl.kpmg.lcm.server.LoginException;
 import nl.kpmg.lcm.server.ServerException;
@@ -17,7 +17,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 public class ClientTest extends LCMBaseServerTest {
 
     @Autowired
-    private AuthenticationManager am;
+    private SessionAuthenticationManager am;
 
     /**
      * Test to see that the client interface returns the interface versions.

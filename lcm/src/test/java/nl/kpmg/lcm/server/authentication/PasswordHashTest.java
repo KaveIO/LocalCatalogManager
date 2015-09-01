@@ -1,5 +1,6 @@
 package nl.kpmg.lcm.server.authentication;
 
+import nl.kpmg.lcm.server.rest.authentication.PasswordHash;
 import java.security.NoSuchAlgorithmException;
 import java.security.spec.InvalidKeySpecException;
 import static org.junit.Assert.assertTrue;

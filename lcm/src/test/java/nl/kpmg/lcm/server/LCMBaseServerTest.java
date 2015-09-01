@@ -7,6 +7,12 @@ import org.junit.AfterClass;
 import org.junit.BeforeClass;
 
 public abstract class LCMBaseServerTest extends LCMBaseTest {
+
+    /**
+     * Token used for login as admin: Basic BASE64(admin + ":" + admin)
+     */
+    protected static String basicAuthTokenAdmin = "Basic YWRtaW46YWRtaW4=";
+
     protected static Server server;
     protected static WebTarget target;
 

@@ -49,7 +49,7 @@ public class TaskDescriptionsRepresentation {
             resource = TaskDescriptionController.class,
             style = Style.ABSOLUTE,
             rel = "tasks.create",
-            type = "application/nl.kpmg.lcm.TaskDescription+json"
+            type = "application/nl.kpmg.lcm.server.data.TaskDescription+json"
         )
     })
     private List<Link> links;

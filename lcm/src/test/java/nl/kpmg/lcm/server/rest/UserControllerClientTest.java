@@ -8,7 +8,7 @@ import static org.junit.Assert.assertEquals;
 import javax.ws.rs.client.Entity;
 import javax.ws.rs.core.Response;
 
-import nl.kpmg.lcm.server.authentication.AuthenticationManager;
+import nl.kpmg.lcm.server.rest.authentication.SessionAuthenticationManager;
 import nl.kpmg.lcm.server.data.User;
 import nl.kpmg.lcm.server.data.service.EncryptDecryptService;
 import nl.kpmg.lcm.server.data.service.UserService;
@@ -27,7 +27,7 @@ public class UserControllerClientTest extends LCMBaseServerTest {
     @Autowired
     private UserService userService;
     @Autowired
-    private AuthenticationManager am;
+    private SessionAuthenticationManager am;
     @Autowired
     private EncryptDecryptService encdecService;
 

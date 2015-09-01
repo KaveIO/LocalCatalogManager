@@ -29,7 +29,6 @@ import org.springframework.data.mongodb.core.mapping.Document;
  *
  * @author mhoekstra
  */
-@Document(collection = "mdCollection")
 public class MetaData extends HashMap {
 
     public MetaData() {
@@ -145,4 +144,4 @@ public class MetaData extends HashMap {
             return null;
         }
     }
-}
+    }

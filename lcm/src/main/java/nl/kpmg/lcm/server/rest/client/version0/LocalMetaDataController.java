@@ -21,6 +21,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.util.LinkedList;
 import nl.kpmg.lcm.server.rest.client.version0.types.MetaDataOperationRequest;
 import java.util.List;
 import java.util.logging.Level;
@@ -37,8 +38,9 @@ import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
-import nl.kpmg.lcm.server.authentication.AuthenticationManager;
-import nl.kpmg.lcm.server.authentication.Roles;
+import javax.ws.rs.core.Response.ResponseBuilder;
+import nl.kpmg.lcm.server.rest.authentication.SessionAuthenticationManager;
+import nl.kpmg.lcm.server.rest.authentication.Roles;
 import nl.kpmg.lcm.server.backend.Backend;
 import nl.kpmg.lcm.server.backend.BackendException;
 import nl.kpmg.lcm.server.data.MetaData;
@@ -190,7 +192,8 @@ public class LocalMetaDataController {
             throw new NotFoundException(String.format("MetaData set %s could not be found", metaDataName));
         }
 
-        return new MetaDataRepresentation(metadata);
+//        return new MetaDataRepresentation(metadata);
+        return null;
     }
 
     /**
@@ -254,7 +257,8 @@ public class LocalMetaDataController {
             throw new NotFoundException(String.format("MetaData set %s could not be found", metaDataName));
         }
 
-        return new MetaDataRepresentation(metadata);
+        //return new MetaDataRepresentation(metadata);
+        return null;
     }
 
     /**
