@@ -59,19 +59,22 @@ public class LoggingExceptionMapper  implements ExceptionMapper<Exception> {
                     .build();
         } else if (ForbiddenException.class.isAssignableFrom(ex.getClass())) {
             response = Response.status(Response.Status.FORBIDDEN)
-                    .type("text/plain").entity(" Access is forbidden for the user role.")
+                    .type("text/plain").entity("Access is forbidden for the user role.")
                     .build();
         } else if (JsonMappingException.class.isAssignableFrom(ex.getClass())) {
+            LOGGER.log(Level.WARNING, "Request failed", ex);
             response = Response.status(Response.Status.INTERNAL_SERVER_ERROR)
-                    .type("text/plain").entity(" Json Mapping Exception "+ex.getMessage())
+                    .type("text/plain").entity("Json Mapping Exception "+ex.getMessage())
                     .build();
         } else if (RuntimeException.class.isAssignableFrom(ex.getClass())) {
+            LOGGER.log(Level.WARNING, "Request failed", ex);
             response = Response.status(Response.Status.INTERNAL_SERVER_ERROR)
-                    .type("text/plain").entity(" Runtime Exception "+ex.getMessage())
+                    .type("text/plain").entity("Runtime Exception "+ex.getMessage())
                     .build();
         } else if (IOException.class.isAssignableFrom(ex.getClass())) {
+            LOGGER.log(Level.WARNING, "Request failed", ex);
             response = Response.status(Response.Status.INTERNAL_SERVER_ERROR)
-                    .type("text/plain").entity(" IOException "+ex.getMessage())
+                    .type("text/plain").entity("IOException "+ex.getMessage())
                     .build();
         } else {
             LOGGER.log(Level.WARNING, "Request failed", ex);
