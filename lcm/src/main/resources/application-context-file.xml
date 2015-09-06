@@ -17,6 +17,8 @@
                 
         <context:component-scan base-package="nl.kpmg.lcm.server" />
         
+        <bean id="objectMapper" class="nl.kpmg.lcm.server.data.dao.file.ObjectMapperFactory" factory-method="createInstance" />
+
         <!-- DAOs -->
         <bean id="metaDataDao" class="nl.kpmg.lcm.server.data.dao.file.MetaDataDaoImpl">
             <constructor-arg index="0" type="java.lang.String" value="${lcm.server.storage.file.path}/metadata" />
@@ -49,8 +51,6 @@
         	<property name="userGroupDao" ref="userGroupDao"/>
         </bean>  
         
-        <bean id="authenticationManager" class="nl.kpmg.lcm.server.authentication.AuthenticationManager">        	
-            <property name="adminUser" value="${lcm.server.adminUser}"/>
-            <property name="adminPassword" value="${lcm.server.adminPassword}"/>             
-        </bean>      
+        <bean id="sessionAuthenticationManager" class="nl.kpmg.lcm.server.rest.authentication.SessionAuthenticationManager" />
+        <bean id="basicAuthenticationManager" class="nl.kpmg.lcm.server.rest.authentication.BasicAuthenticationManager" />
 </beans>

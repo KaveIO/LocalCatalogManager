@@ -15,25 +15,25 @@ import org.mockito.MockitoAnnotations;
 import org.mockito.runners.MockitoJUnitRunner;
 
 @RunWith(MockitoJUnitRunner.class)
-public class MongoDbMetaDataDaoImplTest { 
+public class MongoDbMetaDataDaoImplTest {
 	@Mock
 	MetaDataDao metaDataDao;
-			
+
 	@Before
 	public void setUp(){
 		MockitoAnnotations.initMocks(this);
 	}
-	
+
 	@Test
 	public void testGetByName() {
 		metaDataDao = mock(MetaDataDaoImpl.class);
-		
+
 		MetaData md = new MetaData();
-		md.put("user", "abc");
-		
+		md.set("user", "abc");
+
 		when(metaDataDao.getByName("user")).thenReturn(md);
 		MetaData md1 = metaDataDao.getByName("user");
-		assertEquals(md1.get("user").toString(),md.get("user"));				
+		assertEquals(md1.get("user").toString(),md.get("user"));
 	}
 
 }

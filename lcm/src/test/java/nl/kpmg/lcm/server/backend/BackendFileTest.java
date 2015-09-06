@@ -151,7 +151,7 @@ public class BackendFileTest {
     public final void testGatherDatasetInformationWrongMetadata() throws BackendException {
         MetaData metaData = new MetaData();
         final String fileUri = "NotAnUri";
-        metaData.put("data", new HashMap() { { put("uri", fileUri); } });
+        metaData.setDataUri(fileUri);
         BackendFileImpl testBackend = new BackendFileImpl(backendModel);
         DataSetInformation dataSetInformation = testBackend.gatherDataSetInformation(metaData);
     }
@@ -173,7 +173,7 @@ public class BackendFileTest {
         File testFile = new File(TEST_STORAGE_PATH + "/temp.csv");
         testFile.delete();
         final String fileUri = "file://" + testDir.getCanonicalPath() + "/temp.csv";
-        metaData.put("data", new HashMap() { { put("uri", fileUri); } });
+        metaData.setDataUri(fileUri);
         BackendFileImpl testBackend = new BackendFileImpl(backendModel);
         DataSetInformation dataSetInformation = testBackend.gatherDataSetInformation(metaData);
         assertEquals(dataSetInformation.isAttached(), false);
@@ -198,7 +198,7 @@ public class BackendFileTest {
         }
         Date expTimestamp = new Date(testFile.lastModified());
         final String fileUri = "file://" + testDir.getCanonicalPath() + "/temp.csv";
-        metaData.put("data", new HashMap() { { put("uri", fileUri); } });
+        metaData.setDataUri(fileUri);
         BackendFileImpl testBackend = new BackendFileImpl(backendModel);
         DataSetInformation dataSetInformation = testBackend.gatherDataSetInformation(metaData);
         assertEquals(dataSetInformation.getModificationTime(), expTimestamp);
@@ -236,7 +236,7 @@ public class BackendFileTest {
         File testDir = new File(TEST_STORAGE_PATH);
         final String fileUri = "file://" + testDir.getCanonicalPath() + "/testStore.csv";
         MetaData metaData = new MetaData();
-        metaData.put("data", new HashMap() { { put("uri", fileUri); } });
+        metaData.setDataUri(fileUri);
         InputStream is = new FileInputStream(testFile);
         BackendFileImpl testBackend = new BackendFileImpl(backendModel);
         testBackend.store(metaData, is);
@@ -279,7 +279,7 @@ public class BackendFileTest {
         File testDir = new File(TEST_STORAGE_PATH);
         final String fileUri = "file://" + testDir.getCanonicalPath() + "/testStore2.csv";
         MetaData metaData = new MetaData();
-        metaData.put("data", new HashMap() { { put("uri", fileUri); } });
+        metaData.setDataUri(fileUri);
         InputStream is = new FileInputStream(testFile);
         BackendFileImpl testBackend = new BackendFileImpl(backendModel);
         testBackend.store(metaData, is);
@@ -328,7 +328,7 @@ public class BackendFileTest {
         File testFileOut = new File(TEST_STORAGE_PATH + "/testRead.csv");
         testFileOut.createNewFile();
         MetaData metaData = new MetaData();
-        metaData.put("data", new HashMap() { { put("uri", fileUri); } });
+        metaData.setDataUri(fileUri);
         // make local data backend in specified directory and read the existing file
         BackendFileImpl testBackend = new BackendFileImpl(backendModel);
         try (InputStream is = testBackend.read(metaData)) {
@@ -376,7 +376,7 @@ public class BackendFileTest {
         final String fileUri = "file://" + testDir.getCanonicalPath() + "/testDelete.csv";
         // make metadata pointing to the file to be deleted
         MetaData metaData = new MetaData();
-        metaData.put("data", new HashMap() { { put("uri", fileUri); } });
+        metaData.setDataUri(fileUri);
         // make local data backend in specified directory and delete the existing file
         BackendFileImpl testBackend = new BackendFileImpl(backendModel);
         boolean result = testBackend.delete(metaData);

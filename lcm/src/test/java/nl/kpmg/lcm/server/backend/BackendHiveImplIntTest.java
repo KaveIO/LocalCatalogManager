@@ -91,7 +91,7 @@ public class BackendHiveImplIntTest {
     }
     /**
      * Method to make a test directory, test file and test tables in hive.
-     * 
+     *
      * @throws IOException if there is a problem during writing test file
      * @throws SQLException if there is a problem connecting to hive and/or executing queries
      * @throws BackendException if it is not possible to parse uri of the hive server
@@ -166,7 +166,7 @@ public class BackendHiveImplIntTest {
     }
     /**
      * Clean-up class. Deletes test directory and test tables in hive
-     * 
+     *
      * @throws SQLException if there is a problem connecting to hive and/or executing queries
      * @throws BackendException if it is not possible to parse uri of the hive server
      */
@@ -280,11 +280,7 @@ public class BackendHiveImplIntTest {
         System.out.println("testGatherDatasetInformation");
         MetaData metaData = new MetaData();
         final String fileUri = TEST_STORAGE_PATH + "/default/lcm_test";
-        metaData.put("data", new HashMap() {
-            {
-                put("uri", fileUri);
-            }
-        });
+        metaData.setDataUri(fileUri);
         BackendHiveImpl testBackend = new BackendHiveImpl(backendModel);
         DataSetInformation dataSetInformation = testBackend.gatherDataSetInformation(metaData);
         System.out.println("modification time: " + dataSetInformation.getModificationTime());
@@ -320,11 +316,7 @@ public class BackendHiveImplIntTest {
         System.out.println("testGatherDatasetInformationWrongMetadata");
         MetaData metaData = new MetaData();
         final String fileUri = "NotAnUri";
-        metaData.put("data", new HashMap() {
-            {
-                put("uri", fileUri);
-            }
-        });
+        metaData.setDataUri(fileUri);
         BackendHiveImpl testBackend = new BackendHiveImpl(backendModel);
         DataSetInformation dataSetInformation = testBackend.gatherDataSetInformation(metaData);
         fail("testGatherDatasetInformationWrongMetadata did not thrown BackendException!");
@@ -342,11 +334,7 @@ public class BackendHiveImplIntTest {
         System.out.println("testGatherDatasetInformationWrongLink");
         MetaData metaData = new MetaData();
         final String fileUri = "hive://NoPath";
-        metaData.put("data", new HashMap() {
-            {
-                put("uri", fileUri);
-            }
-        });
+        metaData.setDataUri(fileUri);
         BackendHiveImpl testBackend = new BackendHiveImpl(backendModel);
         DataSetInformation dataSetInformation = testBackend.gatherDataSetInformation(metaData);
         fail("testGatherDatasetInformationWrongLink did not thrown BackendException!");
@@ -366,11 +354,7 @@ public class BackendHiveImplIntTest {
         System.out.println("testGatherDatasetInformationWrongDest");
         MetaData metaData = new MetaData();
         final String fileUri = TEST_STORAGE_PATH + "/default/lcm_trest";
-        metaData.put("data", new HashMap() {
-            {
-                put("uri", fileUri);
-            }
-        });
+        metaData.setDataUri(fileUri);
         BackendHiveImpl testBackend = new BackendHiveImpl(backendModel);
         DataSetInformation dataSetInformation = testBackend.gatherDataSetInformation(metaData);
         System.out.println("modification time: " + dataSetInformation.getModificationTime());
@@ -396,11 +380,7 @@ public class BackendHiveImplIntTest {
         // now make a metadata with uri
         final String fileUri = TEST_STORAGE_PATH + "/default/test_tableStore";
         MetaData metaData = new MetaData();
-        metaData.put("data", new HashMap() {
-            {
-                put("uri", fileUri);
-            }
-        });
+        metaData.setDataUri(fileUri);
         // connect to the csv file
         File testFile = new File(TEST_DIR + "/testFile.csv");
         InputStream is = new FileInputStream(testFile);
@@ -477,11 +457,7 @@ public class BackendHiveImplIntTest {
         File output = new File(TEST_DIR + "/testRead.csv");
         output.createNewFile();
         MetaData metaData = new MetaData();
-        metaData.put("data", new HashMap() {
-            {
-                put("uri", fileUri);
-            }
-        });
+        metaData.setDataUri(fileUri);
         // make local data backend in specified directory and read the existing file
         BackendHiveImpl testBackend = new BackendHiveImpl(backendModel);
         try (InputStream is = testBackend.read(metaData)) {
@@ -526,11 +502,7 @@ public class BackendHiveImplIntTest {
         final String fileUri = TEST_STORAGE_PATH + "/default/lcm_test_delete";
 
         MetaData metaData = new MetaData();
-        metaData.put("data", new HashMap() {
-            {
-                put("uri", fileUri);
-            }
-        });
+        metaData.setDataUri(fileUri);
         // make local data backend in specified directory and read the existing file
         BackendHiveImpl testBackend = new BackendHiveImpl(backendModel);
         boolean result = testBackend.delete(metaData);

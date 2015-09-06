@@ -22,6 +22,7 @@ import java.util.LinkedList;
 import java.util.List;
 import nl.kpmg.lcm.server.data.TaskSchedule;
 import nl.kpmg.lcm.server.data.TaskSchedule.TaskScheduleItem;
+import nl.kpmg.lcm.server.data.dao.file.ObjectMapperFactory;
 import org.junit.After;
 import org.junit.AfterClass;
 import static org.junit.Assert.assertEquals;
@@ -42,7 +43,7 @@ public class TaskScheduleDaoImplTest {
         File file = new File(TEST_STORAGE_PATH);
         file.mkdir();
 
-        taskScheduleDao = new TaskScheduleDaoImpl(TEST_STORAGE_PATH);
+        taskScheduleDao = new TaskScheduleDaoImpl(TEST_STORAGE_PATH, ObjectMapperFactory.createInstance());
     }
 
     @BeforeClass

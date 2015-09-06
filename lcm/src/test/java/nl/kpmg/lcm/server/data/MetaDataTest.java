@@ -37,92 +37,92 @@ public class MetaDataTest {
     public MetaDataTest() throws NoSuchMethodException {
         setMethod = MetaData.class.getDeclaredMethod("set", String.class, Object.class);
         setMethod.setAccessible(true);
-        
+
         getMethod = MetaData.class.getDeclaredMethod("get", String.class);
         getMethod.setAccessible(true);
     }
-    
-    
+
+
     @Test
     public void testGetReturnNullOnNoValue() throws IllegalAccessException, IllegalArgumentException, InvocationTargetException {
         String actual;
-        
+
         MetaData metaData = new MetaData();
-        
+
         actual = (String) getMethod.invoke(metaData, "notExistingKey");
-        
+
         assertNull(actual);
     }
-    
+
     @Test
     public void testGetReturnFirstLevelValue() throws IllegalAccessException, IllegalArgumentException, InvocationTargetException {
         String expected = "value";
         String actual;
-        
+
         MetaData metaData = new MetaData();
-        metaData.put("firstLevelKey", expected);
-        
+        metaData.set("firstLevelKey", expected);
+
         actual = (String) getMethod.invoke(metaData, "firstLevelKey");
-        
+
         assertEquals(expected, actual);
     }
-    
+
     @Test
     public void testGetReturnSecondLevelValue() throws IllegalAccessException, IllegalArgumentException, InvocationTargetException {
         final String expected = "value";
         String actual;
-        
+
         MetaData metaData = new MetaData();
-        metaData.put("firstLevelKey", new HashMap() {{ put("secondLevelKey", expected); }});
-        
+        metaData.set("firstLevelKey", new HashMap() {{ put("secondLevelKey", expected); }});
+
         actual = (String) getMethod.invoke(metaData, "firstLevelKey.secondLevelKey");
-        
+
         assertEquals(expected, actual);
     }
-    
-    
-    
+
+
+
     @Test
     public void testSetFirstLevelAttributes() throws IllegalAccessException, IllegalArgumentException, InvocationTargetException {
         String expected = "value";
         String actual;
-        
+
         MetaData metaData = new MetaData();
-        
+
         setMethod.invoke(metaData, "firstLevelKey", expected);
-        
+
         actual = (String) metaData.get("firstLevelKey");
-        
+
         assertEquals(expected, actual);
     }
-    
+
     @Test
     public void testSetSecondLevelAttributes() throws IllegalAccessException, IllegalArgumentException, InvocationTargetException {
         String expected = "value";
         String actual;
-        
+
         MetaData metaData = new MetaData();
-        
+
         setMethod.invoke(metaData, "firstLevelKey.secondLevelKey", expected);
-        
+
         actual = (String) ((Map) metaData.get("firstLevelKey")).get("secondLevelKey");
-        
+
         assertEquals(expected, actual);
     }
-    
+
     @Test
     public void testSetMulitpleSecondLevelAttributes() throws IllegalAccessException, IllegalArgumentException, InvocationTargetException {
         String expected1 = "value1";
         String expected2 = "value2";
         String actual;
-        
+
         MetaData metaData = new MetaData();
-        
+
         setMethod.invoke(metaData, "firstLevelKey.secondLevelKey", expected1);
         setMethod.invoke(metaData, "firstLevelKey.secondSecondLevelKey", expected2);
-        
+
         Object get = metaData.get("firstLevelKey");
-        
+
         assertEquals(expected1, (String) ((Map) metaData.get("firstLevelKey")).get("secondLevelKey"));
         assertEquals(expected2, (String) ((Map) metaData.get("firstLevelKey")).get("secondSecondLevelKey"));
     }

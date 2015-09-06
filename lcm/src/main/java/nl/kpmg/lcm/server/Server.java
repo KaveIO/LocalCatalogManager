@@ -9,7 +9,7 @@ import nl.kpmg.lcm.server.rest.authentication.RequestFilter;
 import nl.kpmg.lcm.server.rest.authentication.ResponseFilter;
 import nl.kpmg.lcm.server.task.TaskManager;
 import nl.kpmg.lcm.server.task.TaskManagerException;
-
+import com.fasterxml.jackson.jaxrs.json.JacksonJsonProvider;
 import org.glassfish.grizzly.http.server.HttpServer;
 import org.glassfish.jersey.grizzly2.httpserver.GrizzlyHttpServerFactory;
 import org.glassfish.jersey.jackson.JacksonFeature;
@@ -90,6 +90,7 @@ public class Server {
                 .register(ResponseFilter.class)
                 .register(DeclarativeLinkingFeature.class)
                 .register(UriBuilderEntityProcessor.class)
+                .registerClasses(NotFilteringFilterProvider.class)
                 .registerClasses(JacksonFeature.class)
                 .registerClasses(JacksonJsonProvider.class)
                 .registerClasses(LoggingExceptionMapper.class);

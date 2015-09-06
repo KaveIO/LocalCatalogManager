@@ -243,11 +243,7 @@ public class BackendHDFSImplIntTest {
         System.out.println("testGatherDatasetInformationWrongMetadata");
         MetaData metaData = new MetaData();
         final String fileUri = "NotAnUri";
-        metaData.put("data", new HashMap() {
-            {
-                put("uri", fileUri);
-            }
-        });
+        metaData.setDataUri(fileUri);
         BackendHDFSImpl testBackend = new BackendHDFSImpl(backendModel);
         DataSetInformation dataSetInformation = testBackend.gatherDataSetInformation(metaData);
         assertEquals(dataSetInformation.isAttached(), false);
@@ -269,11 +265,7 @@ public class BackendHDFSImplIntTest {
         System.out.println("testGatherDatasetInformationWrongLink");
         MetaData metaData = new MetaData();
         final String fileUri = TEST_STORAGE_PATH + "NoFile";
-        metaData.put("data", new HashMap() {
-            {
-                put("uri", fileUri);
-            }
-        });
+        metaData.setDataUri(fileUri);
         BackendHDFSImpl testBackend = new BackendHDFSImpl(backendModel);
         DataSetInformation dataSetInformation = testBackend.gatherDataSetInformation(metaData);
         assertEquals(dataSetInformation.isAttached(), false);
@@ -295,11 +287,7 @@ public class BackendHDFSImplIntTest {
         System.out.println("testGatherDatasetInformation");
         MetaData metaData = new MetaData();
         final String fileUri = TEST_STORAGE_PATH + "user/test/testFile.csv";
-        metaData.put("data", new HashMap() {
-            {
-                put("uri", fileUri);
-            }
-        });
+        metaData.setDataUri(fileUri);
         BackendHDFSImpl testBackend = new BackendHDFSImpl(backendModel);
         DataSetInformation dataSetInformation = testBackend.gatherDataSetInformation(metaData);
         System.out.println(dataSetInformation.getModificationTime());
@@ -324,11 +312,7 @@ public class BackendHDFSImplIntTest {
         // now make a metadata with uri
         final String fileUri = TEST_STORAGE_PATH + "user/test/testStore.csv";
         MetaData metaData = new MetaData();
-        metaData.put("data", new HashMap() {
-            {
-                put("uri", fileUri);
-            }
-        });
+        metaData.setDataUri(fileUri);
         File testFile = new File(TEST_DIR + "/testFile.csv");
         InputStream is = new FileInputStream(testFile);
         BackendHDFSImpl testBackend = new BackendHDFSImpl(backendModel);
@@ -370,11 +354,7 @@ public class BackendHDFSImplIntTest {
         File output = new File(TEST_DIR + "/testRead.csv");
         output.createNewFile();
         MetaData metaData = new MetaData();
-        metaData.put("data", new HashMap() {
-            {
-                put("uri", fileUri);
-            }
-        });
+        metaData.setDataUri(fileUri);
         // make local data backend in specified directory and read the existing file
         BackendHDFSImpl testBackend = new BackendHDFSImpl(backendModel);
         try (InputStream is = testBackend.read(metaData)) {
@@ -416,11 +396,7 @@ public class BackendHDFSImplIntTest {
         }
         // make metadata pointing to the file to be deleted
         MetaData metaData = new MetaData();
-        metaData.put("data", new HashMap() {
-            {
-                put("uri", fileUri);
-            }
-        });
+        metaData.setDataUri(fileUri);
         // make local data backend in specified directory and delete the existing file
         BackendHDFSImpl testBackend = new BackendHDFSImpl(backendModel);
         boolean result = testBackend.delete(metaData);

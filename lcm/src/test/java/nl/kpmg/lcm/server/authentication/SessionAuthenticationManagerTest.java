@@ -1,8 +1,6 @@
 package nl.kpmg.lcm.server.authentication;
 
 import java.lang.reflect.Method;
-import java.security.NoSuchAlgorithmException;
-import java.security.spec.InvalidKeySpecException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import nl.kpmg.lcm.server.LCMBaseTest;

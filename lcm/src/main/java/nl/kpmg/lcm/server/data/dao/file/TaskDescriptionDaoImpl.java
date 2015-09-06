@@ -22,10 +22,10 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import nl.kpmg.lcm.server.JacksonJsonProvider;
 import nl.kpmg.lcm.server.data.dao.DaoException;
 import nl.kpmg.lcm.server.data.dao.TaskDescriptionDao;
 import nl.kpmg.lcm.server.data.TaskDescription;
+import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * Implementation of a file based Task DAO.
@@ -51,11 +51,10 @@ public class TaskDescriptionDaoImpl implements TaskDescriptionDao {
      * @param storagePath The path where the task is stored
      * @throws DaoException when the storagePath doesn't exist
      */
-    public TaskDescriptionDaoImpl(final String storagePath) throws DaoException {
-        storage = new File(storagePath);
-
-        JacksonJsonProvider jacksonJsonProvider = new JacksonJsonProvider();
-        mapper = jacksonJsonProvider.getContext(TaskDescription.class);
+    @Autowired
+    public TaskDescriptionDaoImpl(final String storagePath, final ObjectMapper mapper) throws DaoException {
+        this.storage = new File(storagePath);
+        this.mapper = mapper;
 
         if (!storage.isDirectory() || !this.storage.canWrite()) {
             throw new DaoException(String.format(

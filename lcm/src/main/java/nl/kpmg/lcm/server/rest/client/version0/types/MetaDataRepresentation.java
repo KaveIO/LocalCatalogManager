@@ -15,8 +15,10 @@
  */
 package nl.kpmg.lcm.server.rest.client.version0.types;
 
+import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import java.util.List;
 import javax.ws.rs.core.Link;
+import nl.kpmg.lcm.server.LinksSerializer;
 import nl.kpmg.lcm.server.data.MetaData;
 import nl.kpmg.lcm.server.rest.client.version0.LocalMetaDataController;
 import org.glassfish.jersey.linking.Binding;
@@ -78,6 +80,7 @@ public class MetaDataRepresentation {
     /**
      * @return the list of Links
      */
+    @JsonSerialize(using = LinksSerializer.class)
     public final List<Link> getLinks() {
         return links;
     }

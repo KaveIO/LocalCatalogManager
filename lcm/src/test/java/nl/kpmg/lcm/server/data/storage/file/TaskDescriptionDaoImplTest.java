@@ -21,6 +21,7 @@ import java.io.File;
 import java.util.Date;
 import java.util.List;
 import nl.kpmg.lcm.server.data.TaskDescription;
+import nl.kpmg.lcm.server.data.dao.file.ObjectMapperFactory;
 import org.junit.After;
 import org.junit.AfterClass;
 import static org.junit.Assert.assertEquals;
@@ -41,7 +42,7 @@ public class TaskDescriptionDaoImplTest {
         File file = new File(TEST_STORAGE_PATH);
         file.mkdir();
 
-        taskDescriptionDao = new TaskDescriptionDaoImpl(TEST_STORAGE_PATH);
+        taskDescriptionDao = new TaskDescriptionDaoImpl(TEST_STORAGE_PATH, ObjectMapperFactory.createInstance());
     }
 
     @BeforeClass

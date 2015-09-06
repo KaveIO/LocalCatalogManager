@@ -29,10 +29,10 @@ import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.ws.rs.core.Link;
-import nl.kpmg.lcm.server.JacksonJsonProvider;
 import nl.kpmg.lcm.server.NotFilteringFilterProvider;
 import nl.kpmg.lcm.server.data.MetaData;
 import nl.kpmg.lcm.server.data.dao.MetaDataDao;
+import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * Implementation of a file based MetaData DAO.
@@ -58,11 +58,10 @@ public class MetaDataDaoImpl implements MetaDataDao {
      * @param storagePath The path where the metaData is stored
      * @throws DaoException when the storagePath doesn't exist
      */
-    public MetaDataDaoImpl(final String storagePath) throws DaoException {
-        storage = new File(storagePath);
-
-        JacksonJsonProvider jacksonJsonProvider = new JacksonJsonProvider();
-        mapper = jacksonJsonProvider.getContext(MetaData.class);
+    @Autowired
+    public MetaDataDaoImpl(final String storagePath, final ObjectMapper mapper) throws DaoException {
+        this.storage = new File(storagePath);
+        this.mapper = mapper;
 
         if (!storage.isDirectory() || !this.storage.canWrite()) {
             throw new DaoException(String.format(
@@ -120,14 +119,15 @@ public class MetaDataDaoImpl implements MetaDataDao {
     }
 
     @Override
-    public void update(MetaData metadata) {
+    public void update(final MetaData metadata) {
         String name = metadata.getName();
         String version = metadata.getVersionNumber();
         MetaData tmpData = getByNameAndVersion(name, version);
         if (tmpData != null) {
-            if (metadata.containsKey("Duplicates")) {
-                List<MetaData> mlist = metadata.getDuplicates();
-                tmpData.put("Duplicates", mlist);
+            List<MetaData> mlist = metadata.getDuplicates();
+
+            if (mlist != null) {
+                tmpData.setDuplicates(mlist);
                 try {
                     mapper.writeValue(getMetaDataFile(name, version), tmpData);
                 } catch (IOException ex) {

@@ -6,7 +6,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Logger;
 
-import nl.kpmg.lcm.server.JacksonJsonProvider;
 import nl.kpmg.lcm.server.data.User;
 import nl.kpmg.lcm.server.data.dao.DaoException;
 import nl.kpmg.lcm.server.data.dao.UserDao;
@@ -17,6 +16,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import java.security.NoSuchAlgorithmException;
 import java.security.spec.InvalidKeySpecException;
 import java.util.logging.Level;
+import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * User DAO Implementation.
@@ -40,17 +40,16 @@ public class UserDaoImpl implements UserDao {
     /**
      * Object mapper used to serialize and de-serialize the user.
      */
-    private ObjectMapper mapper;
-    private JacksonJsonProvider jacksonJsonProvider;
+    private final ObjectMapper mapper;
 
     /**
      * @param storagePath The path where the user is stored
      * @throws DaoException when the storagePath doesn't exist
      */
-    public UserDaoImpl(final String storagePath) throws DaoException {
-        storage = new File(storagePath);
-
-        jacksonJsonProvider = new JacksonJsonProvider();
+    @Autowired
+    public UserDaoImpl(final String storagePath, final ObjectMapper mapper) throws DaoException {
+        this.storage = new File(storagePath);
+        this.mapper = mapper;
 
         if (!storage.isDirectory() || !this.storage.canWrite()) {
             throw new DaoException(String.format(
@@ -76,7 +75,6 @@ public class UserDaoImpl implements UserDao {
         for (File userFile : userFiles) {
             User user = null;
             try {
-                mapper = jacksonJsonProvider.getContext(User.class);
                 user = mapper.readValue(userFile, User.class);
             }
             catch (JsonParseException e) {
@@ -103,7 +101,6 @@ public class UserDaoImpl implements UserDao {
 
             if (getUsernameFromPath(userFile.getName()).equals(username)) {
                 try {
-                    mapper = jacksonJsonProvider.getContext(User.class);
                     user = mapper.readValue(userFile, User.class);
                 }
                 catch (JsonParseException e) {
@@ -132,7 +129,6 @@ public class UserDaoImpl implements UserDao {
 
             if (getUsernameFromPath(userFile.getName()).equals(user.getUsername())) {
                 try {
-                    mapper = jacksonJsonProvider.getContext(User.class);
                     userFromFile = mapper.readValue(userFile, User.class);
                     userFromFile.setUsername(user.getUsername());
 
@@ -172,7 +168,6 @@ public class UserDaoImpl implements UserDao {
         File userFile = getUserFile(user.getUsername());
 
         try {
-            mapper = jacksonJsonProvider.getContext(User.class);
             mapper.writeValue(userFile, user);
         }
         catch (JsonParseException e) {

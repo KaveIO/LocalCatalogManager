@@ -15,33 +15,53 @@
  */
 package nl.kpmg.lcm.server.data;
 
+import com.fasterxml.jackson.annotation.JsonAnyGetter;
+import com.fasterxml.jackson.annotation.JsonAnySetter;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.annotation.security.PermitAll;
 
 import org.apache.commons.lang.ArrayUtils;
-import org.springframework.data.mongodb.core.mapping.Document;
 
 /**
  *
  * @author mhoekstra
  */
-public class MetaData extends HashMap {
+public class MetaData {
+
+    private static final Logger LOGGER = Logger.getLogger(MetaData.class.getName());
+
+    private final Map<String, Object> innerMap;
 
     public MetaData() {
+        this.innerMap = new HashMap();
     }
 
-    public MetaData(Map m) {
-        super(m);
+    public MetaData(final Map map) {
+        this.innerMap = new HashMap(map);
+    }
+
+    @JsonAnySetter
+    @PermitAll
+    public void anySetter(String name, Object value) {
+        innerMap.put(name, value);
+    }
+
+    @JsonAnyGetter
+    @PermitAll
+    public Map anyGetter() {
+        return innerMap;
     }
 
     public <T> T get(String path) {
         try {
             String[] split = path.split("\\.");
-            return get(this, split);
+            return get(innerMap, split);
         }
         catch (Exception ex) {
             Logger.getLogger(MetaData.class.getName()).log(Level.SEVERE, "Couldn't find path: " + path, ex);
@@ -68,7 +88,7 @@ public class MetaData extends HashMap {
     public void set(String path, Object value) {
         try {
             String[] split = path.split("\\.");
-            set(this, split, value);
+            set(innerMap, split, value);
         }
         catch (Exception ex) {
             Logger.getLogger(MetaData.class.getName()).log(Level.SEVERE, "Couldn't find path: " + path, ex);
@@ -95,14 +115,16 @@ public class MetaData extends HashMap {
         }
     }
 
+    @JsonIgnore
     public String getName() {
         return get("name");
     }
 
     public void setName(String name) {
-        put("name", name);
+        set("name", name);
     }
 
+    @JsonIgnore
     public String getVersionNumber() {
         return get("version.number");
     }
@@ -111,6 +133,7 @@ public class MetaData extends HashMap {
         set("version.number", versionNumber);
     }
 
+    @JsonIgnore
     public String getDataUri() {
         return get("data.uri");
     }
@@ -119,29 +142,42 @@ public class MetaData extends HashMap {
         set("data.uri", dataUri);
     }
 
+    public void setDuplicates(List<MetaData> duplicates) {
+        this.set("duplicates", duplicates);
+    }
+
     public void addDuplicate(MetaData duplicate) {
         List<MetaData> lmdata = new LinkedList();
         if (getDuplicates() != null) {
             lmdata = this.getDuplicates();
             lmdata.add(duplicate);
-            this.put("Duplicates", lmdata);
+            this.setDuplicates(lmdata);
         } else {
             lmdata.add(duplicate);
-            this.put("Duplicates", lmdata);
+            this.setDuplicates(lmdata);
 
         }
     }
 
+    @JsonIgnore
     public List<MetaData> getDuplicates() {
         List<MetaData> lmdata = new LinkedList();
-        if (this.containsKey("Duplicates")) {
-            List<Map> nested = this.get("Duplicates");
-            for (Map thisDuplicate : nested) {
-                lmdata.add(new MetaData(thisDuplicate));
+        if (innerMap.containsKey("duplicates")) {
+            List nestedMetaData = this.get("duplicates");
+
+            for (Object duplicate : nestedMetaData) {
+
+                if (MetaData.class.isAssignableFrom(duplicate.getClass())) {
+                    lmdata.add((MetaData) duplicate);
+                } else if (Map.class.isAssignableFrom(duplicate.getClass())) {
+                    lmdata.add(new MetaData((Map) duplicate));
+                } else {
+                    LOGGER.log(Level.WARNING, "Error while constructing duplicates list for MetaData: {0}", this.getName());
+                }
             }
             return lmdata;
         } else {
             return null;
         }
     }
-    }
+}

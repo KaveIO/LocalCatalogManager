@@ -7,10 +7,10 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import nl.kpmg.lcm.server.JacksonJsonProvider;
 import nl.kpmg.lcm.server.data.BackendModel;
 import nl.kpmg.lcm.server.data.dao.BackendDao;
 import nl.kpmg.lcm.server.data.dao.DaoException;
+import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  *
@@ -37,11 +37,10 @@ public class BackendDaoImpl implements BackendDao {
      * @param storagePath The path where the backend is stored
      * @throws DaoException when the storagePath doesn't exist
      */
-    public BackendDaoImpl(final String storagePath) throws DaoException {
-        storage = new File(storagePath);
-
-        JacksonJsonProvider jacksonJsonProvider = new JacksonJsonProvider();
-        mapper = jacksonJsonProvider.getContext(BackendModel.class);
+    @Autowired
+    public BackendDaoImpl(final String storagePath, final ObjectMapper mapper) throws DaoException {
+        this.storage = new File(storagePath);
+        this.mapper = mapper;
 
         if (!storage.isDirectory() || !this.storage.canWrite()) {
             throw new DaoException(String.format(

@@ -15,9 +15,11 @@
  */
 package nl.kpmg.lcm.server.rest.client.version0.types;
 
+import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import java.util.LinkedList;
 import java.util.List;
 import javax.ws.rs.core.Link;
+import nl.kpmg.lcm.server.LinksSerializer;
 import nl.kpmg.lcm.server.data.TaskDescription;
 import nl.kpmg.lcm.server.rest.client.version0.TaskDescriptionController;
 import org.glassfish.jersey.linking.InjectLink;
@@ -75,6 +77,7 @@ public class TaskDescriptionsRepresentation {
     /**
      * @return the list of links
      */
+    @JsonSerialize(using = LinksSerializer.class)
     public final List<Link> getLinks() {
         return links;
     }

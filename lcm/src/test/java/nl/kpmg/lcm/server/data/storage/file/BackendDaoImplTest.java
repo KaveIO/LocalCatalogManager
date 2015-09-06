@@ -20,6 +20,7 @@ import nl.kpmg.lcm.server.data.dao.DaoException;
 import java.io.File;
 import java.util.HashMap;
 import nl.kpmg.lcm.server.data.BackendModel;
+import nl.kpmg.lcm.server.data.dao.file.ObjectMapperFactory;
 import org.junit.After;
 import org.junit.AfterClass;
 import static org.junit.Assert.assertEquals;
@@ -41,7 +42,7 @@ public class BackendDaoImplTest {
         File file = new File(TEST_STORAGE_PATH);
         file.mkdir();
 
-        backendDao = new BackendDaoImpl(TEST_STORAGE_PATH);
+        backendDao = new BackendDaoImpl(TEST_STORAGE_PATH, ObjectMapperFactory.createInstance());
     }
 
     @BeforeClass

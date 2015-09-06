@@ -367,11 +367,8 @@ public class BackendHiveImpl extends AbstractBackend {
 
         // store input stream as a file in HDFS
         MetaData metaTemp = new MetaData();
-        metaTemp.put("data", new HashMap() {
-            {
-                put("uri", "/tmp/" + tabName);
-            }
-        });
+        metaTemp.setDataUri( "/tmp/" + tabName);
+
         BackendModel backendModel = new BackendModel();
         backendModel.setName("store_helper");
         backendModel.setOptions(new HashMap());
@@ -484,12 +481,8 @@ public class BackendHiveImpl extends AbstractBackend {
         }
         // now make metadata pointing to a new file
         MetaData metaTemp = new MetaData();
+        metaTemp.setDataUri("/tmp/" + tabName + "/000000_0");
 
-        metaTemp.put("data", new HashMap() {
-            {
-                put("uri", "/tmp/" + tabName + "/000000_0");
-            }
-        });
         // read it with HDFS backend
         BackendModel backendModel = new BackendModel();
         backendModel.setName("store_helper");
