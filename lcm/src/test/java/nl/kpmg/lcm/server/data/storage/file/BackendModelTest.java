@@ -7,10 +7,10 @@ import nl.kpmg.lcm.server.LCMBaseTest;
 import nl.kpmg.lcm.server.backend.Backend;
 import nl.kpmg.lcm.server.backend.BackendFileImpl;
 import nl.kpmg.lcm.server.backend.BackendHDFSImpl;
-import nl.kpmg.lcm.server.data.BackendModel;
+import nl.kpmg.lcm.server.data.Storage;
 import nl.kpmg.lcm.server.data.dao.DaoException;
-import nl.kpmg.lcm.server.data.dao.file.BackendDaoImpl;
-import nl.kpmg.lcm.server.data.service.BackendService;
+import nl.kpmg.lcm.server.data.dao.file.StorageDaoImpl;
+import nl.kpmg.lcm.server.data.service.StorageService;
 import static org.junit.Assert.assertEquals;
 import org.junit.Ignore;
 import org.junit.Test;
@@ -23,41 +23,41 @@ import org.springframework.beans.factory.annotation.Autowired;
 public class BackendModelTest extends LCMBaseTest {
 
     @Autowired
-    private BackendDaoImpl backEndDao;
+    private StorageDaoImpl storageDao;
 
     @Autowired
-    private BackendService backendService;
+    private StorageService storageService;
 
     @Ignore
     @Test
     public void testFetchConfiguredBackendByName() throws DaoException {
-        BackendModel backendmodel = new BackendModel();
-        backendmodel.setName("test");
-        backendmodel.setOptions(new HashMap());
-        backendmodel.getOptions().put("storagePath", "/tmp/");
+        Storage storage1 = new Storage();
+        storage1.setName("test");
+        storage1.setOptions(new HashMap());
+        storage1.getOptions().put("storagePath", "/tmp/");
 
-        BackendModel backendmodel2 = new BackendModel();
-        backendmodel2.setName("test2");
-        backendmodel2.setOptions(new HashMap());
-        backendmodel2.getOptions().put("storagePath", "/tmp2/");
+        Storage storage2 = new Storage();
+        storage2.setName("test2");
+        storage2.setOptions(new HashMap());
+        storage2.getOptions().put("storagePath", "/tmp2/");
 
-        BackendModel backendmodel3 = new BackendModel();
-        backendmodel3.setName("test3");
-        backendmodel3.setOptions(new HashMap());
-        backendmodel3.getOptions().put("storagePath", "/tmp3/");
+        Storage storage3 = new Storage();
+        storage3.setName("test3");
+        storage3.setOptions(new HashMap());
+        storage3.getOptions().put("storagePath", "/tmp3/");
 
-        BackendModel backendmodel4 = new BackendModel();
-        backendmodel4.setName("test3");
-        backendmodel4.setOptions(new HashMap());
-        backendmodel4.getOptions().put("storagePath", "/tmp3b/");
+        Storage storage4 = new Storage();
+        storage4.setName("test3");
+        storage4.setOptions(new HashMap());
+        storage4.getOptions().put("storagePath", "/tmp3b/");
 
-        backEndDao.persist(backendmodel);
-        backEndDao.persist(backendmodel2);
-        backEndDao.persist(backendmodel3);
-        backEndDao.persist(backendmodel4);
+        storageDao.persist(storage1);
+        storageDao.persist(storage2);
+        storageDao.persist(storage3);
+        storageDao.persist(storage4);
 
-        List<BackendModel> backEndList;
-        backEndList = backEndDao.getAll();
+        List<Storage> backEndList;
+        backEndList = storageDao.getAll();
 
         String path1 = (String) backEndList.get(0).getOptions().get("storagePath");
         assertEquals("/tmp/", path1);
@@ -76,7 +76,7 @@ public class BackendModelTest extends LCMBaseTest {
 
         Backend backend;
 
-        backend = backendService.getBackend("file://test3/bla/bla");
+        backend = storageService.getBackend("file://test3/bla/bla");
 
         assertEquals(BackendFileImpl.class, backend.getClass());
 
@@ -86,20 +86,20 @@ public class BackendModelTest extends LCMBaseTest {
 
     @Test
     public void testFetchandConfigureHDFS() throws DaoException {
-        BackendModel backendmodel = new BackendModel();
-        backendmodel.setName("testHDFS");
-        backendmodel.setOptions(new HashMap());
-        backendmodel.getOptions().put("storagePath", "/tmpHDFS/");
-        backEndDao.persist(backendmodel);
+        Storage storage = new Storage();
+        storage.setName("testHDFS");
+        storage.setOptions(new HashMap());
+        storage.getOptions().put("storagePath", "/tmpHDFS/");
+        storageDao.persist(storage);
         Backend backendHDFS;
 
-        backendHDFS = backendService.getBackend("hdfs://testHDFS/bla/bla");
+        backendHDFS = storageService.getBackend("hdfs://testHDFS/bla/bla");
 
         assertEquals(BackendHDFSImpl.class, backendHDFS.getClass());
 
         BackendHDFSImpl backendImpl = (BackendHDFSImpl) backendHDFS;
         assertEquals("/tmpHDFS/", backendImpl.getStoragePath());
 
-        backEndDao.delete(backendmodel);
+        storageDao.delete(storage);
     }
 }

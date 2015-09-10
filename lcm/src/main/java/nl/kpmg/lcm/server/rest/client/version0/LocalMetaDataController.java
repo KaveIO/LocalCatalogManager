@@ -15,6 +15,7 @@
  */
 package nl.kpmg.lcm.server.rest.client.version0;
 
+import com.sun.jersey.api.client.ClientResponse;
 import java.io.FileOutputStream;
 import java.io.File;
 import java.io.IOException;
@@ -37,12 +38,13 @@ import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
+import javax.ws.rs.core.Response.Status;
 import nl.kpmg.lcm.server.rest.authentication.Roles;
 import nl.kpmg.lcm.server.backend.Backend;
 import nl.kpmg.lcm.server.backend.BackendException;
 import nl.kpmg.lcm.server.data.MetaData;
 import nl.kpmg.lcm.server.data.dao.MetaDataDao;
-import nl.kpmg.lcm.server.data.service.BackendService;
+import nl.kpmg.lcm.server.data.service.StorageService;
 import nl.kpmg.lcm.server.rest.client.version0.types.MetaDataRepresentation;
 import nl.kpmg.lcm.server.rest.client.version0.types.MetaDatasRepresentation;
 import org.apache.commons.io.IOUtils;
@@ -58,11 +60,27 @@ import org.springframework.stereotype.Component;
 @Path("client/v0/local")
 public class LocalMetaDataController {
 
-    @Autowired
-    private MetaDataDao metaDataDao;
+    /**
+     * The MetaDataDao.
+     */
+    private final MetaDataDao metaDataDao;
 
+    /**
+     * The backend service.
+     */
+    private final StorageService storageService;
+
+    /**
+     * The default constructor.
+     *
+     * @param metaDataDao for MetaData access
+     * @param storageService for Backend access
+     */
     @Autowired
-    private BackendService backendService;
+    public LocalMetaDataController(final MetaDataDao metaDataDao, final StorageService storageService) {
+        this.metaDataDao = metaDataDao;
+        this.storageService = storageService;
+    }
 
     /**
      * Get the head versions of all MetaData.
@@ -70,7 +88,7 @@ public class LocalMetaDataController {
      * @return The head versions
      */
     @GET
-    @Produces({"application/json"})
+    @Produces({"application/nl.kpmg.lcm.server.rest.client.version0.types.MetaDatasRepresentation+json"})
     @RolesAllowed({Roles.ADMINISTRATOR, Roles.API_USER})
     public final MetaDatasRepresentation getLocalMetaDataOverview() {
         List<MetaData> all = metaDataDao.getAll();
@@ -100,8 +118,7 @@ public class LocalMetaDataController {
      */
     @PUT
     @Path("{metaDataName}")
-    @Consumes({"application/json"})
-    @Produces(MediaType.TEXT_PLAIN)
+    @Consumes({"application/nl.kpmg.lcm.server.data.MetaData+json"})
     @RolesAllowed({Roles.ADMINISTRATOR, Roles.API_USER})
     public final Response putLocalMetaData(
             @PathParam("metaDataName") final String metaDataName,
@@ -129,7 +146,7 @@ public class LocalMetaDataController {
 
             case "download":
 
-                backend = backendService.getBackend(metadata);
+                backend = storageService.getBackend(metadata);
                 try {
                     InputStream input = backend.read(metadata);
                     String fType = (String) request.getParameters().get("type");
@@ -143,7 +160,7 @@ public class LocalMetaDataController {
                     return Response.serverError().build();
                 }
             case "copy":
-                backend = backendService.getBackend(metadata);
+                backend = storageService.getBackend(metadata);
                 String fType = (String) request.getParameters().get("type");
                 String sPath = (String) request.getParameters().get("storagePath");
                 String fPath = (String) request.getParameters().get("Path");
@@ -160,10 +177,9 @@ public class LocalMetaDataController {
                     metaDataDao.update(metadata);
 
                     return Response.ok().build();
-                }
-                catch (IOException ex) {
+                } catch (IOException ex) {
                     Logger.getLogger(LocalMetaDataController.class.getName())
-                            .log(Level.SEVERE, "Couldn't find path: " + String.format("%s/%s.%s", sPath, fPath, fType), ex);
+                            .log(Level.SEVERE, String.format("Couldn't find path: %s/%s.%s", sPath, fPath, fType), ex);
                 }
 
         }
@@ -179,7 +195,7 @@ public class LocalMetaDataController {
      */
     @GET
     @Path("{metaDataName}")
-    @Produces({"application/json"})
+    @Produces({"application/nl.kpmg.lcm.server.rest.client.version0.types.MetaDataRepresentation+json"})
     @RolesAllowed({Roles.ADMINISTRATOR, Roles.API_USER})
     public final MetaDataRepresentation getLocalMetaData(
             @PathParam("metaDataName") final String metaDataName) {
@@ -189,8 +205,7 @@ public class LocalMetaDataController {
             throw new NotFoundException(String.format("MetaData set %s could not be found", metaDataName));
         }
 
-//        return new MetaDataRepresentation(metadata);
-        return null;
+        return new MetaDataRepresentation(metadata);
     }
 
     /**
@@ -201,19 +216,17 @@ public class LocalMetaDataController {
      */
     @DELETE
     @Path("{metaDataName}")
-    @Produces({"application/json"})
     @RolesAllowed({Roles.ADMINISTRATOR, Roles.API_USER})
     public final Response deleteLocalMetaData(
             @PathParam("metaDataName") final String metaDataName) {
 
         MetaData metadata = metaDataDao.getByName(metaDataName);
-        if (metadata == null) {
-            throw new NotFoundException(String.format("MetaData set %s could not be found", metaDataName));
+        if (metadata != null) {
+            metaDataDao.delete(metadata);
+            return Response.ok().build();
+        } else {
+            return Response.status(Status.NOT_FOUND).build();
         }
-
-        metaDataDao.delete(metadata);
-
-        return Response.ok().build();
     }
 
     /**

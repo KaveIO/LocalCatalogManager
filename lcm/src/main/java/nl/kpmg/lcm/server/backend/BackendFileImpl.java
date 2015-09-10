@@ -25,7 +25,7 @@ import java.net.URI;
 import java.util.Date;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import nl.kpmg.lcm.server.data.BackendModel;
+import nl.kpmg.lcm.server.data.Storage;
 import org.apache.commons.io.IOUtils;
 
 import nl.kpmg.lcm.server.data.MetaData;
@@ -47,9 +47,9 @@ public class BackendFileImpl extends AbstractBackend {
     /**
      * Default constructor.
      * 
-     * @param backend is {@link BackendModel} that contains the storagePath
+     * @param backend is {@link Storage} that contains the storagePath
      */
-    public BackendFileImpl(final BackendModel backend) {
+    public BackendFileImpl(final Storage backend) {
         this.storagePath = new File((String) backend.getOptions().get("storagePath"));
     }
 

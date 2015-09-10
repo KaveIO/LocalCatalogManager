@@ -7,8 +7,8 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import nl.kpmg.lcm.server.data.BackendModel;
-import nl.kpmg.lcm.server.data.dao.BackendDao;
+import nl.kpmg.lcm.server.data.Storage;
+import nl.kpmg.lcm.server.data.dao.StorageDao;
 import nl.kpmg.lcm.server.data.dao.DaoException;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -16,12 +16,12 @@ import org.springframework.beans.factory.annotation.Autowired;
  *
  * @author kos
  */
-public class BackendDaoImpl implements BackendDao {
+public class StorageDaoImpl implements StorageDao {
 
     /**
      * The logger for this class.
      */
-    private static final Logger LOGGER = Logger.getLogger(BackendDaoImpl.class.getName());
+    private static final Logger LOGGER = Logger.getLogger(StorageDaoImpl.class.getName());
 
     /**
      * Path where the task is stored.
@@ -38,7 +38,7 @@ public class BackendDaoImpl implements BackendDao {
      * @throws DaoException when the storagePath doesn't exist
      */
     @Autowired
-    public BackendDaoImpl(final String storagePath, final ObjectMapper mapper) throws DaoException {
+    public StorageDaoImpl(final String storagePath, final ObjectMapper mapper) throws DaoException {
         this.storage = new File(storagePath);
         this.mapper = mapper;
 
@@ -59,12 +59,12 @@ public class BackendDaoImpl implements BackendDao {
 
 
     @Override
-    public List<BackendModel> getAll() {
+    public List<Storage> getAll() {
         String[] allBackEndNames = storage.list();
-        LinkedList<BackendModel> result = new LinkedList();
+        LinkedList<Storage> result = new LinkedList();
 
         for (String backEndName : allBackEndNames) {
-            BackendModel backEnd = getByName(backEndName);
+            Storage backEnd = getByName(backEndName);
             if (backEnd != null) {
                 result.add(backEnd);
             }
@@ -73,22 +73,22 @@ public class BackendDaoImpl implements BackendDao {
     }
 
     @Override
-    public BackendModel getByName(String name) {
+    public Storage getByName(String name) {
            try {
-            BackendModel backEnd = mapper.readValue(getBackendFile(name), BackendModel.class);
+            Storage backEnd = mapper.readValue(getBackendFile(name), Storage.class);
             if (backEnd != null) {
                 backEnd.setName(name);
             }
             return backEnd;
         } catch (IOException ex) {
-            Logger.getLogger(BackendDaoImpl.class.getName()).log(Level.SEVERE, null, ex);
+            Logger.getLogger(StorageDaoImpl.class.getName()).log(Level.SEVERE, null, ex);
             return null;
         }
     }
 
 
     @Override
-    public void persist(BackendModel backEnd) {
+    public void persist(Storage backEnd) {
         String name = backEnd.getName();
 
         if (name == null) {
@@ -106,7 +106,7 @@ public class BackendDaoImpl implements BackendDao {
     }
 
     @Override
-    public void delete(BackendModel backend) {
+    public void delete(Storage backend) {
         File backEndFile = getBackendFile(backend.getName());
         backEndFile.delete();
     }

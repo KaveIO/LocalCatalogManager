@@ -37,7 +37,7 @@ import java.sql.Statement;
 import java.util.HashMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import nl.kpmg.lcm.server.data.BackendModel;
+import nl.kpmg.lcm.server.data.Storage;
 import nl.kpmg.lcm.server.data.MetaData;
 import org.apache.commons.io.IOUtils;
 import org.junit.AfterClass;
@@ -76,13 +76,13 @@ public class BackendHiveImplIntTest {
     /**
      * Common access tool for all backends.
      */
-    private final BackendModel backendModel;
+    private final Storage backendModel;
 
     /**
      * Default constructor.
      */
     public BackendHiveImplIntTest() {
-        backendModel = new BackendModel();
+        backendModel = new Storage();
         backendModel.setName("test");
         backendModel.setOptions(new HashMap());
         backendModel.getOptions().put("storagePath", TEST_STORAGE_PATH);
@@ -116,7 +116,7 @@ public class BackendHiveImplIntTest {
             writer.flush();
         }
         // make test table
-        BackendModel testBackendModel = new BackendModel();
+        Storage testBackendModel = new Storage();
         testBackendModel.setName("test");
         testBackendModel.setOptions(new HashMap());
         testBackendModel.getOptions().put("storagePath", TEST_STORAGE_PATH);
@@ -179,7 +179,7 @@ public class BackendHiveImplIntTest {
         }
         file.delete();
         // delete the test table
-        BackendModel testBackendModel = new BackendModel();
+        Storage testBackendModel = new Storage();
         testBackendModel.setName("test");
         testBackendModel.setOptions(new HashMap());
         testBackendModel.getOptions().put("storagePath", TEST_STORAGE_PATH);
@@ -234,7 +234,7 @@ public class BackendHiveImplIntTest {
      *
      * @throws SQLException if there is a problem with connection or sql query
      * @throws BackendException if it is not possible to retrieve hive server
-     * address from the {@link BackendModel} instance that initialized the
+     * address from the {@link Storage} instance that initialized the
      * {@link BackendHiveImp} instance.
      */
     @Test

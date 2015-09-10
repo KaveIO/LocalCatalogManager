@@ -29,8 +29,8 @@
         <bean id="taskScheduleDao" class="nl.kpmg.lcm.server.data.dao.file.TaskScheduleDaoImpl">
             <constructor-arg index="0" type="java.lang.String" value="${lcm.server.storage.file.path}/taskschedule" />
         </bean>
-        <bean id="backendDao" class="nl.kpmg.lcm.server.data.dao.file.BackendDaoImpl">
-            <constructor-arg index="0" type="java.lang.String" value="${lcm.server.storage.file.path}/backend" />
+        <bean id="storageDao" class="nl.kpmg.lcm.server.data.dao.file.StorageDaoImpl">
+            <constructor-arg index="0" type="java.lang.String" value="${lcm.server.storage.file.path}/storage" />
         </bean>
         <bean id="userDao" class="nl.kpmg.lcm.server.data.dao.file.UserDaoImpl">
             <constructor-arg index="0" type="java.lang.String" value="${lcm.server.storage.file.path}/users" />
@@ -42,7 +42,7 @@
         
         <!-- Services -->
         <bean id="metaDataService" class="nl.kpmg.lcm.server.data.service.MetaDataService" />
-        <bean id="backendService" class="nl.kpmg.lcm.server.data.service.BackendService" />
+        <bean id="storageService" class="nl.kpmg.lcm.server.data.service.StorageService" />
         <bean id="encryptDecryptService" class="nl.kpmg.lcm.server.data.service.EncryptDecryptService" />
         <bean id="userService" class="nl.kpmg.lcm.server.data.service.UserService">
         	<property name="userDao" ref="userDao"/>

@@ -15,6 +15,7 @@ import nl.kpmg.lcm.server.LoginException;
 import nl.kpmg.lcm.server.ServerException;
 import nl.kpmg.lcm.server.data.User;
 import nl.kpmg.lcm.server.data.UserGroup;
+import nl.kpmg.lcm.server.data.dao.UserGroupDao;
 import nl.kpmg.lcm.server.data.service.UserGroupService;
 import nl.kpmg.lcm.server.rest.types.LoginRequest;
 import org.junit.After;
@@ -70,8 +71,14 @@ public class UserGroupControllerClientTest extends LCMBaseServerTest {
 
     @Test
     public void testGetUserGroupWebTarget() throws ServerException, LoginException {
+
+        UserGroupDao userGroupDao = userGroupService.getUserGroupDao();
+        UserGroup userGroup = new UserGroup();
+        userGroup.setName("admin");
+        userGroupDao.saveUserGroup(userGroup);
+
         Response res1 = target
-                .path("client/v0/userGroups/admin")
+                .path("client/v0/userGroups/"+userGroup.getId())
                 .request()
                 .header("LCM-Authentication-User", "admin")
                 .header("LCM-Authentication-Token", authenticationToken)
@@ -87,7 +94,7 @@ public class UserGroupControllerClientTest extends LCMBaseServerTest {
 
         UserGroup userGroup = new UserGroup();
         userGroup.setId(100);
-        userGroup.setUserGroup("testUserGroup");
+        userGroup.setName("testUserGroup");
         userGroup.setUsers(users);
 
         Entity<UserGroup> entity = Entity.entity(userGroup, "application/nl.kpmg.lcm.server.data.UserGroup+json");
@@ -108,7 +115,7 @@ public class UserGroupControllerClientTest extends LCMBaseServerTest {
 
         UserGroup userGroup = new UserGroup();
         userGroup.setId(101);
-        userGroup.setUserGroup("testUserGroup");
+        userGroup.setName("testUserGroup");
         userGroup.setUsers(users);
 
         userGroup.setId(105);
@@ -130,7 +137,7 @@ public class UserGroupControllerClientTest extends LCMBaseServerTest {
 
         UserGroup userGroup = new UserGroup();
         userGroup.setId(100);
-        userGroup.setUserGroup("testUserGroup1");
+        userGroup.setName("testUserGroup1");
         userGroup.setUsers(users);
 
         Entity<UserGroup> entity1 = Entity.entity(userGroup, "application/nl.kpmg.lcm.server.data.UserGroup+json");

@@ -22,7 +22,7 @@ import nl.kpmg.lcm.server.backend.BackendException;
 import nl.kpmg.lcm.server.backend.DataSetInformation;
 import nl.kpmg.lcm.server.data.MetaData;
 import nl.kpmg.lcm.server.data.dao.MetaDataDao;
-import nl.kpmg.lcm.server.data.service.BackendService;
+import nl.kpmg.lcm.server.data.service.StorageService;
 import nl.kpmg.lcm.server.task.EnrichmentTask;
 import nl.kpmg.lcm.server.task.TaskException;
 import nl.kpmg.lcm.server.task.TaskResult;
@@ -67,7 +67,7 @@ public class DataEnrichmentTask extends EnrichmentTask {
      * The BackendService.
      */
     @Autowired
-    private BackendService backendService;
+    private StorageService backendService;
 
     /**
      * Will store information on the data associated with a piece of MetaData.

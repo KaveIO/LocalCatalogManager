@@ -23,7 +23,7 @@ import nl.kpmg.lcm.server.backend.Backend;
 import nl.kpmg.lcm.server.backend.BackendFileImpl;
 import nl.kpmg.lcm.server.backend.BackendHDFSImpl;
 import nl.kpmg.lcm.server.data.MetaData;
-import nl.kpmg.lcm.server.data.dao.BackendDao;
+import nl.kpmg.lcm.server.data.dao.StorageDao;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
@@ -31,10 +31,10 @@ import org.springframework.beans.factory.annotation.Autowired;
  *
  * @author mhoekstra
  */
-public class BackendService {
+public class StorageService {
 
     @Autowired
-    private BackendDao backendDao;
+    private StorageDao storageDao;
 
     /**
      * Get a storage backend based on a MetaData object.
@@ -70,21 +70,21 @@ public class BackendService {
             switch (scheme) {
                 case "file":
                     if (parsedUri.getHost() != null)  {
-                       return new BackendFileImpl(backendDao.getByName(parsedUri.getHost()));
+                       return new BackendFileImpl(storageDao.getByName(parsedUri.getHost()));
                     } else {
-                       return new BackendFileImpl(backendDao.getByName(parsedUri.getAuthority()));
+                       return new BackendFileImpl(storageDao.getByName(parsedUri.getAuthority()));
                     }
                 case "hdfs":
                     if (parsedUri.getHost() != null)  {
-                        return new BackendHDFSImpl(backendDao.getByName(parsedUri.getHost()));
+                        return new BackendHDFSImpl(storageDao.getByName(parsedUri.getHost()));
                     } else {
-                        return new BackendHDFSImpl(backendDao.getByName(parsedUri.getAuthority()));
+                        return new BackendHDFSImpl(storageDao.getByName(parsedUri.getAuthority()));
                     }
                 default : return null;
             }
 
         } catch (URISyntaxException ex) {
-            Logger.getLogger(BackendService.class.getName()).log(Level.SEVERE, null, ex);
+            Logger.getLogger(StorageService.class.getName()).log(Level.SEVERE, null, ex);
         }
         return null;
     }

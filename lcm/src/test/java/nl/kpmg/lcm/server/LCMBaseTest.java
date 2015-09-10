@@ -26,7 +26,7 @@ public abstract class LCMBaseTest {
         file.mkdir();
         file = new File(TEST_STORAGE_PATH + "/taskschedule");
         file.mkdir();
-        file = new File(TEST_STORAGE_PATH + "/backend");
+        file = new File(TEST_STORAGE_PATH + "/storage");
         file.mkdir();
         file = new File(TEST_STORAGE_PATH + "/users");
         file.mkdir();

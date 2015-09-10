@@ -1,5 +1,6 @@
 package nl.kpmg.lcm.server.rest.client.version0;
 
+import java.util.List;
 import javax.annotation.security.RolesAllowed;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.DELETE;
@@ -9,15 +10,14 @@ import javax.ws.rs.PUT;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
-import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.Response;
-import nl.kpmg.lcm.server.rest.authentication.SessionAuthenticationManager;
-
-import nl.kpmg.lcm.server.ServerException;
+import javax.ws.rs.core.Response.Status;
 import nl.kpmg.lcm.server.rest.authentication.Roles;
 import nl.kpmg.lcm.server.data.UserGroup;
+import nl.kpmg.lcm.server.data.dao.UserGroupDao;
 import nl.kpmg.lcm.server.data.service.UserGroupService;
-
+import nl.kpmg.lcm.server.rest.client.version0.types.UserGroupRepresentation;
+import nl.kpmg.lcm.server.rest.client.version0.types.UserGroupsRepresentation;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -25,69 +25,63 @@ import org.springframework.stereotype.Component;
 @Path("client/v0/userGroups")
 public class UserGroupController {
 
-    private UserGroupService userGroupService;
-    //private AuthenticationManager am;
+    private final UserGroupService userGroupService;
 
     @Autowired
-    public void setUserGroupService(UserGroupService userGroupService) {
+    public UserGroupController(final UserGroupService userGroupService) {
         this.userGroupService = userGroupService;
     }
 
     @GET
-    @Produces({"application/json"})
+    @Produces({"application/nl.kpmg.lcm.server.rest.client.version0.types.UserGroupsRepresentation+json"})
     @RolesAllowed({Roles.ADMINISTRATOR, Roles.API_USER})
-    public Response getUserGroups() {
-        return Response.status(200)
-                .entity(userGroupService.getUserGroupDao().getUserGroups())
-                .build();
+    public final UserGroupsRepresentation getUserGroups() {
+        UserGroupDao userGroupDao = userGroupService.getUserGroupDao();
+        List<UserGroup> userGroups = userGroupDao.getUserGroups();
+
+        return new UserGroupsRepresentation(userGroups);
     }
 
     @GET
-    @Produces({"application/json"})
-    @Path("/{userGroup}")
+    @Path("/{usergroup_id}")
+    @Produces({"application/nl.kpmg.lcm.server.rest.client.version0.types.UserGroupRepresentation+json"})
     @RolesAllowed({Roles.ADMINISTRATOR, Roles.API_USER})
-    public Response getUserGroup(@PathParam("userGroup") String userGroup) {
-        return Response
-                .status(200)
-                .entity(userGroupService.getUserGroupDao().getUserGroup(
-                                userGroup)).build();
-    }
+    public final Response getUserGroup(@PathParam("usergroup_id") String userGroupId) {
+        UserGroupDao userGroupDao = userGroupService.getUserGroupDao();
+        UserGroup userGroup = userGroupDao.getUserGroup(userGroupId);
 
-    @PUT
-    @Consumes({"application/nl.kpmg.lcm.server.data.UserGroup+json"})
-    @Path("/{userGroup}")
-    @RolesAllowed({Roles.ADMINISTRATOR})
-    public Response saveUserGroup(final UserGroup userGroup,
-            @QueryParam("authourizationToken") String authourizationToken,
-            @QueryParam("serviceKey") String serviceKey) throws ServerException {
-
-        userGroupService.getUserGroupDao().saveUserGroup(userGroup);
-        return Response.status(200).entity("Saved User Group " + userGroup.getUserGroup() + " Successfully.").build();
-
+        if (userGroup != null) {
+            return Response.ok(new UserGroupRepresentation(userGroup)).build();
+        } else {
+            return Response.status(Status.NOT_FOUND).build();
+        }
     }
 
     @POST
     @Consumes({"application/nl.kpmg.lcm.server.data.UserGroup+json"})
-    @Produces({"text/plain"})
     @RolesAllowed({Roles.ADMINISTRATOR})
-    public Response modifyUserGroup(final UserGroup userGroup,
-            @QueryParam("authourizationToken") String authourizationToken,
-            @QueryParam("serviceKey") String serviceKey) throws ServerException {
+    public final Response createNewUserGroup(final UserGroup userGroup) {
+        UserGroupDao userGroupDao = userGroupService.getUserGroupDao();
+        userGroupDao.saveUserGroup(userGroup);
 
+        return Response.ok().build();
+    }
+
+    @PUT
+    @Path("/{usergroup_id}")
+    @Consumes({"application/nl.kpmg.lcm.server.data.UserGroup+json"})
+    @RolesAllowed({Roles.ADMINISTRATOR})
+    public final Response modifyUserGroup(final UserGroup userGroup) {
         userGroupService.getUserGroupDao().modifyUserGroup(userGroup);
-        return Response.status(200).entity("Modified User Group " + userGroup.getUserGroup() + " Successfully.").build();
+        return Response.ok().build();
     }
 
     @DELETE
-    @Consumes({"application/json"})
-    @Path("/{userGroup}")
+    @Path("/{usergroup_id}")
     @RolesAllowed({Roles.ADMINISTRATOR})
-    public Response deleteUserGroup(@PathParam("userGroup") String userGroup,
-            @QueryParam("authourizationToken") String authourizationToken,
-            @QueryParam("serviceKey") String serviceKey) throws ServerException {
-
-        userGroupService.getUserGroupDao().deleteUserGroup(userGroup);
-        return Response.status(200).entity("Deleted User Group " + userGroup + " Successfully.").build();
-
+    public final Response deleteUserGroup(@PathParam("usergroup_id") String userGroupId) {
+        UserGroupDao userGroupDao = userGroupService.getUserGroupDao();
+        userGroupDao.deleteUserGroup(userGroupId);
+        return Response.ok().build();
     }
 }

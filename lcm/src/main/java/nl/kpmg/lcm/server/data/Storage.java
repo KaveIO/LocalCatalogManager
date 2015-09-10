@@ -1,19 +1,12 @@
 package nl.kpmg.lcm.server.data;
 
-
-import java.util.HashMap;
 import java.util.Map;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-import org.apache.commons.lang.ArrayUtils;
 
 /**
  *
  * @author kos
  */
-
-
-public class BackendModel {
+public class Storage {
     /**
      *
      */
@@ -22,7 +15,6 @@ public class BackendModel {
     private String name;
 
     private Map options;
-
 
     /**
      *

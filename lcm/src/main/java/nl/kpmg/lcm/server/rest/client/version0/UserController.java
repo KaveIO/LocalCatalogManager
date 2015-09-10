@@ -4,25 +4,18 @@ import javax.annotation.security.RolesAllowed;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.DELETE;
 import javax.ws.rs.GET;
-import javax.ws.rs.HeaderParam;
 import javax.ws.rs.POST;
-import javax.ws.rs.PUT;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
-import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.Response;
-
-import nl.kpmg.lcm.server.rest.authentication.SessionAuthenticationManager;
-import nl.kpmg.lcm.server.LoginException;
-import nl.kpmg.lcm.server.LogoutException;
-import nl.kpmg.lcm.server.ServerException;
+import javax.ws.rs.core.Response.Status;
 import nl.kpmg.lcm.server.rest.authentication.Roles;
 import nl.kpmg.lcm.server.data.User;
+import nl.kpmg.lcm.server.data.dao.UserDao;
 import nl.kpmg.lcm.server.data.service.UserService;
-import nl.kpmg.lcm.server.rest.authentication.RequestFilter;
-import nl.kpmg.lcm.server.rest.types.LoginRequest;
-
+import nl.kpmg.lcm.server.rest.client.version0.types.UserRepresentation;
+import nl.kpmg.lcm.server.rest.client.version0.types.UsersRepresentation;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -50,46 +43,64 @@ public class UserController {
         this.userService = userService;
     }
 
+    /**
+     * Returns all the registered users in the system.
+     *
+     * @return list of all the users
+     */
     @GET
-    @Produces({"application/json"})
+    @Produces({"application/nl.kpmg.lcm.server.rest.client.version0.types.UsersRepresentation+json"})
     @RolesAllowed({Roles.ADMINISTRATOR, Roles.API_USER})
-    public Response getUsers() {
-        return Response.status(200).entity(userService.getUserDao().getUsers()).build();
+    public final UsersRepresentation getUsers() {
+        UserDao userDao = userService.getUserDao();
+        return new UsersRepresentation(userDao.getUsers());
     }
 
     @GET
-    @Produces({"application/json"})
-    @Path("/{username}")
+    @Produces({"application/nl.kpmg.lcm.server.rest.client.version0.types.UserRepresentation+json"})
+    @Path("/{user_id}")
     @RolesAllowed({Roles.ADMINISTRATOR, Roles.API_USER})
-    public Response getUser(@PathParam("username") String username) {
-        return Response.status(200).entity(userService.getUserDao().getUser(username)).build();
-    }
+    public final Response getUser(@PathParam("user_id") String user_id) {
+        UserDao userDao = userService.getUserDao();
 
-    @PUT
-    @Consumes({"application/nl.kpmg.lcm.server.data.User+json"})
-    @Path("/{username}")
-    @RolesAllowed({Roles.ADMINISTRATOR})
-    public Response saveUser(final User user, @QueryParam("authourizationToken") String authourizationToken, @QueryParam("serviceKey") String serviceKey) throws ServerException {
-        userService.getUserDao().saveUser(user);
-        return Response.status(200).entity("User " + user.getUsername() + " saved successfully.").build();
+        User user = userDao.getUser(user_id);
+
+        if (user != null) {
+            return Response.ok(new UserRepresentation(user)).build();
+        } else {
+            return Response.status(Status.NOT_FOUND).build();
+        }
     }
 
     @POST
     @Consumes({"application/nl.kpmg.lcm.server.data.User+json"})
-    @Produces({"text/plain"})
     @RolesAllowed({Roles.ADMINISTRATOR})
-    public Response modifyUser(final User user, @QueryParam("authourizationToken") String authourizationToken, @QueryParam("serviceKey") String serviceKey) throws ServerException {
+    public final Response createNewUser(final User user) {
+        userService.getUserDao().saveUser(user);
+        return Response.ok().build();
+    }
 
+    @POST
+    @Path("/{user_id}")
+    @Consumes({"application/nl.kpmg.lcm.server.data.User+json"})
+    @RolesAllowed({Roles.ADMINISTRATOR})
+    public final Response modifyUser(final User user) {
         userService.getUserDao().modifyUser(user);
-        return Response.status(200).entity("Modified User " + user.getUsername() + " successfully.").build();
+        return Response.ok().build();
     }
 
     @DELETE
-    @Consumes({"application/json"})
-    @Path("/{username}")
+    @Path("/{user_id}")
     @RolesAllowed({Roles.ADMINISTRATOR})
-    public Response deleteUser(@PathParam("username") String username, @QueryParam("authourizationToken") String authourizationToken, @QueryParam("serviceKey") String serviceKey) throws ServerException {
-        userService.getUserDao().deleteUser(username);
-        return Response.status(200).entity("Deleted User " + username + " Successfully.").build();
+    public final Response deleteUser(@PathParam("user_id") final String userId) {
+        UserDao userDao = userService.getUserDao();
+        User user = userDao.getUser(userId);
+
+        if (user != null) {
+            userDao.deleteUser(userId);
+            return Response.ok().build();
+        } else {
+            return Response.status(Status.NOT_FOUND).build();
+        }
     }
 }

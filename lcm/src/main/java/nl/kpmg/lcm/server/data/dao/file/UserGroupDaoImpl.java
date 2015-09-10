@@ -124,11 +124,11 @@ public class UserGroupDaoImpl implements UserGroupDao {
         UserGroup userGroupFromFile = null;
         for (File userFile : userFiles) {
 
-            if (getUserGroupFromPath(userFile.getName()).equals(userGroup.getUserGroup())) {
+            if (getUserGroupFromPath(userFile.getName()).equals(userGroup.getName())) {
                 try {
                     userGroupFromFile = mapper.readValue(userFile, UserGroup.class);
                     userGroupFromFile.setId(userGroup.getId());
-                    userGroupFromFile.setUserGroup(userGroup.getUserGroup());
+                    userGroupFromFile.setName(userGroup.getName());
                     userGroupFromFile.setUsers(userGroup.getUsers());
                     mapper.writeValue(userFile, userGroupFromFile);
                 }
@@ -164,7 +164,7 @@ public class UserGroupDaoImpl implements UserGroupDao {
 
     @Override
     public void saveUserGroup(UserGroup userGroup) {
-        File userFile = getUserGroupFile(userGroup.getUserGroup());
+        File userFile = getUserGroupFile(userGroup.getName());
 
         try {
             mapper.writeValue(userFile, userGroup);

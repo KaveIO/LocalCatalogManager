@@ -34,7 +34,7 @@ import com.google.common.hash.Hashing;
 import com.google.common.io.Files;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import nl.kpmg.lcm.server.data.BackendModel;
+import nl.kpmg.lcm.server.data.Storage;
 import nl.kpmg.lcm.server.data.MetaData;
 import org.apache.commons.io.IOUtils;
 import org.junit.AfterClass;
@@ -57,13 +57,13 @@ public class BackendFileTest {
     /**
      * Common access tool for all backends.
      */
-    private final BackendModel backendModel;
+    private final Storage backendModel;
 
     /**
      * Default constructor.
      */
     public BackendFileTest() {
-        backendModel = new BackendModel();
+        backendModel = new Storage();
         backendModel.setName("test");
         backendModel.setOptions(new HashMap());
         backendModel.getOptions().put("storagePath", TEST_STORAGE_PATH);

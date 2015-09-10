@@ -15,11 +15,11 @@
  */
 package nl.kpmg.lcm.server.data.storage.file;
 
-import nl.kpmg.lcm.server.data.dao.file.BackendDaoImpl;
+import nl.kpmg.lcm.server.data.dao.file.StorageDaoImpl;
 import nl.kpmg.lcm.server.data.dao.DaoException;
 import java.io.File;
 import java.util.HashMap;
-import nl.kpmg.lcm.server.data.BackendModel;
+import nl.kpmg.lcm.server.data.Storage;
 import nl.kpmg.lcm.server.data.dao.file.ObjectMapperFactory;
 import org.junit.After;
 import org.junit.AfterClass;
@@ -36,13 +36,13 @@ import org.junit.Test;
 public class BackendDaoImplTest {
     private static final String TEST_STORAGE_PATH = "test/";
 
-    private final BackendDaoImpl backendDao;
+    private final StorageDaoImpl backendDao;
 
     public BackendDaoImplTest() throws DaoException {
         File file = new File(TEST_STORAGE_PATH);
         file.mkdir();
 
-        backendDao = new BackendDaoImpl(TEST_STORAGE_PATH, ObjectMapperFactory.createInstance());
+        backendDao = new StorageDaoImpl(TEST_STORAGE_PATH, ObjectMapperFactory.createInstance());
     }
 
     @BeforeClass
@@ -67,14 +67,14 @@ public class BackendDaoImplTest {
 
     @Test
     public void testPersist()  {
-        BackendModel backendmodel = new BackendModel();
+        Storage backendmodel = new Storage();
         backendmodel.setName("test");
         backendmodel.setOptions(new HashMap());
         backendmodel.getOptions().put("storagePath", "/tmp/");
 
         backendDao.persist(backendmodel);
 
-        BackendModel byName = backendDao.getByName("test");
+        Storage byName = backendDao.getByName("test");
         String path = (String) byName.getOptions().get("storagePath");
         assertEquals("/tmp/", path);
 

@@ -15,7 +15,7 @@ public class UserGroup {
 
     private int id;
 
-    private String userGroup;
+    private String name;
 
     private List<String> users;
 
@@ -35,12 +35,12 @@ public class UserGroup {
         this.id = id;
     }
 
-    public String getUserGroup() {
-        return userGroup;
+    public String getName() {
+        return name;
     }
 
-    public void setUserGroup(String userGroup) {
-        this.userGroup = userGroup;
+    public void setName(String name) {
+        this.name = name;
     }
 
     @Override
@@ -49,7 +49,7 @@ public class UserGroup {
         int result = 1;
         result = prime * result + id;
         result = prime * result
-                + ((userGroup == null) ? 0 : userGroup.hashCode());
+                + ((name == null) ? 0 : name.hashCode());
         return result;
     }
 
@@ -68,11 +68,11 @@ public class UserGroup {
         if (id != other.id) {
             return false;
         }
-        if (userGroup == null) {
-            if (other.userGroup != null) {
+        if (name == null) {
+            if (other.name != null) {
                 return false;
             }
-        } else if (!userGroup.equals(other.userGroup)) {
+        } else if (!name.equals(other.name)) {
             return false;
         }
         return true;
@@ -80,7 +80,7 @@ public class UserGroup {
 
     @Override
     public String toString() {
-        return "UserGroup [id=" + id + ", userGroup=" + userGroup + "]";
+        return "UserGroup [id=" + id + ", userGroup=" + name + "]";
     }
 
 }

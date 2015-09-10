@@ -29,7 +29,7 @@ import javax.ws.rs.Produces;
 import javax.ws.rs.QueryParam;
 import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.Response;
-import nl.kpmg.lcm.server.rest.authentication.SessionAuthenticationManager;
+import javax.ws.rs.core.Response.Status;
 import nl.kpmg.lcm.server.rest.authentication.Roles;
 import nl.kpmg.lcm.server.data.TaskDescription;
 import nl.kpmg.lcm.server.data.dao.TaskDescriptionDao;
@@ -48,8 +48,12 @@ public class TaskDescriptionController {
     /**
      * The TaskDescription DAO.
      */
+    private final TaskDescriptionDao taskDescriptionDao;
+
     @Autowired
-    private TaskDescriptionDao taskDescriptionDao;
+    public TaskDescriptionController(final TaskDescriptionDao taskDescriptionDao) {
+        this.taskDescriptionDao = taskDescriptionDao;
+    }
 
     /**
      * Get a list of all the tasks.
@@ -58,7 +62,7 @@ public class TaskDescriptionController {
      * @return a list of all tasks
      */
     @GET
-    @Produces({"application/json"})
+    @Produces({"application/nl.kpmg.lcm.server.rest.client.version0.types.TaskDescriptionsRepresentation+json"})
     @RolesAllowed({Roles.ADMINISTRATOR, Roles.API_USER})
     public final TaskDescriptionsRepresentation getOverview(
             @DefaultValue("ALL") @QueryParam("status") final TaskDescriptionStatusFilter status) {
@@ -121,15 +125,16 @@ public class TaskDescriptionController {
      */
     @GET
     @Path("{tasks_id}")
-    @Produces({"application/json"})
+    @Produces({"application/nl.kpmg.lcm.server.rest.client.version0.types.TaskDescriptionRepresentation+json"})
     @RolesAllowed({Roles.ADMINISTRATOR, Roles.API_USER})
-    public final TaskDescriptionRepresentation getTask(@PathParam("tasks_id") final Integer taskDescriptionId) {
+    public final Response getTask(@PathParam("tasks_id") final Integer taskDescriptionId) {
         TaskDescription taskDescriptions = taskDescriptionDao.getById(taskDescriptionId);
 
         if (taskDescriptions != null) {
-            return new TaskDescriptionRepresentation(taskDescriptions);
+            return Response.ok(new TaskDescriptionRepresentation(taskDescriptions)).build();
+        } else {
+            return Response.status(Status.NOT_FOUND).build();
         }
-        throw new WebApplicationException(Response.Status.NOT_FOUND);
     }
 
     /**
@@ -140,7 +145,6 @@ public class TaskDescriptionController {
      */
     @DELETE
     @Path("{tasks_id}")
-    @Produces({"application/json"})
     @RolesAllowed({Roles.ADMINISTRATOR, Roles.API_USER})
     public final Response deleteCommand(@PathParam("tasks_id") final Integer taskDescriptionId) {
         TaskDescription taskDescriptions = taskDescriptionDao.getById(taskDescriptionId);
@@ -148,7 +152,8 @@ public class TaskDescriptionController {
         if (taskDescriptions != null) {
             taskDescriptionDao.delete(taskDescriptions);
             return Response.ok().build();
+        } else {
+            return Response.status(Status.NOT_FOUND).build();
         }
-        throw new WebApplicationException(Response.Status.NOT_FOUND);
     }
 }

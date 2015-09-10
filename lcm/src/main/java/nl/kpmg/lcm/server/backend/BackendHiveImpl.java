@@ -30,7 +30,7 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import nl.kpmg.lcm.server.data.BackendModel;
+import nl.kpmg.lcm.server.data.Storage;
 import nl.kpmg.lcm.server.data.MetaData;
 import org.apache.commons.io.IOUtils;
 
@@ -73,12 +73,12 @@ public class BackendHiveImpl extends AbstractBackend {
     /**
      * Default constructor.
      *
-     * @param backend is {@link BackendModel} that contains - - the storagePath;
+     * @param backend is {@link Storage} that contains - - the storagePath;
      * full hive server address (e.g. hive://127.0.0.1:10000) - the hdfsServer;
      * full address of HDFS server (e.g. hdfs://localhost:8020) - the hiveUser;
      * name of the user who can export tables from hive to hdfs
      */
-    public BackendHiveImpl(final BackendModel backend) {
+    public BackendHiveImpl(final Storage backend) {
         this.hdfsServer = (String) backend.getOptions().get("hdfsServer");
         this.server = (String) backend.getOptions().get("storagePath");
         this.hiveUser = (String) backend.getOptions().get("hiveUser");
@@ -369,7 +369,7 @@ public class BackendHiveImpl extends AbstractBackend {
         MetaData metaTemp = new MetaData();
         metaTemp.setDataUri( "/tmp/" + tabName);
 
-        BackendModel backendModel = new BackendModel();
+        Storage backendModel = new Storage();
         backendModel.setName("store_helper");
         backendModel.setOptions(new HashMap());
         backendModel.getOptions().put("storagePath", hdfsServer);
@@ -484,7 +484,7 @@ public class BackendHiveImpl extends AbstractBackend {
         metaTemp.setDataUri("/tmp/" + tabName + "/000000_0");
 
         // read it with HDFS backend
-        BackendModel backendModel = new BackendModel();
+        Storage backendModel = new Storage();
         backendModel.setName("store_helper");
         backendModel.setOptions(new HashMap());
         backendModel.getOptions().put("storagePath", hdfsServer);

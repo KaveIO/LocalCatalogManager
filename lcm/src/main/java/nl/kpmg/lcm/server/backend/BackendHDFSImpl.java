@@ -20,7 +20,7 @@ import java.io.InputStream;
 import java.util.Date;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import nl.kpmg.lcm.server.data.BackendModel;
+import nl.kpmg.lcm.server.data.Storage;
 import nl.kpmg.lcm.server.data.MetaData;
 import org.apache.commons.io.IOUtils;
 import org.apache.hadoop.conf.Configuration;
@@ -47,9 +47,9 @@ public class BackendHDFSImpl extends AbstractBackend {
     /**
      * Default constructor.
      *
-     * @param backend is {@link BackendModel} that contains the storagePath
+     * @param backend is {@link Storage} that contains the storagePath
      */
-    public BackendHDFSImpl(final BackendModel backend) {
+    public BackendHDFSImpl(final Storage backend) {
         this.storagePath = (String) backend.getOptions().get("storagePath");
     }
 

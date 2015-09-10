@@ -28,7 +28,7 @@ import java.net.URI;
 import java.util.HashMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import nl.kpmg.lcm.server.data.BackendModel;
+import nl.kpmg.lcm.server.data.Storage;
 import nl.kpmg.lcm.server.data.MetaData;
 import org.apache.commons.io.IOUtils;
 import org.apache.hadoop.conf.Configuration;
@@ -68,13 +68,13 @@ public class BackendHDFSImplIntTest {
     /**
      * Common access tool for all backends.
      */
-    private final BackendModel backendModel;
+    private final Storage backendModel;
 
     /**
      * Default constructor.
      */
     public BackendHDFSImplIntTest() {
-        backendModel = new BackendModel();
+        backendModel = new Storage();
         backendModel.setName("test");
         backendModel.setOptions(new HashMap());
         backendModel.getOptions().put("storagePath", TEST_STORAGE_PATH);

@@ -18,11 +18,11 @@ package nl.kpmg.lcm.server.task.enrichment;
 import java.io.File;
 import java.util.HashMap;
 import nl.kpmg.lcm.server.LCMBaseTest;
-import nl.kpmg.lcm.server.data.BackendModel;
+import nl.kpmg.lcm.server.data.Storage;
 import nl.kpmg.lcm.server.data.MetaData;
-import nl.kpmg.lcm.server.data.dao.BackendDao;
+import nl.kpmg.lcm.server.data.dao.StorageDao;
 import nl.kpmg.lcm.server.data.dao.MetaDataDao;
-import nl.kpmg.lcm.server.data.service.BackendService;
+import nl.kpmg.lcm.server.data.service.StorageService;
 import nl.kpmg.lcm.server.task.TaskException;
 import org.junit.After;
 import org.junit.AfterClass;
@@ -50,10 +50,10 @@ public class DataEnrichmentTaskTest extends LCMBaseTest implements ApplicationCo
     private MetaDataDao metaDataDao;
 
     @Autowired
-    private BackendService backendService;
+    private StorageService backendService;
 
     @Autowired
-    private BackendDao backendDao;
+    private StorageDao backendDao;
 
     @Override
     public void setApplicationContext(ApplicationContext context) throws BeansException {
@@ -67,7 +67,7 @@ public class DataEnrichmentTaskTest extends LCMBaseTest implements ApplicationCo
 
     @Test
     public void testExecuteWithExistingMetaData() throws TaskException {
-        BackendModel backendModel = new BackendModel();
+        Storage backendModel = new Storage();
         backendModel.setName("test");
         backendModel.setOptions(new HashMap());
         backendModel.getOptions().put("storagePath", TEST_STORAGE_PATH + "/storage");
