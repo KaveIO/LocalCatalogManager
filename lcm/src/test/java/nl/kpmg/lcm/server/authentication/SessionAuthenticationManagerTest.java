@@ -83,9 +83,9 @@ public class SessionAuthenticationManagerTest extends LCMBaseTest {
     @Test
     public void testGetAuthenticationTokenUsesUserObjects() throws Exception {
         User user = new User();
-        user.setUsername("testUser");
+        user.setId("testUser");
         user.setPassword("testPassword", false);
-        userService.getUserDao().saveUser(user);
+        userService.getUserDao().persist(user);
 
         String authenticationToken = authenticationManager.getAuthenticationToken("testUser", "testPassword");
         assertNotNull(authenticationToken);
@@ -94,9 +94,9 @@ public class SessionAuthenticationManagerTest extends LCMBaseTest {
     @Test
     public void testGetAuthenticationTokenPrefersConfiguredUserOverUserObjects() throws Exception {
         User user = new User();
-        user.setUsername("admin");
+        user.setId("admin");
         user.setPassword("testPassword", false);
-        userService.getUserDao().saveUser(user);
+        userService.getUserDao().persist(user);
 
         String authenticationToken = authenticationManager.getAuthenticationToken("admin", "admin");
         assertNotNull(authenticationToken);

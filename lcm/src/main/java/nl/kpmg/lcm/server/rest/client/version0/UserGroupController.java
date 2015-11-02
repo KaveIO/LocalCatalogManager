@@ -37,7 +37,7 @@ public class UserGroupController {
     @RolesAllowed({Roles.ADMINISTRATOR, Roles.API_USER})
     public final UserGroupsRepresentation getUserGroups() {
         UserGroupDao userGroupDao = userGroupService.getUserGroupDao();
-        List<UserGroup> userGroups = userGroupDao.getUserGroups();
+        List<UserGroup> userGroups = userGroupDao.getAll();
 
         return new UserGroupsRepresentation(userGroups);
     }
@@ -48,7 +48,7 @@ public class UserGroupController {
     @RolesAllowed({Roles.ADMINISTRATOR, Roles.API_USER})
     public final Response getUserGroup(@PathParam("usergroup_id") String userGroupId) {
         UserGroupDao userGroupDao = userGroupService.getUserGroupDao();
-        UserGroup userGroup = userGroupDao.getUserGroup(userGroupId);
+        UserGroup userGroup = userGroupDao.getById(userGroupId);
 
         if (userGroup != null) {
             return Response.ok(new UserGroupRepresentation(userGroup)).build();
@@ -62,7 +62,7 @@ public class UserGroupController {
     @RolesAllowed({Roles.ADMINISTRATOR})
     public final Response createNewUserGroup(final UserGroup userGroup) {
         UserGroupDao userGroupDao = userGroupService.getUserGroupDao();
-        userGroupDao.saveUserGroup(userGroup);
+        userGroupDao.persist(userGroup);
 
         return Response.ok().build();
     }
@@ -72,7 +72,7 @@ public class UserGroupController {
     @Consumes({"application/nl.kpmg.lcm.server.data.UserGroup+json"})
     @RolesAllowed({Roles.ADMINISTRATOR})
     public final Response modifyUserGroup(final UserGroup userGroup) {
-        userGroupService.getUserGroupDao().modifyUserGroup(userGroup);
+        userGroupService.getUserGroupDao().update(userGroup);
         return Response.ok().build();
     }
 
@@ -81,7 +81,12 @@ public class UserGroupController {
     @RolesAllowed({Roles.ADMINISTRATOR})
     public final Response deleteUserGroup(@PathParam("usergroup_id") String userGroupId) {
         UserGroupDao userGroupDao = userGroupService.getUserGroupDao();
-        userGroupDao.deleteUserGroup(userGroupId);
-        return Response.ok().build();
+        UserGroup userGroup = userGroupDao.getById(userGroupId);
+        if (userGroup != null) {
+            userGroupDao.delete(userGroup);
+            return Response.ok().build();
+        } else {
+            return Response.status(Status.NOT_FOUND).build();
+        }
     }
 }

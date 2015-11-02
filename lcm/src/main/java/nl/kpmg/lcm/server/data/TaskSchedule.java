@@ -23,7 +23,7 @@ import java.util.List;
  *
  * @author mhoekstra
  */
-public class TaskSchedule extends AbstractModel{    
+public class TaskSchedule extends AbstractModel{
 
     /**
      * The schedule. s
@@ -85,7 +85,7 @@ public class TaskSchedule extends AbstractModel{
         public void setTarget(String target) {
             this.target = target;
         }
-    }    
+    }
 
     public List<TaskScheduleItem> getItems() {
         return items;
@@ -94,5 +94,4 @@ public class TaskSchedule extends AbstractModel{
     public void setItems(List<TaskScheduleItem> items) {
         this.items = items;
     }
-       
 }

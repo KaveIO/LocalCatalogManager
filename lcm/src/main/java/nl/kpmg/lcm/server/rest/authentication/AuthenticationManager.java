@@ -58,6 +58,7 @@ public abstract class AuthenticationManager {
 
     public abstract UserSecurityContext getSecurityContext(ContainerRequestContext requestContext);
 
+    @Autowired
     public AuthenticationManager(UserService userService) {
         this.userService = userService;
     }
@@ -80,7 +81,7 @@ public abstract class AuthenticationManager {
             }
         } else {
             LOGGER.info("Caught login attempt for regular user");
-            User user = userService.getUserDao().getUser(username);
+            User user = userService.getUserDao().getById(username);
             try {
                 if (user != null && user.passwordEquals(password)) {
                     return true;
@@ -96,9 +97,9 @@ public abstract class AuthenticationManager {
         if (username.equals(adminUser)) {
             return new Session(username, Roles.ADMINISTRATOR, UserOrigin.CONFIGURED);
         } else {
-            User user = userService.getUserDao().getUser(username);
+            User user = userService.getUserDao().getById(username);
             if (user != null) {
-                return new Session(user.getUsername(), user.getRole(), UserOrigin.LOCAL);
+                return new Session(user.getId(), user.getRole(), UserOrigin.LOCAL);
             }
         }
         throw new LoginException("Session could not be constructed after login.");

@@ -32,22 +32,22 @@ public class BackendModelTest extends LCMBaseTest {
     @Test
     public void testFetchConfiguredBackendByName() throws DaoException {
         Storage storage1 = new Storage();
-        storage1.setName("test");
+        storage1.setId("test");
         storage1.setOptions(new HashMap());
         storage1.getOptions().put("storagePath", "/tmp/");
 
         Storage storage2 = new Storage();
-        storage2.setName("test2");
+        storage2.setId("test2");
         storage2.setOptions(new HashMap());
         storage2.getOptions().put("storagePath", "/tmp2/");
 
         Storage storage3 = new Storage();
-        storage3.setName("test3");
+        storage3.setId("test3");
         storage3.setOptions(new HashMap());
         storage3.getOptions().put("storagePath", "/tmp3/");
 
         Storage storage4 = new Storage();
-        storage4.setName("test3");
+        storage4.setId("test3");
         storage4.setOptions(new HashMap());
         storage4.getOptions().put("storagePath", "/tmp3b/");
 
@@ -62,17 +62,17 @@ public class BackendModelTest extends LCMBaseTest {
         String path1 = (String) backEndList.get(0).getOptions().get("storagePath");
         assertEquals("/tmp/", path1);
 
-        assertEquals("test", backEndList.get(0).getName());
+        assertEquals("test", backEndList.get(0).getId());
 
         String path2 = (String) backEndList.get(1).getOptions().get("storagePath");
         assertEquals("/tmp2/", path2);
 
-        assertEquals("test2", backEndList.get(1).getName());
+        assertEquals("test2", backEndList.get(1).getId());
 
         String path3 = (String) backEndList.get(2).getOptions().get("storagePath");
         assertEquals("/tmp3b/", path3);
 
-        assertEquals("test3", backEndList.get(2).getName());
+        assertEquals("test3", backEndList.get(2).getId());
 
         Backend backend;
 
@@ -87,7 +87,7 @@ public class BackendModelTest extends LCMBaseTest {
     @Test
     public void testFetchandConfigureHDFS() throws DaoException {
         Storage storage = new Storage();
-        storage.setName("testHDFS");
+        storage.setId("testHDFS");
         storage.setOptions(new HashMap());
         storage.getOptions().put("storagePath", "/tmpHDFS/");
         storageDao.persist(storage);

@@ -70,9 +70,9 @@ public class MetaData {
 
     }
 
-    private <T> T get(Map map, String[] path) throws Exception {
+    private <T> T get(Map map, String[] path) {
         if (path.length == 0) {
-            throw new Exception("Errrrr");
+            return null;
         } else if (map.containsKey(path[0])) {
             Object value = map.get(path[0]);
             if (path.length == 1) {
@@ -81,7 +81,7 @@ public class MetaData {
                 return get((Map) value, (String[]) ArrayUtils.removeElement(path, path[0]));
             }
         } else {
-            throw new Exception("Errrrr");
+            return null;
         }
     }
 

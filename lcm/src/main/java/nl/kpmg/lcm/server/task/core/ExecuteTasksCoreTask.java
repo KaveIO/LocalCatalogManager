@@ -68,7 +68,7 @@ public class ExecuteTasksCoreTask extends CoreTask {
             if (taskDescription.getStatus() == TaskDescription.TaskStatus.PENDING) {
                 try {
                     scheduleEnrichmentTask(
-                            taskDescription.getName(),
+                            taskDescription.getId(),
                             taskDescription.getJob(),
                             taskDescription.getTarget());
                     taskDescription.setStatus(TaskDescription.TaskStatus.SCHEDULED);

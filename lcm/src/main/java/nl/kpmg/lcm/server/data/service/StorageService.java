@@ -61,24 +61,26 @@ public class StorageService {
      * @throws nl.kpmg.lcm.server.data.service.ServiceException
      */
     public final Backend getBackend(final String uri) {
-        String scheme;
+        if (uri == null || uri.isEmpty()) {
+            return null;
+        }
 
         try {
             URI parsedUri = new URI(uri);
-            scheme = parsedUri.getScheme();
+            String scheme = parsedUri.getScheme();
 
             switch (scheme) {
                 case "file":
                     if (parsedUri.getHost() != null)  {
-                       return new BackendFileImpl(storageDao.getByName(parsedUri.getHost()));
+                       return new BackendFileImpl(storageDao.getById(parsedUri.getHost()));
                     } else {
-                       return new BackendFileImpl(storageDao.getByName(parsedUri.getAuthority()));
+                       return new BackendFileImpl(storageDao.getById(parsedUri.getAuthority()));
                     }
                 case "hdfs":
                     if (parsedUri.getHost() != null)  {
-                        return new BackendHDFSImpl(storageDao.getByName(parsedUri.getHost()));
+                        return new BackendHDFSImpl(storageDao.getById(parsedUri.getHost()));
                     } else {
-                        return new BackendHDFSImpl(storageDao.getByName(parsedUri.getAuthority()));
+                        return new BackendHDFSImpl(storageDao.getById(parsedUri.getAuthority()));
                     }
                 default : return null;
             }

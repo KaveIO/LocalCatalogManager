@@ -67,7 +67,7 @@ public class DataEnrichmentTask extends EnrichmentTask {
      * The BackendService.
      */
     @Autowired
-    private StorageService backendService;
+    private StorageService storageService;
 
     /**
      * Will store information on the data associated with a piece of MetaData.
@@ -79,7 +79,11 @@ public class DataEnrichmentTask extends EnrichmentTask {
     @Override
     protected final TaskResult execute(final MetaData metadata) throws TaskException {
         try {
-            Backend backend = backendService.getBackend(metadata);
+            Backend backend = storageService.getBackend(metadata);
+            if (backend == null) {
+                return TaskResult.FAILURE;
+            }
+
             DataSetInformation gatherDataSetInformation = backend.gatherDataSetInformation(metadata);
 
             if (!gatherDataSetInformation.isAttached()) {

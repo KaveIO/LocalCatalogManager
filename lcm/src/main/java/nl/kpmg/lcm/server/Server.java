@@ -10,6 +10,7 @@ import nl.kpmg.lcm.server.rest.authentication.ResponseFilter;
 import nl.kpmg.lcm.server.task.TaskManager;
 import nl.kpmg.lcm.server.task.TaskManagerException;
 import com.fasterxml.jackson.jaxrs.json.JacksonJsonProvider;
+import nl.kpmg.lcm.server.rest.authentication.Roles;
 import org.glassfish.grizzly.http.server.HttpServer;
 import org.glassfish.jersey.grizzly2.httpserver.GrizzlyHttpServerFactory;
 import org.glassfish.jersey.jackson.JacksonFeature;
@@ -84,7 +85,7 @@ public class Server {
                 .property("contextConfig", context)
                 .property(EntityFilteringFeature.ENTITY_FILTERING_SCOPE,
                         new Annotation[]{
-                            SecurityAnnotations.rolesAllowed(new String[]{"administrator", "apiUser"})})
+                            SecurityAnnotations.rolesAllowed(new String[]{Roles.ADMINISTRATOR, Roles.API_USER})})
                 .register(SecurityEntityFilteringFeature.class)
                 .register(RequestFilter.class)
                 .register(ResponseFilter.class)

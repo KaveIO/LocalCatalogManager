@@ -24,7 +24,6 @@ import nl.kpmg.lcm.server.data.TaskDescription;
  * @author mhoekstra
  */
 public interface TaskDescriptionDao extends GenericDao<TaskDescription> {
-    
+
     public List<TaskDescription> getByStatus(TaskDescription.TaskStatus status);
-        
 }

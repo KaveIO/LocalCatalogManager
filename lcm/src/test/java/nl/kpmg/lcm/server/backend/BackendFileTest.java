@@ -64,7 +64,7 @@ public class BackendFileTest {
      */
     public BackendFileTest() {
         backendModel = new Storage();
-        backendModel.setName("test");
+        backendModel.setId("test");
         backendModel.setOptions(new HashMap());
         backendModel.getOptions().put("storagePath", TEST_STORAGE_PATH);
     }

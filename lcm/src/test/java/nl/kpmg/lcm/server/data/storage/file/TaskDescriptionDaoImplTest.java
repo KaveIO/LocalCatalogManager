@@ -20,56 +20,32 @@ import nl.kpmg.lcm.server.data.dao.DaoException;
 import java.io.File;
 import java.util.Date;
 import java.util.List;
+import nl.kpmg.lcm.server.LCMBaseTest;
 import nl.kpmg.lcm.server.data.TaskDescription;
 import nl.kpmg.lcm.server.data.dao.file.ObjectMapperFactory;
 import org.junit.After;
 import org.junit.AfterClass;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 import org.junit.BeforeClass;
 import org.junit.Test;
+import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  *
  * @author mhoekstra
  */
-public class TaskDescriptionDaoImplTest {
-    private static final String TEST_STORAGE_PATH = "test/";
+public class TaskDescriptionDaoImplTest extends LCMBaseTest {
 
-    private final TaskDescriptionDaoImpl taskDescriptionDao;
-
-    public TaskDescriptionDaoImplTest() throws DaoException {
-        File file = new File(TEST_STORAGE_PATH);
-        file.mkdir();
-
-        taskDescriptionDao = new TaskDescriptionDaoImpl(TEST_STORAGE_PATH, ObjectMapperFactory.createInstance());
-    }
-
-    @BeforeClass
-    public static void setUpClass() {
-        File file = new File(TEST_STORAGE_PATH);
-        file.mkdir();
-    }
-
-    @AfterClass
-    public static void tearDownClass() {
-        File file = new File(TEST_STORAGE_PATH);
-        file.delete();
-    }
-
-    @After
-    public void tearDown() {
-        File file = new File(TEST_STORAGE_PATH);
-        for (File taskDescriptionFile : file.listFiles()) {
-            taskDescriptionFile.delete();
-        }
-    }
+    @Autowired
+    private TaskDescriptionDaoImpl taskDescriptionDao;
 
     @Test
     public void testPersistWithANewObject() {
         TaskDescription taskDescription = new TaskDescription();
 
-        taskDescription.setName("test name");
+        taskDescription.setId("testname");
         taskDescription.setJob("test job");
         taskDescription.setTarget("test target");
         taskDescription.setOutput("test output");
@@ -79,20 +55,17 @@ public class TaskDescriptionDaoImplTest {
 
         taskDescriptionDao.persist(taskDescription);
 
-        TaskDescription actual = taskDescriptionDao.getById(1);
+        TaskDescription actual = taskDescriptionDao.getById("testname");
 
         // We didn't write a nice mapper for this object so Check if all fields
         // got presisted nicely.
-        assertEquals(taskDescription.getName(), actual.getName());
+        assertEquals(taskDescription.getId(), actual.getId());
         assertEquals(taskDescription.getJob(), actual.getJob());
         assertEquals(taskDescription.getTarget(), actual.getTarget());
         assertEquals(taskDescription.getOutput(), actual.getOutput());
         assertEquals(taskDescription.getStartTime(), actual.getStartTime());
         assertEquals(taskDescription.getEndTime(), actual.getEndTime());
         assertEquals(taskDescription.getStatus(), actual.getStatus());
-
-        // An id should have been set as well
-        assertEquals(new Integer(1), actual.getId());
     }
 
     @Test
@@ -100,28 +73,7 @@ public class TaskDescriptionDaoImplTest {
         TaskDescription taskDescription = new TaskDescription();
         taskDescriptionDao.persist(taskDescription);
 
-        Integer expected = 1;
-        Integer actual = taskDescription.getId();
-
-        assertEquals(expected, actual);
-    }
-
-    @Test
-    public void testPersistForUpdateingAnObject() {
-        // First lets store an object
-        TaskDescription taskDescription = new TaskDescription();
-        taskDescription.setName("test name");
-        taskDescriptionDao.persist(taskDescription);
-
-        taskDescription.setName("New Name");
-        taskDescriptionDao.persist(taskDescription);
-
-        // Fetch all the task descriptions
-        List<TaskDescription> all = taskDescriptionDao.getAll();
-
-        assertTrue(all.size() == 1);
-        assertEquals(new Integer(1), all.get(0).getId());
-        assertEquals("New Name", all.get(0).getName());
+        assertNotNull(taskDescription.getId());
     }
 
     @Test
@@ -129,11 +81,11 @@ public class TaskDescriptionDaoImplTest {
         TaskDescription taskDescription;
 
         taskDescription = new TaskDescription();
-        taskDescription.setName("test 1");
+        taskDescription.setId("test1");
         taskDescriptionDao.persist(taskDescription);
 
         taskDescription = new TaskDescription();
-        taskDescription.setName("test 2");
+        taskDescription.setId("test2");
         taskDescriptionDao.persist(taskDescription);
 
         // Fetch all the task descriptions

@@ -28,9 +28,11 @@ public abstract class LCMBaseTest {
         file.mkdir();
         file = new File(TEST_STORAGE_PATH + "/storage");
         file.mkdir();
+        file = new File(TEST_STORAGE_PATH + "/backend");
+        file.mkdir();
         file = new File(TEST_STORAGE_PATH + "/users");
         file.mkdir();
-        file = new File(TEST_STORAGE_PATH + "/userGroups");
+        file = new File(TEST_STORAGE_PATH + "/usergroups");
         file.mkdir();
     }
 
@@ -45,11 +47,13 @@ public abstract class LCMBaseTest {
         file.delete();
         file = new File(TEST_STORAGE_PATH + "/taskschedule");
         file.delete();
+        file = new File(TEST_STORAGE_PATH + "/storage");
+        file.delete();
         file = new File(TEST_STORAGE_PATH + "/backend");
         file.delete();
         file = new File(TEST_STORAGE_PATH + "/users");
         file.delete();
-        file = new File(TEST_STORAGE_PATH + "/userGroups");
+        file = new File(TEST_STORAGE_PATH + "/usergroups");
         file.delete();
     }
 

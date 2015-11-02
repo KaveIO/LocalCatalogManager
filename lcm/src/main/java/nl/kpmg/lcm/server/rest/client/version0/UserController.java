@@ -5,6 +5,7 @@ import javax.ws.rs.Consumes;
 import javax.ws.rs.DELETE;
 import javax.ws.rs.GET;
 import javax.ws.rs.POST;
+import javax.ws.rs.PUT;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
@@ -53,7 +54,7 @@ public class UserController {
     @RolesAllowed({Roles.ADMINISTRATOR, Roles.API_USER})
     public final UsersRepresentation getUsers() {
         UserDao userDao = userService.getUserDao();
-        return new UsersRepresentation(userDao.getUsers());
+        return new UsersRepresentation(userDao.getAll());
     }
 
     @GET
@@ -63,7 +64,7 @@ public class UserController {
     public final Response getUser(@PathParam("user_id") String user_id) {
         UserDao userDao = userService.getUserDao();
 
-        User user = userDao.getUser(user_id);
+        User user = userDao.getById(user_id);
 
         if (user != null) {
             return Response.ok(new UserRepresentation(user)).build();
@@ -76,16 +77,16 @@ public class UserController {
     @Consumes({"application/nl.kpmg.lcm.server.data.User+json"})
     @RolesAllowed({Roles.ADMINISTRATOR})
     public final Response createNewUser(final User user) {
-        userService.getUserDao().saveUser(user);
+        userService.getUserDao().persist(user);
         return Response.ok().build();
     }
 
-    @POST
+    @PUT
     @Path("/{user_id}")
     @Consumes({"application/nl.kpmg.lcm.server.data.User+json"})
     @RolesAllowed({Roles.ADMINISTRATOR})
     public final Response modifyUser(final User user) {
-        userService.getUserDao().modifyUser(user);
+        userService.getUserDao().update(user);
         return Response.ok().build();
     }
 
@@ -94,10 +95,10 @@ public class UserController {
     @RolesAllowed({Roles.ADMINISTRATOR})
     public final Response deleteUser(@PathParam("user_id") final String userId) {
         UserDao userDao = userService.getUserDao();
-        User user = userDao.getUser(userId);
+        User user = userDao.getById(userId);
 
         if (user != null) {
-            userDao.deleteUser(userId);
+            userDao.delete(user);
             return Response.ok().build();
         } else {
             return Response.status(Status.NOT_FOUND).build();

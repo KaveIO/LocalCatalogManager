@@ -1,4 +1,4 @@
-package nl.kpmg.lcm.server.rest;
+package nl.kpmg.lcm.server.rest.client.version0;
 
 import java.security.NoSuchAlgorithmException;
 import java.security.spec.InvalidKeySpecException;
@@ -17,7 +17,7 @@ import nl.kpmg.lcm.server.data.User;
 import nl.kpmg.lcm.server.data.UserGroup;
 import nl.kpmg.lcm.server.data.dao.UserGroupDao;
 import nl.kpmg.lcm.server.data.service.UserGroupService;
-import nl.kpmg.lcm.server.rest.types.LoginRequest;
+import nl.kpmg.lcm.server.rest.client.types.LoginRequest;
 import org.junit.After;
 import org.junit.Before;
 
@@ -39,7 +39,7 @@ public class UserGroupControllerClientTest extends LCMBaseServerTest {
         loginRequest.setUsername("admin");
         loginRequest.setPassword("admin");
         Entity<LoginRequest> entity = Entity.entity(loginRequest,
-                "application/nl.kpmg.lcm.server.rest.client.version0.types.LoginRequest+json");
+                "application/nl.kpmg.lcm.server.rest.client.types.LoginRequest+json");
         Response res = target
                 .path("client/login")
                 .request()
@@ -74,8 +74,8 @@ public class UserGroupControllerClientTest extends LCMBaseServerTest {
 
         UserGroupDao userGroupDao = userGroupService.getUserGroupDao();
         UserGroup userGroup = new UserGroup();
-        userGroup.setName("admin");
-        userGroupDao.saveUserGroup(userGroup);
+        userGroup.setId("admin");
+        userGroupDao.persist(userGroup);
 
         Response res1 = target
                 .path("client/v0/userGroups/"+userGroup.getId())
@@ -93,8 +93,7 @@ public class UserGroupControllerClientTest extends LCMBaseServerTest {
         users.add("admin");
 
         UserGroup userGroup = new UserGroup();
-        userGroup.setId(100);
-        userGroup.setName("testUserGroup");
+        userGroup.setId("testUserGroup");
         userGroup.setUsers(users);
 
         Entity<UserGroup> entity = Entity.entity(userGroup, "application/nl.kpmg.lcm.server.data.UserGroup+json");
@@ -114,11 +113,9 @@ public class UserGroupControllerClientTest extends LCMBaseServerTest {
         users.add("admin");
 
         UserGroup userGroup = new UserGroup();
-        userGroup.setId(101);
-        userGroup.setName("testUserGroup");
+        userGroup.setId("testUserGroup");
         userGroup.setUsers(users);
 
-        userGroup.setId(105);
         Entity<UserGroup> entity = Entity.entity(userGroup, "application/nl.kpmg.lcm.server.data.UserGroup+json");
         Response res1 = target
                 .path("client/v0/userGroups/testUserGroup")
@@ -136,17 +133,16 @@ public class UserGroupControllerClientTest extends LCMBaseServerTest {
         users.add("admin");
 
         UserGroup userGroup = new UserGroup();
-        userGroup.setId(100);
-        userGroup.setName("testUserGroup1");
+        userGroup.setId("testUserGroup1");
         userGroup.setUsers(users);
 
         Entity<UserGroup> entity1 = Entity.entity(userGroup, "application/nl.kpmg.lcm.server.data.UserGroup+json");
         Response res1 = target
-                .path("client/v0/userGroups/testUserGroup1")
+                .path("client/v0/userGroups")
                 .request()
                 .header("LCM-Authentication-User", "admin")
                 .header("LCM-Authentication-Token", authenticationToken)
-                .put(entity1);
+                .post(entity1);
 
         Response res2 = target
                 .path("client/v0/userGroups/testUserGroup1")

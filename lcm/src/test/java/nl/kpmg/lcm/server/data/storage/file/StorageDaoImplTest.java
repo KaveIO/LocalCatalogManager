@@ -16,69 +16,36 @@
 package nl.kpmg.lcm.server.data.storage.file;
 
 import nl.kpmg.lcm.server.data.dao.file.StorageDaoImpl;
-import nl.kpmg.lcm.server.data.dao.DaoException;
-import java.io.File;
 import java.util.HashMap;
+import nl.kpmg.lcm.server.LCMBaseTest;
 import nl.kpmg.lcm.server.data.Storage;
-import nl.kpmg.lcm.server.data.dao.file.ObjectMapperFactory;
-import org.junit.After;
-import org.junit.AfterClass;
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
-import org.junit.BeforeClass;
 import org.junit.Test;
+import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  *
  * @author mhoekstra
  */
-public class BackendDaoImplTest {
-    private static final String TEST_STORAGE_PATH = "test/";
+public class StorageDaoImplTest extends LCMBaseTest {
 
-    private final StorageDaoImpl backendDao;
-
-    public BackendDaoImplTest() throws DaoException {
-        File file = new File(TEST_STORAGE_PATH);
-        file.mkdir();
-
-        backendDao = new StorageDaoImpl(TEST_STORAGE_PATH, ObjectMapperFactory.createInstance());
-    }
-
-    @BeforeClass
-    public static void setUpClass() {
-        File file = new File(TEST_STORAGE_PATH);
-        file.mkdir();
-    }
-
-    @AfterClass
-    public static void tearDownClass() {
-        File file = new File(TEST_STORAGE_PATH);
-        file.delete();
-    }
-
-    @After
-    public void tearDown() {
-        File file = new File(TEST_STORAGE_PATH);
-        for (File backendFolder : file.listFiles()) {
-            backendFolder.delete();
-        }
-    }
+    @Autowired
+    private StorageDaoImpl backendDao;
 
     @Test
     public void testPersist()  {
         Storage backendmodel = new Storage();
-        backendmodel.setName("test");
+        backendmodel.setId("test");
         backendmodel.setOptions(new HashMap());
         backendmodel.getOptions().put("storagePath", "/tmp/");
 
         backendDao.persist(backendmodel);
 
-        Storage byName = backendDao.getByName("test");
+        Storage byName = backendDao.getById("test");
         String path = (String) byName.getOptions().get("storagePath");
         assertEquals("/tmp/", path);
 
-        assertEquals("test", byName.getName());
+        assertEquals("test", byName.getId());
         assertEquals("/tmp/", (String) byName.getOptions().get("storagePath"));
 
     }

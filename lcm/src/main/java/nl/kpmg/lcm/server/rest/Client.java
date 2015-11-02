@@ -15,7 +15,6 @@
  */
 package nl.kpmg.lcm.server.rest;
 
-import nl.kpmg.lcm.server.rest.authentication.RequestFilter;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.GET;
 import javax.ws.rs.HeaderParam;
@@ -27,7 +26,8 @@ import nl.kpmg.lcm.server.LoginException;
 import nl.kpmg.lcm.server.LogoutException;
 import nl.kpmg.lcm.server.rest.authentication.SessionAuthenticationManager;
 import nl.kpmg.lcm.server.data.service.UserService;
-import nl.kpmg.lcm.server.rest.types.LoginRequest;
+import nl.kpmg.lcm.server.rest.client.types.ClientRepresentation;
+import nl.kpmg.lcm.server.rest.client.types.LoginRequest;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
@@ -62,9 +62,8 @@ public class Client {
      */
     @GET
     @Produces({"application/json" })
-    public final String[] getIndex() {
-        /** @TODO  Should scan for classes in the client package */
-        return new String[]{"v0"};
+    public final ClientRepresentation getIndex() {
+        return new ClientRepresentation();
     }
 
         /**
@@ -74,7 +73,7 @@ public class Client {
      * @return Authorization token if successful. status 400 if not.
      */
     @POST
-    @Consumes({"application/nl.kpmg.lcm.server.rest.client.version0.types.LoginRequest+json" })
+    @Consumes({"application/nl.kpmg.lcm.server.rest.client.types.LoginRequest+json" })
     @Produces({"text/plain" })
     @Path("/login")
     public final Response login(final LoginRequest loginRequest) {
@@ -107,5 +106,4 @@ public class Client {
             return Response.status(Response.Status.BAD_REQUEST).entity("logout unsuccessful").build();
         }
     }
-
 }

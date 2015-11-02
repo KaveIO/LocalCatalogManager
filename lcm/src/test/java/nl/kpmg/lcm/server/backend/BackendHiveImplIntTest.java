@@ -83,7 +83,7 @@ public class BackendHiveImplIntTest {
      */
     public BackendHiveImplIntTest() {
         backendModel = new Storage();
-        backendModel.setName("test");
+        backendModel.setId("test");
         backendModel.setOptions(new HashMap());
         backendModel.getOptions().put("storagePath", TEST_STORAGE_PATH);
         backendModel.getOptions().put("hdfsServer", HDFS_SERVER);
@@ -117,7 +117,7 @@ public class BackendHiveImplIntTest {
         }
         // make test table
         Storage testBackendModel = new Storage();
-        testBackendModel.setName("test");
+        testBackendModel.setId("test");
         testBackendModel.setOptions(new HashMap());
         testBackendModel.getOptions().put("storagePath", TEST_STORAGE_PATH);
         testBackendModel.getOptions().put("hdfsServer", HDFS_SERVER);
@@ -180,7 +180,7 @@ public class BackendHiveImplIntTest {
         file.delete();
         // delete the test table
         Storage testBackendModel = new Storage();
-        testBackendModel.setName("test");
+        testBackendModel.setId("test");
         testBackendModel.setOptions(new HashMap());
         testBackendModel.getOptions().put("storagePath", TEST_STORAGE_PATH);
         testBackendModel.getOptions().put("hdfsServer", HDFS_SERVER);

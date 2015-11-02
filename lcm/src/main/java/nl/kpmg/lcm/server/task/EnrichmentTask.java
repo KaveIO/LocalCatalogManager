@@ -84,17 +84,16 @@ public abstract class EnrichmentTask implements Job {
         // Fetch information from the job context.
         JobDataMap jobDataMap = context.getJobDetail().getJobDataMap();
         String target = jobDataMap.getString(TARGET_KEY);
-        Integer taskId = jobDataMap.getInt(TASK_ID_KEY);
+        String taskId = jobDataMap.getString(TASK_ID_KEY);
 
         // Update or create the task description
         TaskDescription taskDescription;
-        if (taskId == 0) {
+        if (taskId != null) {
             taskDescription = taskDescriptionDao.getById(taskId);
         } else {
             taskDescription = new TaskDescription();
             taskDescription.setJob(this.getClass().getName());
             taskDescription.setTarget(target);
-            taskDescription.setName(context.getJobDetail().getKey().getName());
         }
         taskDescription.setStatus(TaskDescription.TaskStatus.RUNNING);
         taskDescription.setStartTime(new Date());
@@ -115,13 +114,13 @@ public abstract class EnrichmentTask implements Job {
                 try {
                     Logger.getLogger(EnrichmentTask.class.getName()).log(Level.INFO,
                             String.format("Executing EnrichmentTask %s (%s)",
-                                    taskDescription.getName(), taskDescription.getJob()));
+                                    taskDescription.getId(), taskDescription.getJob()));
 
                     execute(metadata);
 
                     Logger.getLogger(EnrichmentTask.class.getName()).log(Level.INFO,
                             String.format("Done with EnrichmentTask %s (%s)",
-                                    taskDescription.getName(), taskDescription.getJob()));
+                                    taskDescription.getId(), taskDescription.getJob()));
                 } catch (TaskException ex) {
                     Logger.getLogger(EnrichmentTask.class.getName()).log(Level.SEVERE, "Failed executing task", ex);
                 }

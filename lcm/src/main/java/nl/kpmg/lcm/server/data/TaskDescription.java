@@ -33,7 +33,7 @@ import java.util.Date;
  *
  * @author mhoekstra
  */
-public class TaskDescription extends AbstractModel {        
+public class TaskDescription extends AbstractModel {
 
     /**
      * The name of the class which contains the executable code.
@@ -101,8 +101,8 @@ public class TaskDescription extends AbstractModel {
 
     public void setEndTime(Date endTime) {
         this.endTime = endTime;
-    }    
-    
+    }
+
     public String getJob() {
         return job;
     }
@@ -142,5 +142,4 @@ public class TaskDescription extends AbstractModel {
     public void setStatus(TaskStatus status) {
         this.status = status;
     }
-        
 }

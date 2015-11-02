@@ -16,55 +16,25 @@
 package nl.kpmg.lcm.server.data.storage.file;
 
 import nl.kpmg.lcm.server.data.dao.file.TaskScheduleDaoImpl;
-import nl.kpmg.lcm.server.data.dao.DaoException;
-import java.io.File;
 import java.util.LinkedList;
 import java.util.List;
+import nl.kpmg.lcm.server.LCMBaseTest;
 import nl.kpmg.lcm.server.data.TaskSchedule;
 import nl.kpmg.lcm.server.data.TaskSchedule.TaskScheduleItem;
-import nl.kpmg.lcm.server.data.dao.file.ObjectMapperFactory;
-import org.junit.After;
-import org.junit.AfterClass;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
-import org.junit.BeforeClass;
 import org.junit.Test;
+import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  *
  * @author mhoekstra
  */
-public class TaskScheduleDaoImplTest {
-    private static final String TEST_STORAGE_PATH = "test/";
+public class TaskScheduleDaoImplTest extends LCMBaseTest {
 
-    private final TaskScheduleDaoImpl taskScheduleDao;
-
-    public TaskScheduleDaoImplTest() throws DaoException {
-        File file = new File(TEST_STORAGE_PATH);
-        file.mkdir();
-
-        taskScheduleDao = new TaskScheduleDaoImpl(TEST_STORAGE_PATH, ObjectMapperFactory.createInstance());
-    }
-
-    @BeforeClass
-    public static void setUpClass() {
-        File file = new File(TEST_STORAGE_PATH);
-        file.mkdir();
-    }
-
-    @AfterClass
-    public static void tearDownClass() {
-        File file = new File(TEST_STORAGE_PATH);
-        file.delete();
-    }
-
-    @After
-    public void tearDown() {
-        File file = new File(TEST_STORAGE_PATH);
-        for (File taskScheduleFile : file.listFiles()) {
-            taskScheduleFile.delete();
-        }
-    }
+    @Autowired
+    private TaskScheduleDaoImpl taskScheduleDao;
 
     @Test
     public void testPersistWithANewObject() {
@@ -85,7 +55,7 @@ public class TaskScheduleDaoImplTest {
         taskScheduleDao.persist(taskSchedule);
 
 
-        TaskSchedule actual = taskScheduleDao.getById(1);
+        TaskSchedule actual = taskScheduleDao.getById(taskSchedule.getId());
 
         List<TaskScheduleItem> items = actual.getItems();
 
@@ -96,7 +66,7 @@ public class TaskScheduleDaoImplTest {
         assertEquals(taskScheduleItem.getTarget(), items.get(0).getTarget());
 
         // An id should have been set as well
-        assertEquals(new Integer(1), actual.getId());
+        assertNotNull(actual.getId());
     }
 
     @Test
@@ -104,10 +74,7 @@ public class TaskScheduleDaoImplTest {
         TaskSchedule taskSchedule = new TaskSchedule();
         taskScheduleDao.persist(taskSchedule);
 
-        Integer expected = 1;
-        Integer actual = taskSchedule.getId();
-
-        assertEquals(expected, actual);
+        assertNotNull(taskSchedule.getId());
     }
 
     @Test
@@ -131,7 +98,7 @@ public class TaskScheduleDaoImplTest {
         List<TaskSchedule> all = taskScheduleDao.getAll();
 
         assertTrue(all.size() == 1);
-        assertEquals(new Integer(1), all.get(0).getId());
+        assertNotNull(all.get(0).getId());
         assertEquals(0, all.get(0).getItems().size());
     }
 }

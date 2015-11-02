@@ -1,23 +1,35 @@
-package nl.kpmg.lcm.server.rest.client.version0;
+package nl.kpmg.lcm.server.rest.client;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+import java.io.IOException;
+import java.util.List;
+import java.util.Map;
+import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.assertEquals;
 import javax.ws.rs.core.Response;
-import javax.ws.rs.core.Response.Status;
 import org.junit.Test;
 import nl.kpmg.lcm.server.LCMBaseServerTest;
 import nl.kpmg.lcm.server.LoginException;
 import nl.kpmg.lcm.server.rest.authentication.BasicAuthenticationManager;
 
-public class LocalControllerClientTest extends LCMBaseServerTest {
+public class Version0ClientTest extends LCMBaseServerTest {
 
     @Test
-    public void testGetLocalOverview() throws LoginException {
+    public void testGetIndex() throws LoginException, IOException {
         Response response = target
-                .path("client/v0/local")
+                .path("client/v0")
                 .request()
                 .header(BasicAuthenticationManager.BASIC_AUTHENTICATION_HEADER, basicAuthTokenAdmin)
                 .get();
 
-        assertEquals(Status.OK.getStatusCode(), response.getStatus());
+        assertEquals(200, response.getStatus());
+
+        String restult = response.readEntity(String.class);
+        ObjectMapper objectMapper = new ObjectMapper();
+        Map responseMap = objectMapper.readValue(restult, Map.class);
+
+        assertTrue(responseMap.containsKey("links"));
+        List responseLinkList = (List) responseMap.get("links");
+        assertEquals(7, responseLinkList.size());
     }
 }

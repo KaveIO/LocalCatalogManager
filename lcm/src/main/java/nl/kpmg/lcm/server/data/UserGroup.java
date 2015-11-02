@@ -2,25 +2,21 @@ package nl.kpmg.lcm.server.data;
 
 import java.util.List;
 
-import org.springframework.data.mongodb.core.mapping.Document;
-
 /**
  * User Group class for storing User Group details.
  *
  * @author venkateswarlub
  *
  */
-@Document(collection="userGroups")
-public class UserGroup extends AbstractModel {		
-	
-	private List<User> users;	
-	
-	public List<User> getUsers() {
-		return users;
-	}
+public class UserGroup extends AbstractModel {
 
-	public void setUsers(List<User> users) {
-		this.users = users;
-	}		
-	
+    private List<String> users;
+
+    public List<String> getUsers() {
+        return users;
+    }
+
+    public void setUsers(List<String> users) {
+        this.users = users;
+    }
 }

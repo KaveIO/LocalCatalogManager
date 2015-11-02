@@ -72,7 +72,7 @@ public class StorageController {
     @RolesAllowed({Roles.ADMINISTRATOR, Roles.API_USER})
     public StorageRepresentation getStorageHandler(
             @PathParam("storage_id") String storageId) {
-        Storage storage = storageDao.getByName(storageId);
+        Storage storage = storageDao.getById(storageId);
         return new StorageRepresentation(storage);
     }
 
@@ -88,7 +88,7 @@ public class StorageController {
     public Response deleteStorageHandler(
             final @PathParam("storage_id") String storageId) {
 
-        Storage storage = storageDao.getByName(storageId);
+        Storage storage = storageDao.getById(storageId);
         if (storage != null) {
             storageDao.delete(storage);
             return Response.ok().build();

@@ -370,7 +370,7 @@ public class BackendHiveImpl extends AbstractBackend {
         metaTemp.setDataUri( "/tmp/" + tabName);
 
         Storage backendModel = new Storage();
-        backendModel.setName("store_helper");
+        backendModel.setId("store_helper");
         backendModel.setOptions(new HashMap());
         backendModel.getOptions().put("storagePath", hdfsServer);
 
@@ -485,7 +485,7 @@ public class BackendHiveImpl extends AbstractBackend {
 
         // read it with HDFS backend
         Storage backendModel = new Storage();
-        backendModel.setName("store_helper");
+        backendModel.setId("store_helper");
         backendModel.setOptions(new HashMap());
         backendModel.getOptions().put("storagePath", hdfsServer);
 

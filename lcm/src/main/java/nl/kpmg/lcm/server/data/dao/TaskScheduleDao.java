@@ -21,7 +21,7 @@ import nl.kpmg.lcm.server.data.TaskSchedule;
  *
  * @author mhoekstra
  */
-public interface TaskScheduleDao extends GenericDao<TaskSchedule> {            
+public interface TaskScheduleDao extends GenericDao<TaskSchedule> {
 
-    public TaskSchedule getCurrent();    
+    public TaskSchedule getCurrent();
 }

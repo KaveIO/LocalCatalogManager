@@ -6,45 +6,10 @@ import java.util.Map;
  *
  * @author kos
  */
-public class Storage {
-    /**
-     *
-     */
-    private Integer id;
-
-    private String name;
+public class Storage extends AbstractModel {
 
     private Map options;
 
-    /**
-     *
-     * @return id
-     */
-    public Integer getId() {
-        return id;
-    }
-    /**
-     *
-     * @param id
-     */
-    public void setId(Integer id) {
-        this.id = id;
-    }
-
-    /**
-     *
-     * @return name
-     */
-    public String getName() {
-        return name;
-    }
-    /**
-    *
-    * @param name
-    */
-    public void setName(String name) {
-        this.name = name;
-    }
     /**
      *
      * @return options
@@ -56,5 +21,4 @@ public class Storage {
     public void setOptions(Map options) {
         this.options = options;
     }
-
 }

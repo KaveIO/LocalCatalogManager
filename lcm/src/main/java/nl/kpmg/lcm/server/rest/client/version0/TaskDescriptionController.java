@@ -127,7 +127,7 @@ public class TaskDescriptionController {
     @Path("{tasks_id}")
     @Produces({"application/nl.kpmg.lcm.server.rest.client.version0.types.TaskDescriptionRepresentation+json"})
     @RolesAllowed({Roles.ADMINISTRATOR, Roles.API_USER})
-    public final Response getTask(@PathParam("tasks_id") final Integer taskDescriptionId) {
+    public final Response getTask(@PathParam("tasks_id") final String taskDescriptionId) {
         TaskDescription taskDescriptions = taskDescriptionDao.getById(taskDescriptionId);
 
         if (taskDescriptions != null) {
@@ -146,7 +146,7 @@ public class TaskDescriptionController {
     @DELETE
     @Path("{tasks_id}")
     @RolesAllowed({Roles.ADMINISTRATOR, Roles.API_USER})
-    public final Response deleteCommand(@PathParam("tasks_id") final Integer taskDescriptionId) {
+    public final Response deleteCommand(@PathParam("tasks_id") final String taskDescriptionId) {
         TaskDescription taskDescriptions = taskDescriptionDao.getById(taskDescriptionId);
 
         if (taskDescriptions != null) {
