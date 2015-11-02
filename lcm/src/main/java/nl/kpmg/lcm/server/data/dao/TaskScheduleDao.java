@@ -15,21 +15,13 @@
  */
 package nl.kpmg.lcm.server.data.dao;
 
-import java.util.List;
 import nl.kpmg.lcm.server.data.TaskSchedule;
 
 /**
  *
  * @author mhoekstra
  */
-public interface TaskScheduleDao {
-    public TaskSchedule getById(Integer id);
-    
-    public List<TaskSchedule> getAll();
+public interface TaskScheduleDao extends GenericDao<TaskSchedule> {            
 
-    public TaskSchedule getCurrent();
-
-    public void persist(TaskSchedule task);
-
-    public void delete(TaskSchedule task);
+    public TaskSchedule getCurrent();    
 }

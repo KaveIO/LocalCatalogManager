@@ -10,77 +10,17 @@ import org.springframework.data.mongodb.core.mapping.Document;
  * @author venkateswarlub
  *
  */
-@Document(collection = "userGroups")
-public class UserGroup {
+@Document(collection="userGroups")
+public class UserGroup extends AbstractModel {		
+	
+	private List<User> users;	
+	
+	public List<User> getUsers() {
+		return users;
+	}
 
-    private int id;
-
-    private String name;
-
-    private List<String> users;
-
-    public List<String> getUsers() {
-        return users;
-    }
-
-    public void setUsers(List<String> users) {
-        this.users = users;
-    }
-
-    public int getId() {
-        return id;
-    }
-
-    public void setId(int id) {
-        this.id = id;
-    }
-
-    public String getName() {
-        return name;
-    }
-
-    public void setName(String name) {
-        this.name = name;
-    }
-
-    @Override
-    public int hashCode() {
-        final int prime = 31;
-        int result = 1;
-        result = prime * result + id;
-        result = prime * result
-                + ((name == null) ? 0 : name.hashCode());
-        return result;
-    }
-
-    @Override
-    public boolean equals(Object obj) {
-        if (this == obj) {
-            return true;
-        }
-        if (obj == null) {
-            return false;
-        }
-        if (getClass() != obj.getClass()) {
-            return false;
-        }
-        UserGroup other = (UserGroup) obj;
-        if (id != other.id) {
-            return false;
-        }
-        if (name == null) {
-            if (other.name != null) {
-                return false;
-            }
-        } else if (!name.equals(other.name)) {
-            return false;
-        }
-        return true;
-    }
-
-    @Override
-    public String toString() {
-        return "UserGroup [id=" + id + ", userGroup=" + name + "]";
-    }
-
+	public void setUsers(List<User> users) {
+		this.users = users;
+	}		
+	
 }

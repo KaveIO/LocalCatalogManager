@@ -33,17 +33,7 @@ import java.util.Date;
  *
  * @author mhoekstra
  */
-public class TaskDescription {
-
-    /**
-     * The unique task identifier.
-     */
-    private Integer id;
-
-    /**
-     * The name of the task.
-     */
-    private String name;
+public class TaskDescription extends AbstractModel {        
 
     /**
      * The name of the class which contains the executable code.
@@ -111,24 +101,8 @@ public class TaskDescription {
 
     public void setEndTime(Date endTime) {
         this.endTime = endTime;
-    }
-
-    public Integer getId() {
-        return id;
-    }
-
-    public void setId(Integer id) {
-        this.id = id;
-    }
-
-    public String getName() {
-        return name;
-    }
-
-    public void setName(String name) {
-        this.name = name;
-    }
-
+    }    
+    
     public String getJob() {
         return job;
     }
@@ -168,4 +142,5 @@ public class TaskDescription {
     public void setStatus(TaskStatus status) {
         this.status = status;
     }
+        
 }

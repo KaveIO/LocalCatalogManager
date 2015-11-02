@@ -1,19 +1,10 @@
 package nl.kpmg.lcm.server.data.dao.file;
 
-import java.io.File;
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.logging.Logger;
 
 import nl.kpmg.lcm.server.data.UserGroup;
 import nl.kpmg.lcm.server.data.dao.DaoException;
 import nl.kpmg.lcm.server.data.dao.UserGroupDao;
-
-import com.fasterxml.jackson.core.JsonParseException;
-import com.fasterxml.jackson.databind.JsonMappingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * UserGroup DAO Implementation.
@@ -21,164 +12,36 @@ import org.springframework.beans.factory.annotation.Autowired;
  * @author venkateswarlub
  *
  */
-public class UserGroupDaoImpl implements UserGroupDao {
+public class UserGroupDaoImpl extends AbstractGenericFileDaoImpl<UserGroup> implements UserGroupDao {
 
-    /**
-     * The logger for this class.
-     */
-    private static final Logger LOGGER = Logger.getLogger(UserGroupDaoImpl.class
-            .getName());
+	/**
+	 * The logger for this class.
+	 */
+	private static final Logger LOGGER = Logger.getLogger(UserGroupDaoImpl.class
+			.getName());
+	
+	/**
+	 * @param storagePath
+	 *            The path where the user is stored
+	 * @throws DaoException
+	 *             when the storagePath doesn't exist
+	 */
+	public UserGroupDaoImpl(final String storagePath) throws DaoException {
+		super(storagePath,UserGroup.class);		
+	}
 
-    /**
-     * Path where the user is stored.
-     */
-    private final File storage;
 
-    /**
-     * Object mapper used to serialize and de-serialize the user.
-     */
-    private final ObjectMapper mapper;
 
-    /**
-     * @param storagePath The path where the user is stored
-     * @throws DaoException when the storagePath doesn't exist
-     */
-    @Autowired
-    public UserGroupDaoImpl(final String storagePath, final ObjectMapper mapper) throws DaoException {
-        this.storage = new File(storagePath);
-        this.mapper = mapper;
-
-        if (!storage.isDirectory() || !this.storage.canWrite()) {
-            throw new DaoException(String.format(
-                    "The storage path %s is not a directory or not writable.",
-                    storage.getAbsolutePath()));
-        }
-    }
-
-    private File getUserGroupFile(String name) {
-        return new File(String.format("%s/%s", storage, name));
-    }
-
-    private String getUserGroupFromPath(String fileName) {
-        String[] path = fileName.split("/");
-
-        return path[path.length - 1];
-    }
-
-    @Override
-    public List<UserGroup> getUserGroups() {
-        File[] userFiles = storage.listFiles();
-        List<UserGroup> userGroups = new ArrayList<UserGroup>();
-        for (File userFile : userFiles) {
-            UserGroup userGroup = null;
-            try {
-                userGroup = mapper.readValue(userFile, UserGroup.class);
-            }
-            catch (JsonParseException e) {
-                LOGGER.warning(e.getMessage());
-            }
-            catch (JsonMappingException e) {
-                LOGGER.warning(e.getMessage());
-            }
-            catch (IOException e) {
-                LOGGER.warning(e.getMessage());
-            }
-            if (userGroup != null) {
-                userGroups.add(userGroup);
-            }
-        }
-        return userGroups;
-    }
-
-    @Override
-    public UserGroup getUserGroup(String userGroupName) {
-        File[] userFiles = storage.listFiles();
-        UserGroup userGroup = null;
-        for (File userFile : userFiles) {
-
-            if (getUserGroupFromPath(userFile.getName()).equals(userGroupName)) {
-                try {
-                    userGroup = mapper.readValue(userFile, UserGroup.class);
-                }
-                catch (JsonParseException e) {
-                    System.out.println(e);
-                    LOGGER.warning(e.getMessage());
-                }
-                catch (JsonMappingException e) {
-                    System.out.println(e);
-                    LOGGER.warning(e.getMessage());
-                }
-                catch (IOException e) {
-                    System.out.println(e);
-                    LOGGER.warning(e.getMessage());
-                }
-            }
-
-        }
-        return userGroup;
-    }
-
-    @Override
-    public void modifyUserGroup(UserGroup userGroup) {
-        File[] userFiles = storage.listFiles();
-        UserGroup userGroupFromFile = null;
-        for (File userFile : userFiles) {
-
-            if (getUserGroupFromPath(userFile.getName()).equals(userGroup.getName())) {
-                try {
-                    userGroupFromFile = mapper.readValue(userFile, UserGroup.class);
-                    userGroupFromFile.setId(userGroup.getId());
-                    userGroupFromFile.setName(userGroup.getName());
-                    userGroupFromFile.setUsers(userGroup.getUsers());
-                    mapper.writeValue(userFile, userGroupFromFile);
-                }
-                catch (JsonParseException e) {
-                    LOGGER.warning(e.getMessage());
-                }
-                catch (JsonMappingException e) {
-                    LOGGER.warning(e.getMessage());
-                }
-                catch (IOException e) {
-                    LOGGER.warning(e.getMessage());
-                }
-            }
-        }
-
-    }
-
-    @Override
-    public void deleteUserGroup(String userGroupName) {
-        File[] userFiles = storage.listFiles();
-        for (File userFile : userFiles) {
-
-            if (getUserGroupFromPath(userFile.getName()).equals(userGroupName)) {
-                try {
-                    userFile.delete();
-                }
-                catch (Exception e) {
-                    LOGGER.warning(e.getMessage());
-                }
-            }
-        }
-    }
-
-    @Override
-    public void saveUserGroup(UserGroup userGroup) {
-        File userFile = getUserGroupFile(userGroup.getName());
-
-        try {
-            mapper.writeValue(userFile, userGroup);
-        }
-        catch (JsonParseException e) {
-            LOGGER.warning(e.getMessage());
-        }
-        catch (JsonMappingException e) {
-            LOGGER.warning(e.getMessage());
-        }
-        catch (IOException e) {
-            LOGGER.warning(e.getMessage());
-        }
-
-    }
-
+	/**
+	 * Update the original UserGroup with updated UserGroup 
+	 * @param original UserGroup
+	 * @param update UserGroup 
+	 * @see nl.kpmg.lcm.server.data.dao.file.AbstractGenericFileDaoImpl#update(nl.kpmg.lcm.server.data.AbstractModel, nl.kpmg.lcm.server.data.AbstractModel)
+	 */
+	@Override
+	protected void update(UserGroup original, UserGroup update) {		
+		original.setName(update.getName());
+		original.setUsers(update.getUsers());
+	}
+	
 }

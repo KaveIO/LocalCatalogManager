@@ -1,22 +1,10 @@
 package nl.kpmg.lcm.server.data.dao.file;
 
-import java.io.File;
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.logging.Logger;
 
 import nl.kpmg.lcm.server.data.User;
 import nl.kpmg.lcm.server.data.dao.DaoException;
 import nl.kpmg.lcm.server.data.dao.UserDao;
-
-import com.fasterxml.jackson.core.JsonParseException;
-import com.fasterxml.jackson.databind.JsonMappingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import java.security.NoSuchAlgorithmException;
-import java.security.spec.InvalidKeySpecException;
-import java.util.logging.Level;
-import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * User DAO Implementation.
@@ -24,7 +12,7 @@ import org.springframework.beans.factory.annotation.Autowired;
  * @author venkateswarlub
  *
  */
-public class UserDaoImpl implements UserDao {
+public class UserDaoImpl extends AbstractGenericFileDaoImpl<User>  implements UserDao {
 
     /**
      * The logger for this class.
@@ -32,154 +20,27 @@ public class UserDaoImpl implements UserDao {
     private static final Logger LOGGER = Logger.getLogger(UserDaoImpl.class
             .getName());
 
-    /**
-     * Path where the user is stored.
-     */
-    private final File storage;
-
-    /**
-     * Object mapper used to serialize and de-serialize the user.
-     */
-    private final ObjectMapper mapper;
-
-    /**
-     * @param storagePath The path where the user is stored
-     * @throws DaoException when the storagePath doesn't exist
-     */
-    @Autowired
-    public UserDaoImpl(final String storagePath, final ObjectMapper mapper) throws DaoException {
-        this.storage = new File(storagePath);
-        this.mapper = mapper;
-
-        if (!storage.isDirectory() || !this.storage.canWrite()) {
-            throw new DaoException(String.format(
-                    "The storage path %s is not a directory or not writable.",
-                    storage.getAbsolutePath()));
-        }
-    }
-
-    private File getUserFile(String name) {
-        return new File(String.format("%s/%s", storage, name));
-    }
-
-    private String getUsernameFromPath(String fileName) {
-        String[] path = fileName.split("/");
-
-        return path[path.length - 1];
-    }
-
-    @Override
-    public List<User> getUsers() {
-        File[] userFiles = storage.listFiles();
-        List<User> users = new ArrayList<User>();
-        for (File userFile : userFiles) {
-            User user = null;
-            try {
-                user = mapper.readValue(userFile, User.class);
-            }
-            catch (JsonParseException e) {
-                LOGGER.warning(e.getMessage());
-            }
-            catch (JsonMappingException e) {
-                LOGGER.warning(e.getMessage());
-            }
-            catch (IOException e) {
-                LOGGER.warning(e.getMessage());
-            }
-            if (user != null) {
-                users.add(user);
-            }
-        }
-        return users;
-    }
-
-    @Override
-    public User getUser(String username) {
-        File[] userFiles = storage.listFiles();
-        User user = null;
-        for (File userFile : userFiles) {
-
-            if (getUsernameFromPath(userFile.getName()).equals(username)) {
-                try {
-                    user = mapper.readValue(userFile, User.class);
-                }
-                catch (JsonParseException e) {
-                    System.out.println(e);
-                    LOGGER.warning(e.getMessage());
-                }
-                catch (JsonMappingException e) {
-                    System.out.println(e);
-                    LOGGER.warning(e.getMessage());
-                }
-                catch (IOException e) {
-                    System.out.println(e);
-                    LOGGER.warning(e.getMessage());
-                }
-            }
-
-        }
-        return user;
-    }
-
-    @Override
-    public void modifyUser(User user) {
-        File[] userFiles = storage.listFiles();
-        User userFromFile = null;
-        for (File userFile : userFiles) {
-
-            if (getUsernameFromPath(userFile.getName()).equals(user.getUsername())) {
-                try {
-                    userFromFile = mapper.readValue(userFile, User.class);
-                    userFromFile.setUsername(user.getUsername());
-
-                    userFromFile.setPassword(user.getPassword(), false);
-
-                    mapper.writeValue(userFile, userFromFile);
-                } catch (JsonParseException | JsonMappingException e) {
-                    LOGGER.warning(e.getMessage());
-                } catch (IOException e) {
-                    LOGGER.warning(e.getMessage());
-                } catch (NoSuchAlgorithmException | InvalidKeySpecException ex) {
-                    LOGGER.log(Level.SEVERE, "Something went wrong with the password hashing algorithm", ex);
-                }
-            }
-        }
-
-    }
-
-    @Override
-    public void deleteUser(String username) {
-        File[] userFiles = storage.listFiles();
-        for (File userFile : userFiles) {
-
-            if (getUsernameFromPath(userFile.getName()).equals(username)) {
-                try {
-                    userFile.delete();
-                }
-                catch (Exception e) {
-                    LOGGER.warning(e.getMessage());
-                }
-            }
-        }
-    }
-
-    @Override
-    public void saveUser(User user) {
-        File userFile = getUserFile(user.getUsername());
-
-        try {
-            mapper.writeValue(userFile, user);
-        }
-        catch (JsonParseException e) {
-            LOGGER.warning(e.getMessage());
-        }
-        catch (JsonMappingException e) {
-            LOGGER.warning(e.getMessage());
-        }
-        catch (IOException e) {
-            LOGGER.warning(e.getMessage());
-        }
-
-    }
+	
+	/**
+	 * @param storagePath
+	 *            The path where the user is stored
+	 * @throws DaoException
+	 *             when the storagePath doesn't exist
+	 */
+	public UserDaoImpl(final String storagePath) throws DaoException {
+		super(storagePath,User.class);		
+	}
+	
+	/**
+	 * Update the original User with updated User
+	 * @param original User
+	 * @param update User
+	 * @see nl.kpmg.lcm.server.data.dao.file.AbstractGenericFileDaoImpl#update(nl.kpmg.lcm.server.data.AbstractModel, nl.kpmg.lcm.server.data.AbstractModel)
+	 */
+	@Override
+	protected void update(User original, User update) {
+		original.setName(update.getName());
+		original.setPassword(update.getPassword());
+	}
 
 }

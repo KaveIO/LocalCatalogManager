@@ -16,22 +16,15 @@
 package nl.kpmg.lcm.server.data.dao;
 
 import java.util.List;
+
 import nl.kpmg.lcm.server.data.TaskDescription;
 
 /**
  *
  * @author mhoekstra
  */
-public interface TaskDescriptionDao {
-
-    public TaskDescription getById(Integer id);
-
-    public List<TaskDescription> getByStatus(TaskDescription.TaskStatus status);
+public interface TaskDescriptionDao extends GenericDao<TaskDescription> {
     
-    public List<TaskDescription> getAll();
-
-    public void persist(TaskDescription task);
-
-    public void delete(TaskDescription task);
-
+    public List<TaskDescription> getByStatus(TaskDescription.TaskStatus status);
+        
 }

@@ -23,12 +23,7 @@ import java.util.List;
  *
  * @author mhoekstra
  */
-public class TaskSchedule {
-
-    /**
-     * The unique identifier.
-     */
-    private Integer id;
+public class TaskSchedule extends AbstractModel{    
 
     /**
      * The schedule. s
@@ -90,15 +85,7 @@ public class TaskSchedule {
         public void setTarget(String target) {
             this.target = target;
         }
-    }
-
-    public Integer getId() {
-        return id;
-    }
-
-    public void setId(Integer id) {
-        this.id = id;
-    }
+    }    
 
     public List<TaskScheduleItem> getItems() {
         return items;
@@ -107,4 +94,5 @@ public class TaskSchedule {
     public void setItems(List<TaskScheduleItem> items) {
         this.items = items;
     }
+       
 }
