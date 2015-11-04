@@ -1,3 +1,5 @@
 .settings
 .classpath
 .project
+.pydevproject
+src/test/java/nl/kpmg/lcm/scrap/
