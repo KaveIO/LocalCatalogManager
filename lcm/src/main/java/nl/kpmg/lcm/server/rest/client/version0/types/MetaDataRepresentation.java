@@ -15,9 +15,11 @@
  */
 package nl.kpmg.lcm.server.rest.client.version0.types;
 
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import java.util.List;
 import javax.ws.rs.core.Link;
+import nl.kpmg.lcm.server.LinksDeserializer;
 import nl.kpmg.lcm.server.LinksSerializer;
 import nl.kpmg.lcm.server.data.MetaData;
 import nl.kpmg.lcm.server.rest.client.version0.LocalMetaDataController;
@@ -35,7 +37,7 @@ public class MetaDataRepresentation {
     /**
      * The actual TaskDescription.
      */
-    private final MetaData item;
+    private MetaData item;
 
     /**
      * The links the of a TaskDescription.
@@ -63,6 +65,9 @@ public class MetaDataRepresentation {
     })
     private List<Link> links;
 
+    public MetaDataRepresentation() {
+    }
+
     /**
      * @param item TaskDescription to be wrapped
      */
@@ -83,5 +88,10 @@ public class MetaDataRepresentation {
     @JsonSerialize(using = LinksSerializer.class)
     public final List<Link> getLinks() {
         return links;
+    }
+
+    @JsonDeserialize(using = LinksDeserializer.class)
+    public final void setLinks(List<Link> links) {
+        this.links = links;
     }
 }
