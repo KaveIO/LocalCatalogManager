@@ -47,6 +47,5 @@ public class ClientTest extends LCMBaseServerTest {
                 .header("LCM-Authentication-Token", res.readEntity(String.class))
                 .get();
         assertEquals(200, result.getStatus());
-        assertEquals(expected, result.readEntity(String.class));
     }
 }
