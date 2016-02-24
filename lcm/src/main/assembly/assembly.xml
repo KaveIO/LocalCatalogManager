@@ -131,6 +131,27 @@ limitations under the License.
             </excludes>
         </fileSet>
         <fileSet>
+            <directory>src/main/assembly</directory>
+            <outputDirectory>data/storage</outputDirectory>
+            <excludes>
+                <exclude>**/*</exclude>
+            </excludes>
+        </fileSet>
+        <fileSet>
+            <directory>src/main/assembly</directory>
+            <outputDirectory>data/users</outputDirectory>
+            <excludes>
+                <exclude>**/*</exclude>
+            </excludes>
+        </fileSet>
+        <fileSet>
+            <directory>src/main/assembly</directory>
+            <outputDirectory>data/usergroups</outputDirectory>
+            <excludes>
+                <exclude>**/*</exclude>
+            </excludes>
+        </fileSet>
+        <fileSet>
             <directory>src/main/data-template</directory>
             <outputDirectory>data</outputDirectory>
         </fileSet>
