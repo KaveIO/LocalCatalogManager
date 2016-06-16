@@ -15,9 +15,11 @@
  */
 package nl.kpmg.lcm.server.rest.client.version0.types;
 
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import java.util.List;
 import javax.ws.rs.core.Link;
+import nl.kpmg.lcm.server.LinksDeserializer;
 import nl.kpmg.lcm.server.LinksSerializer;
 import nl.kpmg.lcm.server.rest.client.version0.LocalMetaDataController;
 import nl.kpmg.lcm.server.rest.client.version0.RemoteMetaDataController;
@@ -26,7 +28,6 @@ import nl.kpmg.lcm.server.rest.client.version0.TaskDescriptionController;
 import nl.kpmg.lcm.server.rest.client.version0.TaskScheduleController;
 import nl.kpmg.lcm.server.rest.client.version0.UserController;
 import nl.kpmg.lcm.server.rest.client.version0.UserGroupController;
-import org.glassfish.jersey.linking.Binding;
 import org.glassfish.jersey.linking.InjectLink;
 import org.glassfish.jersey.linking.InjectLinks;
 
@@ -84,5 +85,10 @@ public class Version0Representation {
     @JsonSerialize(using = LinksSerializer.class)
     public final List<Link> getLinks() {
         return links;
+    }
+
+    @JsonDeserialize(using = LinksDeserializer.class)
+    public final void setLinks(List<Link> links) {
+        this.links = links;
     }
 }

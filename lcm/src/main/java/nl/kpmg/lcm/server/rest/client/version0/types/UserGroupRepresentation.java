@@ -15,9 +15,11 @@
  */
 package nl.kpmg.lcm.server.rest.client.version0.types;
 
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import java.util.List;
 import javax.ws.rs.core.Link;
+import nl.kpmg.lcm.server.LinksDeserializer;
 import nl.kpmg.lcm.server.LinksSerializer;
 import nl.kpmg.lcm.server.data.UserGroup;
 import nl.kpmg.lcm.server.rest.client.version0.UserGroupController;
@@ -35,7 +37,7 @@ public class UserGroupRepresentation {
     /**
      * The actual UserGroup.
      */
-    private final UserGroup item;
+    private UserGroup item;
 
     /**
      * The links the of a UserGroup.
@@ -52,6 +54,9 @@ public class UserGroupRepresentation {
         )
     })
     private List<Link> links;
+
+    public UserGroupRepresentation() {
+    }
 
     /**
      * @param item UserGroup to be wrapped
@@ -73,5 +78,10 @@ public class UserGroupRepresentation {
     @JsonSerialize(using = LinksSerializer.class)
     public final List<Link> getLinks() {
         return links;
+    }
+
+    @JsonDeserialize(using = LinksDeserializer.class)
+    public final void setLinks(List<Link> links) {
+        this.links = links;
     }
 }

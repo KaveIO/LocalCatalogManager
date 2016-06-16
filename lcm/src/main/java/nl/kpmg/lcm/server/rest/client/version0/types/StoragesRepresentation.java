@@ -15,10 +15,12 @@
  */
 package nl.kpmg.lcm.server.rest.client.version0.types;
 
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import java.util.LinkedList;
 import java.util.List;
 import javax.ws.rs.core.Link;
+import nl.kpmg.lcm.server.LinksDeserializer;
 import nl.kpmg.lcm.server.LinksSerializer;
 import nl.kpmg.lcm.server.data.Storage;
 import nl.kpmg.lcm.server.rest.client.version0.StorageController;
@@ -35,7 +37,7 @@ public class StoragesRepresentation {
     /**
      * The actual TaskDescription.
      */
-    private final List<StorageRepresentation> items;
+    private List<StorageRepresentation> items;
 
     /**
      * The links the of a TaskDescription.
@@ -55,6 +57,9 @@ public class StoragesRepresentation {
         )
     })
     private List<Link> links;
+
+    public StoragesRepresentation() {
+    }
 
     /**
      * @param items to wrap
@@ -81,5 +86,10 @@ public class StoragesRepresentation {
     @JsonSerialize(using = LinksSerializer.class)
     public final List<Link> getLinks() {
         return links;
+    }
+
+    @JsonDeserialize(using = LinksDeserializer.class)
+    public final void setLinks(List<Link> links) {
+        this.links = links;
     }
 }
