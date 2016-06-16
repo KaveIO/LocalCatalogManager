@@ -17,6 +17,7 @@ import com.vaadin.ui.Panel;
 import com.vaadin.ui.UI;
 import com.vaadin.ui.VerticalLayout;
 import com.vaadin.ui.themes.ValoTheme;
+import nl.kpmg.lcm.ui.view.AdministrationViewImpl;
 import nl.kpmg.lcm.ui.view.MetadataOverviewViewImpl;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
@@ -52,13 +53,14 @@ public class Application extends UI {
         logo.setWidthUndefined();
 
         navigationBar.addComponent(logo);
-        navigationBar.addComponent(createNavigationButton("Metadata", MetadataOverviewViewImpl.VIEW_NAME));
+        navigationBar.addComponent(
+                createNavigationButton("Metadata", MetadataOverviewViewImpl.VIEW_NAME));
         navigationBar.addComponent(
                 createNotImplementedButton("Analytics"));
         navigationBar.addComponent(
                 createNotImplementedButton("Discover"));
         navigationBar.addComponent(
-                createNotImplementedButton("Administration"));
+                createNavigationButton("Administration", AdministrationViewImpl.VIEW_NAME));
         root.addComponent(navigationBar);
 
         final Panel viewContainer = new Panel();

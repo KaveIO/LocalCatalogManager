@@ -24,6 +24,11 @@ import javax.ws.rs.client.Invocation;
 import javax.ws.rs.core.Response;
 import nl.kpmg.lcm.server.rest.client.version0.types.MetaDataRepresentation;
 import nl.kpmg.lcm.server.rest.client.version0.types.MetaDatasRepresentation;
+import nl.kpmg.lcm.server.rest.client.version0.types.StoragesRepresentation;
+import nl.kpmg.lcm.server.rest.client.version0.types.TaskDescriptionsRepresentation;
+import nl.kpmg.lcm.server.rest.client.version0.types.TaskScheduleRepresentation;
+import nl.kpmg.lcm.server.rest.client.version0.types.UserGroupsRepresentation;
+import nl.kpmg.lcm.server.rest.client.version0.types.UsersRepresentation;
 import nl.kpmg.lcm.ui.Configuration;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
@@ -109,5 +114,50 @@ public class RestClientService {
         MetaDatasRepresentation metaDatasRepresentation = response.readEntity(MetaDatasRepresentation.class);
 
         return metaDatasRepresentation;
+    }
+
+    public StoragesRepresentation getStorage() throws AuthenticationException {
+        Invocation.Builder client = getClient("client/v0/storage");
+
+        Response response = client.get();
+        StoragesRepresentation storagesRepresentation = response.readEntity(StoragesRepresentation.class);
+
+        return storagesRepresentation;
+    }
+
+    public TaskDescriptionsRepresentation getTasks() throws AuthenticationException {
+        Invocation.Builder client = getClient("client/v0/tasks");
+
+        Response response = client.get();
+        TaskDescriptionsRepresentation taskDescriptionsRepresentation = response.readEntity(TaskDescriptionsRepresentation.class);
+
+        return taskDescriptionsRepresentation;
+    }
+
+    public TaskScheduleRepresentation getTaskSchedule() throws AuthenticationException {
+        Invocation.Builder client = getClient("client/v0/taskschedule");
+
+        Response response = client.get();
+        TaskScheduleRepresentation taskScheduleRepresentation = response.readEntity(TaskScheduleRepresentation.class);
+
+        return taskScheduleRepresentation;
+    }
+
+    public UsersRepresentation getUsers() throws AuthenticationException {
+        Invocation.Builder client = getClient("client/v0/users");
+
+        Response response = client.get();
+        UsersRepresentation usersRepresentation = response.readEntity(UsersRepresentation.class);
+
+        return usersRepresentation;
+    }
+
+    public UserGroupsRepresentation getUserGroups() throws AuthenticationException {
+        Invocation.Builder client = getClient("client/v0/userGroups");
+
+        Response response = client.get();
+        UserGroupsRepresentation userGroupsRepresentation = response.readEntity(UserGroupsRepresentation.class);
+
+        return userGroupsRepresentation;
     }
 }
