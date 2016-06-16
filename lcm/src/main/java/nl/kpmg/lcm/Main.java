@@ -6,6 +6,7 @@ import java.util.logging.Logger;
 
 import nl.kpmg.lcm.server.Server;
 import nl.kpmg.lcm.server.ServerException;
+import nl.kpmg.lcm.ui.UI;
 
 import org.apache.commons.lang.ArrayUtils;
 
@@ -46,10 +47,18 @@ public class Main {
                 System.in.read();
 
                 server.stop();
-            } else if (command.equals("client")) {
-                LOG.log(Level.INFO, "Client not implemented yet.");
             } else if (command.equals("ui")) {
-                LOG.log(Level.INFO, "Ui not implemented yet.");
+                LOG.log(Level.INFO, "Starting LCM UI");
+
+                final UI ui = new UI();
+                ui.start();
+
+                LOG.log(Level.INFO, "Hit enter to stop it...");
+                System.in.read();
+
+                ui.stop();
+            } else if (command.equals("cli")) {
+                LOG.log(Level.INFO, "Cli not implemented yet.");
             } else if (command.equals("help")) {
                 if (arguments.length == 1) {
                     displayHelp(arguments[0]);

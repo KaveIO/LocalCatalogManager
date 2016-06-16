@@ -26,8 +26,6 @@ public class ClientTest extends LCMBaseServerTest {
      */
     @Test
     public void testGetClientInterfaceVersions() throws LoginException {
-        String expected = "[\"v0\"]";
-
         // Due to a Spring configuration error we can't login in this thread. We
         // have to create a actuall login call.
         LoginRequest loginRequest = new LoginRequest();

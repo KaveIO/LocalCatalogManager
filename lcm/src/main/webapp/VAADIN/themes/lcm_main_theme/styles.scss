@@ -1,0 +1,10 @@
+@import "lcm_main_theme.scss";
+@import "addons.scss";
+
+// This file prefixes all rules with the theme name to avoid causing conflicts with other themes.
+// The actual styles should be defined in lcm_main_theme.scss
+
+.lcm_main_theme {
+  @include addons;
+  @include lcm_main_theme;
+}
