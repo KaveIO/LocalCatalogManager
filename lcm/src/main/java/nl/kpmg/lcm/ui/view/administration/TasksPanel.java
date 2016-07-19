@@ -81,7 +81,7 @@ public class TasksPanel extends CustomComponent {
         root.setSpacing(true);
         root.setMargin(true);
         root.setWidth("100%");
-        
+
         panel.setContent(root);
 
         setCompositionRoot(panel);
@@ -99,8 +99,7 @@ public class TasksPanel extends CustomComponent {
 
     private void updateTaskSchedule() {
         scheduleTable.removeAllItems();
-        if (taskSchedule != null) {
-
+        if (taskSchedule != null && taskSchedule.getItem() != null) {
             for (TaskSchedule.TaskScheduleItem item : taskSchedule.getItem().getItems()) {
                 scheduleTable.addItem(new Object[]{
                     item.getName(),
