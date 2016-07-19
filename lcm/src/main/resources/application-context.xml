@@ -1,10 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
 <beans xmlns="http://www.springframework.org/schema/beans"
-	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
-        xmlns:util="http://www.springframework.org/schema/util"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:util="http://www.springframework.org/schema/util"
 	xmlns:mongo="http://www.springframework.org/schema/data/mongo"
-        xmlns:context="http://www.springframework.org/schema/context"
+	xmlns:context="http://www.springframework.org/schema/context"
 	xsi:schemaLocation="
         http://www.springframework.org/schema/beans 
         http://www.springframework.org/schema/beans/spring-beans.xsd
@@ -12,26 +11,65 @@
         http://www.springframework.org/schema/util/spring-util.xsd 
         http://www.springframework.org/schema/context
         http://www.springframework.org/schema/context/spring-context.xsd">
-        
+
 	<!-- bean definitions here -->
-	<bean class="org.springframework.beans.factory.config.PropertyPlaceholderConfigurer">
-            <property name="ignoreUnresolvablePlaceholders" value="true" />
-            <property name="ignoreResourceNotFound" value="true" />
-            <property name="locations">
-                <list>
-                    <value>classpath:application.properties</value>
-                    <value>file:config/application.properties</value>
-                </list>
-            </property>
+	<bean
+		class="org.springframework.beans.factory.config.PropertyPlaceholderConfigurer">
+		<property name="ignoreUnresolvablePlaceholders" value="true" />
+		<property name="ignoreResourceNotFound" value="true" />
+		<property name="locations">
+			<!-- Descending override order, a property file on the list may override 
+				any property of those above it. Discard the test file from the final artifact. -->
+			<list>
+				<value>classpath:application.properties</value>
+				<value>classpath:application-test.properties</value>
+				<value>file:config/application.properties</value>
+			</list>
+		</property>
 	</bean>
-        
-        <bean id="configuration" class="nl.kpmg.lcm.server.Configuration">
-            <property name="serverName" value="${lcm.server.name}"/>
-            <property name="serverPort" value="${lcm.server.port}"/>
-            <property name="serverStorage" value="${lcm.server.storage}"/>
-        </bean>
-        <bean id="encryption" class="org.jasypt.encryption.pbe.StandardPBEStringEncryptor">
-        	<property name="password" value="${lcm.server.password}"/>
-        </bean>
-        
+
+	<bean id="basicConfiguration" class="nl.kpmg.lcm.BasicConfiguration"
+		abstract="true">
+	</bean>
+
+	<bean id="serverConfiguration" class="nl.kpmg.lcm.server.Configuration"
+		parent="basicConfiguration">
+		<property name="serviceName" value="${lcm.server.name}" />
+		<property name="servicePort" value="${lcm.server.port}" />
+		<property name="secureServicePort" value="${lcm.server.securePort}" />
+		<property name="keystore" value="${lcm.server.security.keystore}" />
+		<property name="keystoreType" value="${lcm.server.security.keystoreType}" />
+		<property name="keystorePassword" value="${lcm.server.security.keystorePassword}" />
+		<property name="keystoreAlias" value="${lcm.server.security.keystoreAlias}" />
+		<property name="keystoreKeypass" value="${lcm.server.security.keystoreKeypass}" />
+		<property name="truststore" value="${lcm.server.security.truststore}" />
+		<property name="truststoreType" value="${lcm.server.security.truststoreType}" />
+		<property name="truststorePassword" value="${lcm.server.security.truststorePassword}" />
+		<property name="serverStorage" value="${lcm.server.storage}" />
+		<property name="fallback" value="${lcm.server.fallback}" />
+	</bean>
+
+	<bean id="clientConfiguration" class="nl.kpmg.lcm.client.Configuration"
+		parent="basicConfiguration">
+		<property name="serviceName" value="${lcm.client.name}" />
+		<property name="servicePort" value="${lcm.client.port}" />
+		<property name="secureServicePort" value="${lcm.client.securePort}" />
+		<property name="keystore" value="${lcm.client.security.keystore}" />
+		<property name="keystoreType" value="${lcm.client.security.keystoreType}" />
+		<property name="keystorePassword" value="${lcm.client.security.keystorePassword}" />
+		<property name="keystoreAlias" value="${lcm.client.security.keystoreAlias}" />
+		<property name="keystoreKeypass" value="${lcm.client.security.keystoreKeypass}" />
+		<property name="truststore" value="${lcm.client.security.truststore}" />
+		<property name="truststoreType" value="${lcm.client.security.truststoreType}" />
+		<property name="truststorePassword" value="${lcm.client.security.truststorePassword}" />
+		<property name="targetHost" value="${lcm.server.name}" />
+        <property name="targetPort" value="${lcm.server.securePort}" />
+        <property name="fallbackTargetPort" value="${lcm.server.port}" />
+        <property name="fallback" value="${lcm.client.fallback}" />
+	</bean>
+
+	<bean id="encryption" class="org.jasypt.encryption.pbe.StandardPBEStringEncryptor">
+		<property name="password" value="${lcm.server.password}" />
+	</bean>
+
 </beans>

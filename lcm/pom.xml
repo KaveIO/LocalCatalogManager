@@ -9,8 +9,8 @@
     <packaging>jar</packaging>
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-        <maven.compiler.source>1.7</maven.compiler.source>
-        <maven.compiler.target>1.7</maven.compiler.target>
+        <maven.compiler.source>1.8</maven.compiler.source>
+        <maven.compiler.target>1.8</maven.compiler.target>
         <jersey.version>2.17</jersey.version>
         <spring.version>3.1.0.RELEASE</spring.version>
         <spring-data-mongodb>1.2.0.RELEASE</spring-data-mongodb>
@@ -307,7 +307,25 @@
                 <artifactId>exec-maven-plugin</artifactId>
                 <version>1.2.1</version>
                 <executions>
+                <!-- You call an execution by id with mvn exec:java@execId  -->
                     <execution>
+                        <id>LCM_server</id>
+                        <configuration>
+                            <arguments>
+                                <argument>server</argument>
+                            </arguments>
+                        </configuration>
+                        <goals>
+                            <goal>java</goal>
+                        </goals>
+                    </execution>
+                    <execution>
+                        <id>LCM_ui</id>
+                        <configuration>
+                            <arguments>
+                                <argument>ui</argument>
+                            </arguments>
+                        </configuration>
                         <goals>
                             <goal>java</goal>
                         </goals>
@@ -315,6 +333,14 @@
                 </executions>
                 <configuration>
                     <mainClass>nl.kpmg.lcm.Main</mainClass>
+                    <!--  I am not sure why but in the test goal the variable in application.properties is seen, here it is not, so we define it ourselves. 
+                    Make sure to have your keystores and trustores ready in the main resources directory! -->
+                    <systemProperties>
+                        <systemProperty>
+                            <key>PWD</key>
+                            <value>${project.basedir}</value>
+                        </systemProperty>
+                    </systemProperties>
                 </configuration>
             </plugin>
             <plugin>

@@ -5,6 +5,10 @@ import java.net.URI;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import javax.net.ssl.KeyManagerFactory;
+
+import nl.kpmg.lcm.HTTPServerProvider;
+import nl.kpmg.lcm.SSLProvider;
 import nl.kpmg.lcm.server.rest.authentication.RequestFilter;
 import nl.kpmg.lcm.server.rest.authentication.ResponseFilter;
 import nl.kpmg.lcm.server.task.TaskManager;
@@ -12,6 +16,8 @@ import nl.kpmg.lcm.server.task.TaskManagerException;
 import com.fasterxml.jackson.jaxrs.json.JacksonJsonProvider;
 import nl.kpmg.lcm.server.rest.authentication.Roles;
 import org.glassfish.grizzly.http.server.HttpServer;
+import org.glassfish.grizzly.ssl.SSLContextConfigurator;
+import org.glassfish.grizzly.ssl.SSLEngineConfigurator;
 import org.glassfish.jersey.grizzly2.httpserver.GrizzlyHttpServerFactory;
 import org.glassfish.jersey.jackson.JacksonFeature;
 import org.glassfish.jersey.linking.DeclarativeLinkingFeature;
@@ -27,12 +33,13 @@ import org.springframework.context.support.ClassPathXmlApplicationContext;
  * @author mhoekstra
  */
 public class Server {
-    private static final Logger LOGGER = Logger.getLogger(Server.class.getName());
+    private static final Logger LOGGER = Logger.getLogger(RedirectServer.class.getName());
 
     private Configuration configuration;
     private ApplicationContext context;
 
-    private final String baseUri;
+    private String baseUri;
+    private String baseFallbackUri;
 
     private HttpServer restServer;
     private TaskManager taskManager;
@@ -51,9 +58,15 @@ public class Server {
 
         String storage = configuration.getServerStorage();
         baseUri = String.format(
-                "http://%s:%s/",
-                configuration.getServerName(),
-                configuration.getServerPort());
+                "%s://%s:%d/",
+                "https",
+                configuration.getServiceName(),
+                configuration.getSecureServicePort());
+        baseFallbackUri = String.format(
+                "%s://%s:%d/",
+                "http",
+                configuration.getServiceName(),
+                configuration.getServicePort());
 
         // Switching the application context based on the configuration. The configuration
         // allows for different storage backend which are Autwired with Spring.
@@ -77,7 +90,7 @@ public class Server {
      * Starts Grizzly HTTP server exposing JAX-RS resources defined in this application.
      * @return Grizzly HTTP server.
      */
-    public HttpServer startRestInterface() {
+    public HttpServer startRestInterface() throws ServerException {
         // create a resource config that scans for JAX-RS resources and providers
         // in nl.kpmg.lcm.server.rest
         final ResourceConfig rc = new ResourceConfig()
@@ -96,9 +109,7 @@ public class Server {
                 .registerClasses(JacksonJsonProvider.class)
                 .registerClasses(LoggingExceptionMapper.class);
 
-        // create and start a new instance of grizzly http server
-        // exposing the Jersey application at BASE_URI
-        return GrizzlyHttpServerFactory.createHttpServer(URI.create(baseUri), rc);
+        return HTTPServerProvider.createHTTPServer(configuration, baseUri, baseFallbackUri, rc, true);
     }
 
     public TaskManager startTaskManager() throws TaskManagerException {
@@ -116,7 +127,7 @@ public class Server {
             restServer = startRestInterface();
             taskManager = startTaskManager();
         } catch (TaskManagerException ex) {
-            Logger.getLogger(Server.class.getName()).log(Level.SEVERE, "Failed starting the LocalCatalogManager due to the TaskManager", ex);
+            Logger.getLogger(RedirectServer.class.getName()).log(Level.SEVERE, "Failed starting the LocalCatalogManager due to the TaskManager", ex);
             throw new ServerException(ex);
         }
     }
@@ -129,4 +140,5 @@ public class Server {
     public String getBaseUri() {
         return baseUri;
     }
+    
 }

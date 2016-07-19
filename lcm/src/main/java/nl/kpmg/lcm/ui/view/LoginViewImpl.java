@@ -21,6 +21,8 @@ import com.vaadin.navigator.ViewChangeListener;
 import com.vaadin.ui.Label;
 import com.vaadin.ui.Notification;
 import com.vaadin.ui.VerticalLayout;
+
+import nl.kpmg.lcm.server.ServerException;
 import nl.kpmg.lcm.ui.rest.AuthenticationException;
 import nl.kpmg.lcm.ui.rest.RestClientService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -56,6 +58,9 @@ public class LoginViewImpl extends VerticalLayout implements LoginView {
                 }
                 catch (AuthenticationException ex) {
                     Notification.show("Login failed!");
+                }
+                catch (ServerException se) {
+            			Notification.show("Cannot instantiate client HTTPS endpoint");
                 }
             }
         });

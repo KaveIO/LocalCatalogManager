@@ -18,6 +18,7 @@ package nl.kpmg.lcm.ui.view;
 import com.vaadin.navigator.ViewChangeListener;
 import com.vaadin.ui.Button;
 import com.vaadin.ui.HorizontalLayout;
+import com.vaadin.ui.Notification;
 import com.vaadin.ui.Panel;
 import com.vaadin.ui.Table;
 import com.vaadin.ui.UI;
@@ -25,6 +26,8 @@ import com.vaadin.ui.VerticalLayout;
 import java.util.List;
 import javax.annotation.PostConstruct;
 import javax.ws.rs.core.Link;
+
+import nl.kpmg.lcm.server.ServerException;
 import nl.kpmg.lcm.server.data.MetaData;
 import nl.kpmg.lcm.server.rest.client.version0.types.MetaDataRepresentation;
 import nl.kpmg.lcm.server.rest.client.version0.types.MetaDatasRepresentation;
@@ -139,6 +142,9 @@ public class MetadataOverviewViewImpl extends VerticalLayout implements Metadata
             }
         } catch (AuthenticationException ex) {
             getUI().getNavigator().navigateTo("");
+        } catch (ServerException se) {
+    			Notification.show("Cannot instantiate client HTTPS endpoint");
+    			getUI().getNavigator().navigateTo("");
         }
     }
 

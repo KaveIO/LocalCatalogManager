@@ -17,19 +17,26 @@ package nl.kpmg.lcm.ui.rest;
 
 import com.vaadin.server.VaadinService;
 import com.vaadin.server.WrappedSession;
-import java.util.List;
-import javax.ws.rs.client.ClientBuilder;
+
+import java.util.logging.Level;
+import java.util.logging.Logger;
+
+import javax.ws.rs.ProcessingException;
 import javax.ws.rs.client.Entity;
 import javax.ws.rs.client.Invocation;
 import javax.ws.rs.core.Response;
-import nl.kpmg.lcm.server.rest.client.version0.types.MetaDataRepresentation;
+
+import nl.kpmg.lcm.client.Configuration;
+import nl.kpmg.lcm.server.ServerException;
 import nl.kpmg.lcm.server.rest.client.version0.types.MetaDatasRepresentation;
 import nl.kpmg.lcm.server.rest.client.version0.types.StoragesRepresentation;
 import nl.kpmg.lcm.server.rest.client.version0.types.TaskDescriptionsRepresentation;
 import nl.kpmg.lcm.server.rest.client.version0.types.TaskScheduleRepresentation;
 import nl.kpmg.lcm.server.rest.client.version0.types.UserGroupsRepresentation;
 import nl.kpmg.lcm.server.rest.client.version0.types.UsersRepresentation;
-import nl.kpmg.lcm.ui.Configuration;
+import nl.kpmg.lcm.ui.Client;
+import nl.kpmg.lcm.ui.UI;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -40,11 +47,20 @@ import org.springframework.stereotype.Component;
 @Component
 public class RestClientService {
 
+    private static final Logger LOGGER = Logger.getLogger(UI.class.getName());
+	
     private String uri;
+    private String fallbackUri;
+    
+    private Client client;
+    
+    private boolean secure = true;
 
     @Autowired
     public RestClientService(Configuration configuration) {
-        uri = String.format("http://%s:%s/", configuration.getServerName(), configuration.getServerPort());
+        uri = String.format("https://%s:%s/", configuration.getServiceName(), configuration.getTargetPort());
+        fallbackUri = String.format("http://%s:%s/", configuration.getServiceName(), configuration.getFallbackTargetPort());
+        client = new Client();
     }
 
     private void saveLoginToken(String loginToken) {
@@ -67,16 +83,25 @@ public class RestClientService {
         return (String) wrappedSession.getAttribute("loginUser");
     }
 
-    public void authenticate(String username, String password) throws AuthenticationException {
-        Response post = ClientBuilder.newClient()
-                .target(uri)
-                .path("client/login")
-                .request()
-                .post(Entity.entity(
-                        String.format("{\"username\": \"%s\", \"password\": \"%s\"}", username, password),
-                        "application/nl.kpmg.lcm.server.rest.client.types.LoginRequest+json"));
-
-        int status = post.getStatus();
+    private Response post(String uri, String path, Entity<String> payload) throws ServerException {
+    			LOGGER.log(Level.WARNING, "URIooooo: "+uri);
+    		return client.createWebTarget(uri)
+	                 .path(path)
+	                 .request()
+	                 .post(payload);
+    }
+    
+    public void authenticate(String username, String password) throws AuthenticationException, ServerException {
+        String path = "client/login";
+        Entity<String> payload = Entity.entity(
+                String.format("{\"username\": \"%s\", \"password\": \"%s\"}", username, password),
+                "application/nl.kpmg.lcm.server.rest.client.types.LoginRequest+json");
+        Response post;
+    		try { post = post(uri, path, payload); } catch(ServerException | ProcessingException e) {
+    			LOGGER.log(Level.WARNING, "Server error in LCM target server HTTPS REST invocation, trying HTTP...", e);
+    			post = post(fallbackUri, path, payload);
+    			secure = false;
+    		}
         if (post.getStatus() != 200) {
             throw new AuthenticationException("Login failed");
         }
@@ -94,20 +119,27 @@ public class RestClientService {
                 && !retrieveLoginUser.isEmpty();
     }
 
-    public Invocation.Builder getClient(String path) throws AuthenticationException {
+    public Invocation.Builder getClient(String path) throws AuthenticationException, ServerException {
         if (!isAuthenticated()) {
             throw new AuthenticationException("Not logged in");
         }
 
-        return ClientBuilder.newClient()
-                .target(uri)
+        String uri;
+        if (secure) {
+        		uri = this.uri;
+        }
+        else {
+        		uri = this.fallbackUri;
+        }
+        
+        return client.createWebTarget(uri)
                 .path(path)
                 .request()
                 .header("LCM-Authentication-User", retrieveLoginUser())
                 .header("LCM-Authentication-Token", retrieveLoginToken());
     }
 
-    public MetaDatasRepresentation getLocalMetadata() throws AuthenticationException {
+    public MetaDatasRepresentation getLocalMetadata() throws AuthenticationException, ServerException {
         Invocation.Builder client = getClient("client/v0/local");
 
         Response response = client.get();
@@ -116,7 +148,7 @@ public class RestClientService {
         return metaDatasRepresentation;
     }
 
-    public StoragesRepresentation getStorage() throws AuthenticationException {
+    public StoragesRepresentation getStorage() throws AuthenticationException, ServerException {
         Invocation.Builder client = getClient("client/v0/storage");
 
         Response response = client.get();
@@ -125,7 +157,7 @@ public class RestClientService {
         return storagesRepresentation;
     }
 
-    public TaskDescriptionsRepresentation getTasks() throws AuthenticationException {
+    public TaskDescriptionsRepresentation getTasks() throws AuthenticationException, ServerException {
         Invocation.Builder client = getClient("client/v0/tasks");
 
         Response response = client.get();
@@ -134,7 +166,7 @@ public class RestClientService {
         return taskDescriptionsRepresentation;
     }
 
-    public TaskScheduleRepresentation getTaskSchedule() throws AuthenticationException {
+    public TaskScheduleRepresentation getTaskSchedule() throws AuthenticationException, ServerException {
         Invocation.Builder client = getClient("client/v0/taskschedule");
 
         Response response = client.get();
@@ -143,7 +175,7 @@ public class RestClientService {
         return taskScheduleRepresentation;
     }
 
-    public UsersRepresentation getUsers() throws AuthenticationException {
+    public UsersRepresentation getUsers() throws AuthenticationException, ServerException {
         Invocation.Builder client = getClient("client/v0/users");
 
         Response response = client.get();
@@ -152,7 +184,7 @@ public class RestClientService {
         return usersRepresentation;
     }
 
-    public UserGroupsRepresentation getUserGroups() throws AuthenticationException {
+    public UserGroupsRepresentation getUserGroups() throws AuthenticationException, ServerException {
         Invocation.Builder client = getClient("client/v0/userGroups");
 
         Response response = client.get();

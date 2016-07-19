@@ -1,10 +1,15 @@
 package nl.kpmg.lcm.server;
 
 
-import javax.ws.rs.client.ClientBuilder;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+
 import javax.ws.rs.client.WebTarget;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
+
+import nl.kpmg.lcm.server.authentication.SessionAuthenticationManagerTest;
+import nl.kpmg.lcm.ui.Client;
 
 public abstract class LCMBaseServerTest extends LCMBaseTest {
 
@@ -14,21 +19,20 @@ public abstract class LCMBaseServerTest extends LCMBaseTest {
     protected static String basicAuthTokenAdmin = "Basic YWRtaW46YWRtaW4=";
 
     protected static Server server;
+    private static Client client;
     protected static WebTarget target;
 
     @BeforeClass
     public static void setUpClass() {
-        LCMBaseTest.setUpClass();
-        try {
-            server = new Server();
-            server.start();
+    		try {    
+    			LCMBaseTest.setUpClass();
+	        server = new Server();
+	        server.start();
+	        client = new Client();
+	        target = client.createWebTarget(server.getBaseUri());
+	    } catch (ServerException se) {
+            Logger.getLogger(LCMBaseServerTest.class.getName()).log(Level.SEVERE, "Failed to create HTTPS server or client, test will fail", se);
         }
-        catch (ServerException e) {
-            e.printStackTrace();
-        }
-
-        // create the client
-        target = ClientBuilder.newClient().target(server.getBaseUri());
     }
 
     @AfterClass

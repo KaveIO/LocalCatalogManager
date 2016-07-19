@@ -60,7 +60,7 @@ public class MetaDataDaoImplTest extends LCMBaseTest {
     public void testGetByNameReturnsLatestVersion() {
         MetaData metaData = new MetaData();
         metaData.setName("test");
-
+        
         metaDataDao.persist(metaData);
         MetaData metadata = metaDataDao.getByName("test");
         assertEquals("0", metadata.getVersionNumber());

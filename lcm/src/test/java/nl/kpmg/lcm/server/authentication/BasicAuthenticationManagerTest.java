@@ -35,7 +35,7 @@ public class BasicAuthenticationManagerTest extends LCMBaseServerTest {
                 .request()
                 .header(BasicAuthenticationManager.BASIC_AUTHENTICATION_HEADER, basicAuthTokenAdmin)
                 .get();
-
+        
         assertEquals(200, res1.getStatus());
     }
 

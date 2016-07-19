@@ -1,36 +1,18 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
 <beans xmlns="http://www.springframework.org/schema/beans"
-       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
-       xmlns:util="http://www.springframework.org/schema/util"
-       xmlns:mongo="http://www.springframework.org/schema/data/mongo"
-       xmlns:context="http://www.springframework.org/schema/context"
-       xsi:schemaLocation="
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:util="http://www.springframework.org/schema/util"
+	xmlns:mongo="http://www.springframework.org/schema/data/mongo"
+	xmlns:context="http://www.springframework.org/schema/context"
+	xsi:schemaLocation="
         http://www.springframework.org/schema/beans 
         http://www.springframework.org/schema/beans/spring-beans.xsd
         http://www.springframework.org/schema/util 
         http://www.springframework.org/schema/util/spring-util.xsd 
         http://www.springframework.org/schema/context
         http://www.springframework.org/schema/context/spring-context.xsd">
-        
-    <context:component-scan base-package="nl.kpmg.lcm.ui" />
-    
-    <!-- bean definitions here -->
-    <bean class="org.springframework.beans.factory.config.PropertyPlaceholderConfigurer">
-        <property name="ignoreUnresolvablePlaceholders" value="true" />
-        <property name="ignoreResourceNotFound" value="true" />
-        <property name="locations">
-            <list>
-                <value>classpath:application.properties</value>
-                <value>file:config/application.properties</value>
-            </list>
-        </property>
-    </bean>
-        
-    <bean id="configuration" class="nl.kpmg.lcm.ui.Configuration">
-        <property name="uiName" value="${lcm.ui.name}"/>
-        <property name="uiPort" value="${lcm.ui.port}"/>
-        <property name="serverName" value="${lcm.server.name}"/>
-        <property name="serverPort" value="${lcm.server.port}"/>
-    </bean>
+
+	<import resource="application-context.xml" />
+	<context:component-scan base-package="nl.kpmg.lcm.ui" />
+	
 </beans>

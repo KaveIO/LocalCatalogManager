@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package nl.kpmg.lcm.server;
+package nl.kpmg.lcm.client;
 
 import nl.kpmg.lcm.BasicConfiguration;
 
@@ -22,27 +22,33 @@ import nl.kpmg.lcm.BasicConfiguration;
  * @author mhoekstra
  */
 public class Configuration extends BasicConfiguration {
+	
+	private String targetHost;
+	private String targetPort;
+	private String fallbackTargetPort;
 
-    private String serverStorage;
+	public String getTargetHost() {
+		return targetHost;
+	}
 
-    private Boolean withClientAuth = false;
+	public void setTargetHost(String targetHost) {
+		this.targetHost = targetHost;
+	}
 
+	public String getTargetPort() {
+		return targetPort;
+	}
 
-    public String getServerStorage() {
-        return serverStorage;
-    }
+	public void setTargetPort(String targetPort) {
+		this.targetPort = targetPort;
+	}
 
-    public void setServerStorage(String serverStorage) {
-        this.serverStorage = serverStorage;
-    }
+	public String getFallbackTargetPort() {
+		return fallbackTargetPort;
+	}
 
-
-    public void setClientAuth(Boolean clientAuth) {
-        withClientAuth = clientAuth;
-    }
-
-    public Boolean getWithClientAuth() {
-        return withClientAuth;
-    }    
-
+	public void setFallbackTargetPort(String fallbackPort) {
+		this.fallbackTargetPort = fallbackPort;
+	}
+	
 }

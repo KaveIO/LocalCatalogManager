@@ -19,7 +19,7 @@ public class Main {
     private static final Logger LOG = Logger.getLogger(Main.class.getName());
 
     // Base URI the Grizzly HTTP server will listen on
-    public static final String BASE_URI = "http://localhost:8080/";
+    public static final String BASE_URI = "https://localhost:8080/";
 
     /**
      * Main method.
@@ -39,23 +39,26 @@ public class Main {
 
             if (command.equals("server")) {
                 LOG.log(Level.INFO, "Starting LCM server");
-
-                final Server server = new Server();
+                final AbstractRedirectServer server = new nl.kpmg.lcm.server.RedirectServer();
                 server.start();
+                final Server secureServer = new Server();
+                secureServer.start();
 
                 LOG.log(Level.INFO, "Hit enter to stop it...");
                 System.in.read();
-
                 server.stop();
+                secureServer.stop();
+            } else if (command.equals("client")) {
+                LOG.log(Level.INFO, "Client not implemented yet.");
             } else if (command.equals("ui")) {
                 LOG.log(Level.INFO, "Starting LCM UI");
-
+                final AbstractRedirectServer server = new nl.kpmg.lcm.ui.RedirectServer();
+                server.start();
                 final UI ui = new UI();
                 ui.start();
-
+                
                 LOG.log(Level.INFO, "Hit enter to stop it...");
                 System.in.read();
-
                 ui.stop();
             } else if (command.equals("cli")) {
                 LOG.log(Level.INFO, "Cli not implemented yet.");

@@ -17,10 +17,13 @@ package nl.kpmg.lcm.ui.view;
 
 import com.vaadin.navigator.ViewChangeListener;
 import com.vaadin.ui.HorizontalLayout;
+import com.vaadin.ui.Notification;
 import com.vaadin.ui.TabSheet;
 import com.vaadin.ui.UI;
 import com.vaadin.ui.VerticalLayout;
 import javax.annotation.PostConstruct;
+
+import nl.kpmg.lcm.server.ServerException;
 import nl.kpmg.lcm.server.rest.client.version0.types.StoragesRepresentation;
 import nl.kpmg.lcm.server.rest.client.version0.types.TaskDescriptionsRepresentation;
 import nl.kpmg.lcm.server.rest.client.version0.types.TaskScheduleRepresentation;
@@ -119,6 +122,9 @@ public class AdministrationViewImpl extends VerticalLayout implements Administra
             usersPanel.setUserGroups(userGroups);
         } catch (AuthenticationException ex) {
             getUI().getNavigator().navigateTo("");
+        } catch (ServerException se) {
+        		Notification.show("Cannot instantiate client HTTPS endpoint");
+        		getUI().getNavigator().navigateTo("");
         }
     }
 }

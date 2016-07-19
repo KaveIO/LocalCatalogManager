@@ -1,6 +1,7 @@
 package nl.kpmg.lcm.server;
 
 import java.io.File;
+
 import org.junit.After;
 
 import org.junit.AfterClass;
@@ -14,7 +15,7 @@ import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 public abstract class LCMBaseTest {
 
     protected static final String TEST_STORAGE_PATH = "test";
-
+    
     @BeforeClass
     public static void setUpClass() {
         File file;
