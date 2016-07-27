@@ -15,7 +15,6 @@
  */
 package nl.kpmg.lcm.server.rest.client.version0;
 
-import com.sun.jersey.api.client.ClientResponse;
 import java.io.FileOutputStream;
 import java.io.File;
 import java.io.IOException;
@@ -43,12 +42,11 @@ import nl.kpmg.lcm.server.rest.authentication.Roles;
 import nl.kpmg.lcm.server.backend.Backend;
 import nl.kpmg.lcm.server.backend.BackendException;
 import nl.kpmg.lcm.server.data.MetaData;
-import nl.kpmg.lcm.server.data.dao.MetaDataDao;
+import nl.kpmg.lcm.server.data.service.MetaDataService;
 import nl.kpmg.lcm.server.data.service.StorageService;
 import nl.kpmg.lcm.server.rest.client.version0.types.MetaDataRepresentation;
 import nl.kpmg.lcm.server.rest.client.version0.types.MetaDatasRepresentation;
 import org.apache.commons.io.IOUtils;
-import org.apache.commons.lang.NotImplementedException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -61,9 +59,9 @@ import org.springframework.stereotype.Component;
 public class LocalMetaDataController {
 
     /**
-     * The MetaDataDao.
+     * The MetaDataService.
      */
-    private final MetaDataDao metaDataDao;
+    private final MetaDataService metaDataService;
 
     /**
      * The backend service.
@@ -73,12 +71,14 @@ public class LocalMetaDataController {
     /**
      * The default constructor.
      *
-     * @param metaDataDao for MetaData access
+     * @param metaDataService for MetaData access
      * @param storageService for Backend access
      */
     @Autowired
-    public LocalMetaDataController(final MetaDataDao metaDataDao, final StorageService storageService) {
-        this.metaDataDao = metaDataDao;
+    public LocalMetaDataController(
+            final MetaDataService metaDataService,
+            final StorageService storageService) {
+        this.metaDataService = metaDataService;
         this.storageService = storageService;
     }
 
@@ -91,7 +91,7 @@ public class LocalMetaDataController {
     @Produces({"application/nl.kpmg.lcm.server.rest.client.version0.types.MetaDatasRepresentation+json"})
     @RolesAllowed({Roles.ADMINISTRATOR, Roles.API_USER})
     public final MetaDatasRepresentation getLocalMetaDataOverview() {
-        List<MetaData> all = metaDataDao.getAll();
+        List<MetaData> all = metaDataService.findAll();
         return new MetaDatasRepresentation(all);
     }
 
@@ -105,41 +105,41 @@ public class LocalMetaDataController {
     @Consumes({"application/nl.kpmg.lcm.server.data.MetaData+json"})
     @RolesAllowed({Roles.ADMINISTRATOR, Roles.API_USER})
     public final Response createNewMetaData(final MetaData metaData) {
-        metaDataDao.persist(metaData);
+        metaDataService.getMetaDataDao().save(metaData);
         return Response.ok().build();
     }
 
     /**
-     * Create a new MetaData item or version.
+     * Update a new MetaData item.
      *
-     * @param metaDataName the name of the MetaData set
+     * @param metaDataId the name of the MetaData set
      * @param metaData the contents of the MetaData set
      * @return Response 200 OK if successful
      */
     @PUT
-    @Path("{metaDataName}")
+    @Path("{meta_data_id}")
     @Consumes({"application/nl.kpmg.lcm.server.data.MetaData+json"})
     @RolesAllowed({Roles.ADMINISTRATOR, Roles.API_USER})
     public final Response putLocalMetaData(
-            @PathParam("metaDataName") final String metaDataName,
+            @PathParam("meta_data_id") final String metaDataId,
             final MetaData metaData) {
 
-        metaData.setName(metaDataName);
-        metaDataDao.persist(metaData);
+        metaData.setName(metaDataId);
+        metaDataService.getMetaDataDao().save(metaData);
 
         return Response.ok().build();
     }
 
     @POST
-    @Path("{metaDataName}")
+    @Path("{meta_data_id}")
     @Consumes({"application/nl.kpmg.lcm.server.rest.client.version0.types.MetaDataOperationRequest+json"})
     @Produces(MediaType.APPLICATION_OCTET_STREAM)
     @RolesAllowed({Roles.ADMINISTRATOR, Roles.API_USER})
     public final Response metadataOperation(
-            @PathParam("metaDataName") final String metaDataName,
+            @PathParam("meta_data_id") final String metaDataId,
             MetaDataOperationRequest request) throws BackendException, URISyntaxException {
 
-        MetaData metadata = metaDataDao.getByName(metaDataName);
+        MetaData metadata = metaDataService.getMetaDataDao().findOne(metaDataId);
 
         Backend backend;
         switch (request.getOperation()) {
@@ -152,7 +152,7 @@ public class LocalMetaDataController {
                     String fType = (String) request.getParameters().get("type");
                     return Response
                             .ok(input)
-                            .header("Content-Disposition", String.format("attachment; filename=%s_v%s.%s", metadata.getName(), metadata.getVersionNumber(), fType))
+                            .header("Content-Disposition", String.format("attachment; filename=%s.%s", metadata.getName(), fType))
                             .build();
 
                 }
@@ -174,7 +174,7 @@ public class LocalMetaDataController {
                     MetaData mnested = new MetaData();
                     mnested.setDataUri(newDataUri);
                     metadata.addDuplicate(mnested);
-                    metaDataDao.update(metadata);
+                    metaDataService.getMetaDataDao().save(metadata);
 
                     return Response.ok().build();
                 } catch (IOException ex) {
@@ -190,19 +190,19 @@ public class LocalMetaDataController {
     /**
      * Get meta data of the head version of a specific meta data set.
      *
-     * @param metaDataName The name of the meta data set
+     * @param metaDataId The name of the meta data set
      * @return The head version of the requested meta data set
      */
     @GET
-    @Path("{metaDataName}")
+    @Path("{meta_data_id}")
     @Produces({"application/nl.kpmg.lcm.server.rest.client.version0.types.MetaDataRepresentation+json"})
     @RolesAllowed({Roles.ADMINISTRATOR, Roles.API_USER})
     public final MetaDataRepresentation getLocalMetaData(
-            @PathParam("metaDataName") final String metaDataName) {
+            @PathParam("meta_data_id") final String metaDataId) {
 
-        MetaData metadata = metaDataDao.getByName(metaDataName);
+        MetaData metadata = metaDataService.getMetaDataDao().findOne(metaDataId);
         if (metadata == null) {
-            throw new NotFoundException(String.format("MetaData set %s could not be found", metaDataName));
+            throw new NotFoundException(String.format("MetaData set %s could not be found", metaDataId));
         }
 
         return new MetaDataRepresentation(metadata);
@@ -211,101 +211,21 @@ public class LocalMetaDataController {
     /**
      * Delete the entire meta data set from the LCM.
      *
-     * @param metaDataName The name of the meta data set
+     * @param metaDataId The name of the meta data set
      * @return 200 OK if successful
      */
     @DELETE
-    @Path("{metaDataName}")
+    @Path("{meta_data_id}")
     @RolesAllowed({Roles.ADMINISTRATOR, Roles.API_USER})
     public final Response deleteLocalMetaData(
-            @PathParam("metaDataName") final String metaDataName) {
+            @PathParam("meta_data_id") final String metaDataId) {
 
-        MetaData metadata = metaDataDao.getByName(metaDataName);
+        MetaData metadata = metaDataService.getMetaDataDao().findOne(metaDataId);
         if (metadata != null) {
-            metaDataDao.delete(metadata);
+            metaDataService.getMetaDataDao().delete(metadata);
             return Response.ok().build();
         } else {
             return Response.status(Status.NOT_FOUND).build();
         }
-    }
-
-    /**
-     * Place a fetch request for given data to be stored in a local data store.
-     *
-     * @param metaDataName
-     * @param metaData
-     * @return
-     */
-    @POST
-    @Path("{metaDataName}")
-    @Consumes({"application/json"})
-    @Produces({"application/json"})
-    @RolesAllowed({Roles.ADMINISTRATOR, Roles.API_USER})
-    public final String postLocalMetaData(
-            @PathParam("metaDataName") final String metaDataName,
-            final MetaData metaData) {
-        throw new NotImplementedException();
-    }
-
-    /**
-     * Get meta data of a specific version of a specific meta data set.
-     *
-     * @param metaDataName The name of the meta data set
-     * @param version The version of the meta data set
-     * @return The head version of the requested meta data set
-     */
-    @GET
-    @Path("{metaDataName}/{version}")
-    @Produces({"application/json"})
-    @RolesAllowed({Roles.ADMINISTRATOR, Roles.API_USER})
-    public final MetaDataRepresentation getLocalMetaDataByVersion(
-            @PathParam("metaDataName") final String metaDataName,
-            @PathParam("version") final String version) {
-
-        MetaData metadata = metaDataDao.getByNameAndVersion(metaDataName, version);
-        if (metadata == null) {
-            throw new NotFoundException(String.format("MetaData set %s could not be found", metaDataName));
-        }
-
-        //return new MetaDataRepresentation(metadata);
-        return null;
-    }
-
-    /**
-     * Delete a version of meta data about a data-set.
-     *
-     * @param metaDataName
-     * @param version
-     * @return 200 OK if successful
-     */
-    @DELETE
-    @Path("{metaDataName}/{version}")
-    @Produces({"application/json"})
-    @RolesAllowed({Roles.ADMINISTRATOR, Roles.API_USER})
-    public final Response deleteLocalMetaDataByVersion(
-            @PathParam("metaDataName") final String metaDataName,
-            @PathParam("version") final String version) {
-        throw new NotImplementedException();
-    }
-
-    /**
-     * Place a fetch request for given data to be stored in a local data store.
-     *
-     * @param metaDataName
-     * @param version
-     * @param metaData
-     * @return 200 OK if successful
-     */
-    @POST
-    @Path("{metadata}/{version}")
-    @Consumes({"application/json"})
-    @Produces({"application/json"})
-    @RolesAllowed({Roles.ADMINISTRATOR, Roles.API_USER})
-    public final Response postLocalMetaDataByVersion(
-            @PathParam("metaDataName") final String metaDataName,
-            @PathParam("version") final String version,
-            final MetaData metaData) {
-
-        throw new NotImplementedException();
     }
 }

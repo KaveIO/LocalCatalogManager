@@ -15,49 +15,28 @@
  */
 package nl.kpmg.lcm.server.data.service;
 
-import java.util.LinkedList;
 import java.util.List;
+import jersey.repackaged.com.google.common.collect.Lists;
 import nl.kpmg.lcm.server.data.MetaData;
 import nl.kpmg.lcm.server.data.dao.MetaDataDao;
-import org.apache.commons.lang.NotImplementedException;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
 
 /**
  *
  * @author mhoekstra
  */
+@Service
 public class MetaDataService {
 
     @Autowired
     private MetaDataDao metaDataDao;
 
-    public List<MetaData> getByExpression(String expression) throws ServiceException {
-        List<MetaData> targets = new LinkedList();
+    public List<MetaData> findAll() {
+        return Lists.newLinkedList(metaDataDao.findAll());
+    }
 
-        if (expression.length() == 0) {
-            throw new ServiceException("Target expression is empty");
-        }
-
-        String[] split = expression.split("/");
-        if (split.length == 1) {
-            if (split[0].equals("*")) {
-                targets = metaDataDao.getAll();
-            } else {
-                targets.add(metaDataDao.getByName(split[0]));
-            }
-        } else if (split.length == 2) {
-            if (split[0].equals("*")) {
-                throw new NotImplementedException("Scheduling on */* is not implemented yet.");
-            } else {
-                if (split[1].equals("*")) {
-                    throw new NotImplementedException("Scheduling on ???/* is not implemented yet.");
-                } else {
-                    targets.add(metaDataDao.getByNameAndVersion(split[0], split[1]));
-                }
-            }
-        } else {
-            throw new ServiceException("Target expression has an unknown format");
-        }
-        return targets;
+    public MetaDataDao getMetaDataDao() {
+        return metaDataDao;
     }
 }

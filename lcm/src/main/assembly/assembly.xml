@@ -80,14 +80,6 @@ limitations under the License.
             </includes>
         </fileSet>
         
-        <fileSet>
-            <directory>src/main/assembly</directory>
-            <outputDirectory>logs</outputDirectory>
-            <excludes>
-                <exclude>**/*</exclude>
-            </excludes>
-        </fileSet>
-        
         <!-- 
             Assemblies and git don't allow for empty folders. So we are balancing 
             a couple of things here. First abuse src/main/assembly (a random folder
@@ -97,63 +89,10 @@ limitations under the License.
         -->
         <fileSet>
             <directory>src/main/assembly</directory>
-            <outputDirectory>data</outputDirectory>
+            <outputDirectory>logs</outputDirectory>
             <excludes>
                 <exclude>**/*</exclude>
             </excludes>
-        </fileSet>
-        <fileSet>
-            <directory>src/main/assembly</directory>
-            <outputDirectory>data/backend</outputDirectory>
-            <excludes>
-                <exclude>**/*</exclude>
-            </excludes>
-        </fileSet>
-        <fileSet>
-            <directory>src/main/assembly</directory>
-            <outputDirectory>data/metadata</outputDirectory>
-            <excludes>
-                <exclude>**/*</exclude>
-            </excludes>
-        </fileSet>
-        <fileSet>
-            <directory>src/main/assembly</directory>
-            <outputDirectory>data/taskdescription</outputDirectory>
-            <excludes>
-                <exclude>**/*</exclude>
-            </excludes>
-        </fileSet>
-        <fileSet>
-            <directory>src/main/assembly</directory>
-            <outputDirectory>data/taskschedule</outputDirectory>
-            <excludes>
-                <exclude>**/*</exclude>
-            </excludes>
-        </fileSet>
-        <fileSet>
-            <directory>src/main/assembly</directory>
-            <outputDirectory>data/storage</outputDirectory>
-            <excludes>
-                <exclude>**/*</exclude>
-            </excludes>
-        </fileSet>
-        <fileSet>
-            <directory>src/main/assembly</directory>
-            <outputDirectory>data/users</outputDirectory>
-            <excludes>
-                <exclude>**/*</exclude>
-            </excludes>
-        </fileSet>
-        <fileSet>
-            <directory>src/main/assembly</directory>
-            <outputDirectory>data/usergroups</outputDirectory>
-            <excludes>
-                <exclude>**/*</exclude>
-            </excludes>
-        </fileSet>
-        <fileSet>
-            <directory>src/main/data-template</directory>
-            <outputDirectory>data</outputDirectory>
         </fileSet>
     </fileSets>
 </assembly>

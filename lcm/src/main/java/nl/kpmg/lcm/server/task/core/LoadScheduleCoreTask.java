@@ -35,7 +35,6 @@ import org.quartz.Scheduler;
 import org.quartz.SchedulerException;
 import static org.quartz.TriggerBuilder.newTrigger;
 import org.quartz.impl.matchers.GroupMatcher;
-import static org.quartz.impl.matchers.GroupMatcher.groupEquals;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
@@ -73,7 +72,7 @@ public class LoadScheduleCoreTask extends CoreTask {
      */
     @Override
     public final TaskResult execute() throws TaskException {
-        TaskSchedule latest = taskScheduleDao.getCurrent();
+        TaskSchedule latest = taskScheduleDao.findFirstByOrderByIdDesc();
         if (current == null || !current.equals(latest)) {
             try {
                 removeTasks();

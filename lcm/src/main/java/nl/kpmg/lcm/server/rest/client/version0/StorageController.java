@@ -27,7 +27,7 @@ import javax.ws.rs.Produces;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
 import nl.kpmg.lcm.server.data.Storage;
-import nl.kpmg.lcm.server.data.dao.StorageDao;
+import nl.kpmg.lcm.server.data.service.StorageService;
 import nl.kpmg.lcm.server.rest.authentication.Roles;
 import nl.kpmg.lcm.server.rest.client.version0.types.StorageRepresentation;
 import nl.kpmg.lcm.server.rest.client.version0.types.StoragesRepresentation;
@@ -40,11 +40,11 @@ import org.springframework.beans.factory.annotation.Autowired;
 @Path("client/v0/storage")
 public class StorageController {
 
-    private final StorageDao storageDao;
+    private final StorageService storageService;
 
     @Autowired
-    public StorageController(final StorageDao storageDao) {
-        this.storageDao = storageDao;
+    public StorageController(final StorageService storageService) {
+        this.storageService = storageService;
     }
 
     /**
@@ -56,7 +56,7 @@ public class StorageController {
     @Produces({"application/nl.kpmg.lcm.server.rest.client.version0.types.StoragesRepresentation+json"})
     @RolesAllowed({Roles.ADMINISTRATOR, Roles.API_USER})
     public StoragesRepresentation getStorage() {
-        List<Storage> all = storageDao.getAll();
+        List<Storage> all = storageService.findAll();
         return new StoragesRepresentation(all);
     }
 
@@ -72,7 +72,7 @@ public class StorageController {
     @RolesAllowed({Roles.ADMINISTRATOR, Roles.API_USER})
     public StorageRepresentation getStorageHandler(
             @PathParam("storage_id") String storageId) {
-        Storage storage = storageDao.getById(storageId);
+        Storage storage = storageService.getStorageDao().findOne(storageId);
         return new StorageRepresentation(storage);
     }
 
@@ -88,9 +88,9 @@ public class StorageController {
     public Response deleteStorageHandler(
             final @PathParam("storage_id") String storageId) {
 
-        Storage storage = storageDao.getById(storageId);
+        Storage storage = storageService.getStorageDao().findOne(storageId);
         if (storage != null) {
-            storageDao.delete(storage);
+            storageService.getStorageDao().delete(storage);
             return Response.ok().build();
         } else {
             return Response.status(Status.NOT_FOUND).build();
@@ -107,7 +107,7 @@ public class StorageController {
     @Consumes({"application/nl.kpmg.lcm.server.data.Storage+json"})
     @RolesAllowed({Roles.ADMINISTRATOR})
     public Response createNewStorage(final Storage storage) {
-        storageDao.persist(storage);
+        storageService.getStorageDao().save(storage);
         return Response.ok().build();
     }
 }

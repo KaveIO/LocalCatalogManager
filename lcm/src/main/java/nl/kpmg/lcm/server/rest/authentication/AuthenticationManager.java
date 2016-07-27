@@ -15,8 +15,6 @@
  */
 package nl.kpmg.lcm.server.rest.authentication;
 
-import java.security.NoSuchAlgorithmException;
-import java.security.spec.InvalidKeySpecException;
 import javax.ws.rs.container.ContainerRequestContext;
 import nl.kpmg.lcm.server.LoginException;
 import nl.kpmg.lcm.server.data.User;
@@ -35,7 +33,6 @@ public abstract class AuthenticationManager {
      * The logger.
      */
     private static final Logger LOGGER = LoggerFactory.getLogger(SessionAuthenticationManager.class);
-
 
     /**
      * The user service.
@@ -81,12 +78,12 @@ public abstract class AuthenticationManager {
             }
         } else {
             LOGGER.info("Caught login attempt for regular user");
-            User user = userService.getUserDao().getById(username);
+            User user = userService.getUserDao().findOneByName(username);
             try {
                 if (user != null && user.passwordEquals(password)) {
                     return true;
                 }
-            } catch (NoSuchAlgorithmException | InvalidKeySpecException ex) {
+            } catch (UserPasswordHashException ex) {
                 LOGGER.error("Something went wrong with the password hashing algorithm", ex);
             }
         }
@@ -97,9 +94,9 @@ public abstract class AuthenticationManager {
         if (username.equals(adminUser)) {
             return new Session(username, Roles.ADMINISTRATOR, UserOrigin.CONFIGURED);
         } else {
-            User user = userService.getUserDao().getById(username);
+            User user = userService.getUserDao().findOneByName(username);
             if (user != null) {
-                return new Session(user.getId(), user.getRole(), UserOrigin.LOCAL);
+                return new Session(user.getName(), user.getRole(), UserOrigin.LOCAL);
             }
         }
         throw new LoginException("Session could not be constructed after login.");

@@ -26,6 +26,7 @@ import nl.kpmg.lcm.server.rest.authentication.Roles;
 import nl.kpmg.lcm.server.data.TaskSchedule;
 import nl.kpmg.lcm.server.data.dao.TaskScheduleDao;
 import nl.kpmg.lcm.server.rest.client.version0.types.TaskScheduleRepresentation;
+import org.apache.commons.lang.NotImplementedException;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
@@ -48,7 +49,7 @@ public class TaskScheduleController {
     @Produces({"application/json" })
     @RolesAllowed({Roles.ADMINISTRATOR, Roles.API_USER})
     public final TaskScheduleRepresentation getCurrent() {
-        TaskSchedule taskSchedule = taskScheduleDao.getCurrent();
+        TaskSchedule taskSchedule = taskScheduleDao.findFirstByOrderByIdDesc();
 
         if (taskSchedule != null) {
             return new TaskScheduleRepresentation(taskSchedule);
@@ -67,7 +68,7 @@ public class TaskScheduleController {
     @RolesAllowed({Roles.ADMINISTRATOR })
     public final Response createTaskSchedule(final TaskSchedule taskSchedule) {
         taskSchedule.setId(null);
-        taskScheduleDao.persist(taskSchedule);
+        taskScheduleDao.save(taskSchedule);
         return Response.ok().build();
     }
 }

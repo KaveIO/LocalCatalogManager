@@ -17,11 +17,10 @@ package nl.kpmg.lcm.server.data.service;
 
 import java.util.List;
 import jersey.repackaged.com.google.common.collect.Lists;
-import nl.kpmg.lcm.server.data.User;
+import nl.kpmg.lcm.server.data.TaskDescription;
+import nl.kpmg.lcm.server.data.dao.TaskDescriptionDao;
 import org.springframework.beans.factory.annotation.Autowired;
 
-import nl.kpmg.lcm.server.data.dao.UserDao;
-import nl.kpmg.lcm.server.rest.authentication.UserPasswordHashException;
 import org.springframework.stereotype.Service;
 
 /**
@@ -29,33 +28,16 @@ import org.springframework.stereotype.Service;
  * @author mhoekstra
  */
 @Service
-public class UserService {
+public class TaskDescriptionService {
 
     @Autowired
-    private UserDao userDao;
+    private TaskDescriptionDao taskDescriptionDao;
 
-    public List<User> findAll() {
-        return Lists.newLinkedList(userDao.findAll());
+    public List<TaskDescription> findAll() {
+        return Lists.newLinkedList(taskDescriptionDao.findAll());
     }
 
-    public UserDao getUserDao() {
-        return userDao;
-    }
-
-    public void updateUser(String userId, User modifiedUser) throws UserPasswordHashException {
-        User user = userDao.findOne(userId);
-
-        if (modifiedUser.getName() != null) {
-            user.setName(modifiedUser.getName());
-        }
-        if (modifiedUser.getPassword() != null) {
-            user.setPassword(modifiedUser.getPassword());
-            user.setHashed(false);
-        }
-        if (modifiedUser.getRole() != null) {
-            user.setRole(modifiedUser.getRole());
-        }
-
-        userDao.save(user);
+    public TaskDescriptionDao getTaskDescriptionDao() {
+        return taskDescriptionDao;
     }
 }

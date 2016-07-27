@@ -13,7 +13,6 @@ import javax.ws.rs.core.Response;
 import nl.kpmg.lcm.server.LCMBaseServerTest;
 import nl.kpmg.lcm.server.LoginException;
 import nl.kpmg.lcm.server.ServerException;
-import nl.kpmg.lcm.server.data.User;
 import nl.kpmg.lcm.server.data.UserGroup;
 import nl.kpmg.lcm.server.data.dao.UserGroupDao;
 import nl.kpmg.lcm.server.data.service.UserGroupService;
@@ -74,11 +73,11 @@ public class UserGroupControllerClientTest extends LCMBaseServerTest {
 
         UserGroupDao userGroupDao = userGroupService.getUserGroupDao();
         UserGroup userGroup = new UserGroup();
-        userGroup.setId("admin");
-        userGroupDao.persist(userGroup);
+        userGroup.setName("admin");
+        UserGroup saved = userGroupDao.save(userGroup);
 
         Response res1 = target
-                .path("client/v0/userGroups/"+userGroup.getId())
+                .path("client/v0/userGroups/"+saved.getId())
                 .request()
                 .header("LCM-Authentication-User", "admin")
                 .header("LCM-Authentication-Token", authenticationToken)

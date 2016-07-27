@@ -17,24 +17,37 @@ package nl.kpmg.lcm.server.data.service;
 
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import jersey.repackaged.com.google.common.collect.Lists;
 import nl.kpmg.lcm.server.backend.Backend;
 import nl.kpmg.lcm.server.backend.BackendFileImpl;
 import nl.kpmg.lcm.server.backend.BackendHDFSImpl;
 import nl.kpmg.lcm.server.data.MetaData;
+import nl.kpmg.lcm.server.data.Storage;
 import nl.kpmg.lcm.server.data.dao.StorageDao;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
 
 /**
  * Crude service to work with backends.
  *
  * @author mhoekstra
  */
+@Service
 public class StorageService {
 
     @Autowired
     private StorageDao storageDao;
+
+    public List<Storage> findAll() {
+        return Lists.newLinkedList(storageDao.findAll());
+    }
+
+    public StorageDao getStorageDao() {
+        return storageDao;
+    }
 
     /**
      * Get a storage backend based on a MetaData object.
@@ -72,15 +85,15 @@ public class StorageService {
             switch (scheme) {
                 case "file":
                     if (parsedUri.getHost() != null)  {
-                       return new BackendFileImpl(storageDao.getById(parsedUri.getHost()));
+                       return new BackendFileImpl(storageDao.findOne(parsedUri.getHost()));
                     } else {
-                       return new BackendFileImpl(storageDao.getById(parsedUri.getAuthority()));
+                       return new BackendFileImpl(storageDao.findOne(parsedUri.getAuthority()));
                     }
                 case "hdfs":
                     if (parsedUri.getHost() != null)  {
-                        return new BackendHDFSImpl(storageDao.getById(parsedUri.getHost()));
+                        return new BackendHDFSImpl(storageDao.findOne(parsedUri.getHost()));
                     } else {
-                        return new BackendHDFSImpl(storageDao.getById(parsedUri.getAuthority()));
+                        return new BackendHDFSImpl(storageDao.findOne(parsedUri.getAuthority()));
                     }
                 default : return null;
             }

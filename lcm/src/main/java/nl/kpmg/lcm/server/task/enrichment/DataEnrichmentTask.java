@@ -100,7 +100,7 @@ public class DataEnrichmentTask extends EnrichmentTask {
             metadata.set("dynamic.data.size", gatherDataSetInformation.getByteSize());
             metadata.set("dynamic.data.update-timestamp", gatherDataSetInformation.getModificationTime().toString());
 
-            metaDataDao.persist(metadata);
+            metaDataDao.save(metadata);
 
             return TaskResult.SUCCESS;
         } catch (BackendException ex) {

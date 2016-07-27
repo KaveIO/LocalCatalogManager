@@ -49,7 +49,7 @@ public class UserGroupRepresentation {
                 rel = "self",
                 method = "getUserGroup",
                 bindings = {
-                    @Binding(name = "usergroup_id", value = "${instance.item.id}")
+                    @Binding(name = "user_group_id", value = "${instance.item.id}")
                 }
         )
     })

@@ -25,52 +25,94 @@ import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.annotation.security.PermitAll;
-
 import org.apache.commons.lang.ArrayUtils;
+import org.springframework.data.mongodb.core.mapping.Document;
 
 /**
+ * MetaData model class.
  *
- * @author mhoekstra
+ * The MetaData model acts as a decorator around an innerMap. A great deal of
+ * freedom is required for handling metadata. The fields which are required for
+ * correct LCM functioning are considered to be too limited to provide for
+ * accurate and complete data descriptions. By decorating a map we should be
+ * by quite metadata model agnostic. Any attributes we process in the LCM code
+ * we should convert to hard attributes.
+ *
+ * @TODO Move the duplicates business logic to a service layer.
  */
-public class MetaData {
+@Document(collection = "metadata")
+public class MetaData extends AbstractModel {
 
+    /**
+     * The Logger.
+     */
     private static final Logger LOGGER = Logger.getLogger(MetaData.class.getName());
 
+    /**
+     * The unique name of the metadata object.
+     */
+    private String name;
+
+    /**
+     * The inner map in which all the unknown attributes are stored.
+     */
     private final Map<String, Object> innerMap;
 
+    /**
+     * Default constructor.
+     */
     public MetaData() {
         this.innerMap = new HashMap();
     }
 
+    /**
+     * Constructor that filles the inner map with the given map.
+     *
+     * @param map to use as the innerMap
+     */
     public MetaData(final Map map) {
         this.innerMap = new HashMap(map);
     }
 
+    /**
+     * Setter for values within the innerMap.
+     *
+     * This method is used by Jackson to fill values for which Jackson can't find
+     * a proper attribute. The @JsonAnySetter annotation is used to enforce this.
+     *
+     * @param name of the property to set
+     * @param value of the property to set
+     */
     @JsonAnySetter
-    @PermitAll
-    public void anySetter(String name, Object value) {
+    public final void anySetter(final String name, final Object value) {
         innerMap.put(name, value);
     }
 
+    /**
+     * Getter for values within the innerMap.
+     *
+     * This method is used by Jackson to get values for which Jackson can't find
+     * a proper attribute. The @JsonAnyGetter annotation is used to enforce this.
+     *
+     * @return the innerMap
+     */
     @JsonAnyGetter
-    @PermitAll
-    public Map anyGetter() {
+    public final Map anyGetter() {
         return innerMap;
     }
 
-    public <T> T get(String path) {
+    public final <T> T get(final String path) {
         try {
             String[] split = path.split("\\.");
             return get(innerMap, split);
-        }
-        catch (Exception ex) {
+        } catch (Exception ex) {
             Logger.getLogger(MetaData.class.getName()).log(Level.SEVERE, "Couldn't find path: " + path, ex);
             return null;
         }
 
     }
 
-    private <T> T get(Map map, String[] path) {
+    private final <T> T get(Map map, String[] path) {
         if (path.length == 0) {
             return null;
         } else if (map.containsKey(path[0])) {
@@ -85,18 +127,17 @@ public class MetaData {
         }
     }
 
-    public void set(String path, Object value) {
+    public final void set(final String path, final Object value) {
         try {
             String[] split = path.split("\\.");
             set(innerMap, split, value);
-        }
-        catch (Exception ex) {
+        } catch (Exception ex) {
             Logger.getLogger(MetaData.class.getName()).log(Level.SEVERE, "Couldn't find path: " + path, ex);
         }
 
     }
 
-    private void set(Map map, String[] path, Object value) throws Exception {
+    private void set(final Map map, final String[] path, final Object value) throws Exception {
         if (path.length == 0) {
             throw new Exception("Errrrr");
         } else if (path.length == 1) {
@@ -115,30 +156,19 @@ public class MetaData {
         }
     }
 
-    @JsonIgnore
-    public String getName() {
-        return get("name");
+    public final String getName() {
+        return name;
     }
 
-    public void setName(String name) {
-        set("name", name);
+    public final void setName(final String name) {
+        this.name = name;
     }
 
-    @JsonIgnore
-    public String getVersionNumber() {
-        return get("version.number");
-    }
-
-    public void setVersionNumber(String versionNumber) {
-        set("version.number", versionNumber);
-    }
-
-    @JsonIgnore
-    public String getDataUri() {
+    public final String getDataUri() {
         return get("data.uri");
     }
 
-    public void setDataUri(String dataUri) {
+    public final void setDataUri(final String dataUri) {
         set("data.uri", dataUri);
     }
 
@@ -159,7 +189,6 @@ public class MetaData {
         }
     }
 
-    @JsonIgnore
     public List<MetaData> getDuplicates() {
         List<MetaData> lmdata = new LinkedList();
         if (innerMap.containsKey("duplicates")) {

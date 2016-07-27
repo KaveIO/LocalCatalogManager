@@ -16,6 +16,7 @@
 package nl.kpmg.lcm.server.task;
 
 import java.util.Date;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -23,7 +24,6 @@ import nl.kpmg.lcm.server.data.MetaData;
 import nl.kpmg.lcm.server.data.TaskDescription;
 import nl.kpmg.lcm.server.data.dao.TaskDescriptionDao;
 import nl.kpmg.lcm.server.data.service.MetaDataService;
-import nl.kpmg.lcm.server.data.service.ServiceException;
 import org.quartz.Job;
 import org.quartz.JobDataMap;
 import org.quartz.JobExecutionContext;
@@ -89,7 +89,7 @@ public abstract class EnrichmentTask implements Job {
         // Update or create the task description
         TaskDescription taskDescription;
         if (taskId != null) {
-            taskDescription = taskDescriptionDao.getById(taskId);
+            taskDescription = taskDescriptionDao.findOne(taskId);
         } else {
             taskDescription = new TaskDescription();
             taskDescription.setJob(this.getClass().getName());
@@ -97,15 +97,18 @@ public abstract class EnrichmentTask implements Job {
         }
         taskDescription.setStatus(TaskDescription.TaskStatus.RUNNING);
         taskDescription.setStartTime(new Date());
-        taskDescriptionDao.persist(taskDescription);
+        taskDescriptionDao.save(taskDescription);
 
         // Find the MetaData target on which this job needs to be executed
         List<MetaData> targets;
-        try {
-            targets = metaDataService.getByExpression(target);
-        } catch (ServiceException ex) {
-            Logger.getLogger(EnrichmentTask.class.getName()).log(Level.SEVERE, "Couldn't fetch targets for Job.", ex);
-            throw new JobExecutionException(ex);
+        if (target.equals("*")) {
+            targets = metaDataService.findAll();
+        } else {
+            MetaData metadata = metaDataService.getMetaDataDao().findOne(target);
+            targets = new LinkedList();
+            if (metadata != null) {
+                targets.add(metadata);
+            }
         }
 
         // Execute the actuall code for each target
@@ -129,6 +132,6 @@ public abstract class EnrichmentTask implements Job {
 
         taskDescription.setStatus(TaskDescription.TaskStatus.SUCCESS);
         taskDescription.setEndTime(new Date());
-        taskDescriptionDao.persist(taskDescription);
+        taskDescriptionDao.save(taskDescription);
     }
 }

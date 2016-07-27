@@ -20,7 +20,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import nl.kpmg.lcm.server.data.TaskDescription;
 import nl.kpmg.lcm.server.data.TaskSchedule;
-import nl.kpmg.lcm.server.data.dao.TaskDescriptionDao;
+import nl.kpmg.lcm.server.data.service.TaskDescriptionService;
 import nl.kpmg.lcm.server.task.CoreTask;
 import nl.kpmg.lcm.server.task.EnrichmentTask;
 import nl.kpmg.lcm.server.task.TaskException;
@@ -52,7 +52,7 @@ public class ExecuteTasksCoreTask extends CoreTask {
      * The TaskDescriptionDao.
      */
     @Autowired
-    private TaskDescriptionDao taskDescriptionDao;
+    private TaskDescriptionService taskDescriptionService;
 
     /**
      * Schedules all tasks with the status PENDING for direct execution.
@@ -63,7 +63,7 @@ public class ExecuteTasksCoreTask extends CoreTask {
     @Override
     public final TaskResult execute() throws TaskException {
 
-        List<TaskDescription> taskDescriptions = taskDescriptionDao.getAll();
+        List<TaskDescription> taskDescriptions = taskDescriptionService.findAll();
         for (TaskDescription taskDescription : taskDescriptions) {
             if (taskDescription.getStatus() == TaskDescription.TaskStatus.PENDING) {
                 try {
@@ -72,12 +72,12 @@ public class ExecuteTasksCoreTask extends CoreTask {
                             taskDescription.getJob(),
                             taskDescription.getTarget());
                     taskDescription.setStatus(TaskDescription.TaskStatus.SCHEDULED);
-                    taskDescriptionDao.persist(taskDescription);
+                    taskDescriptionService.getTaskDescriptionDao().save(taskDescription);
                 } catch (TaskScheduleException ex) {
                     Logger.getLogger(ExecuteTasksCoreTask.class.getName())
                             .log(Level.WARNING, "Failed scheduling task.");
                     taskDescription.setStatus(TaskDescription.TaskStatus.FAILED);
-                    taskDescriptionDao.persist(taskDescription);
+                    taskDescriptionService.getTaskDescriptionDao().save(taskDescription);
                 }
             }
         }
