@@ -47,19 +47,9 @@ public class MetaDataRepresentation {
                 resource = LocalMetaDataController.class,
                 style = InjectLink.Style.ABSOLUTE,
                 rel = "self",
-                method = "getLocalMetaDataByVersion",
-                bindings = {
-                    @Binding(name = "metaDataName", value = "${instance.item.name}"),
-                    @Binding(name = "version", value = "${instance.item.versionNumber}"),
-                }
-        ),
-        @InjectLink(
-                resource = LocalMetaDataController.class,
-                style = InjectLink.Style.ABSOLUTE,
-                rel = "local.metadata.all_versions",
                 method = "getLocalMetaData",
                 bindings = {
-                    @Binding(name = "metaDataName", value = "${instance.item.name}")
+                    @Binding(name = "meta_data_id", value = "${instance.item.id}")
                 }
         )
     })
@@ -91,7 +81,7 @@ public class MetaDataRepresentation {
     }
 
     @JsonDeserialize(using = LinksDeserializer.class)
-    public final void setLinks(List<Link> links) {
+    public final void setLinks(final List<Link> links) {
         this.links = links;
     }
 }

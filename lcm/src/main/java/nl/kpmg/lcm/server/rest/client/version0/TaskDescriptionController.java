@@ -27,12 +27,11 @@ import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.QueryParam;
-import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
 import nl.kpmg.lcm.server.rest.authentication.Roles;
 import nl.kpmg.lcm.server.data.TaskDescription;
-import nl.kpmg.lcm.server.data.dao.TaskDescriptionDao;
+import nl.kpmg.lcm.server.data.service.TaskDescriptionService;
 import nl.kpmg.lcm.server.rest.client.version0.types.TaskDescriptionRepresentation;
 import nl.kpmg.lcm.server.rest.client.version0.types.TaskDescriptionStatusFilter;
 import nl.kpmg.lcm.server.rest.client.version0.types.TaskDescriptionsRepresentation;
@@ -45,14 +44,11 @@ import org.springframework.beans.factory.annotation.Autowired;
 @Path("client/v0/tasks")
 public class TaskDescriptionController {
 
-    /**
-     * The TaskDescription DAO.
-     */
-    private final TaskDescriptionDao taskDescriptionDao;
+    private final TaskDescriptionService taskDescriptionService;
 
     @Autowired
-    public TaskDescriptionController(final TaskDescriptionDao taskDescriptionDao) {
-        this.taskDescriptionDao = taskDescriptionDao;
+    public TaskDescriptionController(final TaskDescriptionService taskDescriptionService) {
+        this.taskDescriptionService = taskDescriptionService;
     }
 
     /**
@@ -70,23 +66,23 @@ public class TaskDescriptionController {
         List<TaskDescription> taskDescriptions;
         switch (status) {
             case PENDING:
-                taskDescriptions = taskDescriptionDao.getByStatus(TaskDescription.TaskStatus.PENDING);
+                taskDescriptions = taskDescriptionService.getTaskDescriptionDao().findByStatus(TaskDescription.TaskStatus.PENDING);
                 break;
             case RUNNING:
-                taskDescriptions = taskDescriptionDao.getByStatus(TaskDescription.TaskStatus.RUNNING);
+                taskDescriptions = taskDescriptionService.getTaskDescriptionDao().findByStatus(TaskDescription.TaskStatus.RUNNING);
                 break;
             case SCHEDULED:
-                taskDescriptions = taskDescriptionDao.getByStatus(TaskDescription.TaskStatus.SCHEDULED);
+                taskDescriptions = taskDescriptionService.getTaskDescriptionDao().findByStatus(TaskDescription.TaskStatus.SCHEDULED);
                 break;
             case SUCCESS:
-                taskDescriptions = taskDescriptionDao.getByStatus(TaskDescription.TaskStatus.SUCCESS);
+                taskDescriptions = taskDescriptionService.getTaskDescriptionDao().findByStatus(TaskDescription.TaskStatus.SUCCESS);
                 break;
             case FAILED:
-                taskDescriptions = taskDescriptionDao.getByStatus(TaskDescription.TaskStatus.FAILED);
+                taskDescriptions = taskDescriptionService.getTaskDescriptionDao().findByStatus(TaskDescription.TaskStatus.FAILED);
                 break;
             case ALL:
             default:
-                taskDescriptions = taskDescriptionDao.getAll();
+                taskDescriptions = taskDescriptionService.findAll();
                 break;
         }
 
@@ -112,7 +108,7 @@ public class TaskDescriptionController {
         taskDescription.setStartTime(null);
         taskDescription.setEndTime(null);
 
-        taskDescriptionDao.persist(taskDescription);
+        taskDescriptionService.getTaskDescriptionDao().save(taskDescription);
 
         return Response.ok().build();
     }
@@ -128,7 +124,7 @@ public class TaskDescriptionController {
     @Produces({"application/nl.kpmg.lcm.server.rest.client.version0.types.TaskDescriptionRepresentation+json"})
     @RolesAllowed({Roles.ADMINISTRATOR, Roles.API_USER})
     public final Response getTask(@PathParam("tasks_id") final String taskDescriptionId) {
-        TaskDescription taskDescriptions = taskDescriptionDao.getById(taskDescriptionId);
+        TaskDescription taskDescriptions = taskDescriptionService.getTaskDescriptionDao().findOne(taskDescriptionId);
 
         if (taskDescriptions != null) {
             return Response.ok(new TaskDescriptionRepresentation(taskDescriptions)).build();
@@ -147,10 +143,10 @@ public class TaskDescriptionController {
     @Path("{tasks_id}")
     @RolesAllowed({Roles.ADMINISTRATOR, Roles.API_USER})
     public final Response deleteCommand(@PathParam("tasks_id") final String taskDescriptionId) {
-        TaskDescription taskDescriptions = taskDescriptionDao.getById(taskDescriptionId);
+        TaskDescription taskDescriptions = taskDescriptionService.getTaskDescriptionDao().findOne(taskDescriptionId);
 
         if (taskDescriptions != null) {
-            taskDescriptionDao.delete(taskDescriptions);
+            taskDescriptionService.getTaskDescriptionDao().delete(taskDescriptions);
             return Response.ok().build();
         } else {
             return Response.status(Status.NOT_FOUND).build();

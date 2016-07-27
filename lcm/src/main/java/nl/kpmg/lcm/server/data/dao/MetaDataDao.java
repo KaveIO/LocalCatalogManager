@@ -15,24 +15,13 @@
  */
 package nl.kpmg.lcm.server.data.dao;
 
-import java.util.List;
 import nl.kpmg.lcm.server.data.MetaData;
+import org.springframework.data.repository.PagingAndSortingRepository;
 
 /**
  *
  * @author mhoekstra
  */
-public interface MetaDataDao {
-
-    public List<MetaData> getAll();
-
-    public MetaData getByName(String name);
-
-    public MetaData getByNameAndVersion(String name, String version);
-
-    public void persist(MetaData metadata);
-
-    public void update(MetaData metadata);
-    
-    public void delete(MetaData metadata);
+public interface MetaDataDao extends PagingAndSortingRepository<MetaData, String> {
+    public MetaData findOneByName(String name);
 }

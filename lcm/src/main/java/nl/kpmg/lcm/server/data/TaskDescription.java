@@ -16,6 +16,8 @@
 package nl.kpmg.lcm.server.data;
 
 import java.util.Date;
+import javax.annotation.security.PermitAll;
+import org.springframework.data.mongodb.core.mapping.Document;
 
 /**
  * Description of tasks in the system.
@@ -33,6 +35,8 @@ import java.util.Date;
  *
  * @author mhoekstra
  */
+@Document(collection = "taskdescription")
+@PermitAll
 public class TaskDescription extends AbstractModel {
 
     /**

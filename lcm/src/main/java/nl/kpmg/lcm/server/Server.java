@@ -17,7 +17,6 @@ import org.glassfish.jersey.jackson.JacksonFeature;
 import org.glassfish.jersey.linking.DeclarativeLinkingFeature;
 import org.glassfish.jersey.message.filtering.EntityFilteringFeature;
 import org.glassfish.jersey.message.filtering.SecurityAnnotations;
-import org.glassfish.jersey.message.filtering.SecurityEntityFilteringFeature;
 import org.glassfish.jersey.server.ResourceConfig;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
@@ -86,15 +85,13 @@ public class Server {
                 .property(EntityFilteringFeature.ENTITY_FILTERING_SCOPE,
                         new Annotation[]{
                             SecurityAnnotations.rolesAllowed(new String[]{Roles.ADMINISTRATOR, Roles.API_USER})})
-                .register(SecurityEntityFilteringFeature.class)
+                .register(JacksonFeature.class)
+                .register(JacksonJsonProvider.class)
                 .register(RequestFilter.class)
                 .register(ResponseFilter.class)
                 .register(DeclarativeLinkingFeature.class)
                 .register(UriBuilderEntityProcessor.class)
-                .registerClasses(NotFilteringFilterProvider.class)
-                .registerClasses(JacksonFeature.class)
-                .registerClasses(JacksonJsonProvider.class)
-                .registerClasses(LoggingExceptionMapper.class);
+                .register(LoggingExceptionMapper.class);
 
         // create and start a new instance of grizzly http server
         // exposing the Jersey application at BASE_URI

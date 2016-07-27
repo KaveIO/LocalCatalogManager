@@ -18,12 +18,12 @@ package nl.kpmg.lcm.server.data.dao;
 import java.util.List;
 
 import nl.kpmg.lcm.server.data.TaskDescription;
+import org.springframework.data.repository.PagingAndSortingRepository;
 
 /**
  *
  * @author mhoekstra
  */
-public interface TaskDescriptionDao extends GenericDao<TaskDescription> {
-
-    public List<TaskDescription> getByStatus(TaskDescription.TaskStatus status);
+public interface TaskDescriptionDao extends PagingAndSortingRepository<TaskDescription, String> {
+    public List<TaskDescription> findByStatus(TaskDescription.TaskStatus status);
 }

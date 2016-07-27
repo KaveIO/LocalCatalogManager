@@ -17,7 +17,7 @@ public abstract class LCMBaseServerTest extends LCMBaseTest {
     protected static WebTarget target;
 
     @BeforeClass
-    public static void setUpClass() {
+    public static void setUpClass() throws Exception {
         LCMBaseTest.setUpClass();
         try {
             server = new Server();

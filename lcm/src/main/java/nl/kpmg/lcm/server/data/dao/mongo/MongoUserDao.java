@@ -13,14 +13,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package nl.kpmg.lcm.server.data.dao;
+package nl.kpmg.lcm.server.data.dao.mongo;
 
-import nl.kpmg.lcm.server.data.Storage;
-import org.springframework.data.repository.PagingAndSortingRepository;
+import nl.kpmg.lcm.server.data.User;
+import nl.kpmg.lcm.server.data.dao.UserDao;
+import org.springframework.data.mongodb.repository.MongoRepository;
 
-/**
- * @author kos
- */
-public interface StorageDao extends PagingAndSortingRepository<Storage, String> {
+public interface MongoUserDao extends MongoRepository<User, String>, UserDao {
 
 }

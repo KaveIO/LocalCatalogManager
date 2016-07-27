@@ -63,13 +63,13 @@ public class DataEnrichmentTaskTest extends LCMBaseTest implements ApplicationCo
         Storage backendModel = new Storage();
         backendModel.setId("test");
         backendModel.setOptions(new HashMap());
-        backendModel.getOptions().put("storagePath", TEST_STORAGE_PATH + "/storage");
-        backendDao.persist(backendModel);
+        backendModel.getOptions().put("storagePath", "test/storage");
+        backendDao.save(backendModel);
 
 
         MetaData metaData = new MetaData();
         metaData.setDataUri("file://test/test");
-        metaDataDao.persist(metaData);
+        metaDataDao.save(metaData);
 
         DataEnrichmentTask dataEnrichmentTask = new DataEnrichmentTask();
         autowire(dataEnrichmentTask);

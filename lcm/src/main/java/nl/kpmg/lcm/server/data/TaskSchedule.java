@@ -17,12 +17,16 @@ package nl.kpmg.lcm.server.data;
 
 import java.util.LinkedList;
 import java.util.List;
+import javax.annotation.security.PermitAll;
+import org.springframework.data.mongodb.core.mapping.Document;
 
 /**
  * Contains the schedule of tasks.
  *
  * @author mhoekstra
  */
+@Document(collection = "taskschedule")
+@PermitAll
 public class TaskSchedule extends AbstractModel{
 
     /**

@@ -2,11 +2,11 @@
 
 
 <beans xmlns="http://www.springframework.org/schema/beans"
-	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
-        xmlns:util="http://www.springframework.org/schema/util"
-	xmlns:mongo="http://www.springframework.org/schema/data/mongo"
-        xmlns:context="http://www.springframework.org/schema/context"
-	xsi:schemaLocation="
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+       xmlns:util="http://www.springframework.org/schema/util"
+       xmlns:mongo="http://www.springframework.org/schema/data/mongo"
+       xmlns:context="http://www.springframework.org/schema/context"
+       xsi:schemaLocation="
         http://www.springframework.org/schema/beans 
         http://www.springframework.org/schema/beans/spring-beans.xsd
         http://www.springframework.org/schema/util 
@@ -15,41 +15,38 @@
         http://www.springframework.org/schema/data/mongo/spring-mongo.xsd
         http://www.springframework.org/schema/context
         http://www.springframework.org/schema/context/spring-context.xsd">
-    
         
-        
-	<import resource="classpath*:/application-context.xml" />
+    <import resource="classpath*:/application-context.xml" />
     <context:component-scan base-package="nl.kpmg.lcm.server" />
-	<!-- bean definitions here -->
-	<bean id="metaDataDao"
-		class="nl.kpmg.lcm.server.data.dao.mongo.MetaDataDaoImpl">
-		<!-- Hard coded metadata storage path -->
-		<constructor-arg index="0" type="java.lang.String"
-			value="./metadata" />
-	</bean>
-	<bean id="devProps"
-		class="org.springframework.context.support.PropertySourcesPlaceholderConfigurer">
-		<property name="locations">
-			<list>
-				<value>classpath*:mongodb.properties</value>
-			</list>
-		</property>
-		<property name="ignoreUnresolvablePlaceholders" value="true" />
-		<!--property name="localOverride" value="true" / -->
-	</bean>
+    
+    <bean id="sessionAuthenticationManager" class="nl.kpmg.lcm.server.rest.authentication.SessionAuthenticationManager" />
+    <bean id="basicAuthenticationManager" class="nl.kpmg.lcm.server.rest.authentication.BasicAuthenticationManager" />
+    
+    <mongo:mongo id="mongo" host="${lcm.server.storage.mongo.host}" port="${lcm.server.storage.mongo.port}" />
+    <mongo:db-factory 
+        id="mongoDbFactory" 
+        mongo-ref="mongo" 
+        dbname="${lcm.server.storage.mongo.database}" 
+        username="${lcm.server.storage.mongo.username}" 
+        password="${lcm.server.storage.mongo.password}" />
+    <mongo:mapping-converter>
+        <mongo:custom-converters>
+            <mongo:converter ref="mongoUserReadConverter"/>
+            <mongo:converter ref="mongoUserWriteConverter"/>
+            <mongo:converter ref="mongoMetaDataReadConverter"/>
+            <mongo:converter ref="mongoMetaDataWriteConverter"/>
+        </mongo:custom-converters>
+    </mongo:mapping-converter>
 
-	<!-- <mongo:mongo host="127.0.0.1" port="27017" />
-	<mongo:db-factory dbname="mymongodb" /> -->
-	<bean id="mongo" class="com.mongodb.Mongo">		
-	</bean>
-	<!-- <bean id="mongoDbFactory" class="org.springframework.data.mongodb.core.SimpleMongoDbFactory">
-		<constructor-arg name="mongo" ref="mongoClient" />
-		<constructor-arg name="dbname" value="mymongodb" />
-	</bean> -->
-	<bean id="mongoTemplate" class="org.springframework.data.mongodb.core.MongoTemplate">
-		<constructor-arg type="com.mongodb.Mongo" name="mongo" ref="mongo" />
-		<constructor-arg type="java.lang.String" name="databaseName" value="mymongodb" />
-		<!-- <constructor-arg name="mongoDbFactory" ref="mongoDbFactory" /> -->
-	</bean>
+    <bean id="mongoUserReadConverter" class="nl.kpmg.lcm.server.data.dao.mongo.MongoUserReadConverter"/>
+    <bean id="mongoUserWriteConverter" class="nl.kpmg.lcm.server.data.dao.mongo.MongoUserWriteConverter"/>
+    <bean id="mongoMetaDataReadConverter" class="nl.kpmg.lcm.server.data.dao.mongo.MongoMetaDataReadConverter"/>
+    <bean id="mongoMetaDataWriteConverter" class="nl.kpmg.lcm.server.data.dao.mongo.MongoMetaDataWriteConverter"/>
 
+    <bean id="mongoTemplate" class="org.springframework.data.mongodb.core.MongoTemplate">
+        <constructor-arg name="mongoDbFactory" ref="mongoDbFactory"/>
+        <constructor-arg name="mongoConverter" ref="mappingConverter"/>
+    </bean>
+    
+    <mongo:repositories base-package="nl.kpmg.lcm.server.data.dao.mongo" mongo-template-ref="mongoTemplate"/>
 </beans>

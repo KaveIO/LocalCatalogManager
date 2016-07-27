@@ -16,12 +16,12 @@
 package nl.kpmg.lcm.server.data.dao;
 
 import nl.kpmg.lcm.server.data.TaskSchedule;
+import org.springframework.data.repository.PagingAndSortingRepository;
 
 /**
  *
  * @author mhoekstra
  */
-public interface TaskScheduleDao extends GenericDao<TaskSchedule> {
-
-    public TaskSchedule getCurrent();
+public interface TaskScheduleDao extends PagingAndSortingRepository<TaskSchedule, String> {
+    public TaskSchedule findFirstByOrderByIdDesc();
 }
