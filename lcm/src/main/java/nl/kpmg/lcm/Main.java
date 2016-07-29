@@ -4,11 +4,11 @@ import java.io.IOException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import org.apache.commons.lang.ArrayUtils;
+
 import nl.kpmg.lcm.server.Server;
 import nl.kpmg.lcm.server.ServerException;
 import nl.kpmg.lcm.ui.UI;
-
-import org.apache.commons.lang.ArrayUtils;
 
 /**
  * Main class.
@@ -17,9 +17,6 @@ import org.apache.commons.lang.ArrayUtils;
 public class Main {
 
     private static final Logger LOG = Logger.getLogger(Main.class.getName());
-
-    // Base URI the Grizzly HTTP server will listen on
-    public static final String BASE_URI = "https://localhost:8080/";
 
     /**
      * Main method.

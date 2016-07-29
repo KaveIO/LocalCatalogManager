@@ -15,7 +15,7 @@ public abstract class BasicConfiguration {
     protected String truststoreType;
     protected String truststorePassword;
     
-    protected boolean fallback;
+    protected boolean unsafe;
 	
 	public String getServiceName() {
 		return serviceName;
@@ -84,11 +84,11 @@ public abstract class BasicConfiguration {
 		this.truststorePassword = truststorePassword;
 	}
 	
-	public boolean isFallback() {
-		return fallback;
+	public boolean isUnsafe() {
+		return unsafe;
 	}
-	public void setFallback(boolean fallback) {
-		this.fallback = fallback;
+	public void setUnsafe(boolean unsafe) {
+		this.unsafe = unsafe;
 	}
 
 }

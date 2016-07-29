@@ -1,10 +1,9 @@
 package nl.kpmg.lcm;
 
+import java.io.IOException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import nl.kpmg.lcm.server.ServerException;
-import java.io.IOException;
 import org.glassfish.grizzly.http.server.HttpHandler;
 import org.glassfish.grizzly.http.server.HttpServer;
 import org.glassfish.grizzly.http.server.Request;
@@ -13,6 +12,8 @@ import org.glassfish.grizzly.http.util.Header;
 import org.glassfish.grizzly.http.util.HttpStatus;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
+
+import nl.kpmg.lcm.server.ServerException;
 
 /**
  *
@@ -58,7 +59,7 @@ public abstract class AbstractRedirectServer {
      * @throws ServerException
      */
     public void start() throws ServerException {
-    		if (!configuration.isFallback())
+    		if (!configuration.isUnsafe())
 	        try {
 	            restServer = startRedirectServer();
 	            restServer.start();

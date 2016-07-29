@@ -25,7 +25,7 @@ public class Configuration extends BasicConfiguration {
 	
 	private String targetHost;
 	private String targetPort;
-	private String fallbackTargetPort;
+	private String unsafeTargetPort;
 
 	public String getTargetHost() {
 		return targetHost;
@@ -43,12 +43,12 @@ public class Configuration extends BasicConfiguration {
 		this.targetPort = targetPort;
 	}
 
-	public String getFallbackTargetPort() {
-		return fallbackTargetPort;
+	public String getUnsafeTargetPort() {
+		return unsafeTargetPort;
 	}
 
-	public void setFallbackTargetPort(String fallbackPort) {
-		this.fallbackTargetPort = fallbackPort;
+	public void setUnsafeTargetPort(String unsafePort) {
+		this.unsafeTargetPort = unsafePort;
 	}
 	
 }

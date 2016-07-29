@@ -15,9 +15,6 @@
  */
 package nl.kpmg.lcm.ui.rest;
 
-import com.vaadin.server.VaadinService;
-import com.vaadin.server.WrappedSession;
-
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -25,6 +22,12 @@ import javax.ws.rs.ProcessingException;
 import javax.ws.rs.client.Entity;
 import javax.ws.rs.client.Invocation;
 import javax.ws.rs.core.Response;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
+
+import com.vaadin.server.VaadinService;
+import com.vaadin.server.WrappedSession;
 
 import nl.kpmg.lcm.client.Configuration;
 import nl.kpmg.lcm.server.ServerException;
@@ -37,9 +40,6 @@ import nl.kpmg.lcm.server.rest.client.version0.types.UsersRepresentation;
 import nl.kpmg.lcm.ui.Client;
 import nl.kpmg.lcm.ui.UI;
 
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Component;
-
 /**
  *
  * @author mhoekstra
@@ -50,7 +50,7 @@ public class RestClientService {
     private static final Logger LOGGER = Logger.getLogger(UI.class.getName());
 	
     private String uri;
-    private String fallbackUri;
+    private String unsafeUri;
     
     private Client client;
     
@@ -59,7 +59,7 @@ public class RestClientService {
     @Autowired
     public RestClientService(Configuration configuration) {
         uri = String.format("https://%s:%s/", configuration.getServiceName(), configuration.getTargetPort());
-        fallbackUri = String.format("http://%s:%s/", configuration.getServiceName(), configuration.getFallbackTargetPort());
+        unsafeUri = String.format("http://%s:%s/", configuration.getServiceName(), configuration.getUnsafeTargetPort());
         client = new Client();
     }
 
@@ -99,7 +99,7 @@ public class RestClientService {
         Response post;
     		try { post = post(uri, path, payload); } catch(ServerException | ProcessingException e) {
     			LOGGER.log(Level.WARNING, "Server error in LCM target server HTTPS REST invocation, trying HTTP...", e);
-    			post = post(fallbackUri, path, payload);
+    			post = post(unsafeUri, path, payload);
     			secure = false;
     		}
         if (post.getStatus() != 200) {
@@ -129,7 +129,7 @@ public class RestClientService {
         		uri = this.uri;
         }
         else {
-        		uri = this.fallbackUri;
+        		uri = this.unsafeUri;
         }
         
         return client.createWebTarget(uri)

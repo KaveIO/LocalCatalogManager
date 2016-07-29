@@ -4,6 +4,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import javax.net.ssl.SSLContext;
+import javax.ws.rs.client.Client;
 import javax.ws.rs.client.ClientBuilder;
 import javax.ws.rs.client.WebTarget;
 
@@ -22,7 +23,7 @@ public abstract class AbstractHTTPSClient {
 
     protected ApplicationContext parentContext = new ClassPathXmlApplicationContext(new String[] { "application-context.xml" });
 
-	private javax.ws.rs.client.Client create() {
+	private Client create() {
 		SSLContext sc;
 		ClientBuilder builder = ClientBuilder.newBuilder();
 		try { sc = SSLProvider.createSSLContextConfigurator(configuration).createSSLContext(); } catch (ServerException se) {

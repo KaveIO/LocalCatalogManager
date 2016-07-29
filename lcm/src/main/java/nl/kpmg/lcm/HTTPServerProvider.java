@@ -21,12 +21,12 @@ public class HTTPServerProvider {
 		// Grizzly ssl configuration
 	    SSLContextConfigurator sslContextConfigurator;
 	    try { sslContextConfigurator = SSLProvider.createSSLContextConfigurator(configuration); } catch (ServerException se) {
-	        if (configuration.isFallback()) {
+	        if (configuration.isUnsafe()) {
 	    			LOGGER.log(Level.WARNING, "Invalid SSL configuration, server will start on the non-secure port and run on HTTP only");
 	    			return GrizzlyHttpServerFactory.createHttpServer(URI.create(baseFallbackUri), rc);
 	        }
 	        else {
-				LOGGER.log(Level.SEVERE, "Invalid SSL configuration and fallback mode off, abort");
+				LOGGER.log(Level.SEVERE, "Invalid SSL configuration and unsafe mode off, abort");
 	        		throw se;
 	        }
 	    }

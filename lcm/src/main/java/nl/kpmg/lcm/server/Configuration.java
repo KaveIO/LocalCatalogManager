@@ -25,9 +25,6 @@ public class Configuration extends BasicConfiguration {
 
     private String serverStorage;
 
-    private Boolean withClientAuth = false;
-
-
     public String getServerStorage() {
         return serverStorage;
     }
@@ -35,14 +32,5 @@ public class Configuration extends BasicConfiguration {
     public void setServerStorage(String serverStorage) {
         this.serverStorage = serverStorage;
     }
-
-
-    public void setClientAuth(Boolean clientAuth) {
-        withClientAuth = clientAuth;
-    }
-
-    public Boolean getWithClientAuth() {
-        return withClientAuth;
-    }    
 
 }
