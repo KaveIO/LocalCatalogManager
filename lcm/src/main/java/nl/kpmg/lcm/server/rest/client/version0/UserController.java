@@ -1,7 +1,33 @@
+/*
+ * Copyright 2015 KPMG N.V. (unless otherwise stated).
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except
+ * in compliance with the License. You may obtain a copy of the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software distributed under the License
+ * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+ * or implied. See the License for the specific language governing permissions and limitations under
+ * the License.
+ */
+
 package nl.kpmg.lcm.server.rest.client.version0;
+
+import nl.kpmg.lcm.server.data.User;
+import nl.kpmg.lcm.server.data.dao.UserDao;
+import nl.kpmg.lcm.server.data.service.UserService;
+import nl.kpmg.lcm.server.rest.authentication.Roles;
+import nl.kpmg.lcm.server.rest.authentication.UserPasswordHashException;
+import nl.kpmg.lcm.server.rest.client.version0.types.UserRepresentation;
+import nl.kpmg.lcm.server.rest.client.version0.types.UsersRepresentation;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
 
 import java.util.logging.Level;
 import java.util.logging.Logger;
+
 import javax.annotation.security.RolesAllowed;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.DELETE;
@@ -13,15 +39,6 @@ import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
-import nl.kpmg.lcm.server.rest.authentication.Roles;
-import nl.kpmg.lcm.server.data.User;
-import nl.kpmg.lcm.server.data.dao.UserDao;
-import nl.kpmg.lcm.server.data.service.UserService;
-import nl.kpmg.lcm.server.rest.authentication.UserPasswordHashException;
-import nl.kpmg.lcm.server.rest.client.version0.types.UserRepresentation;
-import nl.kpmg.lcm.server.rest.client.version0.types.UsersRepresentation;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Component;
 
 /**
  * Controller for basic user operations, this also contains login in and logout.
@@ -32,87 +49,85 @@ import org.springframework.stereotype.Component;
 @Path("client/v0/users")
 public class UserController {
 
-    private static final Logger logger = Logger.getLogger(UserController.class.getName());
+  private static final Logger logger = Logger.getLogger(UserController.class.getName());
 
-    /**
-     * The user service.
-     */
-    private final UserService userService;
+  /**
+   * The user service.
+   */
+  private final UserService userService;
 
-    /**
-     * Default constructor.
-     *
-     * @param userService providing user DAO access
-     */
-    @Autowired
-    public UserController(final UserService userService) {
-        this.userService = userService;
+  /**
+   * Default constructor.
+   *
+   * @param userService providing user DAO access
+   */
+  @Autowired
+  public UserController(final UserService userService) {
+    this.userService = userService;
+  }
+
+  /**
+   * Returns all the registered users in the system.
+   *
+   * @return list of all the users
+   */
+  @GET
+  @Produces({"application/nl.kpmg.lcm.server.rest.client.version0.types.UsersRepresentation+json"})
+  @RolesAllowed({Roles.ADMINISTRATOR, Roles.API_USER})
+  public final UsersRepresentation getUsers() {
+    return new UsersRepresentation(userService.findAll());
+  }
+
+  @GET
+  @Produces({"application/nl.kpmg.lcm.server.rest.client.version0.types.UserRepresentation+json"})
+  @Path("/{user_id}")
+  @RolesAllowed({Roles.ADMINISTRATOR, Roles.API_USER})
+  public final Response getUser(@PathParam("user_id") String userId) {
+    UserDao userDao = userService.getUserDao();
+
+    User user = userDao.findOne(userId);
+    if (user != null) {
+      return Response.ok(new UserRepresentation(user)).build();
+    } else {
+      return Response.status(Status.NOT_FOUND).build();
     }
+  }
 
-    /**
-     * Returns all the registered users in the system.
-     *
-     * @return list of all the users
-     */
-    @GET
-    @Produces({"application/nl.kpmg.lcm.server.rest.client.version0.types.UsersRepresentation+json"})
-    @RolesAllowed({Roles.ADMINISTRATOR, Roles.API_USER})
-    public final UsersRepresentation getUsers() {
-        return new UsersRepresentation(userService.findAll());
+  @POST
+  @Consumes({"application/nl.kpmg.lcm.server.data.User+json"})
+  @RolesAllowed({Roles.ADMINISTRATOR})
+  public final Response createNewUser(final User user) {
+    userService.getUserDao().save(user);
+    return Response.ok().build();
+  }
+
+  @PUT
+  @Path("/{user_id}")
+  @Consumes({"application/nl.kpmg.lcm.server.data.User+json"})
+  @RolesAllowed({Roles.ADMINISTRATOR})
+  public final Response modifyUser(@PathParam("user_id") final String userId, final User user) {
+
+    try {
+      userService.updateUser(userId, user);
+      return Response.ok().build();
+    } catch (UserPasswordHashException ex) {
+      logger.log(Level.SEVERE, "Password hashing failed during user modification", ex);
+      return Response.serverError().build();
     }
+  }
 
-    @GET
-    @Produces({"application/nl.kpmg.lcm.server.rest.client.version0.types.UserRepresentation+json"})
-    @Path("/{user_id}")
-    @RolesAllowed({Roles.ADMINISTRATOR, Roles.API_USER})
-    public final Response getUser(@PathParam("user_id") String userId) {
-        UserDao userDao = userService.getUserDao();
+  @DELETE
+  @Path("/{user_id}")
+  @RolesAllowed({Roles.ADMINISTRATOR})
+  public final Response deleteUser(@PathParam("user_id") final String userId) {
+    UserDao userDao = userService.getUserDao();
+    User user = userDao.findOne(userId);
 
-        User user = userDao.findOne(userId);
-        if (user != null) {
-            return Response.ok(new UserRepresentation(user)).build();
-        } else {
-            return Response.status(Status.NOT_FOUND).build();
-        }
+    if (user != null) {
+      userDao.delete(user);
+      return Response.ok().build();
+    } else {
+      return Response.status(Status.NOT_FOUND).build();
     }
-
-    @POST
-    @Consumes({"application/nl.kpmg.lcm.server.data.User+json"})
-    @RolesAllowed({Roles.ADMINISTRATOR})
-    public final Response createNewUser(final User user) {
-        userService.getUserDao().save(user);
-        return Response.ok().build();
-    }
-
-    @PUT
-    @Path("/{user_id}")
-    @Consumes({"application/nl.kpmg.lcm.server.data.User+json"})
-    @RolesAllowed({Roles.ADMINISTRATOR})
-    public final Response modifyUser(
-            @PathParam("user_id") final String userId,
-            final User user) {
-
-        try {
-            userService.updateUser(userId, user);
-            return Response.ok().build();
-        } catch (UserPasswordHashException ex) {
-            logger.log(Level.SEVERE, "Password hashing failed during user modification", ex);
-            return Response.serverError().build();
-        }
-    }
-
-    @DELETE
-    @Path("/{user_id}")
-    @RolesAllowed({Roles.ADMINISTRATOR})
-    public final Response deleteUser(@PathParam("user_id") final String userId) {
-        UserDao userDao = userService.getUserDao();
-        User user = userDao.findOne(userId);
-
-        if (user != null) {
-            userDao.delete(user);
-            return Response.ok().build();
-        } else {
-            return Response.status(Status.NOT_FOUND).build();
-        }
-    }
+  }
 }
