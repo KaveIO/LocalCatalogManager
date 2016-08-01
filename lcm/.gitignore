@@ -2,5 +2,5 @@
 .classpath
 .project
 .pydevproject
-src/test/java/nl/kpmg/lcm/scrap/
 /nbactions-server.xml
+/nb-configuration.xml
