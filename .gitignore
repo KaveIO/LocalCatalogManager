@@ -1,4 +1,8 @@
-/lcm/target/
-/nb-configuration.xml
-/nbactions-server.xml
-/nbactions.xml
+**/nb-configuration.xml
+**/nbactions*.xml
+
+/target/
+/lcm-common/target/
+/lcm-ui/target/
+/lcm-server/target/
+/lcm-packaging/target/
