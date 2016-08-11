@@ -32,7 +32,7 @@ public class UI {
   private HttpServer restServer;
 
   public UI() {
-    context = new ClassPathXmlApplicationContext(new String[] {"application-context.xml"});
+    context = new ClassPathXmlApplicationContext(new String[] {"application-context-ui.xml"});
 
     configuration = context.getBean(UiConfiguration.class);
     baseUri = String.format("https://%s:%s/", configuration.getServiceName(),

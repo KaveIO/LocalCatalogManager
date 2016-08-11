@@ -17,6 +17,6 @@ package nl.kpmg.lcm.configuration;
  *
  * @author mhoekstra
  */
-public class UiConfiguration extends ClientConfiguration {
+public class UiConfiguration extends BasicConfiguration {
 
 }

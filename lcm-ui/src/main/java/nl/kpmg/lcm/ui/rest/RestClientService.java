@@ -17,6 +17,7 @@ import com.vaadin.server.VaadinService;
 import com.vaadin.server.WrappedSession;
 
 import nl.kpmg.lcm.HttpsClientFactory;
+import nl.kpmg.lcm.configuration.ClientConfiguration;
 import nl.kpmg.lcm.configuration.UiConfiguration;
 import nl.kpmg.lcm.rest.types.MetaDatasRepresentation;
 import nl.kpmg.lcm.rest.types.StoragesRepresentation;
@@ -45,7 +46,7 @@ import javax.ws.rs.core.Response;
 @Component
 public class RestClientService {
 
-  private static final Logger LOGGER = Logger.getLogger(UI.class.getName());
+  private static final Logger LOGGER = Logger.getLogger(RestClientService.class.getName());
 
   private final String uri;
   private final String unsafeUri;
@@ -56,10 +57,10 @@ public class RestClientService {
   private boolean secure = true;
 
   @Autowired
-  public RestClientService(UiConfiguration configuration) {
-    uri = String.format("https://%s:%s/", configuration.getServiceName(),
+  public RestClientService(ClientConfiguration configuration) {
+    uri = String.format("https://%s:%s/", configuration.getTargetHost(),
         configuration.getTargetPort());
-    unsafeUri = String.format("http://%s:%s/", configuration.getServiceName(),
+    unsafeUri = String.format("http://%s:%s/", configuration.getTargetHost(),
         configuration.getUnsafeTargetPort());
   }
 

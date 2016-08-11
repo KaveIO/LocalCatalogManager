@@ -51,7 +51,7 @@ public class Server {
     // parentContext just for the Configuration bean. Moments later we load
     // the actuall ApplicationContext and ignore the ParentContext.
     ApplicationContext parentContext =
-        new ClassPathXmlApplicationContext(new String[] {"application-context.xml"});
+        new ClassPathXmlApplicationContext(new String[] {"application-context-server.xml"});
     configuration = parentContext.getBean(ServerConfiguration.class);
 
     String storage = configuration.getServerStorage();
@@ -65,12 +65,13 @@ public class Server {
     switch (storage) {
       case "file":
         LOGGER.log(Level.INFO, "Loading file based storage ApplicationContext");
-        context = new ClassPathXmlApplicationContext(new String[] {"application-context-file.xml"});
+        context = new ClassPathXmlApplicationContext(
+            new String[] {"application-context-server-file.xml"});
         break;
       case "mongo":
         LOGGER.log(Level.INFO, "Loading mongo based storage ApplicationContext");
-        context =
-            new ClassPathXmlApplicationContext(new String[] {"application-context-mongo.xml"});
+        context = new ClassPathXmlApplicationContext(
+            new String[] {"application-context-server-mongo.xml"});
         break;
       default:
         throw new ServerException("Couldn't determine LCM storage engine.");

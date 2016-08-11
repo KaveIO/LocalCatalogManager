@@ -39,3 +39,6 @@ function import_certificate {
 
 create_certificate "$ALIAS" "$DNAME_CN" "$DNAME_OU" "$DNAME_O" "$DNAME_L" "$DNAME_S" "$DNAME_C" "$KEYSTORE_PATH" "$STOREPASS" "$KEYPASS" "$KEYALG"
 import_certificate "$ALIAS" "$TRUSTSTORE_PATH" "$STOREPASS" "$KEYPASS"
+
+# Quick fix to remove the raw certificate. 
+rm "$ALIAS".cer
