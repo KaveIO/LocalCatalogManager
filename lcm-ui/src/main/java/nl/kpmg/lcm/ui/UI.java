@@ -1,43 +1,59 @@
+/*
+ * Copyright 2016 KPMG N.V. (unless otherwise stated).
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except
+ * in compliance with the License. You may obtain a copy of the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software distributed under the License
+ * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+ * or implied. See the License for the specific language governing permissions and limitations under
+ * the License.
+ */
+
 package nl.kpmg.lcm.ui;
 
-import nl.kpmg.lcm.HTTPServerProvider;
+import nl.kpmg.lcm.HttpsServerProvider;
+import nl.kpmg.lcm.HttpsServerWrapper;
+import nl.kpmg.lcm.SslConfigurationException;
 import nl.kpmg.lcm.configuration.UiConfiguration;
 import nl.kpmg.lcm.server.LoggingExceptionMapper;
 import nl.kpmg.lcm.server.ServerException;
 
-import org.glassfish.grizzly.http.server.HttpServer;
 import org.glassfish.grizzly.servlet.ServletRegistration;
 import org.glassfish.grizzly.servlet.WebappContext;
 import org.glassfish.jersey.server.ResourceConfig;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
 
+import java.io.IOException;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import ru.xpoft.vaadin.SpringApplicationContext;
 
-/**
- *
- * @author mhoekstra
- */
 public class UI {
   private static final Logger LOGGER = Logger.getLogger(UI.class.getName());
 
-  private UiConfiguration configuration;
+  private final UiConfiguration configuration;
   private final ApplicationContext context;
 
+  private final boolean unsafe;
   private final String baseUri;
-  private final String baseFallbackUri;
+  private final String unsafeUri;
 
-  private HttpServer restServer;
+  private HttpsServerWrapper uiServer;
 
   public UI() {
     context = new ClassPathXmlApplicationContext(new String[] {"application-context-ui.xml"});
 
     configuration = context.getBean(UiConfiguration.class);
+
+    unsafe = configuration.isUnsafe();
     baseUri = String.format("https://%s:%s/", configuration.getServiceName(),
         configuration.getSecureServicePort());
-    baseFallbackUri = String.format("http://%s:%s/", configuration.getServiceName(),
+    unsafeUri = String.format("http://%s:%s/", configuration.getServiceName(),
         configuration.getServicePort());
   }
 
@@ -46,24 +62,18 @@ public class UI {
    *
    * @return Grizzly HTTP server.
    */
-  public HttpServer startUserInterface() throws ServerException {
+  public HttpsServerWrapper startUserInterface() throws SslConfigurationException, IOException {
     // create a resource config that scans for JAX-RS resources and providers
     // in nl.kpmg.lcm.server.rest
     final ResourceConfig rc = new ResourceConfig().property("contextConfig", context)
         .registerClasses(LoggingExceptionMapper.class);
 
     // Grizzly ssl configuration
-    HttpServer grizzlyServer =
-        HTTPServerProvider.createHTTPServer(configuration, baseUri, baseFallbackUri, rc, false);
+    HttpsServerWrapper grizzlyServer =
+        HttpsServerProvider.createHttpsServer(configuration, baseUri, unsafeUri, rc, false);
 
-    // Method A: way more elegant however breaks down
-    // WebappContext webappContext = new WebappContext("Grizzly web context", "");
-    // ServletRegistration servlet = webappContext.addServlet("vaadin", Servlet.class);
-    // webappContext.deploy(grizzlyServer);
-
-    // Method B: via default servlet and manual configuration
+    // Create default servlet and manual configuration
     WebappContext webappContext = new WebappContext("Grizzly web context", "");
-    webappContext.addListener(CookieListener.class);
     ServletRegistration servlet =
         webappContext.addServlet("vaadin", ru.xpoft.vaadin.SpringVaadinServlet.class);
     SpringApplicationContext.setApplicationContext(context);
@@ -76,7 +86,7 @@ public class UI {
     servlet.setInitParameter("productionMode", "false");
     servlet.setLoadOnStartup(1);
 
-    webappContext.deploy(grizzlyServer);
+    webappContext.deploy(grizzlyServer.getServer());
 
     return grizzlyServer;
   }
@@ -87,10 +97,20 @@ public class UI {
    * @throws ServerException
    */
   public void start() throws ServerException {
-    restServer = startUserInterface();
+    try {
+      uiServer = startUserInterface();
+    } catch (SslConfigurationException ex) {
+      Logger.getLogger(UI.class.getName()).log(Level.SEVERE,
+          "Failed starting the LocalCatalogManager due to invalid SSL configuration", ex);
+      throw new ServerException(ex);
+    } catch (IOException ex) {
+      Logger.getLogger(UI.class.getName()).log(Level.SEVERE,
+          "Failed starting the LocalCatalogManager due to the redirect server ", ex);
+      throw new ServerException(ex);
+    }
   }
 
   public void stop() {
-    restServer.shutdownNow();
+    uiServer.stop();
   }
 }

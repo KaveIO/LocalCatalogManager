@@ -29,7 +29,7 @@ public class HttpsClientFactory {
     SSLContext sc;
     ClientBuilder builder = ClientBuilder.newBuilder();
     try {
-      sc = SSLProvider.createSSLContextConfigurator(configuration).createSSLContext();
+      sc = SslProvider.createSSLContextConfigurator(configuration).createSSLContext();
     } catch (ServerException se) {
       LOGGER.log(Level.WARNING,
           "Invalid SSL configuration, client will contact the configured server on HTTP only");

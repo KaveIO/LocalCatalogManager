@@ -1,24 +1,31 @@
+/*
+ * Copyright 2016 KPMG N.V. (unless otherwise stated).
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except
+ * in compliance with the License. You may obtain a copy of the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software distributed under the License
+ * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+ * or implied. See the License for the specific language governing permissions and limitations under
+ * the License.
+ */
+
 package nl.kpmg.lcm.server;
-
-
-import nl.kpmg.lcm.configuration.ServerConfiguration;
-
-import java.lang.annotation.Annotation;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-
-import nl.kpmg.lcm.HTTPServerProvider;
-import nl.kpmg.lcm.server.rest.authentication.RequestFilter;
-import nl.kpmg.lcm.server.rest.authentication.ResponseFilter;
-import nl.kpmg.lcm.server.task.TaskManager;
-import nl.kpmg.lcm.server.task.TaskManagerException;
 
 import com.fasterxml.jackson.jaxrs.json.JacksonJsonProvider;
 
-import nl.kpmg.lcm.RedirectServer;
+import nl.kpmg.lcm.HttpsServerProvider;
+import nl.kpmg.lcm.HttpsServerWrapper;
+import nl.kpmg.lcm.SslConfigurationException;
+import nl.kpmg.lcm.configuration.ServerConfiguration;
+import nl.kpmg.lcm.server.rest.authentication.RequestFilter;
+import nl.kpmg.lcm.server.rest.authentication.ResponseFilter;
 import nl.kpmg.lcm.server.rest.authentication.Roles;
+import nl.kpmg.lcm.server.task.TaskManager;
+import nl.kpmg.lcm.server.task.TaskManagerException;
 
-import org.glassfish.grizzly.http.server.HttpServer;
 import org.glassfish.jersey.jackson.JacksonFeature;
 import org.glassfish.jersey.linking.DeclarativeLinkingFeature;
 import org.glassfish.jersey.message.filtering.EntityFilteringFeature;
@@ -27,20 +34,21 @@ import org.glassfish.jersey.server.ResourceConfig;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
 
-/**
- *
- * @author mhoekstra
- */
+import java.io.IOException;
+import java.lang.annotation.Annotation;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+
 public class Server {
   private static final Logger LOGGER = Logger.getLogger(Server.class.getName());
 
-  private ServerConfiguration configuration;
-  private ApplicationContext context;
+  private final ServerConfiguration configuration;
+  private final ApplicationContext context;
 
-  private String baseUri;
-  private String baseFallbackUri;
+  private final String baseUri;
+  private final String baseFallbackUri;
 
-  private HttpServer restServer;
+  private HttpsServerWrapper restServer;
   private TaskManager taskManager;
 
   public Server() throws ServerException {
@@ -83,7 +91,7 @@ public class Server {
    *
    * @return Grizzly HTTP server.
    */
-  public HttpServer startRestInterface() throws ServerException {
+  public HttpsServerWrapper startRestInterface() throws SslConfigurationException, IOException {
     // create a resource config that scans for JAX-RS resources and providers
     // in nl.kpmg.lcm.server.rest
     final ResourceConfig rc =
@@ -96,7 +104,7 @@ public class Server {
             .register(DeclarativeLinkingFeature.class).register(UriBuilderEntityProcessor.class)
             .register(LoggingExceptionMapper.class);
 
-    return HTTPServerProvider.createHTTPServer(configuration, baseUri, baseFallbackUri, rc, true);
+    return HttpsServerProvider.createHttpsServer(configuration, baseUri, baseFallbackUri, rc, true);
   }
 
   public TaskManager startTaskManager() throws TaskManagerException {
@@ -114,20 +122,27 @@ public class Server {
     try {
       restServer = startRestInterface();
       taskManager = startTaskManager();
+    } catch (SslConfigurationException ex) {
+      Logger.getLogger(Server.class.getName()).log(Level.SEVERE,
+          "Failed starting the LocalCatalogManager due to invalid SSL configuration", ex);
+      throw new ServerException(ex);
+    } catch (IOException ex) {
+      Logger.getLogger(Server.class.getName()).log(Level.SEVERE,
+          "Failed starting the LocalCatalogManager due to the redirect server ", ex);
+      throw new ServerException(ex);
     } catch (TaskManagerException ex) {
-      Logger.getLogger(RedirectServer.class.getName()).log(Level.SEVERE,
+      Logger.getLogger(Server.class.getName()).log(Level.SEVERE,
           "Failed starting the LocalCatalogManager due to the TaskManager", ex);
       throw new ServerException(ex);
     }
   }
 
   public void stop() {
-    restServer.shutdownNow();
+    restServer.stop();
     taskManager.stop();
   }
 
   public String getBaseUri() {
     return baseUri;
   }
-
 }
