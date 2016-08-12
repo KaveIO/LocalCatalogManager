@@ -1,9 +1,5 @@
 package nl.kpmg.lcm.server.rest.client.version0;
 
-
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
-
 import nl.kpmg.lcm.rest.types.UserGroupsRepresentation;
 import nl.kpmg.lcm.server.data.UserGroup;
 import nl.kpmg.lcm.server.data.dao.UserGroupDao;
@@ -16,8 +12,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
 import javax.annotation.security.RolesAllowed;
 import javax.ws.rs.Consumes;
@@ -51,18 +45,6 @@ public class UserGroupController {
         new ConcreteUserGroupsRepresentation();
     concreteUserGroupsRepresentation.setRepresentedItems(ConcreteUserGroupRepresentation.class,
         userGroups);
-
-
-    System.out.println("SHOUTSHOUTSHOUTSHOUTSHOUTSHOUTSHOUTSHOUT");
-
-    try {
-      ObjectMapper objectMapper = new ObjectMapper();
-      objectMapper.writeValueAsString(concreteUserGroupsRepresentation);
-    } catch (JsonProcessingException ex) {
-      Logger.getLogger(UserGroupController.class.getName()).log(Level.SEVERE, null, ex);
-    }
-
-
 
     return concreteUserGroupsRepresentation;
   }
