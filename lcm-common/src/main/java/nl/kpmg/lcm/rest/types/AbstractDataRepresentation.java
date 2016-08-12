@@ -50,12 +50,13 @@ public abstract class AbstractDataRepresentation<T extends AbstractModel> {
     if (LinkInjectable.class.isAssignableFrom(getClass())) {
       List<Link> injectedLinks = ((LinkInjectable) this).getInjectedLinks();
 
-      ArrayList combinedLinks = new ArrayList(injectedLinks);
-      combinedLinks.addAll(links);
+      if (injectedLinks != null) {
+        ArrayList combinedLinks = new ArrayList(injectedLinks);
+        combinedLinks.addAll(links);
 
-      return combinedLinks;
-    } else {
-      return links;
+        return combinedLinks;
+      }
     }
+    return links;
   }
 }

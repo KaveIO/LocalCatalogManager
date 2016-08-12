@@ -18,7 +18,10 @@ import org.junit.Test;
 import static org.junit.Assert.*;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
+
+import javax.ws.rs.core.Link;
 
 /**
  *
@@ -43,5 +46,40 @@ public class AbstractDatasRepresentationTest {
     assertEquals(1, representedItems.size());
     assertEquals(ConcreteTestDataRepresentation.class, representedItems.get(0).getClass());
     assertEquals(TestModel.class, representedItems.get(0).getItem().getClass());
+  }
+
+
+  @Test
+  public void testGetLinks() {
+    // Baseline, no links
+    ConcreteTestDatasRepresentation concreteTestDataRepresentation =
+        new ConcreteTestDatasRepresentation();
+    List<Link> actual = concreteTestDataRepresentation.getLinks();
+    assertNotNull(actual);
+    assertEquals(0, actual.size());
+
+    // One link in the regular attribute
+    concreteTestDataRepresentation = new ConcreteTestDatasRepresentation();
+    concreteTestDataRepresentation.setLinks(Arrays.asList(Link.valueOf("<http://www.google.com>")));
+    actual = concreteTestDataRepresentation.getLinks();
+    assertNotNull(actual);
+    assertEquals(1, actual.size());
+
+    // One link via the injected method
+    concreteTestDataRepresentation = new ConcreteTestDatasRepresentation();
+    concreteTestDataRepresentation
+        .setInjectedLinks(Arrays.asList(Link.valueOf("<http://www.google.com>")));
+    actual = concreteTestDataRepresentation.getLinks();
+    assertNotNull(actual);
+    assertEquals(1, actual.size());
+
+    // Combination from attribute and the injected method
+    concreteTestDataRepresentation = new ConcreteTestDatasRepresentation();
+    concreteTestDataRepresentation.setLinks(Arrays.asList(Link.valueOf("<http://www.google.com>")));
+    concreteTestDataRepresentation
+        .setInjectedLinks(Arrays.asList(Link.valueOf("<http://www.google.com>")));
+    actual = concreteTestDataRepresentation.getLinks();
+    assertNotNull(actual);
+    assertEquals(2, actual.size());
   }
 }

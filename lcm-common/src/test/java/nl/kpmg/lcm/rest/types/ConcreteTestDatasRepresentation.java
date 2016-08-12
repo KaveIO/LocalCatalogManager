@@ -15,6 +15,8 @@ package nl.kpmg.lcm.rest.types;
 
 import java.util.List;
 
+import javax.ws.rs.core.Link;
+
 /**
  *
  * @author mhoekstra
@@ -22,11 +24,16 @@ import java.util.List;
 public class ConcreteTestDatasRepresentation extends TestDatasRepresentation
     implements LinkInjectable {
 
+  private List<Link> injectedLinks;
+
   public ConcreteTestDatasRepresentation() {}
+
+  public void setInjectedLinks(List<Link> injectedLinks) {
+    this.injectedLinks = injectedLinks;
+  }
 
   @Override
   public List getInjectedLinks() {
-    throw new UnsupportedOperationException("Not supported yet.");
+    return injectedLinks;
   }
-
 }

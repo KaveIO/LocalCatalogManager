@@ -20,6 +20,11 @@ import static org.junit.Assert.*;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
+import java.util.Arrays;
+import java.util.List;
+
+import javax.ws.rs.core.Link;
+
 /**
  *
  * @author mhoekstra
@@ -39,5 +44,39 @@ public class AbstractDataRepresentationTest {
     String value = objectMapper.writeValueAsString(testModel);
 
     assertNotNull(value);
+  }
+
+  @Test
+  public void testGetLinks() {
+    // Baseline, no links
+    ConcreteTestDataRepresentation concreteTestDataRepresentation =
+        new ConcreteTestDataRepresentation();
+    List<Link> actual = concreteTestDataRepresentation.getLinks();
+    assertNotNull(actual);
+    assertEquals(0, actual.size());
+
+    // One link in the regular attribute
+    concreteTestDataRepresentation = new ConcreteTestDataRepresentation();
+    concreteTestDataRepresentation.setLinks(Arrays.asList(Link.valueOf("<http://www.google.com>")));
+    actual = concreteTestDataRepresentation.getLinks();
+    assertNotNull(actual);
+    assertEquals(1, actual.size());
+
+    // One link via the injected method
+    concreteTestDataRepresentation = new ConcreteTestDataRepresentation();
+    concreteTestDataRepresentation
+        .setInjectedLinks(Arrays.asList(Link.valueOf("<http://www.google.com>")));
+    actual = concreteTestDataRepresentation.getLinks();
+    assertNotNull(actual);
+    assertEquals(1, actual.size());
+
+    // Combination from attribute and the injected method
+    concreteTestDataRepresentation = new ConcreteTestDataRepresentation();
+    concreteTestDataRepresentation.setLinks(Arrays.asList(Link.valueOf("<http://www.google.com>")));
+    concreteTestDataRepresentation
+        .setInjectedLinks(Arrays.asList(Link.valueOf("<http://www.google.com>")));
+    actual = concreteTestDataRepresentation.getLinks();
+    assertNotNull(actual);
+    assertEquals(2, actual.size());
   }
 }

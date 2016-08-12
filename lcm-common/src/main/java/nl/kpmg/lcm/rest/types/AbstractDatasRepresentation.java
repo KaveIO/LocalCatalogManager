@@ -7,8 +7,6 @@ import nl.kpmg.lcm.server.LinksDeserializer;
 import nl.kpmg.lcm.server.LinksSerializer;
 import nl.kpmg.lcm.server.data.AbstractModel;
 
-import java.lang.reflect.ParameterizedType;
-import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
@@ -80,12 +78,13 @@ public abstract class AbstractDatasRepresentation<T extends AbstractDataRepresen
     if (LinkInjectable.class.isAssignableFrom(getClass())) {
       List<Link> injectedLinks = ((LinkInjectable) this).getInjectedLinks();
 
-      ArrayList combinedLinks = new ArrayList(injectedLinks);
-      combinedLinks.addAll(links);
+      if (injectedLinks != null) {
+        ArrayList combinedLinks = new ArrayList(injectedLinks);
+        combinedLinks.addAll(links);
 
-      return combinedLinks;
-    } else {
-      return links;
+        return combinedLinks;
+      }
     }
+    return links;
   }
 }
