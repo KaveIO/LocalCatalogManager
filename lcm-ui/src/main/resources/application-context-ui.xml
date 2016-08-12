@@ -56,7 +56,7 @@
         <property name="unsafe" value="${lcm.server.unsafe}" />
     </bean>
     
-    <bean id="httpsClientFactory" class="nl.kpmg.lcm.HttpsClientFactory" />
+    <bean id="httpsClientFactory" class="nl.kpmg.lcm.client.HttpsClientFactory" />
     
     <context:component-scan base-package="nl.kpmg.lcm.ui" />
 </beans>

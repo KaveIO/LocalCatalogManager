@@ -11,14 +11,18 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
+
 package nl.kpmg.lcm.ui.rest;
+
+import nl.kpmg.lcm.client.ClientException;
 
 import com.vaadin.server.VaadinService;
 import com.vaadin.server.WrappedSession;
 
-import nl.kpmg.lcm.HttpsClientFactory;
+import nl.kpmg.lcm.client.HttpsClientFactory;
 import nl.kpmg.lcm.configuration.ClientConfiguration;
-import nl.kpmg.lcm.configuration.UiConfiguration;
+import nl.kpmg.lcm.rest.types.AbstractDatasRepresentation;
+import nl.kpmg.lcm.rest.types.AbstractRepresentation;
 import nl.kpmg.lcm.rest.types.MetaDatasRepresentation;
 import nl.kpmg.lcm.rest.types.StoragesRepresentation;
 import nl.kpmg.lcm.rest.types.TaskDescriptionsRepresentation;
@@ -26,7 +30,6 @@ import nl.kpmg.lcm.rest.types.TaskScheduleRepresentation;
 import nl.kpmg.lcm.rest.types.UserGroupsRepresentation;
 import nl.kpmg.lcm.rest.types.UsersRepresentation;
 import nl.kpmg.lcm.server.ServerException;
-import nl.kpmg.lcm.ui.UI;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
@@ -52,7 +55,7 @@ public class RestClientService {
   private final String unsafeUri;
 
   @Autowired
-  private HttpsClientFactory client;
+  private HttpsClientFactory clientFactory;
 
   private boolean secure = true;
 
@@ -83,7 +86,7 @@ public class RestClientService {
   }
 
   private Response post(String uri, String path, Entity<String> payload) throws ServerException {
-    return client.createWebTarget(uri).path(path).request().post(payload);
+    return clientFactory.createWebTarget(uri).path(path).request().post(payload);
   }
 
   public void authenticate(String username, String password)
@@ -128,69 +131,69 @@ public class RestClientService {
       uri = this.unsafeUri;
     }
 
-    return client.createWebTarget(uri).path(path).request()
+    return clientFactory.createWebTarget(uri).path(path).request()
         .header("LCM-Authentication-User", retrieveLoginUser())
         .header("LCM-Authentication-Token", retrieveLoginToken());
   }
 
+  /**
+   * Helper method for requesting data from the LCM-Server.
+   *
+   * Making a correct and complete request to the LCM-Server is a bit cumbersome. This method helps
+   * in making the correct status checks an logging around this.
+   *
+   * @param <T> The correct derivative of a AbstractDatasRepresentation to which that data gets
+   *        loaded
+   * @param path to execute the get against
+   * @param type type of concrete AbstractDatasRepresentation to load the data in
+   * @return the data from given path deserialized in object of type T
+   *
+   * @throws AuthenticationException when not (or incorrectly) logged in
+   * @throws ServerException when the server could not be reached
+   * @throws ClientException when the request fails
+   */
+  public <T extends AbstractRepresentation> T getDatasRepresentation(String path, Class<T> type)
+      throws AuthenticationException, ServerException, ClientException {
+
+    LOGGER.log(Level.INFO, "Executing get on LCM-Server on path: {0}", path);
+    Response response = getClient(path).get();
+    if (response.getStatusInfo().getFamily() == Response.Status.Family.SUCCESSFUL) {
+      T datasRepresentation = response.readEntity(type);
+      return datasRepresentation;
+    } else {
+      LOGGER.log(Level.WARNING, "Call to LCM-Server failed with: {0} - {1}",
+          new Object[] {response.getStatus(), response.getStatusInfo().getReasonPhrase()});
+      throw new ClientException("Call to LCM-Server failed", response);
+    }
+  }
+
   public MetaDatasRepresentation getLocalMetadata()
-      throws AuthenticationException, ServerException {
-    Invocation.Builder client = getClient("client/v0/local");
-
-    Response response = client.get();
-    MetaDatasRepresentation metaDatasRepresentation =
-        response.readEntity(MetaDatasRepresentation.class);
-
-    return metaDatasRepresentation;
+      throws AuthenticationException, ServerException, ClientException {
+    return getDatasRepresentation("client/v0/local", MetaDatasRepresentation.class);
   }
 
-  public StoragesRepresentation getStorage() throws AuthenticationException, ServerException {
-    Invocation.Builder client = getClient("client/v0/storage");
-
-    Response response = client.get();
-    StoragesRepresentation storagesRepresentation =
-        response.readEntity(StoragesRepresentation.class);
-
-    return storagesRepresentation;
+  public StoragesRepresentation getStorage()
+      throws AuthenticationException, ServerException, ClientException {
+    return getDatasRepresentation("client/v0/storage", StoragesRepresentation.class);
   }
 
-  public TaskDescriptionsRepresentation getTasks() throws AuthenticationException, ServerException {
-    Invocation.Builder client = getClient("client/v0/tasks");
-
-    Response response = client.get();
-    TaskDescriptionsRepresentation taskDescriptionsRepresentation =
-        response.readEntity(TaskDescriptionsRepresentation.class);
-
-    return taskDescriptionsRepresentation;
+  public TaskDescriptionsRepresentation getTasks()
+      throws AuthenticationException, ServerException, ClientException {
+    return getDatasRepresentation("client/v0/tasks", TaskDescriptionsRepresentation.class);
   }
 
   public TaskScheduleRepresentation getTaskSchedule()
-      throws AuthenticationException, ServerException {
-    Invocation.Builder client = getClient("client/v0/taskschedule");
-
-    Response response = client.get();
-    TaskScheduleRepresentation taskScheduleRepresentation =
-        response.readEntity(TaskScheduleRepresentation.class);
-
-    return taskScheduleRepresentation;
+      throws AuthenticationException, ServerException, ClientException {
+    return getDatasRepresentation("client/v0/taskschedule", TaskScheduleRepresentation.class);
   }
 
-  public UsersRepresentation getUsers() throws AuthenticationException, ServerException {
-    Invocation.Builder client = getClient("client/v0/users");
-
-    Response response = client.get();
-    UsersRepresentation usersRepresentation = response.readEntity(UsersRepresentation.class);
-
-    return usersRepresentation;
+  public UsersRepresentation getUsers()
+      throws AuthenticationException, ServerException, ClientException {
+    return getDatasRepresentation("client/v0/users", UsersRepresentation.class);
   }
 
-  public UserGroupsRepresentation getUserGroups() throws AuthenticationException, ServerException {
-    Invocation.Builder client = getClient("client/v0/userGroups");
-
-    Response response = client.get();
-    UserGroupsRepresentation userGroupsRepresentation =
-        response.readEntity(UserGroupsRepresentation.class);
-
-    return userGroupsRepresentation;
+  public UserGroupsRepresentation getUserGroups()
+      throws AuthenticationException, ServerException, ClientException {
+    return getDatasRepresentation("client/v0/userGroups", UserGroupsRepresentation.class);
   }
 }

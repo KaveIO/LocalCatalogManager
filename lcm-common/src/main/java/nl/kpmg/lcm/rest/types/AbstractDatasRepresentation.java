@@ -19,7 +19,8 @@ import javax.ws.rs.core.Link;
  *
  * @author mhoekstra
  */
-public abstract class AbstractDatasRepresentation<T extends AbstractDataRepresentation> {
+public abstract class AbstractDatasRepresentation<T extends AbstractDataRepresentation>
+    extends AbstractRepresentation {
 
   private static final Logger logger =
       Logger.getLogger(AbstractDatasRepresentation.class.getName());
@@ -29,12 +30,9 @@ public abstract class AbstractDatasRepresentation<T extends AbstractDataRepresen
    */
   private List<T> items = new LinkedList();
 
-  private List<Link> links = new LinkedList();
-
   public void setItems(List<T> items) {
     this.items = items;
   }
-
 
   public void setRepresentedItems(Class type, List<AbstractModel> items) {
     // Madness? Perhaps... with a bit of love (and defensive programming...) there is some hope to
@@ -63,28 +61,5 @@ public abstract class AbstractDatasRepresentation<T extends AbstractDataRepresen
    */
   public final List<T> getItems() {
     return items;
-  }
-
-  @JsonDeserialize(using = LinksDeserializer.class)
-  public final void setLinks(final List<Link> links) {
-    this.links = links;
-  }
-
-  /**
-   * @return the list of Links
-   */
-  @JsonSerialize(using = LinksSerializer.class)
-  public final List<Link> getLinks() {
-    if (LinkInjectable.class.isAssignableFrom(getClass())) {
-      List<Link> injectedLinks = ((LinkInjectable) this).getInjectedLinks();
-
-      if (injectedLinks != null) {
-        ArrayList combinedLinks = new ArrayList(injectedLinks);
-        combinedLinks.addAll(links);
-
-        return combinedLinks;
-      }
-    }
-    return links;
   }
 }

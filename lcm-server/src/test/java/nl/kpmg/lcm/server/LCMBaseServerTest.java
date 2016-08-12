@@ -1,6 +1,6 @@
 package nl.kpmg.lcm.server;
 
-import nl.kpmg.lcm.HttpsClientFactory;
+import nl.kpmg.lcm.client.HttpsClientFactory;
 import nl.kpmg.lcm.configuration.ClientConfiguration;
 
 import org.junit.AfterClass;

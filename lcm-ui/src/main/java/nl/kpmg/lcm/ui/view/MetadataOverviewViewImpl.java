@@ -18,6 +18,7 @@ import com.vaadin.ui.Table;
 import com.vaadin.ui.UI;
 import com.vaadin.ui.VerticalLayout;
 
+import nl.kpmg.lcm.client.ClientException;
 import nl.kpmg.lcm.rest.types.MetaDataRepresentation;
 import nl.kpmg.lcm.rest.types.MetaDatasRepresentation;
 import nl.kpmg.lcm.server.ServerException;
@@ -30,6 +31,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import javax.annotation.PostConstruct;
 import javax.ws.rs.core.Link;
@@ -142,6 +145,8 @@ public class MetadataOverviewViewImpl extends VerticalLayout implements Metadata
     } catch (ServerException se) {
       Notification.show("Cannot instantiate client HTTPS endpoint");
       getUI().getNavigator().navigateTo("");
+    } catch (ClientException ex) {
+      Notification.show("Couldn't fetch remote data.");
     }
   }
 

@@ -1,5 +1,7 @@
-package nl.kpmg.lcm;
+package nl.kpmg.lcm.client;
 
+import nl.kpmg.lcm.SslConfigurationException;
+import nl.kpmg.lcm.SslProvider;
 import nl.kpmg.lcm.configuration.ClientConfiguration;
 import nl.kpmg.lcm.server.ServerException;
 
