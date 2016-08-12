@@ -30,7 +30,7 @@ public class HttpsClientFactory {
     ClientBuilder builder = ClientBuilder.newBuilder();
     try {
       sc = SslProvider.createSSLContextConfigurator(configuration).createSSLContext();
-    } catch (ServerException se) {
+    } catch (SslConfigurationException ex) {
       LOGGER.log(Level.WARNING,
           "Invalid SSL configuration, client will contact the configured server on HTTP only");
       return builder.build();
