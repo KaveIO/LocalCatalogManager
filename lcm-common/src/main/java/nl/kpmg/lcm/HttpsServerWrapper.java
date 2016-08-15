@@ -47,7 +47,7 @@ public class HttpsServerWrapper {
       server.shutdownNow();
     }
     if (redirectServer != null) {
-      server.shutdownNow();
+      redirectServer.shutdownNow();
     }
   }
 }
