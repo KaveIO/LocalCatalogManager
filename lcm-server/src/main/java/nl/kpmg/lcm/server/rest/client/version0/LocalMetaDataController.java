@@ -153,7 +153,7 @@ public class LocalMetaDataController {
 
         backend = storageService.getBackend(metadata);
         try {
-          InputStream input = backend.read(metadata);
+          Iterable input = backend.read(metadata);
           String fType = (String) request.getParameters().get("type");
           return Response.ok(input).header("Content-Disposition",
               String.format("attachment; filename=%s.%s", metadata.getName(), fType)).build();
@@ -162,28 +162,28 @@ public class LocalMetaDataController {
           return Response.serverError().build();
         }
       case "copy":
-        backend = storageService.getBackend(metadata);
-        String fType = (String) request.getParameters().get("type");
-        String sPath = (String) request.getParameters().get("storagePath");
-        String fPath = (String) request.getParameters().get("Path");
-        URI parsedURI;
-        try {
-          parsedURI = new URI(metadata.getDataUri());
-          String newDataUri = parsedURI.getScheme() + "://" + parsedURI.getHost() + "/" + fPath;
-          InputStream input = backend.read(metadata);
-          FileOutputStream fos =
-              new FileOutputStream(new File(String.format("%s/%s.%s", sPath, fPath, fType)));
-          int copied = IOUtils.copy(input, fos);
-          MetaData mnested = new MetaData();
-          mnested.setDataUri(newDataUri);
-          metadata.addDuplicate(mnested);
-          metaDataService.getMetaDataDao().save(metadata);
-
-          return Response.ok().build();
-        } catch (IOException ex) {
-          Logger.getLogger(LocalMetaDataController.class.getName()).log(Level.SEVERE,
-              String.format("Couldn't find path: %s/%s.%s", sPath, fPath, fType), ex);
-        }
+        // backend = storageService.getBackend(metadata);
+        // String fType = (String) request.getParameters().get("type");
+        // String sPath = (String) request.getParameters().get("storagePath");
+        // String fPath = (String) request.getParameters().get("Path");
+        // URI parsedURI;
+        // try {
+        // parsedURI = new URI(metadata.getDataUri());
+        // String newDataUri = parsedURI.getScheme() + "://" + parsedURI.getHost() + "/" + fPath;
+        // Iterable input = backend.read(metadata);
+        // FileOutputStream fos =
+        // new FileOutputStream(new File(String.format("%s/%s.%s", sPath, fPath, fType)));
+        // int copied = IOUtils.copy(input, fos);
+        // MetaData mnested = new MetaData();
+        // mnested.setDataUri(newDataUri);
+        // metadata.addDuplicate(mnested);
+        // metaDataService.getMetaDataDao().save(metadata);
+        //
+        // return Response.ok().build();
+        // } catch (IOException ex) {
+        // Logger.getLogger(LocalMetaDataController.class.getName()).log(Level.SEVERE,
+        // String.format("Couldn't find path: %s/%s.%s", sPath, fPath, fType), ex);
+        // }
 
     }
 

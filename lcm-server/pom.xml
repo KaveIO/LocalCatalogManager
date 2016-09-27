@@ -259,6 +259,11 @@
             <version>5.0.3</version>
             <scope>compile</scope>
         </dependency>
+        <dependency>
+            <groupId>org.apache.metamodel</groupId>
+            <artifactId>MetaModel-full</artifactId>
+            <version>4.5.4</version>
+        </dependency>
     </dependencies>
     <build>
         <plugins>
