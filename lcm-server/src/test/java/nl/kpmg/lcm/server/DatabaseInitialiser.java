@@ -43,7 +43,7 @@ import java.util.List;
 public class DatabaseInitialiser {
 
   public static final String MONGO_HOST = "localhost";
-  public static final int MONGO_PORT = 27017;
+  public static final int MONGO_PORT = 27018;
 
   public static final String LCM_DATABASE = "lcm";
   public static final String LCM_USER = "lcm";
