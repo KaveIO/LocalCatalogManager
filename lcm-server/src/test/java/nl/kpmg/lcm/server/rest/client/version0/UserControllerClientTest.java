@@ -1,22 +1,34 @@
+/*
+ * Copyright 2015 KPMG N.V. (unless otherwise stated).
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except
+ * in compliance with the License. You may obtain a copy of the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software distributed under the License
+ * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+ * or implied. See the License for the specific language governing permissions and limitations under
+ * the License.
+ */
+
 package nl.kpmg.lcm.server.rest.client.version0;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 
-import nl.kpmg.lcm.server.LCMBaseServerTest;
+import nl.kpmg.lcm.rest.types.UserRepresentation;
+import nl.kpmg.lcm.rest.types.UsersRepresentation;
+import nl.kpmg.lcm.server.LcmBaseServerTest;
 import nl.kpmg.lcm.server.LoginException;
+import nl.kpmg.lcm.server.ServerException;
 import nl.kpmg.lcm.server.data.User;
 import nl.kpmg.lcm.server.data.dao.UserDao;
 import nl.kpmg.lcm.server.data.service.UserService;
 import nl.kpmg.lcm.server.rest.authentication.SessionAuthenticationManager;
 import nl.kpmg.lcm.server.rest.authentication.UserPasswordHashException;
 import nl.kpmg.lcm.server.rest.client.types.LoginRequest;
-import nl.kpmg.lcm.rest.types.UserRepresentation;
-import nl.kpmg.lcm.rest.types.UsersRepresentation;
-import nl.kpmg.lcm.server.ServerException;
-import nl.kpmg.lcm.server.rest.client.version0.types.ConcreteUserRepresentation;
-import nl.kpmg.lcm.server.rest.client.version0.types.ConcreteUsersRepresentation;
 
 import org.junit.After;
 import org.junit.Before;
@@ -25,11 +37,10 @@ import org.springframework.beans.factory.annotation.Autowired;
 
 import java.util.List;
 
-import javax.ws.rs.ProcessingException;
 import javax.ws.rs.client.Entity;
 import javax.ws.rs.core.Response;
 
-public class UserControllerClientTest extends LCMBaseServerTest {
+public class UserControllerClientTest extends LcmBaseServerTest {
 
   @Autowired
   private UserService userService;
