@@ -61,7 +61,7 @@ public class StorageService {
      *
      * @param metadata of which the dataUri is used
      * @return the requested backend
-     * @throws nl.kpmg.lcm.server.data.service.ServiceException
+     * @throws nl.kpmg.lcm.server.backend.exception.BackendNotImplementedException
      */
     public final Backend getBackend(final MetaData metadata) throws BackendNotImplementedException {
         return getBackend(metadata.getDataUri());
@@ -72,7 +72,7 @@ public class StorageService {
      *
      * @param uri the URI to interpret
      * @return the requested backend
-     * @throws nl.kpmg.lcm.server.data.service.ServiceException
+     * @throws nl.kpmg.lcm.server.backend.exception.BackendNotImplementedException
      */
     public final Backend getBackend(final String uri) throws BackendNotImplementedException {
         if (uri == null || uri.isEmpty()) {
@@ -84,7 +84,7 @@ public class StorageService {
             String scheme = parsedUri.getScheme();
 
             String storagePath = parsedUri.getHost() != null ? parsedUri.getHost() : parsedUri.getAuthority();
-            Storage storage = storageDao.findOne(storagePath);
+            Storage storage = storageDao.findOneByName(storagePath);
             
             if(storage ==  null) {
                 throw new IllegalStateException("Error! Unable to find Storage for the given metadata!");

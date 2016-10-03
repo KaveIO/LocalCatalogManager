@@ -27,6 +27,7 @@ import org.springframework.data.mongodb.core.mapping.Document;
 @PermitAll
 public class Storage extends AbstractModel {
 
+    private String name;
     private Map options;
 
     /**
@@ -39,5 +40,19 @@ public class Storage extends AbstractModel {
 
     public void setOptions(Map options) {
         this.options = options;
+    }
+
+    /**
+     * @return the name
+     */
+    public String getName() {
+        return name;
+    }
+
+    /**
+     * @param name the name to set
+     */
+    public void setName(String name) {
+        this.name = name;
     }
 }

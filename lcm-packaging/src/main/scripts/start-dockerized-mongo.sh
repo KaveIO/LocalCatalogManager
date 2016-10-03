@@ -26,3 +26,6 @@ docker run --name $DOCKER_NAME -p 127.0.0.1:27017:27017 -d mongo:3
 sleep 5 
 mongo -eval 'db.metadata.insert({"name":"example", "general": { "creation_date": "01-01-2015 00:00:00", "owner": "bob", "description": "This is the newly computed train schedule for optimized transport flow.", "tags": ["train", "svm", "lolwut"], "size": 351684984631, "records": 3455461}, "data": { "uri": "file://local/user/bob/train_schedule"}})' localhost/lcm
 mongo -eval 'db.taskschedule.insert({"items":[{"name":"Default Enrichment Task", "cron":"0 0 * * * ?", "job":"nl.kpmg.lcm.server.task.enrichment.DataEnrichmentTask", "target":"*"}]})' localhost/lcm
+mongo -eval 'db.storage.createIndex( { "name": 1 }, { unique: true } )' localhost/lcm
+mongo -eval 'db.storage.insert({"name": "CSV tmp storage", "options":[{"storagePath":"/tmp"}]})' localhost/lcm
+
