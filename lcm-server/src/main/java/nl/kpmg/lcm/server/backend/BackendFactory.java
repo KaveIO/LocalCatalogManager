@@ -36,6 +36,7 @@ public class BackendFactory {
     private final Logger logger = Logger.getLogger(BackendFactory.class.getName());
     private Map<String, Class<?>> backendClassMap = null;
     private static final int MAX_KEY_LENGTH = 1024;
+    private String backendSourcePackage = "nl.kpmg.lcm.server.backend";
 
     public Backend createBackend(String sourceType, Storage storage) throws BackendNotImplementedException {
 
@@ -65,10 +66,12 @@ public class BackendFactory {
         ClassPathScanningCandidateComponentProvider scanner
                 = new ClassPathScanningCandidateComponentProvider(true);
 
-        scanner.addIncludeFilter(new AnnotationTypeFilter(BackendSource.class));
+        //TODO it seems that currently the filter is working on half  - return only classes 
+        // that has annotation but doesn't case about annotations type.
+        //The code bellow works correct but it will make extra cycles.
+        scanner.addIncludeFilter(new AnnotationTypeFilter(nl.kpmg.lcm.server.backend.BackendSource.class));
         backendClassMap = new ConcurrentHashMap();
-        for (BeanDefinition bd : scanner.findCandidateComponents("nl.kpmg.lcm.server.backend")) {
-
+        for (BeanDefinition bd : scanner.findCandidateComponents(backendSourcePackage)) {
             logger.log(Level.FINE, "Found class: {0}", bd.getBeanClassName());
             Class backendClass = getClassForName(bd.getBeanClassName());
             if (backendClass == null) {
@@ -80,6 +83,9 @@ public class BackendFactory {
 
             if (sourceType != null) {
                 logger.log(Level.FINE, "Put to backendClassMap entity with  key: {0} and object of type: {1}", new Object[]{sourceType, bd.getBeanClassName()});
+                if (backendClassMap.get(sourceType) != null) {
+                    logger.log(Level.SEVERE, "There are more then one Class that implements \"{0}\" source Type!", new Object[]{sourceType});
+                }
                 backendClassMap.put(sourceType, backendClass);
             }
         }
@@ -125,8 +131,10 @@ public class BackendFactory {
     private String getSupportedSourceType(Class<?> clazz) {
         try {
             BackendSource source = clazz.getAnnotation(BackendSource.class);
-            
-            return source.type();
+
+            if (source != null) {
+                return source.type();
+            }
         } catch (SecurityException ex) {
             logger.log(Level.WARNING, null, ex);
         }
