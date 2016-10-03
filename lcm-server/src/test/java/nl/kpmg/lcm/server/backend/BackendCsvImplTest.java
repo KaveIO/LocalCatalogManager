@@ -14,6 +14,7 @@
 
 package nl.kpmg.lcm.server.backend;
 
+import nl.kpmg.lcm.server.backend.exception.BackendException;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotSame;
 

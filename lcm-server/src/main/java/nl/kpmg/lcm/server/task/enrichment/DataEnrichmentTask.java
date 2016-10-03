@@ -18,7 +18,7 @@ package nl.kpmg.lcm.server.task.enrichment;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import nl.kpmg.lcm.server.backend.Backend;
-import nl.kpmg.lcm.server.backend.BackendException;
+import nl.kpmg.lcm.server.backend.exception.BackendException;
 import nl.kpmg.lcm.server.backend.DataSetInformation;
 import nl.kpmg.lcm.server.data.MetaData;
 import nl.kpmg.lcm.server.data.dao.MetaDataDao;

@@ -42,7 +42,7 @@ import javax.ws.rs.core.Response.Status;
 
 import nl.kpmg.lcm.server.rest.authentication.Roles;
 import nl.kpmg.lcm.server.backend.Backend;
-import nl.kpmg.lcm.server.backend.BackendException;
+import nl.kpmg.lcm.server.backend.exception.BackendException;
 import nl.kpmg.lcm.server.data.MetaData;
 import nl.kpmg.lcm.server.data.service.MetaDataService;
 import nl.kpmg.lcm.server.data.service.StorageService;
@@ -150,9 +150,9 @@ public class LocalMetaDataController {
     switch (request.getOperation()) {
 
       case "download":
-
-        backend = storageService.getBackend(metadata);
+        
         try {
+          backend = storageService.getBackend(metadata);
           Iterable input = backend.read(metadata);
           String fType = (String) request.getParameters().get("type");
           return Response.ok(input).header("Content-Disposition",

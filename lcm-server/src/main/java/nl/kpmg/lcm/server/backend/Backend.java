@@ -13,6 +13,7 @@
  */
 package nl.kpmg.lcm.server.backend;
 
+import nl.kpmg.lcm.server.backend.exception.BackendException;
 import java.io.InputStream;
 
 import nl.kpmg.lcm.server.data.MetaData;

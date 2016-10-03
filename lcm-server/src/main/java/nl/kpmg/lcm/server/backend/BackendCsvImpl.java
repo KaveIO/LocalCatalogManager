@@ -13,6 +13,7 @@
  */
 package nl.kpmg.lcm.server.backend;
 
+import nl.kpmg.lcm.server.backend.exception.BackendException;
 import nl.kpmg.lcm.server.data.MetaData;
 import nl.kpmg.lcm.server.data.Storage;
 
@@ -40,6 +41,7 @@ import java.util.Set;
  *
  * @author mhoekstra
  */
+@BackendSource(type = "csv")
 public class BackendCsvImpl extends AbstractBackend {
 
   /**

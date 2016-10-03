@@ -29,6 +29,8 @@ import java.net.URISyntaxException;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import nl.kpmg.lcm.server.backend.BackendFactory;
+import nl.kpmg.lcm.server.backend.exception.BackendNotImplementedException;
 
 /**
  * Crude service to work with backends.
@@ -38,64 +40,66 @@ import java.util.logging.Logger;
 @Service
 public class StorageService {
 
-  @Autowired
-  private StorageDao storageDao;
+    @Autowired
+    private StorageDao storageDao;
 
-  public List<Storage> findAll() {
-    return Lists.newLinkedList(storageDao.findAll());
-  }
+    @Autowired
+    private BackendFactory backendFactory;
 
-  public StorageDao getStorageDao() {
-    return storageDao;
-  }
-
-  /**
-   * Get a storage backend based on a MetaData object.
-   *
-   * This will use the dataUri to retrieve the appropriate Backend.
-   *
-   * @param metadata of which the dataUri is used
-   * @return the requested backend
-   * @throws nl.kpmg.lcm.server.data.service.ServiceException
-   */
-  public final Backend getBackend(final MetaData metadata) {
-    return getBackend(metadata.getDataUri());
-  }
-
-  /**
-   * Get a storage backend based on a URI.
-   *
-   * This is a quickly hacked implementation. This should be changed to a annotation driven
-   * implementation which will query the database for data backends with their appropriate
-   * configuration.
-   *
-   * @param uri the URI to interpret
-   * @return the requested backend
-   * @throws nl.kpmg.lcm.server.data.service.ServiceException
-   */
-  public final Backend getBackend(final String uri) {
-    if (uri == null || uri.isEmpty()) {
-      return null;
+    public List<Storage> findAll() {
+        return Lists.newLinkedList(storageDao.findAll());
     }
 
-    try {
-      URI parsedUri = new URI(uri);
-      String scheme = parsedUri.getScheme();
-
-      switch (scheme) {
-        case "csv":
-          if (parsedUri.getHost() != null) {
-            return new BackendCsvImpl(storageDao.findOne(parsedUri.getHost()));
-          } else {
-            return new BackendCsvImpl(storageDao.findOne(parsedUri.getAuthority()));
-          }
-        default:
-          return null;
-      }
-
-    } catch (URISyntaxException ex) {
-      Logger.getLogger(StorageService.class.getName()).log(Level.SEVERE, null, ex);
+    public StorageDao getStorageDao() {
+        return storageDao;
     }
-    return null;
-  }
+
+    /**
+     * Get a storage backend based on a MetaData object.
+     *
+     * This will use the dataUri to retrieve the appropriate Backend.
+     *
+     * @param metadata of which the dataUri is used
+     * @return the requested backend
+     * @throws nl.kpmg.lcm.server.data.service.ServiceException
+     */
+    public final Backend getBackend(final MetaData metadata) throws BackendNotImplementedException {
+        return getBackend(metadata.getDataUri());
+    }
+
+    /**
+     * Get a storage backend based on a URI.
+     *
+     * This is a quickly hacked implementation. This should be changed to a
+     * annotation driven implementation which will query the database for data
+     * backends with their appropriate configuration.
+     * @param uri the URI to interpret
+     * @return the requested backend
+     * @throws nl.kpmg.lcm.server.data.service.ServiceException
+     */
+    public final Backend getBackend(final String uri) throws BackendNotImplementedException {
+        if (uri == null || uri.isEmpty()) {
+            return null;
+        }
+
+        try {
+            URI parsedUri = new URI(uri);
+            String scheme = parsedUri.getScheme();
+
+            String storagePath = parsedUri.getHost() != null ? parsedUri.getHost() : parsedUri.getAuthority();
+            Storage storage = storageDao.findOne(storagePath);
+            
+            if(storage ==  null) {
+                throw new IllegalStateException("Error! Unable to find Storage for the given metadata!");
+            }
+
+            Backend backend = backendFactory.createBackend(scheme, storage);
+
+            return backend;
+
+        } catch (URISyntaxException ex) {
+            Logger.getLogger(StorageService.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        return null;
+    }
 }
