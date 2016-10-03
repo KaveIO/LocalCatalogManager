@@ -70,9 +70,6 @@ public class StorageService {
     /**
      * Get a storage backend based on a URI.
      *
-     * This is a quickly hacked implementation. This should be changed to a
-     * annotation driven implementation which will query the database for data
-     * backends with their appropriate configuration.
      * @param uri the URI to interpret
      * @return the requested backend
      * @throws nl.kpmg.lcm.server.data.service.ServiceException
