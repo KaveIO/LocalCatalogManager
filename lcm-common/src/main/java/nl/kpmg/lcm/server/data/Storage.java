@@ -17,6 +17,7 @@ package nl.kpmg.lcm.server.data;
 
 import java.util.Map;
 import javax.annotation.security.PermitAll;
+import org.springframework.data.mongodb.core.index.Indexed;
 import org.springframework.data.mongodb.core.mapping.Document;
 
 /**
@@ -26,8 +27,10 @@ import org.springframework.data.mongodb.core.mapping.Document;
 @Document(collection = "storage")
 @PermitAll
 public class Storage extends AbstractModel {
-
+    
+    @Indexed(unique = true)
     private String name;
+    
     private Map options;
 
     /**

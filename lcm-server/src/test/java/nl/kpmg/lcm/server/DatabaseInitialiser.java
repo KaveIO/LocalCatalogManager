@@ -102,7 +102,10 @@ public class DatabaseInitialiser {
             WriteResult insert = database.createCollection(split[1], new BasicDBObject())
                     .insert(mockData.toArray(new BasicDBObject[mockData.size()]), database.getWriteConcern());
 
-            String error = insert.getError();
+            //TODO This testcase doesn't sems to be finiesh
+            //rewrite it in future and keep in mind
+            //that getError() is not supproted anymore in Mongo 3
+            //String error = insert.getError();
         }
     }
 
