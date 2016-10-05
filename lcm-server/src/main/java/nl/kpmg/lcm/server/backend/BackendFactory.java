@@ -36,7 +36,7 @@ public class BackendFactory {
     private final Logger logger = Logger.getLogger(BackendFactory.class.getName());
     private Map<String, Class<?>> backendClassMap = null;
     private static final int MAX_KEY_LENGTH = 1024;
-    private String backendSourcePackage = "nl.kpmg.lcm.server.backend";
+    private final String backendSourcePackage = "nl.kpmg.lcm.server.backend";
 
     public Backend createBackend(String sourceType, Storage storage) throws BackendNotImplementedException {
 
@@ -54,7 +54,6 @@ public class BackendFactory {
 
         Class backendClass = backendClassMap.get(sourceType);
         if (backendClass == null) {
-            logger.log(Level.WARNING, "Unable to find Class definition for source type{0}", sourceType);
             throw new BackendNotImplementedException("Backend is not implemented for soruce with type: " + sourceType);
         }
 

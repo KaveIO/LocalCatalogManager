@@ -16,7 +16,6 @@ package nl.kpmg.lcm.server.data.service;
 import jersey.repackaged.com.google.common.collect.Lists;
 
 import nl.kpmg.lcm.server.backend.Backend;
-import nl.kpmg.lcm.server.backend.BackendCsvImpl;
 import nl.kpmg.lcm.server.data.MetaData;
 import nl.kpmg.lcm.server.data.Storage;
 import nl.kpmg.lcm.server.data.dao.StorageDao;
@@ -31,6 +30,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import nl.kpmg.lcm.server.backend.BackendFactory;
 import nl.kpmg.lcm.server.backend.exception.BackendNotImplementedException;
+import nl.kpmg.lcm.server.data.exception.MissingStorageException;
 
 /**
  * Crude service to work with backends.
@@ -39,6 +39,7 @@ import nl.kpmg.lcm.server.backend.exception.BackendNotImplementedException;
  */
 @Service
 public class StorageService {
+    private final Logger logger = Logger.getLogger(StorageService.class.getName());
 
     @Autowired
     private StorageDao storageDao;
@@ -61,9 +62,17 @@ public class StorageService {
      *
      * @param metadata of which the dataUri is used
      * @return the requested backend
-     * @throws nl.kpmg.lcm.server.backend.exception.BackendNotImplementedException
+     * @throws
+     * nl.kpmg.lcm.server.backend.exception.BackendNotImplementedException
      */
-    public final Backend getBackend(final MetaData metadata) throws BackendNotImplementedException {
+    public final Backend getBackend(final MetaData metadata) throws BackendNotImplementedException, MissingStorageException {
+        if(metadata == null) {
+            String errorMessage = "Invalid input data! Metata data could not be null!";
+            logger.warning(errorMessage);
+            
+            throw new IllegalArgumentException(errorMessage);
+        }
+        
         return getBackend(metadata.getDataUri());
     }
 
@@ -72,9 +81,10 @@ public class StorageService {
      *
      * @param uri the URI to interpret
      * @return the requested backend
-     * @throws nl.kpmg.lcm.server.backend.exception.BackendNotImplementedException
+     * @throws
+     * nl.kpmg.lcm.server.backend.exception.BackendNotImplementedException
      */
-    public final Backend getBackend(final String uri) throws BackendNotImplementedException {
+    private Backend getBackend(final String uri) throws BackendNotImplementedException, MissingStorageException {
         if (uri == null || uri.isEmpty()) {
             return null;
         }
@@ -85,9 +95,9 @@ public class StorageService {
 
             String storagePath = parsedUri.getHost() != null ? parsedUri.getHost() : parsedUri.getAuthority();
             Storage storage = storageDao.findOneByName(storagePath);
-            
-            if(storage ==  null) {
-                throw new IllegalStateException("Error! Unable to find Storage for the given metadata!");
+
+            if (storage == null) {
+                throw new MissingStorageException("Error! Unable to find Storage for the given metadata!");
             }
 
             Backend backend = backendFactory.createBackend(scheme, storage);
@@ -95,8 +105,8 @@ public class StorageService {
             return backend;
 
         } catch (URISyntaxException ex) {
-            Logger.getLogger(StorageService.class.getName()).log(Level.SEVERE, null, ex);
+           logger.log(Level.SEVERE, null, ex);
+           throw new IllegalArgumentException("Error! Unable to parse medata data URI!");
         }
-        return null;
     }
 }

@@ -48,6 +48,7 @@ import nl.kpmg.lcm.server.data.service.MetaDataService;
 import nl.kpmg.lcm.server.data.service.StorageService;
 import nl.kpmg.lcm.rest.types.MetaDataRepresentation;
 import nl.kpmg.lcm.rest.types.MetaDatasRepresentation;
+import nl.kpmg.lcm.server.data.exception.MissingStorageException;
 import nl.kpmg.lcm.server.rest.client.version0.types.ConcreteMetaDataRepresentation;
 import nl.kpmg.lcm.server.rest.client.version0.types.ConcreteMetaDatasRepresentation;
 
@@ -158,7 +159,8 @@ public class LocalMetaDataController {
           return Response.ok(input).header("Content-Disposition",
               String.format("attachment; filename=%s.%s", metadata.getName(), fType)).build();
 
-        } catch (BackendException ex) {
+        } catch (BackendException | MissingStorageException ex) {
+            //TODO check how to pass more informative error  mesage(if possible)
           return Response.serverError().build();
         }
       case "copy":

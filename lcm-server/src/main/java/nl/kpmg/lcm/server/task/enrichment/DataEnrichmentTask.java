@@ -20,8 +20,10 @@ import java.util.logging.Logger;
 import nl.kpmg.lcm.server.backend.Backend;
 import nl.kpmg.lcm.server.backend.exception.BackendException;
 import nl.kpmg.lcm.server.backend.DataSetInformation;
+import nl.kpmg.lcm.server.backend.exception.BackendNotImplementedException;
 import nl.kpmg.lcm.server.data.MetaData;
 import nl.kpmg.lcm.server.data.dao.MetaDataDao;
+import nl.kpmg.lcm.server.data.exception.MissingStorageException;
 import nl.kpmg.lcm.server.data.service.StorageService;
 import nl.kpmg.lcm.server.task.EnrichmentTask;
 import nl.kpmg.lcm.server.task.TaskException;
@@ -103,7 +105,7 @@ public class DataEnrichmentTask extends EnrichmentTask {
             metaDataDao.save(metadata);
 
             return TaskResult.SUCCESS;
-        } catch (BackendException ex) {
+        } catch (BackendException  | MissingStorageException ex) {
             Logger.getLogger(DataEnrichmentTask.class.getName()).log(Level.WARNING, null, ex);
             return TaskResult.FAILURE;
         }
