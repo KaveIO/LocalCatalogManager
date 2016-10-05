@@ -93,8 +93,8 @@ public class StorageService {
             URI parsedUri = new URI(uri);
             String scheme = parsedUri.getScheme();
 
-            String storagePath = parsedUri.getHost() != null ? parsedUri.getHost() : parsedUri.getAuthority();
-            Storage storage = storageDao.findOneByName(storagePath);
+            String storageName = parsedUri.getHost() != null ? parsedUri.getHost() : parsedUri.getAuthority();
+            Storage storage = storageDao.findOneByName(storageName);
 
             if (storage == null) {
                 throw new MissingStorageException("Error! Unable to find Storage for the given metadata!");
