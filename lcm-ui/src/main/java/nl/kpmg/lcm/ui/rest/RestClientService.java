@@ -196,4 +196,46 @@ public class RestClientService {
       throws AuthenticationException, ServerException, ClientException {
     return getDatasRepresentation("client/v0/userGroups", UserGroupsRepresentation.class);
   }
+
+  public void postMetadata(String metadata)
+      throws ServerException, DataCreationException, AuthenticationException {
+    Entity<String> payload =
+        Entity.entity(metadata, "application/nl.kpmg.lcm.server.data.MetaData+json");
+
+    Invocation.Builder client = getClient("client/v0/local");
+    Response post = client.post(payload);
+
+    Response.StatusType statusInfo = post.getStatusInfo();
+    if (statusInfo.getFamily() != Response.Status.Family.SUCCESSFUL) {
+      throw new DataCreationException(
+          String.format("%s - %s", statusInfo.getStatusCode(), statusInfo.getReasonPhrase()));
+    }
+  }
+
+  public void putMetadata(String id, String metadata)
+      throws AuthenticationException, ServerException, DataCreationException {
+    Entity<String> payload =
+        Entity.entity(metadata, "application/nl.kpmg.lcm.server.data.MetaData+json");
+
+    Invocation.Builder client = getClient(String.format("client/v0/local/%s", id));
+    Response put = client.put(payload);
+
+    Response.StatusType statusInfo = put.getStatusInfo();
+    if (statusInfo.getFamily() != Response.Status.Family.SUCCESSFUL) {
+      throw new DataCreationException(
+          String.format("%s - %s", statusInfo.getStatusCode(), statusInfo.getReasonPhrase()));
+    }
+  }
+
+  public void deleteMetadata(String id)
+      throws DataCreationException, AuthenticationException, ServerException {
+    Invocation.Builder client = getClient(String.format("client/v0/local/%s", id));
+    Response delete = client.delete();
+
+    Response.StatusType statusInfo = delete.getStatusInfo();
+    if (statusInfo.getFamily() != Response.Status.Family.SUCCESSFUL) {
+      throw new DataCreationException(
+          String.format("%s - %s", statusInfo.getStatusCode(), statusInfo.getReasonPhrase()));
+    }
+  }
 }
