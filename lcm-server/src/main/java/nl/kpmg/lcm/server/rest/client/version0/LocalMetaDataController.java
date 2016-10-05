@@ -120,7 +120,7 @@ public class LocalMetaDataController {
    * Update a new MetaData item.
    *
    * @param metaDataId the name of the MetaData set
-   * @param metaData the contents of the MetaData set
+   * @param metadata the contents of the MetaData set
    * @return Response 200 OK if successful
    */
   @PUT
@@ -128,10 +128,9 @@ public class LocalMetaDataController {
   @Consumes({"application/nl.kpmg.lcm.server.data.MetaData+json"})
   @RolesAllowed({Roles.ADMINISTRATOR, Roles.API_USER})
   public final Response putLocalMetaData(@PathParam("meta_data_id") final String metaDataId,
-      final MetaData metaData) {
+      final MetaData metadata) {
 
-    metaData.setName(metaDataId);
-    metaDataService.getMetaDataDao().save(metaData);
+    metaDataService.update(metaDataId, metadata);
 
     return Response.ok().build();
   }
