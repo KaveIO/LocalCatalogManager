@@ -1,34 +1,36 @@
 /*
  * Copyright 2015 KPMG N.V. (unless otherwise stated).
  *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
+ * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except
+ * in compliance with the License. You may obtain a copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing, software distributed under the License
+ * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+ * or implied. See the License for the specific language governing permissions and limitations under
+ * the License.
  */
 package nl.kpmg.lcm.server.data.service;
+
+import jersey.repackaged.com.google.common.collect.Lists;
+
+import nl.kpmg.lcm.server.backend.Backend;
+import nl.kpmg.lcm.server.data.MetaData;
+import nl.kpmg.lcm.server.data.Storage;
+import nl.kpmg.lcm.server.data.dao.StorageDao;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
 
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import jersey.repackaged.com.google.common.collect.Lists;
-import nl.kpmg.lcm.server.backend.Backend;
-import nl.kpmg.lcm.server.backend.BackendFileImpl;
-import nl.kpmg.lcm.server.backend.BackendHDFSImpl;
-import nl.kpmg.lcm.server.data.MetaData;
-import nl.kpmg.lcm.server.data.Storage;
-import nl.kpmg.lcm.server.data.dao.StorageDao;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
+import nl.kpmg.lcm.server.backend.BackendFactory;
+import nl.kpmg.lcm.server.backend.exception.BackendNotImplementedException;
+import nl.kpmg.lcm.server.data.exception.MissingStorageException;
 
 /**
  * Crude service to work with backends.
@@ -37,9 +39,13 @@ import org.springframework.stereotype.Service;
  */
 @Service
 public class StorageService {
+    private final Logger logger = Logger.getLogger(StorageService.class.getName());
 
     @Autowired
     private StorageDao storageDao;
+
+    @Autowired
+    private BackendFactory backendFactory;
 
     public List<Storage> findAll() {
         return Lists.newLinkedList(storageDao.findAll());
@@ -56,24 +62,29 @@ public class StorageService {
      *
      * @param metadata of which the dataUri is used
      * @return the requested backend
-     * @throws nl.kpmg.lcm.server.data.service.ServiceException
+     * @throws
+     * nl.kpmg.lcm.server.backend.exception.BackendNotImplementedException
      */
-    public final Backend getBackend(final MetaData metadata) {
+    public final Backend getBackend(final MetaData metadata) throws BackendNotImplementedException, MissingStorageException {
+        if(metadata == null) {
+            String errorMessage = "Invalid input data! Metata data could not be null!";
+            logger.warning(errorMessage);
+            
+            throw new IllegalArgumentException(errorMessage);
+        }
+        
         return getBackend(metadata.getDataUri());
     }
 
     /**
      * Get a storage backend based on a URI.
      *
-     * This is a quickly hacked implementation. This should be changed to a annotation
-     * driven implementation which will query the database for data backends with
-     * their appropriate configuration.
-     *
      * @param uri the URI to interpret
      * @return the requested backend
-     * @throws nl.kpmg.lcm.server.data.service.ServiceException
+     * @throws
+     * nl.kpmg.lcm.server.backend.exception.BackendNotImplementedException
      */
-    public final Backend getBackend(final String uri) {
+    private Backend getBackend(final String uri) throws BackendNotImplementedException, MissingStorageException {
         if (uri == null || uri.isEmpty()) {
             return null;
         }
@@ -82,25 +93,20 @@ public class StorageService {
             URI parsedUri = new URI(uri);
             String scheme = parsedUri.getScheme();
 
-            switch (scheme) {
-                case "file":
-                    if (parsedUri.getHost() != null)  {
-                       return new BackendFileImpl(storageDao.findOne(parsedUri.getHost()));
-                    } else {
-                       return new BackendFileImpl(storageDao.findOne(parsedUri.getAuthority()));
-                    }
-                case "hdfs":
-                    if (parsedUri.getHost() != null)  {
-                        return new BackendHDFSImpl(storageDao.findOne(parsedUri.getHost()));
-                    } else {
-                        return new BackendHDFSImpl(storageDao.findOne(parsedUri.getAuthority()));
-                    }
-                default : return null;
+            String storageName = parsedUri.getHost() != null ? parsedUri.getHost() : parsedUri.getAuthority();
+            Storage storage = storageDao.findOneByName(storageName);
+
+            if (storage == null) {
+                throw new MissingStorageException("Error! Unable to find Storage for the given metadata!");
             }
 
+            Backend backend = backendFactory.createBackend(scheme, storage);
+
+            return backend;
+
         } catch (URISyntaxException ex) {
-            Logger.getLogger(StorageService.class.getName()).log(Level.SEVERE, null, ex);
+           logger.log(Level.SEVERE, null, ex);
+           throw new IllegalArgumentException("Error! Unable to parse medata data URI!");
         }
-        return null;
     }
 }

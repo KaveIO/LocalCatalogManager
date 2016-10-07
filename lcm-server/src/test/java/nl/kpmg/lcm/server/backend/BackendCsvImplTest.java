@@ -1,19 +1,13 @@
-/*
- * Copyright 2015 KPMG N.V. (unless otherwise stated).
- *
- * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except
- * in compliance with the License. You may obtain a copy of the License at
- *
- * http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software distributed under the License
- * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
- * or implied. See the License for the specific language governing permissions and limitations under
- * the License.
+/**
+ * Copyright 2015 KPMG N.V.(unless otherwise stated).**Licensed under the Apache License,Version
+ * 2.0(the"License");you may not use this file/except*in compliance with the License.You may obtain
+ * a copy of the License at**http:// www.apache.org/licenses/LICENSE-2.0 Unless required by
+ * applicable law or agreed to in writing,software distributed under the/License*is distributed on
+ * an"AS IS"BASIS,WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND,either/express*or implied.See the
+ * License for the specific language governing permissions and limitations/under*the License.
  */
 
 package nl.kpmg.lcm.server.backend;
-
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotSame;
@@ -22,12 +16,15 @@ import com.google.common.hash.HashCode;
 import com.google.common.hash.Hashing;
 import com.google.common.io.Files;
 
+import nl.kpmg.lcm.server.backend.exception.BackendException;
 import nl.kpmg.lcm.server.data.MetaData;
 import nl.kpmg.lcm.server.data.Storage;
 
-import org.apache.commons.io.IOUtils;
+import org.apache.metamodel.data.DataSet;
+import org.apache.metamodel.data.Row;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
+import org.junit.Ignore;
 import org.junit.Test;
 
 import java.io.File;
@@ -39,22 +36,19 @@ import java.io.InputStream;
 import java.net.URI;
 import java.util.Date;
 import java.util.HashMap;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
-
-
-/**
- *
- * @author Pavel Jez
- */
-
-public class BackendFileTest {
+public class BackendCsvImplTest {
 
   /**
    * Temporary directory in which all the test files will exist.
    */
   private static final String TEST_STORAGE_PATH = "temp_test/";
+  private static final String TEST_STORAGE_FILE = "testFile.csv";
+
+
+  private static final String TEST_BACKEND_NAME = "test";
+  private static final String TEST_BACKEND_FILE_URI =
+      "csv://" + TEST_BACKEND_NAME + "/" + TEST_STORAGE_FILE;
 
   /**
    * Common access tool for all backends.
@@ -64,29 +58,31 @@ public class BackendFileTest {
   /**
    * Default constructor.
    */
-  public BackendFileTest() {
+  public BackendCsvImplTest() {
     backendModel = new Storage();
-    backendModel.setId("test");
+    backendModel.setId(TEST_BACKEND_NAME);
     backendModel.setOptions(new HashMap());
     backendModel.getOptions().put("storagePath", TEST_STORAGE_PATH);
   }
 
-
-
   /**
    * Makes a temporary test directory.
-   * 
+   *
    * @throws Exception if it is not possible to make a test directory.
    */
   @BeforeClass
   public static final void setUpClass() throws Exception {
     // make test temp dir and set storage path
     File testDir = new File(TEST_STORAGE_PATH);
-    boolean mkdir = testDir.mkdir();
-    if (mkdir) {
-      System.out.println("Setup BackendFileTest successful");
-    } else {
-      System.out.println("Setup BackendFileTest failed");
+    testDir.mkdir();
+
+    // Make a test file with some content
+    File testFile = new File(TEST_STORAGE_PATH + TEST_STORAGE_FILE);
+    testFile.createNewFile();
+    try (FileWriter writer = new FileWriter(testFile)) {
+      writer.write("column_a,column_b,column_c\n");
+      writer.write("value_a,123,c\n");
+      writer.flush();
     }
   }
 
@@ -105,11 +101,12 @@ public class BackendFileTest {
   /**
    * Test to check if "file" URI scheme is supported by getSupportedUriSchema() method.
    */
+  @Ignore("Disable until csv backend is online")
   @Test
   public final void testGetSupportedUriSchema() {
-    BackendFileImpl testBackend = new BackendFileImpl(backendModel);
+    BackendCsvImpl testBackend = new BackendCsvImpl(backendModel);
     String testSchema = testBackend.getSupportedUriSchema();
-    assertEquals("file", testSchema);
+    assertEquals("csv", testSchema);
   }
 
   /**
@@ -118,14 +115,18 @@ public class BackendFileTest {
    * @throws BackendException if it is not possible to parse the URI
    * @throws IOException if it is not possible to get full canonical path of a storage location.
    */
+  @Ignore("Disable until csv backend is online")
   @Test
   public final void testParseUri() throws BackendException, IOException {
     File testDir = new File(TEST_STORAGE_PATH);
-    String uri = "file://" + testDir.getCanonicalPath() + "/temp.csv";
-    BackendFileImpl testBackend = new BackendFileImpl(backendModel);
+    String uri = "csv://test/temp.csv";
+
+    BackendCsvImpl testBackend = new BackendCsvImpl(backendModel);
     URI dataUri = testBackend.parseUri(uri);
-    String filePath = dataUri.getPath();
-    assertEquals(testDir.getCanonicalPath() + "/temp.csv", filePath);
+
+    assertEquals("csv", dataUri.getScheme());
+    assertEquals("test", dataUri.getHost());
+    assertEquals("/temp.csv", dataUri.getPath());
   }
 
   /**
@@ -134,10 +135,11 @@ public class BackendFileTest {
    *
    * @throws BackendException if empty metadata are supplied.
    */
+  @Ignore("Disable until csv backend is online")
   @Test(expected = BackendException.class)
   public final void testGatherDatasetInformationEmptyMetadata() throws BackendException {
     MetaData metaData = new MetaData();
-    BackendFileImpl testBackend = new BackendFileImpl(backendModel);
+    BackendCsvImpl testBackend = new BackendCsvImpl(backendModel);
     DataSetInformation dataSetInformation = testBackend.gatherDataSetInformation(metaData);
   }
 
@@ -147,12 +149,13 @@ public class BackendFileTest {
    *
    * @throws BackendException if invalid URI is supplied in metadata
    */
+  @Ignore("Disable until csv backend is online")
   @Test(expected = BackendException.class)
   public final void testGatherDatasetInformationWrongMetadata() throws BackendException {
     MetaData metaData = new MetaData();
     final String fileUri = "NotAnUri";
     metaData.setDataUri(fileUri);
-    BackendFileImpl testBackend = new BackendFileImpl(backendModel);
+    BackendCsvImpl testBackend = new BackendCsvImpl(backendModel);
     DataSetInformation dataSetInformation = testBackend.gatherDataSetInformation(metaData);
   }
 
@@ -164,6 +167,7 @@ public class BackendFileTest {
    * @throws BackendException if it is not possible to gather information about the dataset
    * @throws IOException if it is not possible to get path of the storage directory
    */
+  @Ignore("Disable until csv backend is online")
   @Test
   public final void testGatherDatasetInformationWrongLink() throws BackendException, IOException {
     MetaData metaData = new MetaData();
@@ -171,9 +175,9 @@ public class BackendFileTest {
     // need to make sure that test file does not exist
     File testFile = new File(TEST_STORAGE_PATH + "/temp.csv");
     testFile.delete();
-    final String fileUri = "file://" + testDir.getCanonicalPath() + "/temp.csv";
-    metaData.setDataUri(fileUri);
-    BackendFileImpl testBackend = new BackendFileImpl(backendModel);
+
+    metaData.setDataUri("csv://test/temp.csv");
+    BackendCsvImpl testBackend = new BackendCsvImpl(backendModel);
     DataSetInformation dataSetInformation = testBackend.gatherDataSetInformation(metaData);
     assertEquals(dataSetInformation.isAttached(), false);
   }
@@ -186,6 +190,7 @@ public class BackendFileTest {
    * @throws BackendException if it is not possible to gather information about the dataset
    * @throws IOException if it is not possible to get path of the storage directory
    */
+  @Ignore("Disable until csv backend is online")
   @Test
   public final void testGatherDatasetInformation() throws BackendException, IOException {
     MetaData metaData = new MetaData();
@@ -195,9 +200,8 @@ public class BackendFileTest {
       new FileOutputStream(testFile).close();
     }
     Date expTimestamp = new Date(testFile.lastModified());
-    final String fileUri = "file://" + testDir.getCanonicalPath() + "/temp.csv";
-    metaData.setDataUri(fileUri);
-    BackendFileImpl testBackend = new BackendFileImpl(backendModel);
+    metaData.setDataUri("csv://test/temp.csv");
+    BackendCsvImpl testBackend = new BackendCsvImpl(backendModel);
     DataSetInformation dataSetInformation = testBackend.gatherDataSetInformation(metaData);
     assertEquals(dataSetInformation.getModificationTime(), expTimestamp);
   }
@@ -209,38 +213,24 @@ public class BackendFileTest {
    * @throws BackendException if it is not possible to gather information about the dataset
    * @throws IOException if it is not possible to get path of the storage directory
    */
+  @Ignore("Disable until csv backend is online")
   @Test
   public final void testStore() throws IOException, BackendException {
-    // first make a test file with some content
-    File testFile = new File(TEST_STORAGE_PATH + "/testFile.csv");
-    testFile.createNewFile();
-    try (FileWriter writer = new FileWriter(testFile)) {
-      final int nLoops = 10;
-      for (int i = 0; i < nLoops; i++) {
-        writer.write("qwertyuiop");
-        writer.write("\n");
-        writer.write("asdfghjkl");
-        writer.write("\n");
-        writer.write("zxcvbnm,!@#$%^&*()_");
-        writer.write("\n");
-        writer.write("1234567890[][;',.");
-        writer.write("\n");
-      }
-      writer.flush();
-    }
+
     // now make a metadata with uri
     File testDir = new File(TEST_STORAGE_PATH);
-    final String fileUri = "file://" + testDir.getCanonicalPath() + "/testStore.csv";
-    MetaData metaData = new MetaData();
-    metaData.setDataUri(fileUri);
-    InputStream is = new FileInputStream(testFile);
-    BackendFileImpl testBackend = new BackendFileImpl(backendModel);
-    testBackend.store(metaData, is);
-    final File expected = testFile;
-    final File output = new File(testDir.getCanonicalPath() + "/testStore.csv");
-    HashCode hcExp = Files.hash(expected, Hashing.md5());
-    HashCode hcOut = Files.hash(output, Hashing.md5());
-    assertEquals(hcExp.toString(), hcOut.toString());
+    final String fileUri = "csv://test/testStore.csv";
+
+
+    MetaData originalMetaData = new MetaData();
+    originalMetaData.setDataUri(TEST_BACKEND_FILE_URI);
+
+    MetaData newMetaData = new MetaData();
+    newMetaData.setDataUri(fileUri);
+
+    BackendCsvImpl testBackend = new BackendCsvImpl(backendModel);
+    DataSet originalData = testBackend.read(originalMetaData);
+    testBackend.store(newMetaData, originalData);
   }
 
   /**
@@ -250,6 +240,7 @@ public class BackendFileTest {
    * @throws BackendException if it is not possible to gather information about the dataset
    * @throws IOException if it is not possible to get path of the storage directory
    */
+  @Ignore("Disable until csv backend is online")
   @Test
   public final void testStore2() throws IOException, BackendException {
     // first make a test file with some content
@@ -275,7 +266,7 @@ public class BackendFileTest {
     MetaData metaData = new MetaData();
     metaData.setDataUri(fileUri);
     InputStream is = new FileInputStream(testFile);
-    BackendFileImpl testBackend = new BackendFileImpl(backendModel);
+    BackendCsvImpl testBackend = new BackendCsvImpl(backendModel);
     testBackend.store(metaData, is);
     try (FileWriter writer = new FileWriter(testFile, true)) {
       writer.write("\n");
@@ -295,49 +286,22 @@ public class BackendFileTest {
    * @throws java.io.IOException if the canonical path of the storage location cannot be resolved
    * @throws BackendException if it is not possible to read from the test backend
    */
+  @Ignore("Disable until csv backend is online")
   @Test
   public final void testRead() throws IOException, BackendException {
-    // first make a test file with some content
-    File testFile = new File(TEST_STORAGE_PATH + "/testContent.csv");
-    testFile.createNewFile();
-    try (FileWriter writer = new FileWriter(testFile)) {
-      final int nLoops = 10;
-      for (int i = 0; i < nLoops; i++) {
-        writer.write("qwertyuiop");
-        writer.write("\n");
-        writer.write("asdfghjkl");
-        writer.write("\n");
-        writer.write("zxcvbnm,!@#$%^&*()_");
-        writer.write("\n");
-        writer.write("1234567890[][;',.");
-        writer.write("\n");
-      }
-      writer.flush();
-    }
     // make a metadata with uri
-    File testDir = new File(TEST_STORAGE_PATH);
-    final String fileUri = "file://" + testDir.getCanonicalPath() + "/testContent.csv";
-    // make test file to where the content stored in previous test would be read
-    File testFileOut = new File(TEST_STORAGE_PATH + "/testRead.csv");
-    testFileOut.createNewFile();
     MetaData metaData = new MetaData();
-    metaData.setDataUri(fileUri);
+    metaData.setDataUri(TEST_BACKEND_FILE_URI);
+
     // make local data backend in specified directory and read the existing file
-    BackendFileImpl testBackend = new BackendFileImpl(backendModel);
-    try (InputStream is = testBackend.read(metaData)) {
-      try (FileOutputStream fos = new FileOutputStream(testFileOut)) {
-        int readBytes = IOUtils.copy(is, fos);
-        Logger.getLogger(BackendFileImpl.class.getName()).log(Level.INFO, "{0} bytes read",
-            readBytes);
-        fos.flush();
-      }
+    BackendCsvImpl testBackend = new BackendCsvImpl(backendModel);
+    DataSet dataSet = testBackend.read(metaData);
+
+    for (Row row : dataSet) {
+      assertEquals("value_a", row.getValue(0));
+      assertEquals("123", row.getValue(1));
+      assertEquals("c", row.getValue(2));
     }
-    // check if the files are identical
-    final File expected = testFile;
-    final File output = testFileOut;
-    HashCode hcExp = Files.hash(expected, Hashing.md5());
-    HashCode hcOut = Files.hash(output, Hashing.md5());
-    assertEquals(hcExp.toString(), hcOut.toString());
   }
 
   /**
@@ -347,6 +311,7 @@ public class BackendFileTest {
    * @throws IOException if the canonical path of the storage location cannot be resolved
    * @throws BackendException if it is not possible to delete on the test backend
    */
+  @Ignore("Disable until csv backend is online")
   @Test
   public final void testDelete() throws IOException, BackendException {
     File testDir = new File(TEST_STORAGE_PATH);
@@ -371,7 +336,7 @@ public class BackendFileTest {
     MetaData metaData = new MetaData();
     metaData.setDataUri(fileUri);
     // make local data backend in specified directory and delete the existing file
-    BackendFileImpl testBackend = new BackendFileImpl(backendModel);
+    BackendCsvImpl testBackend = new BackendCsvImpl(backendModel);
     boolean result = testBackend.delete(metaData);
     assertEquals(result, true);
   }

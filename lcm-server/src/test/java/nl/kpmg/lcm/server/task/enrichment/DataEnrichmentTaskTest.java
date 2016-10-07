@@ -24,6 +24,7 @@ import nl.kpmg.lcm.server.data.dao.StorageDao;
 import nl.kpmg.lcm.server.data.service.StorageService;
 import nl.kpmg.lcm.server.task.TaskException;
 
+import org.junit.Ignore;
 import org.junit.Test;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -60,6 +61,7 @@ public class DataEnrichmentTaskTest extends LcmBaseTest implements ApplicationCo
     beanFactory.autowireBean(task);
   }
 
+  @Ignore("Disable until csv backend is online")
   @Test
   public void testExecuteWithExistingMetaData() throws TaskException {
     Storage backendModel = new Storage();

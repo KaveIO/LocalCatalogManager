@@ -56,6 +56,12 @@ public class DatabaseInitialiser {
       mockDatabase = createMockDatabase(MONGO_HOST, MONGO_PORT);
 
       createMockUser(LCM_DATABASE, LCM_USER, LCM_PASSWORD);
+      // loadMockData(Arrays.asList(
+      // "security.applications.json",
+      // "test.visitLayer.json",
+      // "test.testA.json",
+      // "test.testB.json",
+      // "test.roles.json"));
     } catch (Exception ex) {
       stop();
       throw ex;
@@ -101,7 +107,10 @@ public class DatabaseInitialiser {
       WriteResult insert = database.createCollection(split[1], new BasicDBObject())
           .insert(mockData.toArray(new BasicDBObject[mockData.size()]), database.getWriteConcern());
 
-      String error = insert.getError();
+      // TODO This testcase doesn't seem to be finiesh
+      // rewrite it in future and keep in mind
+      // that getError() is not supproted anymore in Mongo 3
+      // String error = insert.getError();
     }
   }
 

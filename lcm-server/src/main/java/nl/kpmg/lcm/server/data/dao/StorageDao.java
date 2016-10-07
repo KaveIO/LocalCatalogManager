@@ -22,5 +22,5 @@ import org.springframework.data.repository.PagingAndSortingRepository;
  * @author kos
  */
 public interface StorageDao extends PagingAndSortingRepository<Storage, String> {
-
+    public Storage findOneByName(String name);
 }

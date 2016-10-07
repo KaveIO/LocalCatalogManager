@@ -42,12 +42,13 @@ import javax.ws.rs.core.Response.Status;
 
 import nl.kpmg.lcm.server.rest.authentication.Roles;
 import nl.kpmg.lcm.server.backend.Backend;
-import nl.kpmg.lcm.server.backend.BackendException;
+import nl.kpmg.lcm.server.backend.exception.BackendException;
 import nl.kpmg.lcm.server.data.MetaData;
 import nl.kpmg.lcm.server.data.service.MetaDataService;
 import nl.kpmg.lcm.server.data.service.StorageService;
 import nl.kpmg.lcm.rest.types.MetaDataRepresentation;
 import nl.kpmg.lcm.rest.types.MetaDatasRepresentation;
+import nl.kpmg.lcm.server.data.exception.MissingStorageException;
 import nl.kpmg.lcm.server.rest.client.version0.types.ConcreteMetaDataRepresentation;
 import nl.kpmg.lcm.server.rest.client.version0.types.ConcreteMetaDatasRepresentation;
 
@@ -150,40 +151,41 @@ public class LocalMetaDataController {
     switch (request.getOperation()) {
 
       case "download":
-
-        backend = storageService.getBackend(metadata);
+        
         try {
-          InputStream input = backend.read(metadata);
+          backend = storageService.getBackend(metadata);
+          Iterable input = backend.read(metadata);
           String fType = (String) request.getParameters().get("type");
           return Response.ok(input).header("Content-Disposition",
               String.format("attachment; filename=%s.%s", metadata.getName(), fType)).build();
 
-        } catch (BackendException ex) {
+        } catch (BackendException | MissingStorageException ex) {
+            //TODO check how to pass more informative error  mesage(if possible)
           return Response.serverError().build();
         }
       case "copy":
-        backend = storageService.getBackend(metadata);
-        String fType = (String) request.getParameters().get("type");
-        String sPath = (String) request.getParameters().get("storagePath");
-        String fPath = (String) request.getParameters().get("Path");
-        URI parsedURI;
-        try {
-          parsedURI = new URI(metadata.getDataUri());
-          String newDataUri = parsedURI.getScheme() + "://" + parsedURI.getHost() + "/" + fPath;
-          InputStream input = backend.read(metadata);
-          FileOutputStream fos =
-              new FileOutputStream(new File(String.format("%s/%s.%s", sPath, fPath, fType)));
-          int copied = IOUtils.copy(input, fos);
-          MetaData mnested = new MetaData();
-          mnested.setDataUri(newDataUri);
-          metadata.addDuplicate(mnested);
-          metaDataService.getMetaDataDao().save(metadata);
-
-          return Response.ok().build();
-        } catch (IOException ex) {
-          Logger.getLogger(LocalMetaDataController.class.getName()).log(Level.SEVERE,
-              String.format("Couldn't find path: %s/%s.%s", sPath, fPath, fType), ex);
-        }
+        // backend = storageService.getBackend(metadata);
+        // String fType = (String) request.getParameters().get("type");
+        // String sPath = (String) request.getParameters().get("storagePath");
+        // String fPath = (String) request.getParameters().get("Path");
+        // URI parsedURI;
+        // try {
+        // parsedURI = new URI(metadata.getDataUri());
+        // String newDataUri = parsedURI.getScheme() + "://" + parsedURI.getHost() + "/" + fPath;
+        // Iterable input = backend.read(metadata);
+        // FileOutputStream fos =
+        // new FileOutputStream(new File(String.format("%s/%s.%s", sPath, fPath, fType)));
+        // int copied = IOUtils.copy(input, fos);
+        // MetaData mnested = new MetaData();
+        // mnested.setDataUri(newDataUri);
+        // metadata.addDuplicate(mnested);
+        // metaDataService.getMetaDataDao().save(metadata);
+        //
+        // return Response.ok().build();
+        // } catch (IOException ex) {
+        // Logger.getLogger(LocalMetaDataController.class.getName()).log(Level.SEVERE,
+        // String.format("Couldn't find path: %s/%s.%s", sPath, fPath, fType), ex);
+        // }
 
     }
 
