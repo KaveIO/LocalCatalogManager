@@ -1,20 +1,14 @@
-/*
- * Copyright 2015 KPMG N.V. (unless otherwise stated).
- *
- * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except
- * in compliance with the License. You may obtain a copy of the License at
- *
- * http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software distributed under the License
- * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
- * or implied. See the License for the specific language governing permissions and limitations under
- * the License.
+/**
+ * Copyright 2015 KPMG N.V.(unless otherwise stated).**Licensed under the Apache License,Version
+ * 2.0(the"License");you may not use this file/except*in compliance with the License.You may obtain
+ * a copy of the License at**http:// www.apache.org/licenses/LICENSE-2.0 Unless required by
+ * applicable law or agreed to in writing,software distributed under the/License*is distributed on
+ * an"AS IS"BASIS,WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND,either/express*or implied.See the
+ * License for the specific language governing permissions and limitations/under*the License.
  */
 
 package nl.kpmg.lcm.server.backend;
 
-import nl.kpmg.lcm.server.backend.exception.BackendException;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotSame;
 
@@ -22,13 +16,12 @@ import com.google.common.hash.HashCode;
 import com.google.common.hash.Hashing;
 import com.google.common.io.Files;
 
+import nl.kpmg.lcm.server.backend.exception.BackendException;
 import nl.kpmg.lcm.server.data.MetaData;
 import nl.kpmg.lcm.server.data.Storage;
 
-import org.apache.commons.io.IOUtils;
 import org.apache.metamodel.data.DataSet;
 import org.apache.metamodel.data.Row;
-import org.apache.metamodel.query.SelectItem;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Ignore;
@@ -43,8 +36,6 @@ import java.io.InputStream;
 import java.net.URI;
 import java.util.Date;
 import java.util.HashMap;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
 public class BackendCsvImplTest {
 
@@ -110,6 +101,7 @@ public class BackendCsvImplTest {
   /**
    * Test to check if "file" URI scheme is supported by getSupportedUriSchema() method.
    */
+  @Ignore("Disable until csv backend is online")
   @Test
   public final void testGetSupportedUriSchema() {
     BackendCsvImpl testBackend = new BackendCsvImpl(backendModel);
@@ -123,6 +115,7 @@ public class BackendCsvImplTest {
    * @throws BackendException if it is not possible to parse the URI
    * @throws IOException if it is not possible to get full canonical path of a storage location.
    */
+  @Ignore("Disable until csv backend is online")
   @Test
   public final void testParseUri() throws BackendException, IOException {
     File testDir = new File(TEST_STORAGE_PATH);
@@ -142,6 +135,7 @@ public class BackendCsvImplTest {
    *
    * @throws BackendException if empty metadata are supplied.
    */
+  @Ignore("Disable until csv backend is online")
   @Test(expected = BackendException.class)
   public final void testGatherDatasetInformationEmptyMetadata() throws BackendException {
     MetaData metaData = new MetaData();
@@ -155,6 +149,7 @@ public class BackendCsvImplTest {
    *
    * @throws BackendException if invalid URI is supplied in metadata
    */
+  @Ignore("Disable until csv backend is online")
   @Test(expected = BackendException.class)
   public final void testGatherDatasetInformationWrongMetadata() throws BackendException {
     MetaData metaData = new MetaData();
@@ -172,6 +167,7 @@ public class BackendCsvImplTest {
    * @throws BackendException if it is not possible to gather information about the dataset
    * @throws IOException if it is not possible to get path of the storage directory
    */
+  @Ignore("Disable until csv backend is online")
   @Test
   public final void testGatherDatasetInformationWrongLink() throws BackendException, IOException {
     MetaData metaData = new MetaData();
@@ -194,6 +190,7 @@ public class BackendCsvImplTest {
    * @throws BackendException if it is not possible to gather information about the dataset
    * @throws IOException if it is not possible to get path of the storage directory
    */
+  @Ignore("Disable until csv backend is online")
   @Test
   public final void testGatherDatasetInformation() throws BackendException, IOException {
     MetaData metaData = new MetaData();
@@ -216,7 +213,7 @@ public class BackendCsvImplTest {
    * @throws BackendException if it is not possible to gather information about the dataset
    * @throws IOException if it is not possible to get path of the storage directory
    */
-  @Ignore
+  @Ignore("Disable until csv backend is online")
   @Test
   public final void testStore() throws IOException, BackendException {
 
@@ -243,7 +240,7 @@ public class BackendCsvImplTest {
    * @throws BackendException if it is not possible to gather information about the dataset
    * @throws IOException if it is not possible to get path of the storage directory
    */
-  @Ignore
+  @Ignore("Disable until csv backend is online")
   @Test
   public final void testStore2() throws IOException, BackendException {
     // first make a test file with some content
@@ -289,6 +286,7 @@ public class BackendCsvImplTest {
    * @throws java.io.IOException if the canonical path of the storage location cannot be resolved
    * @throws BackendException if it is not possible to read from the test backend
    */
+  @Ignore("Disable until csv backend is online")
   @Test
   public final void testRead() throws IOException, BackendException {
     // make a metadata with uri
@@ -313,7 +311,7 @@ public class BackendCsvImplTest {
    * @throws IOException if the canonical path of the storage location cannot be resolved
    * @throws BackendException if it is not possible to delete on the test backend
    */
-  @Ignore
+  @Ignore("Disable until csv backend is online")
   @Test
   public final void testDelete() throws IOException, BackendException {
     File testDir = new File(TEST_STORAGE_PATH);
