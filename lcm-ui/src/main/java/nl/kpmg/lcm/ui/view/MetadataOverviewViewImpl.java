@@ -13,51 +13,44 @@ import com.vaadin.navigator.ViewChangeListener;
 import com.vaadin.ui.Button;
 import com.vaadin.ui.HorizontalLayout;
 import com.vaadin.ui.Notification;
-import com.vaadin.ui.Panel;
 import com.vaadin.ui.Table;
 import com.vaadin.ui.UI;
 import com.vaadin.ui.VerticalLayout;
+import com.vaadin.ui.Window;
 
 import nl.kpmg.lcm.client.ClientException;
 import nl.kpmg.lcm.rest.types.MetaDataRepresentation;
 import nl.kpmg.lcm.rest.types.MetaDatasRepresentation;
 import nl.kpmg.lcm.server.ServerException;
 import nl.kpmg.lcm.server.data.MetaData;
-import nl.kpmg.lcm.ui.component.DefinedLabel;
 import nl.kpmg.lcm.ui.rest.AuthenticationException;
 import nl.kpmg.lcm.ui.rest.RestClientService;
+import nl.kpmg.lcm.ui.view.metadata.MetadataCreateWindow;
+import nl.kpmg.lcm.ui.view.metadata.MetadataEditWindow;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
 import javax.annotation.PostConstruct;
 import javax.ws.rs.core.Link;
 
 import ru.xpoft.vaadin.VaadinView;
 
-/****
+/**
  *
  * @author mhoekstra
  */
 @Component
-// @Scope("prototype")
-// @SpringView
 @VaadinView(MetadataOverviewViewImpl.VIEW_NAME)
-public class MetadataOverviewViewImpl extends VerticalLayout implements MetadataOverviewView {
+public class MetadataOverviewViewImpl extends VerticalLayout
+    implements MetadataOverviewView, Button.ClickListener {
 
   /**
    * The linkable name of this view.
    */
   public static final String VIEW_NAME = "metadata-overview";
-
-  /**
-   * The default size of the side panels of this view.
-   */
-  private static final String PANEL_SIZE = "400px";
 
   /**
    * The service for interacting with the backend.
@@ -76,10 +69,9 @@ public class MetadataOverviewViewImpl extends VerticalLayout implements Metadata
    */
   private final Table table = new Table();
 
-  /**
-   * Side Panel filled with details of the currently selected metadata item.
-   */
-  private final Panel metadataPanel = new Panel("Metadata details");
+  private final Button createButton = new Button("Create");
+
+  private final Button refreshButton = new Button("Refresh");
 
   /**
    * The list of metadata items fetched from the service.
@@ -96,7 +88,14 @@ public class MetadataOverviewViewImpl extends VerticalLayout implements Metadata
    */
   @PostConstruct
   public final void init() {
-    final HorizontalLayout root = new HorizontalLayout();
+    final VerticalLayout root = new VerticalLayout();
+
+    createButton.addClickListener(this);
+    refreshButton.addClickListener(this);
+
+    HorizontalLayout menubar = new HorizontalLayout();
+    menubar.addComponent(createButton);
+    menubar.addComponent(refreshButton);
 
     table.addContainerProperty("Name", String.class, null);
     table.addContainerProperty("Location", String.class, null);
@@ -104,11 +103,9 @@ public class MetadataOverviewViewImpl extends VerticalLayout implements Metadata
 
     table.setWidth("100%");
     table.setHeight("100%");
-    metadataPanel.setWidth(PANEL_SIZE);
-    metadataPanel.setHeight("100%");
 
+    root.addComponent(menubar);
     root.addComponent(table);
-    root.addComponent(metadataPanel);
 
     root.setSpacing(true);
     root.setMargin(true);
@@ -125,18 +122,33 @@ public class MetadataOverviewViewImpl extends VerticalLayout implements Metadata
    */
   @Override
   public final void enter(final ViewChangeListener.ViewChangeEvent event) {
+    refreshMetadataOverview();
+  }
+
+  @Override
+  public void buttonClick(Button.ClickEvent event) {
+    if (event.getSource() == createButton) {
+      MetadataCreateWindow metadataCreateWindow = new MetadataCreateWindow(restClientService);
+      UI.getCurrent().addWindow(metadataCreateWindow);
+    } else if (event.getSource() == refreshButton) {
+      refreshMetadataOverview();
+    }
+  }
+
+  private void refreshMetadataOverview() {
+    table.removeAllItems();
     try {
       items = restClientService.getLocalMetadata();
 
       for (MetaDataRepresentation item : items.getItems()) {
-        MetaData metaData = item.getItem();
         List<Link> links = item.getLinks();
 
         Button viewButton = new Button("view");
         viewButton.setData(item);
-        viewButton.addClickListener(new SelectMetadataListenerImpl(this));
+        viewButton.addClickListener(new ViewButtonClickListener());
         viewButton.addStyleName("link");
 
+        MetaData metaData = item.getItem();
         table.addItem(new Object[] {metaData.getName(), metaData.getDataUri(), viewButton},
             metaData.getName());
       }
@@ -150,62 +162,15 @@ public class MetadataOverviewViewImpl extends VerticalLayout implements Metadata
     }
   }
 
-  /**
-   * Sets the selected metadata.
-   *
-   * @param metaDataRepresentation to set
-   */
-  @Override
-  public final void setSelectedMetadata(final MetaDataRepresentation metaDataRepresentation) {
-    this.metaDataRepresentation = metaDataRepresentation;
-    updateSelectedMetadata();
-  }
+  private class ViewButtonClickListener implements Button.ClickListener {
 
-  /**
-   * Updates the metadata panel with new content.
-   */
-  private void updateSelectedMetadata() {
-    VerticalLayout panelContent = new VerticalLayout();
-
-    MetaData item = metaDataRepresentation.getItem();
-    List<Link> links = metaDataRepresentation.getLinks();
-
-    panelContent.setMargin(true);
-    if (item.getName() != null) {
-      panelContent.addComponent(new DefinedLabel("Name", item.getName()));
-    }
-    if (item.get("general.owner") != null) {
-      panelContent.addComponent(new DefinedLabel("Owner", (String) item.get("general.owner")));
-    }
-    if (item.get("general.description") != null) {
-      panelContent
-          .addComponent(new DefinedLabel("Description", (String) item.get("general.description")));
-    }
-
-    metadataPanel.setContent(panelContent);
-  }
-
-  /**
-   * Selection listener for changing the metadata selection.
-   */
-  private final class SelectMetadataListenerImpl implements Button.ClickListener {
-
-    /**
-     * Parent view to which the event is cascaded.
-     */
-    private final MetadataOverviewView metadataOverviewView;
-
-    /**
-     * @param metadataOverviewView parent view.
-     */
-    private SelectMetadataListenerImpl(final MetadataOverviewView metadataOverviewView) {
-      this.metadataOverviewView = metadataOverviewView;
-    }
+    public ViewButtonClickListener() {}
 
     @Override
-    public void buttonClick(final Button.ClickEvent event) {
-      // MetaDataRepresentation data = (MetaDataRepresentation) event.getButton().getData();
-      // metadataOverviewView.setSelectedMetadata(data);
+    public void buttonClick(Button.ClickEvent event) {
+      MetadataEditWindow metadataEditWindow = new MetadataEditWindow(restClientService,
+          (MetaDataRepresentation) event.getButton().getData());
+      UI.getCurrent().addWindow(metadataEditWindow);
     }
   }
 }

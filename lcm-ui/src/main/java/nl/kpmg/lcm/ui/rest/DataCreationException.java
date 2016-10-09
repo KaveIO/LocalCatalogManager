@@ -11,15 +11,30 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-
-package nl.kpmg.lcm.ui.view;
-
-import com.vaadin.navigator.View;
+package nl.kpmg.lcm.ui.rest;
 
 /**
  *
  * @author mhoekstra
  */
-public interface MetadataOverviewView extends View {
+public class DataCreationException extends Exception {
 
+  public DataCreationException() {}
+
+  public DataCreationException(String message) {
+    super(message);
+  }
+
+  public DataCreationException(String message, Throwable cause) {
+    super(message, cause);
+  }
+
+  public DataCreationException(Throwable cause) {
+    super(cause);
+  }
+
+  public DataCreationException(String message, Throwable cause, boolean enableSuppression,
+      boolean writableStackTrace) {
+    super(message, cause, enableSuppression, writableStackTrace);
+  }
 }
