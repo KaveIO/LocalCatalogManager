@@ -19,7 +19,7 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import nl.kpmg.lcm.rest.types.LinkInjectable;
 import nl.kpmg.lcm.rest.types.Version0Representation;
 import nl.kpmg.lcm.server.rest.client.version0.LocalMetaDataController;
-import nl.kpmg.lcm.server.rest.client.version0.RemoteMetaDataController;
+import nl.kpmg.lcm.server.rest.client.version0.RemoteLcmController;
 import nl.kpmg.lcm.server.rest.client.version0.StorageController;
 import nl.kpmg.lcm.server.rest.client.version0.TaskDescriptionController;
 import nl.kpmg.lcm.server.rest.client.version0.TaskScheduleController;
@@ -41,7 +41,7 @@ public class ConcreteVersion0Representation extends Version0Representation
           rel = "storage.overview"),
       @InjectLink(resource = LocalMetaDataController.class, style = InjectLink.Style.ABSOLUTE,
           rel = "local.overview"),
-      @InjectLink(resource = RemoteMetaDataController.class, style = InjectLink.Style.ABSOLUTE,
+      @InjectLink(resource = RemoteLcmController.class, style = InjectLink.Style.ABSOLUTE,
           rel = "remote.overview"),
       @InjectLink(resource = TaskDescriptionController.class, style = InjectLink.Style.ABSOLUTE,
           rel = "task.overview"),
@@ -54,6 +54,7 @@ public class ConcreteVersion0Representation extends Version0Representation
   @JsonIgnore
   private List<Link> injectedLinks;
 
+  @Override
   public List<Link> getInjectedLinks() {
     return injectedLinks;
   }

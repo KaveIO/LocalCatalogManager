@@ -86,13 +86,7 @@
             <scope>test</scope>
             <type>jar</type>
         </dependency>
-        <dependency>
-            <groupId>de.flapdoodle.embed</groupId>
-            <artifactId>de.flapdoodle.embed.mongo</artifactId>
-            <version>1.46.4</version>
-            <scope>test</scope>
-            <type>jar</type>
-        </dependency>
+     
         <dependency>
             <groupId>javax</groupId>
             <artifactId>javaee-web-api</artifactId>

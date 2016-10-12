@@ -42,6 +42,7 @@
     <bean id="mongoUserWriteConverter" class="nl.kpmg.lcm.server.data.dao.mongo.MongoUserWriteConverter"/>
     <bean id="mongoMetaDataReadConverter" class="nl.kpmg.lcm.server.data.dao.mongo.MongoMetaDataReadConverter"/>
     <bean id="mongoMetaDataWriteConverter" class="nl.kpmg.lcm.server.data.dao.mongo.MongoMetaDataWriteConverter"/>
+    
 
     <bean id="mongoTemplate" class="org.springframework.data.mongodb.core.MongoTemplate">
         <constructor-arg name="mongoDbFactory" ref="mongoDbFactory"/>
