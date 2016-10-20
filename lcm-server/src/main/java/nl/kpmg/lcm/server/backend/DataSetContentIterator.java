@@ -13,6 +13,7 @@
  */
 package nl.kpmg.lcm.server.backend;
 
+import nl.kpmg.lcm.server.data.ContentIterator;
 import org.apache.metamodel.data.DataSet;
 import org.apache.metamodel.data.Row;
 import org.apache.metamodel.query.SelectItem;

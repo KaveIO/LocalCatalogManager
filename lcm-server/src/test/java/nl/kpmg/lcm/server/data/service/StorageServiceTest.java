@@ -21,10 +21,12 @@ import nl.kpmg.lcm.server.backend.BackendFactory;
 import nl.kpmg.lcm.server.data.MetaData;
 import nl.kpmg.lcm.server.data.Storage;
 import nl.kpmg.lcm.server.data.dao.StorageDao;
-import nl.kpmg.lcm.server.data.exception.MissingStorageException;
+import nl.kpmg.lcm.server.data.service.exception.MissingStorageException;
 import org.junit.Before;
 import org.junit.Test;
 import static org.junit.Assert.*;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.BDDMockito.given;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
@@ -51,11 +53,13 @@ public class StorageServiceTest {
     @InjectMocks
     private StorageService storageService;
 
-    Storage csvStorage;
-    String csvSchame = "csv";
-    String csvStoragePath = "/tmp";
-    String csvStorageName = "csv-storage";
-    String csvStorageURI = csvSchame + "://" + csvStorageName + "/test.csv";
+    private Storage csvStorage;
+    private String csvSchame = "csv";
+    private String csvStoragePath = "/tmp";
+    private String csvStorageName = "csv-storage";
+    private String csvStorageURI = csvSchame + "://" + csvStorageName + "/test.csv";
+    
+    private MetaData validMetaData = new MetaData();
 
     @Before
     public void setUp() {
@@ -65,14 +69,16 @@ public class StorageServiceTest {
         Map options = new HashMap();
         options.put("storagePath", csvStoragePath);
         csvStorage.setOptions(options);
+        
+        validMetaData.setDataUri(csvStorageURI);
     }
 
     @Test
     public void testGetBackendCSV() throws Exception {
-        given(storageDao.findOneByName(csvStorageName)).willReturn(csvStorage);
-        given(backendFactory.createBackend(csvSchame, csvStorage)).willReturn(backendCsvImp);
+        given(storageDao.findOneByName(csvStorageName)).willReturn(csvStorage);        
         MetaData metadata = new MetaData();
         metadata.setDataUri(csvStorageURI);
+        given(backendFactory.createBackend(eq(csvSchame), eq(csvStorage), eq(metadata))).willReturn(backendCsvImp);        
         Backend result = storageService.getBackend(metadata);
 
         assertNotNull(result);
@@ -81,7 +87,7 @@ public class StorageServiceTest {
     @Test(expected = IllegalArgumentException.class)
     public void testGetBackendCSVInvalidURI() throws Exception {
         given(storageDao.findOneByName(csvStorageName)).willReturn(csvStorage);
-        given(backendFactory.createBackend(csvSchame, csvStorage)).willReturn(backendCsvImp);
+        given(backendFactory.createBackend(csvSchame, csvStorage, validMetaData)).willReturn(backendCsvImp);
         MetaData metadata = new MetaData();
         metadata.setDataUri("invalid URI");
         storageService.getBackend(metadata);
@@ -90,7 +96,7 @@ public class StorageServiceTest {
     @Test(expected = IllegalArgumentException.class)
     public void testGetBackendCSVNullMetadata() throws Exception {
         given(storageDao.findOneByName(csvStorageName)).willReturn(csvStorage);
-        given(backendFactory.createBackend(csvSchame, csvStorage)).willReturn(backendCsvImp);
+        given(backendFactory.createBackend(csvSchame, csvStorage, validMetaData)).willReturn(backendCsvImp);
         storageService.getBackend(null);
     }
 

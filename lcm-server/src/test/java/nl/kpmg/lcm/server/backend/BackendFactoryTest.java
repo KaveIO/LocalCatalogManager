@@ -16,6 +16,7 @@ package nl.kpmg.lcm.server.backend;
 import java.util.HashMap;
 import java.util.Map;
 import nl.kpmg.lcm.server.backend.exception.BackendNotImplementedException;
+import nl.kpmg.lcm.server.data.MetaData;
 import nl.kpmg.lcm.server.data.Storage;
 import org.junit.Before;
 import org.junit.Test;
@@ -33,43 +34,47 @@ import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 @ContextConfiguration(classes = {BackendFactory.class})
 public class BackendFactoryTest {
 
-    Storage csvStorage;
-    String csvSchame = "csv";
-    String csvStoragePath = "/tmp";
-    String csvStorageName = "csv-storage";
+    private Storage csvStorage;
+    private String csvSchame = "csv";
+    private String csvStoragePath = "/tmp";
+    private String csvStorageName = "csv-storage";
+    private String csvStorageURI = csvSchame + "://" + csvStorageName + "/test.csv";
+    private MetaData validMetaData = new MetaData();
+    
 
     @Autowired
     private BackendFactory backendFactory;
 
-    @Before
-    public void setUp() {
+    public BackendFactoryTest() {
         csvStorage = new Storage();
         csvStorage.setName(csvStorageName);
         Map options = new HashMap();
         options.put("storagePath", csvStoragePath);
         csvStorage.setOptions(options);
+        
+        validMetaData.setDataUri(csvStorageURI);
     }
 
     @Test
     public void testCreateBackendCSV() throws Exception {
-        Backend csvBackend = backendFactory.createBackend(csvSchame, csvStorage);
+        Backend csvBackend = backendFactory.createBackend(csvSchame, csvStorage, validMetaData);
         assertNotNull(csvBackend);
         assertTrue(csvBackend instanceof BackendCsvImpl);
     }
 
     @Test(expected = BackendNotImplementedException.class)
     public void testCreateBackendInvalidSchema() throws Exception {
-        backendFactory.createBackend("this_is_invalid_schema", csvStorage);
+        backendFactory.createBackend("this_is_invalid_schema", csvStorage, validMetaData);
     }
 
     @Test(expected = IllegalArgumentException.class)
     public void testCreateBackendNullSchema() throws Exception {
-        backendFactory.createBackend(null, csvStorage);
+        backendFactory.createBackend(null, csvStorage, validMetaData);
     }
 
     @Test(expected = IllegalArgumentException.class)
     public void testCreateBackendTooShortSchema() throws Exception {
-        backendFactory.createBackend("", csvStorage);
+        backendFactory.createBackend("", csvStorage, validMetaData);
     }
 
     @Test(expected = IllegalArgumentException.class)
@@ -95,11 +100,11 @@ public class BackendFactoryTest {
                 + "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbb1111111111111111111dfsgsdffffff"
                 + "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbb1111111111111111111dfsgsdffffff";
 
-        backendFactory.createBackend(veryLongSchema, csvStorage);
+        backendFactory.createBackend(veryLongSchema, csvStorage, validMetaData);
     }
 
     @Test(expected = IllegalArgumentException.class)
     public void testCreateBackendNullStorage() throws Exception {
-        backendFactory.createBackend(csvSchame, null);
+        backendFactory.createBackend(csvSchame, null, validMetaData);
     }
 }

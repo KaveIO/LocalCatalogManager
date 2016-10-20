@@ -1,11 +1,11 @@
 /*
  * Copyright 2015 KPMG N.V. (unless otherwise stated).
- *
+ * 
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except
  * in compliance with the License. You may obtain a copy of the License at
- *
+ * 
  * http://www.apache.org/licenses/LICENSE-2.0
- *
+ * 
  * Unless required by applicable law or agreed to in writing, software distributed under the License
  * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
  * or implied. See the License for the specific language governing permissions and limitations under
@@ -13,35 +13,114 @@
  */
 package nl.kpmg.lcm.server.backend;
 
-import nl.kpmg.lcm.server.backend.exception.BackendException;
 import java.net.URI;
 import java.net.URISyntaxException;
+import nl.kpmg.lcm.server.backend.exception.BackendException;
+import nl.kpmg.lcm.server.data.MetaData;
+import nl.kpmg.lcm.server.data.Storage;
 
 /**
  *
  * @author mhoekstra
  */
-public abstract class AbstractBackend implements Backend {
+abstract class AbstractBackend implements Backend {
+
+  protected final MetaData metaData;
+  protected final Storage storage;
+  protected final URI dataURI;
+
+
+  protected AbstractBackend(Storage backendStorage, MetaData metaData) throws BackendException {
+    Notification validationNotification = new Notification();
+    validation(backendStorage, metaData, validationNotification);
+    if (validationNotification.hasErrors()) {
+      throw new BackendException(validationNotification.errorMessage());
+    }
+
+    this.metaData = metaData;
+    this.dataURI = parseDataUri(metaData.getDataUri());
+    this.storage = backendStorage;
+
+  }
+
+  private void validation(Storage backendStorage, MetaData metaData, Notification notification) {
+    validateMetadata(metaData, notification);
+    validateStorage(backendStorage, notification);
+    extraValidation(backendStorage, metaData, notification);
+  }
+
+  /***
+   * Override this method to ensure that the passed metaData is compatible with your implementation
+   * of the backend
+   * 
+   * @param metaData
+   * @throws BadMetaDataException
+   */
+  private void validateMetadata(MetaData metaData, Notification notification) {
+    if (metaData == null) {
+      notification.addError("The metaData could not be null!", null);
+      return;
+    }
+
+    if (metaData.getDataUri() == null) {
+      notification.addError("The metaData data uri could not be null!", null);
+      return;
+    }
+
+    try {
+      URI parsedUri = new URI(metaData.getDataUri());
+      if (!getSupportedUriSchema().equals(parsedUri.getScheme())) {
+        notification.addError(String.format(
+            "Detected uri schema (%s) doesn't match with this backends supported uri schema (%s)",
+            parsedUri.getScheme(), getSupportedUriSchema()), null);
+      }
+    } catch (URISyntaxException ex) {
+      notification.addError(String.format("Unable to parse URI (%s) ", metaData.getDataUri()), ex);
+    }
+
+  }
+
+  /***
+   * Override this method to add extra validation to storage object
+   * 
+   * @param storage
+   */
+  private void validateStorage(Storage storage, Notification notification) {
+    if (storage == null) {
+      notification.addError("Storage can not be null!", null);
+      return;
+    }
+
+    if (storage.getOptions() == null) {
+      notification.addError("Storage object must have options!", null);
+      return;
+    }
+  }
+
+  /***
+   * Override this method to ensure that the passed metaData and storage are compatible with your
+   * implementation of the backend
+   * 
+   * @param storage
+   * @param metaData
+   * @throws BadMetaDataException
+   */
+  protected abstract void extraValidation(Storage backendStorage, MetaData metaData,
+      Notification notification);
 
   protected abstract String getSupportedUriSchema();
 
-  protected URI parseUri(String uri) throws BackendException {
+  protected URI getDataUri() {
+    return dataURI;
+  }
+
+  private URI parseDataUri(String uri) throws BackendException {
+
     try {
-      URI parsedUri = new URI(uri);
-      if (parsedUri.getScheme() == null) {
-        // Strangely enough, the URI constructor allows URI instances without scheme
-        throw new BackendException(String.format(
-            "No scheme supplied in uri \"%s\". Please use the supported uri schema (%s)", uri,
-            getSupportedUriSchema()));
-      }
-      if (!parsedUri.getScheme().equals(getSupportedUriSchema())) {
-        throw new BackendException(String.format(
-            "Detected uri schema (%s) doesn't match with this backends supported uri schema (%s)",
-            parsedUri.getScheme(), getSupportedUriSchema()));
-      }
-      return parsedUri;
+      return new URI(uri);
     } catch (URISyntaxException ex) {
       throw new BackendException(String.format("Failure while trying to parse URI '%s'", uri), ex);
     }
   }
+
 }

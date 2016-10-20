@@ -12,13 +12,13 @@
   *  the License.
  */
 
-package nl.kpmg.lcm.server.data.exception;
+package nl.kpmg.lcm.server.data.service.exception;
 
 /**
  *
  * @author Stoyan Hristov<shristov@intracol.com>
  */
-public class MissingStorageException extends Exception {
+public class MissingStorageException extends ServiceException {
 
     public MissingStorageException() {
     }

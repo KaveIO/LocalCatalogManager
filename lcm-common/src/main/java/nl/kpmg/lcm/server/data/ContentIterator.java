@@ -11,7 +11,7 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-package nl.kpmg.lcm.server.backend;
+package nl.kpmg.lcm.server.data;
 
 import java.io.Closeable;
 import java.util.Iterator;

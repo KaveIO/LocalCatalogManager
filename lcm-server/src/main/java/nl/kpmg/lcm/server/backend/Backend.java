@@ -13,11 +13,9 @@
  */
 package nl.kpmg.lcm.server.backend;
 
+import nl.kpmg.lcm.server.data.ContentIterator;
 import nl.kpmg.lcm.server.backend.exception.BackendException;
-import java.io.InputStream;
-
-import nl.kpmg.lcm.server.data.MetaData;
-
+import nl.kpmg.lcm.server.data.Data;
 import org.apache.metamodel.data.DataSet;
 
 /**
@@ -27,38 +25,36 @@ import org.apache.metamodel.data.DataSet;
 public interface Backend {
 
   /**
-   * Method to gather information necessary for the dataset manipulation from the metadata.
+   * Method to gather information necessary for the dataset manipulation.
    *
-   * @param metadata should contain above all valid URI.
    * @return information whether URI points to existing resource, and its properties.
    * @throws BackendException if the URI is not valid or it is not possible to reach the resource.
    */
-  DataSetInformation gatherDataSetInformation(MetaData metadata) throws BackendException;
+  public DataSetInformation gatherDataSetInformation() throws BackendException;
 
-  /**
+  
+    /**
    * Method to store some content on a data storage backend.
-   *
-   * @param metadata {@link MetaData} with URI of the data.
-   * @param content {@link InputStream} that should be stored.
+   * @param forceOverwrite - if set to true the @content is stored no mater 
+   * if it already exists. When set to false the @content is stored only if it does not exist.
+   * @param content {@link ContentIterator} that should be stored.
    * @throws BackendException if the URI is not valid or it is not possible to reach the storage.
    */
-  void store(MetaData metadata, InputStream content) throws BackendException;
+  public void store(ContentIterator content, boolean forceOverwrite) throws BackendException;
 
   /**
    * Method to read some content from a data storage backend.
    *
-   * @param metadata {@link MetaData} with URI of the data.
    * @return {@link DataSet} with the data to be read.
    * @throws BackendException if the URI is not valid or it is not possible to reach the storage.
    */
-  DataSet read(MetaData metadata) throws BackendException;
+  public Data read() throws BackendException;
 
   /**
    * Method to delete some content on a data storage backend.
    *
-   * @param metadata {@link MetaData} with URI of the data.
    * @return true if delete is successful, false otherwise.
    * @throws BackendException if the URI is not valid or it is not possible to reach the storage.
    */
-  boolean delete(MetaData metadata) throws BackendException;
+  public boolean delete() throws BackendException;
 }

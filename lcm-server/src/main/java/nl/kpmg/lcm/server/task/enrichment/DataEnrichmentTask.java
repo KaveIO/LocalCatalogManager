@@ -23,7 +23,7 @@ import nl.kpmg.lcm.server.backend.DataSetInformation;
 import nl.kpmg.lcm.server.backend.exception.BackendNotImplementedException;
 import nl.kpmg.lcm.server.data.MetaData;
 import nl.kpmg.lcm.server.data.dao.MetaDataDao;
-import nl.kpmg.lcm.server.data.exception.MissingStorageException;
+import nl.kpmg.lcm.server.data.service.exception.MissingStorageException;
 import nl.kpmg.lcm.server.data.service.StorageService;
 import nl.kpmg.lcm.server.task.EnrichmentTask;
 import nl.kpmg.lcm.server.task.TaskException;
@@ -86,7 +86,7 @@ public class DataEnrichmentTask extends EnrichmentTask {
                 return TaskResult.FAILURE;
             }
 
-            DataSetInformation gatherDataSetInformation = backend.gatherDataSetInformation(metadata);
+            DataSetInformation gatherDataSetInformation = backend.gatherDataSetInformation();
 
             if (!gatherDataSetInformation.isAttached()) {
                 metadata.set("dynamic.data.state", "DETACHED");

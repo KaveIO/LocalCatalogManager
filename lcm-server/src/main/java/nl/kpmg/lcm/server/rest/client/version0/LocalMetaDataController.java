@@ -48,11 +48,14 @@ import nl.kpmg.lcm.server.data.service.MetaDataService;
 import nl.kpmg.lcm.server.data.service.StorageService;
 import nl.kpmg.lcm.rest.types.MetaDataRepresentation;
 import nl.kpmg.lcm.rest.types.MetaDatasRepresentation;
-import nl.kpmg.lcm.server.data.exception.MissingStorageException;
+import nl.kpmg.lcm.server.backend.exception.BackendNotImplementedException;
+import nl.kpmg.lcm.server.backend.exception.BadMetaDataException;
+import nl.kpmg.lcm.server.backend.exception.DataSourceValidationException;
+import nl.kpmg.lcm.server.data.Data;
+import nl.kpmg.lcm.server.data.service.exception.MissingStorageException;
 import nl.kpmg.lcm.server.rest.client.version0.types.ConcreteMetaDataRepresentation;
 import nl.kpmg.lcm.server.rest.client.version0.types.ConcreteMetaDatasRepresentation;
 
-import org.apache.commons.io.IOUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -63,6 +66,7 @@ import org.springframework.stereotype.Component;
 @Component
 @Path("client/v0/local")
 public class LocalMetaDataController {
+    private final Logger logger = Logger.getLogger(LocalMetaDataController.class.getName());
 
   /**
    * The MetaDataService.
@@ -142,7 +146,7 @@ public class LocalMetaDataController {
   @Produces(MediaType.APPLICATION_OCTET_STREAM)
   @RolesAllowed({Roles.ADMINISTRATOR, Roles.API_USER})
   public final Response metadataOperation(@PathParam("meta_data_id") final String metaDataId,
-      MetaDataOperationRequest request) throws BackendException, URISyntaxException {
+      MetaDataOperationRequest request) {
 
     MetaData metadata = metaDataService.getMetaDataDao().findOne(metaDataId);
 
@@ -150,18 +154,35 @@ public class LocalMetaDataController {
     switch (request.getOperation()) {
 
       case "download":
-        
-        try {
-          backend = storageService.getBackend(metadata);
-          Iterable input = backend.read(metadata);
-          String fType = (String) request.getParameters().get("type");
-          return Response.ok(input).header("Content-Disposition",
-              String.format("attachment; filename=%s.%s", metadata.getName(), fType)).build();
 
-        } catch (BackendException | MissingStorageException ex) {
-            //TODO check how to pass more informative error  mesage(if possible)
-          return Response.serverError().build();
-        }
+          try {
+              backend = storageService.getBackend(metadata);
+              if (backend != null) {
+                  Data input = backend.read();                 
+                  String fType = (String) request.getParameters().get("type");
+                  return Response.ok(input).header("Content-Disposition",
+                          String.format("attachment; filename=%s.%s", metadata.getName(), fType)).build();
+
+              }
+          } catch (MissingStorageException ex) {
+              logger.log(Level.WARNING, ex.getMessage());
+              return Response.serverError().entity("Unable to find storage specified in the metadata!").build();
+          } catch (BadMetaDataException ex) {
+              logger.log(Level.WARNING, ex.getMessage());
+              return Response.serverError().entity("Specified metadata is wrong or incomplete!").build();
+          } catch (DataSourceValidationException ex) {
+              logger.log(Level.WARNING, ex.getMessage());
+              return Response.serverError().entity("Unable to validate the datasoruce specified by the metadata!").build();
+          } catch (BackendNotImplementedException ex) {
+              logger.log(Level.WARNING, ex.getMessage());
+              return Response.serverError().entity("Datasource specified in the metadata is not supported!").build();
+          } catch (BackendException ex) {
+              logger.log(Level.WARNING, ex.getMessage());
+              return Response.serverError().entity("Unable to read a data specified by the metadata!").build();
+          } catch (Exception ex) {
+              logger.log(Level.WARNING, ex.getMessage());
+              return Response.serverError().entity("Error occured! Unable to execute the operation.").build();
+          }
       case "copy":
         // backend = storageService.getBackend(metadata);
         // String fType = (String) request.getParameters().get("type");

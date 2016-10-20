@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package nl.kpmg.lcm.server.data.service;
+package nl.kpmg.lcm.server.data.service.exception;
 
 /**
  *

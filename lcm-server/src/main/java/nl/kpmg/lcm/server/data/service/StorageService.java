@@ -29,8 +29,11 @@ import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import nl.kpmg.lcm.server.backend.BackendFactory;
+import nl.kpmg.lcm.server.backend.exception.BackendException;
 import nl.kpmg.lcm.server.backend.exception.BackendNotImplementedException;
-import nl.kpmg.lcm.server.data.exception.MissingStorageException;
+import nl.kpmg.lcm.server.backend.exception.BadMetaDataException;
+import nl.kpmg.lcm.server.backend.exception.DataSourceValidationException;
+import nl.kpmg.lcm.server.data.service.exception.MissingStorageException;
 
 /**
  * Crude service to work with backends.
@@ -65,42 +68,26 @@ public class StorageService {
      * @throws
      * nl.kpmg.lcm.server.backend.exception.BackendNotImplementedException
      */
-    public final Backend getBackend(final MetaData metadata) throws BackendNotImplementedException, MissingStorageException {
-        if(metadata == null) {
-            String errorMessage = "Invalid input data! Metata data could not be null!";
+    public final Backend getBackend(final MetaData metadata) throws BackendNotImplementedException, MissingStorageException, BadMetaDataException, DataSourceValidationException, BackendException {
+        if(metadata == null || metadata.getDataUri() == null || metadata.getDataUri().isEmpty()) {
+            String errorMessage = "Invalid input data! Metata data could not be null nither the data URI!";
             logger.warning(errorMessage);
             
             throw new IllegalArgumentException(errorMessage);
-        }
-        
-        return getBackend(metadata.getDataUri());
-    }
-
-    /**
-     * Get a storage backend based on a URI.
-     *
-     * @param uri the URI to interpret
-     * @return the requested backend
-     * @throws
-     * nl.kpmg.lcm.server.backend.exception.BackendNotImplementedException
-     */
-    private Backend getBackend(final String uri) throws BackendNotImplementedException, MissingStorageException {
-        if (uri == null || uri.isEmpty()) {
-            return null;
-        }
+        }        
 
         try {
-            URI parsedUri = new URI(uri);
+            URI parsedUri = new URI(metadata.getDataUri());
             String scheme = parsedUri.getScheme();
 
             String storageName = parsedUri.getHost() != null ? parsedUri.getHost() : parsedUri.getAuthority();
             Storage storage = storageDao.findOneByName(storageName);
 
             if (storage == null) {
-                throw new MissingStorageException("Error! Unable to find Storage for the given metadata!");
+                throw new MissingStorageException("Error! Unable to find Storage for the given metadata! Storage name:"  + storageName);
             }
 
-            Backend backend = backendFactory.createBackend(scheme, storage);
+            Backend backend = backendFactory.createBackend(scheme, storage, metadata);
 
             return backend;
 
