@@ -13,13 +13,6 @@
  */
 package nl.kpmg.lcm.server.rest.client.version0;
 
-import java.io.FileOutputStream;
-import java.io.File;
-import java.io.IOException;
-import java.io.InputStream;
-import java.net.URI;
-import java.net.URISyntaxException;
-
 import nl.kpmg.lcm.rest.types.MetaDataOperationRequest;
 
 import java.util.List;
@@ -86,7 +79,7 @@ public class LocalMetaDataController {
    */
   @Autowired
   public LocalMetaDataController(final MetaDataService metaDataService,
-      final StorageService storageService) {
+          final StorageService storageService) {
     this.metaDataService = metaDataService;
     this.storageService = storageService;
   }
@@ -133,7 +126,7 @@ public class LocalMetaDataController {
   @Consumes({"application/nl.kpmg.lcm.server.data.MetaData+json"})
   @RolesAllowed({Roles.ADMINISTRATOR, Roles.API_USER})
   public final Response putLocalMetaData(@PathParam("meta_data_id") final String metaDataId,
-      final MetaData metadata) {
+          final MetaData metadata) {
 
     metaDataService.update(metaDataId, metadata);
 
@@ -184,28 +177,28 @@ public class LocalMetaDataController {
               return Response.serverError().entity("Error occured! Unable to execute the operation.").build();
           }
       case "copy":
-        // backend = storageService.getBackend(metadata);
-        // String fType = (String) request.getParameters().get("type");
-        // String sPath = (String) request.getParameters().get("storagePath");
-        // String fPath = (String) request.getParameters().get("Path");
-        // URI parsedURI;
-        // try {
-        // parsedURI = new URI(metadata.getDataUri());
-        // String newDataUri = parsedURI.getScheme() + "://" + parsedURI.getHost() + "/" + fPath;
-        // Iterable input = backend.read(metadata);
-        // FileOutputStream fos =
-        // new FileOutputStream(new File(String.format("%s/%s.%s", sPath, fPath, fType)));
-        // int copied = IOUtils.copy(input, fos);
-        // MetaData mnested = new MetaData();
-        // mnested.setDataUri(newDataUri);
-        // metadata.addDuplicate(mnested);
-        // metaDataService.getMetaDataDao().save(metadata);
-        //
-        // return Response.ok().build();
-        // } catch (IOException ex) {
-        // Logger.getLogger(LocalMetaDataController.class.getName()).log(Level.SEVERE,
-        // String.format("Couldn't find path: %s/%s.%s", sPath, fPath, fType), ex);
-        // }
+      // backend = storageService.getBackend(metadata);
+      // String fType = (String) request.getParameters().get("type");
+      // String sPath = (String) request.getParameters().get("storagePath");
+      // String fPath = (String) request.getParameters().get("Path");
+      // URI parsedURI;
+      // try {
+      // parsedURI = new URI(metadata.getDataUri());
+      // String newDataUri = parsedURI.getScheme() + "://" + parsedURI.getHost() + "/" + fPath;
+      // Iterable input = backend.read(metadata);
+      // FileOutputStream fos =
+      // new FileOutputStream(new File(String.format("%s/%s.%s", sPath, fPath, fType)));
+      // int copied = IOUtils.copy(input, fos);
+      // MetaData mnested = new MetaData();
+      // mnested.setDataUri(newDataUri);
+      // metadata.addDuplicate(mnested);
+      // metaDataService.getMetaDataDao().save(metadata);
+      //
+      // return Response.ok().build();
+      // } catch (IOException ex) {
+      // Logger.getLogger(LocalMetaDataController.class.getName()).log(Level.SEVERE,
+      // String.format("Couldn't find path: %s/%s.%s", sPath, fPath, fType), ex);
+      // }
 
     }
 
@@ -223,7 +216,7 @@ public class LocalMetaDataController {
   @Produces({"application/nl.kpmg.lcm.rest.types.MetaDataRepresentation+json"})
   @RolesAllowed({Roles.ADMINISTRATOR, Roles.API_USER})
   public final MetaDataRepresentation getLocalMetaData(
-      @PathParam("meta_data_id") final String metaDataId) {
+          @PathParam("meta_data_id") final String metaDataId) {
 
     MetaData metadata = metaDataService.getMetaDataDao().findOne(metaDataId);
     if (metadata == null) {

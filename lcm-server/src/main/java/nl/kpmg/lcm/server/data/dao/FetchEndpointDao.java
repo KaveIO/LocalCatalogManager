@@ -1,5 +1,5 @@
 /*
- * Copyright 2016 KPMG N.V. (unless otherwise stated).
+ * Copyright 2015 KPMG N.V. (unless otherwise stated).
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,32 +14,17 @@
  * limitations under the License.
  */
 
-package nl.kpmg.lcm.server.data.service;
+package nl.kpmg.lcm.server.data.dao;
 
-import java.util.List;
-import jersey.repackaged.com.google.common.collect.Lists;
-import nl.kpmg.lcm.server.data.RemoteLcm;
-
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
-import nl.kpmg.lcm.server.data.dao.RemoteLcmDao;
+import nl.kpmg.lcm.server.data.FetchEndpoint;
+import org.springframework.data.repository.PagingAndSortingRepository;
 
 /**
  *
  * @author S. Koulouzis
  */
-@Service
-public class RemoteLcmService {
+public interface FetchEndpointDao extends PagingAndSortingRepository<FetchEndpoint, String> {
 
-  @Autowired
-  private RemoteLcmDao dao;
-
-  public List<RemoteLcm> findAll() {
-    return Lists.newLinkedList(dao.findAll());
-  }
-
-  public RemoteLcmDao getDao() {
-    return dao;
-  }
+  public FetchEndpoint findOneById(String id);
 
 }

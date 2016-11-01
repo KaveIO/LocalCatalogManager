@@ -18,27 +18,27 @@ package nl.kpmg.lcm.server.data.service;
 
 import java.util.List;
 import jersey.repackaged.com.google.common.collect.Lists;
-import nl.kpmg.lcm.server.data.RemoteLcm;
+import nl.kpmg.lcm.server.data.FetchEndpoint;
+import nl.kpmg.lcm.server.data.dao.FetchEndpointDao;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import nl.kpmg.lcm.server.data.dao.RemoteLcmDao;
 
 /**
  *
  * @author S. Koulouzis
  */
 @Service
-public class RemoteLcmService {
+public class FetchEndpointService {
 
   @Autowired
-  private RemoteLcmDao dao;
+  private FetchEndpointDao dao;
 
-  public List<RemoteLcm> findAll() {
+  public List<FetchEndpoint> findAll() {
     return Lists.newLinkedList(dao.findAll());
   }
 
-  public RemoteLcmDao getDao() {
+  public FetchEndpointDao getDao() {
     return dao;
   }
 

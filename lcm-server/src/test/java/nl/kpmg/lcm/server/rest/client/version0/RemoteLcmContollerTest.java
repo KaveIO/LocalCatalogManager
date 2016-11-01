@@ -23,7 +23,6 @@ import nl.kpmg.lcm.rest.types.RemoteLcmsRepresentation;
 import nl.kpmg.lcm.server.LcmBaseServerTest;
 import nl.kpmg.lcm.server.ServerException;
 import nl.kpmg.lcm.server.data.RemoteLcm;
-import nl.kpmg.lcm.server.data.service.RemoteLcmService;
 
 import org.junit.After;
 import org.junit.Test;
@@ -35,9 +34,8 @@ import java.util.logging.Logger;
 import javax.ws.rs.client.Entity;
 import javax.ws.rs.client.Invocation;
 import javax.ws.rs.core.Response;
+import nl.kpmg.lcm.server.data.service.RemoteLcmService;
 import nl.kpmg.lcm.server.rest.authentication.BasicAuthenticationManager;
-import nl.kpmg.lcm.server.rest.client.types.LoginRequest;
-import org.junit.Before;
 
 public class RemoteLcmContollerTest extends LcmBaseServerTest {
 
@@ -202,7 +200,6 @@ public class RemoteLcmContollerTest extends LcmBaseServerTest {
     assertEquals(expected, response.getStatus());
     return response
             .readEntity(RemoteLcmRepresentation.class).getItem();
-
   }
 
 }
