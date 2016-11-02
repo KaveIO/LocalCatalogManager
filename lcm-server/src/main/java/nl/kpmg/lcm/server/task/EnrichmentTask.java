@@ -51,7 +51,7 @@ public abstract class EnrichmentTask implements Job {
      * The MetaDataService.
      */
     @Autowired
-    private MetaDataService metaDataService;
+    protected MetaDataService metaDataService;
 
     /**
      * The TaskDescriptionDao.

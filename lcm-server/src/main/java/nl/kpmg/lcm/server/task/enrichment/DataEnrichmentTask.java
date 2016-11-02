@@ -20,7 +20,6 @@ import java.util.logging.Logger;
 import nl.kpmg.lcm.server.backend.Backend;
 import nl.kpmg.lcm.server.backend.exception.BackendException;
 import nl.kpmg.lcm.server.backend.DataSetInformation;
-import nl.kpmg.lcm.server.backend.exception.BackendNotImplementedException;
 import nl.kpmg.lcm.server.data.MetaData;
 import nl.kpmg.lcm.server.data.dao.MetaDataDao;
 import nl.kpmg.lcm.server.data.service.exception.MissingStorageException;
@@ -60,12 +59,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 public class DataEnrichmentTask extends EnrichmentTask {
 
     /**
-     * The MetaDataDao.
-     */
-    @Autowired
-    private MetaDataDao metaDataDao;
-
-    /**
      * The BackendService.
      */
     @Autowired
@@ -102,7 +95,7 @@ public class DataEnrichmentTask extends EnrichmentTask {
             metadata.set("dynamic.data.size", gatherDataSetInformation.getByteSize());
             metadata.set("dynamic.data.update-timestamp", gatherDataSetInformation.getModificationTime().toString());
 
-            metaDataDao.save(metadata);
+            metaDataService.update(metadata.getId(),metadata);
 
             return TaskResult.SUCCESS;
         } catch (BackendException  | MissingStorageException ex) {

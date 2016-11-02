@@ -9,4 +9,5 @@ docker exec -t $DOCKER_NAME mongo -eval 'db.metadata.insert({"name":"example2", 
 docker exec -t $DOCKER_NAME mongo -eval 'db.taskschedule.insert({"items":[{"name":"Default Enrichment Task", "cron":"0 0 * * * ?", "job":"nl.kpmg.lcm.server.task.enrichment.DataEnrichmentTask", "target":"*"}]})' localhost/lcm
 docker exec -t $DOCKER_NAME mongo -eval 'db.storage.insert({"name": "local", "options":[{"storagePath":"/tmp"}]})' localhost/lcm
 
-docker exec -t $DOCKER_NAME mongo -eval 'db.fetch_endpoint.insert({"metadataID": "580a17dd29069ed99e86df82","creationDate": "01-01-2015 00:00:00","userToConsume": "admin","timeToLive": "01-01-2015 00:00:00"})' localhost/lcm
+docker exec -t $DOCKER_NAME mongo -eval 'db.fetch_endpoint.insert({"metadataID": "580a17dd29069ed99e86df82", "creationDate": new Date(), "userToConsume": "admin", "timeToLive": new Date("2017-05-18T16:00:00Z")})' localhost/lcm
+docker exec -t $DOCKER_NAME mongo -eval 'db.taskschedule.insert({"items":[{"name":"Test Fetch Task", "cron":"0 0-59 * * * ?", "job":"nl.kpmg.lcm.server.task.enrichment.DataFetchTask", "target":"580a17dd29069ed99e86df82"}]})' localhost/lcm
