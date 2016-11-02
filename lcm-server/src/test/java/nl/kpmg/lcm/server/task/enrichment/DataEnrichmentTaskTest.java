@@ -33,6 +33,7 @@ import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
 
 import java.util.HashMap;
+import nl.kpmg.lcm.server.data.TaskDescription;
 
 /**
  *
@@ -77,7 +78,8 @@ public class DataEnrichmentTaskTest extends LcmBaseTest implements ApplicationCo
 
     DataEnrichmentTask dataEnrichmentTask = new DataEnrichmentTask();
     autowire(dataEnrichmentTask);
-    dataEnrichmentTask.execute(metaData);
+    TaskDescription td = new TaskDescription();
+    dataEnrichmentTask.execute(metaData, td.getOptions());
 
     assertEquals("DETACHED", metaData.get("dynamic.data.state"));
   }

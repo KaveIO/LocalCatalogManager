@@ -155,6 +155,7 @@ public class LoadScheduleCoreTask extends CoreTask {
       JobDetail jobDetail = newJob(job).withIdentity(name, GROUP_KEY).build();
 
       jobDetail.getJobDataMap().put(EnrichmentTask.TARGET_KEY, target);
+      jobDetail.getJobDataMap().put(EnrichmentTask.TASK_ID_KEY, name);
 
       CronTrigger trigger =
           newTrigger().withIdentity(name, GROUP_KEY).withSchedule(cronSchedule(cron)).build();

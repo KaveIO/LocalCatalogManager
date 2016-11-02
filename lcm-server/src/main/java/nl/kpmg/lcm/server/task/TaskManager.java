@@ -44,11 +44,11 @@ import org.springframework.scheduling.quartz.SchedulerFactoryBean;
 public final class TaskManager {
 
     /***
-     * Bellow schedule expressions are valid cron expressions which means that 
+     * Bellow schedule expressions are valid cron expressions which means that
      * each column representing one metric of the time i.e
      * the first is seconds, the second is minutes, the third is hour  etc.
-     * "0 * * * * ?"; means that it will execute on 
-     * the first(0) second of every minute, on every hour ievery day of month...
+     * "0 * * * * ?"; means that it will execute on
+     * the first(0) second of every minute, on every hour every day of month...
      */
    private static final String EXECUTE_CORE_TASK_CRON_SCHEDULE = "0 * * * * ?";
    private static final String LOAD_CORE_TASK_CRON_SCHEDULE = "0 * * * * ?";

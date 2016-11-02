@@ -16,6 +16,7 @@
 package nl.kpmg.lcm.server.data;
 
 import java.util.Date;
+import java.util.Map;
 import javax.annotation.security.PermitAll;
 import org.springframework.data.mongodb.core.mapping.Document;
 
@@ -70,6 +71,20 @@ public class TaskDescription extends AbstractModel {
     private TaskStatus status;
 
     /**
+     * @return the options
+     */
+    public Map getOptions() {
+        return options;
+    }
+
+    /**
+     * @param options the options to set
+     */
+    public void setOptions(Map options) {
+        this.options = options;
+    }
+
+    /**
      * An inner enumeration describing the states the task can be in.
      */
     public enum TaskStatus {
@@ -98,6 +113,8 @@ public class TaskDescription extends AbstractModel {
          */
         SUCCESS;
     }
+
+    private Map options;
 
     public Date getEndTime() {
         return endTime;
