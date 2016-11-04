@@ -14,16 +14,13 @@
 
 package nl.kpmg.lcm.server.task.enrichment;
 
-import com.google.gson.stream.JsonReader;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.util.Map;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import javax.ws.rs.client.Client;
 import javax.ws.rs.client.ClientBuilder;
 import javax.ws.rs.client.WebTarget;
 import javax.ws.rs.core.Response;
+
+import com.google.gson.stream.JsonReader;
+
 import nl.kpmg.lcm.server.backend.Backend;
 import nl.kpmg.lcm.server.backend.BackendCsvImpl;
 import nl.kpmg.lcm.server.backend.Notification;
@@ -36,9 +33,17 @@ import nl.kpmg.lcm.server.data.service.StorageService;
 import nl.kpmg.lcm.server.task.EnrichmentTask;
 import nl.kpmg.lcm.server.task.TaskException;
 import nl.kpmg.lcm.server.task.TaskResult;
+
 import org.glassfish.jersey.client.ClientConfig;
 import org.glassfish.jersey.client.authentication.HttpAuthenticationFeature;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.util.Map;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  *
@@ -52,7 +57,23 @@ public class DataFetchTask extends EnrichmentTask {
   @Autowired
   private RemoteLcmService remoteLcmService;
 
+  // TODO once the Authorization model is implemented this part have to be refactored
+  // Now directly is used admin user its password. After the reactoring there
+  //should be a user which is used only for remote calls
+  private String adminUser;
+  private String adminPassword;
+
   private static final Logger logger = Logger.getLogger(BackendCsvImpl.class.getName());
+
+  @Value("${lcm.server.adminUser}")
+  public final void setAdminUser(final String adminUser) {
+    this.adminUser = adminUser;
+  }
+
+  @Value("${lcm.server.adminPassword}")
+  public final void setAdminPassword(final String adminPassword) {
+    this.adminPassword = adminPassword;
+  }
 
   @Override
   protected TaskResult execute(MetaData metadata, Map options) throws TaskException {
@@ -62,14 +83,11 @@ public class DataFetchTask extends EnrichmentTask {
       throw new TaskException(validationNotification.errorMessage());
     }
 
-    String unecryptedUsername = "admin";
-    String unecryptedPassword = "admin";
-
     String fetchUrl = getFetchURL(options);
 
     HttpAuthenticationFeature feature =
         HttpAuthenticationFeature.basicBuilder().nonPreemptive()
-            .credentials(unecryptedUsername, unecryptedPassword).build();
+            .credentials(adminUser, adminPassword).build();
 
     ClientConfig clientConfig = new ClientConfig();
     clientConfig.register(feature);
@@ -106,7 +124,8 @@ public class DataFetchTask extends EnrichmentTask {
     }
 
     if (options.get("path") == null) {
-      validationNotification.addError("Error! Options must contain relative path to the resoruce", null);
+      validationNotification.addError("Error! Options must contain relative path to the resoruce",
+          null);
     }
   }
 

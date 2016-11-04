@@ -71,20 +71,6 @@ public class TaskDescription extends AbstractModel {
     private TaskStatus status;
 
     /**
-     * @return the options
-     */
-    public Map getOptions() {
-        return options;
-    }
-
-    /**
-     * @param options the options to set
-     */
-    public void setOptions(Map options) {
-        this.options = options;
-    }
-
-    /**
      * An inner enumeration describing the states the task can be in.
      */
     public enum TaskStatus {
@@ -115,6 +101,20 @@ public class TaskDescription extends AbstractModel {
     }
 
     private Map options;
+
+    /**
+     * @return the options
+     */
+    public Map getOptions() {
+        return options;
+    }
+
+    /**
+     * @param options the options to set
+     */
+    public void setOptions(Map options) {
+        this.options = options;
+    }
 
     public Date getEndTime() {
         return endTime;
