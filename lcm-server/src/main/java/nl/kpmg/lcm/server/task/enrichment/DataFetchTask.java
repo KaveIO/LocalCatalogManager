@@ -82,7 +82,7 @@ public class DataFetchTask extends EnrichmentTask {
   protected TaskResult execute(MetaData metadata, Map options) throws TaskException {
 
     Notification validationNotification = new Notification();
-    validation(options, validationNotification);
+    validation(options, metadata, validationNotification);
     if (validationNotification.hasErrors()) {
       throw new TaskException(validationNotification.errorMessage());
     }
@@ -134,18 +134,22 @@ public class DataFetchTask extends EnrichmentTask {
     return true;
   }
 
-  private void validation(Map options, Notification validationNotification) {
+  private void validation(Map options, MetaData metadata, Notification validationNotification) {
+    if (metadata == null) {
+      validationNotification.addError("Error! MetaData parameter could not be null.", null);
+    }
+
     if (options == null) {
-      validationNotification.addError("Error! Options could not be null.", null);
+      validationNotification.addError("Error! Options parameter could not be null.", null);
       return;
     }
 
     if (options.get("remoteLcm") == null) {
-      validationNotification.addError("Error! Options must contain remote lcm id", null);
+      validationNotification.addError("Error! Options parameter must contain remote lcm id", null);
     }
 
     if (options.get("path") == null) {
-      validationNotification.addError("Error! Options must contain relative path to the resoruce",
+      validationNotification.addError("Error! Options parameter must contain relative path to the resoruce",
           null);
     }
   }
