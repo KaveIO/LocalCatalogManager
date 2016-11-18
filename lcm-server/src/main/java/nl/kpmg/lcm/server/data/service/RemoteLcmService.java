@@ -38,6 +38,10 @@ public class RemoteLcmService {
     return Lists.newLinkedList(dao.findAll());
   }
 
+  public RemoteLcm findOneById(String id){
+    return dao.findOne(id);
+  }
+
   public RemoteLcmDao getDao() {
     return dao;
   }

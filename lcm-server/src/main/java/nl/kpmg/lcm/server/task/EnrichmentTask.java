@@ -18,6 +18,7 @@ package nl.kpmg.lcm.server.task;
 import java.util.Date;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import nl.kpmg.lcm.server.data.MetaData;
@@ -51,7 +52,7 @@ public abstract class EnrichmentTask implements Job {
      * The MetaDataService.
      */
     @Autowired
-    private MetaDataService metaDataService;
+    protected MetaDataService metaDataService;
 
     /**
      * The TaskDescriptionDao.
@@ -63,10 +64,11 @@ public abstract class EnrichmentTask implements Job {
      * Method called to process the actual code of this task.
      *
      * @param metadata the MetaData to apply this task on
+     * @param options - any option that could be useful during  task execution
      * @return The result of the task
      * @throws TaskException if the task can't be executed properly
      */
-    protected abstract TaskResult execute(MetaData metadata) throws TaskException;
+    protected abstract TaskResult execute(MetaData metadata, Map options) throws TaskException;
 
     /**
      * Execute method invoked by the quartz scheduler.
@@ -119,7 +121,7 @@ public abstract class EnrichmentTask implements Job {
                             String.format("Executing EnrichmentTask %s (%s)",
                                     taskDescription.getId(), taskDescription.getJob()));
 
-                    execute(metadata);
+                    execute(metadata, taskDescription.getOptions());
 
                     Logger.getLogger(EnrichmentTask.class.getName()).log(Level.INFO,
                             String.format("Done with EnrichmentTask %s (%s)",

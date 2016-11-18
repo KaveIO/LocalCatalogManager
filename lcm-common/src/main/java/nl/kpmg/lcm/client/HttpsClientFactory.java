@@ -1,27 +1,35 @@
 package nl.kpmg.lcm.client;
 
+import javax.net.ssl.SSLContext;
+import javax.ws.rs.client.Client;
+import javax.ws.rs.client.ClientBuilder;
+import javax.ws.rs.client.WebTarget;
+
 import nl.kpmg.lcm.SslConfigurationException;
 import nl.kpmg.lcm.SslProvider;
 import nl.kpmg.lcm.configuration.ClientConfiguration;
 import nl.kpmg.lcm.server.ServerException;
 
+import org.glassfish.jersey.client.authentication.HttpAuthenticationFeature;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import javax.net.ssl.SSLContext;
-import javax.ws.rs.client.Client;
-import javax.ws.rs.client.ClientBuilder;
-import javax.ws.rs.client.WebTarget;
-
 @Component
 public class HttpsClientFactory {
   private static final Logger LOGGER = Logger.getLogger(HttpsClientFactory.class.getName());
 
   private final ClientConfiguration configuration;
+  private HttpAuthenticationFeature basicAutorization;
 
+  
+  public HttpsClientFactory(ClientConfiguration configuration, HttpAuthenticationFeature feature) {
+    this.configuration = configuration;
+    this.basicAutorization = feature;
+  }
+  
   @Autowired
   public HttpsClientFactory(ClientConfiguration configuration) {
     this.configuration = configuration;
@@ -39,6 +47,9 @@ public class HttpsClientFactory {
     }
     try {
       builder = builder.sslContext(sc);
+      if(basicAutorization != null) {
+        builder.register(basicAutorization);
+      }
     } catch (NullPointerException npe) {
       LOGGER.log(Level.WARNING, "Null SSL context, skipping client SSL configuration", npe);
     }

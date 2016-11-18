@@ -43,6 +43,15 @@ import org.springframework.scheduling.quartz.SchedulerFactoryBean;
  */
 public final class TaskManager {
 
+    /***
+     * Bellow schedule expressions are valid cron expressions which means that
+     * each column representing one metric of the time i.e
+     * the first is seconds, the second is minutes, the third is hour  etc.
+     * "0 * * * * ?"; means that it will execute on
+     * the first(0) second of every minute, on every hour every day of month...
+     */
+   private static final String EXECUTE_CORE_TASK_CRON_SCHEDULE = "0 * * * * ?";
+   private static final String LOAD_CORE_TASK_CRON_SCHEDULE = "0 * * * * ?";
     /**
      * The group key which is used to register the task which drive the core
      * of the TaskManager logic.
@@ -93,8 +102,8 @@ public final class TaskManager {
 
                 scheduler = schedulerFactory.getScheduler();
 
-                scheduleCoreTask("executeTasksCoreTask", ExecuteTasksCoreTask.class, "0 * * * * ?");
-                scheduleCoreTask("loadScheduleCoreTask", LoadScheduleCoreTask.class, "0 * * * * ?");
+                scheduleCoreTask("executeTasksCoreTask", ExecuteTasksCoreTask.class, EXECUTE_CORE_TASK_CRON_SCHEDULE);
+                scheduleCoreTask("loadScheduleCoreTask", LoadScheduleCoreTask.class, LOAD_CORE_TASK_CRON_SCHEDULE);
 
                 scheduler.start();
             } else {
@@ -155,8 +164,8 @@ public final class TaskManager {
             scheduler.scheduleJob(job, trigger);
         } catch (SchedulerException ex) {
             Logger.getLogger(TaskManager.class.getName()).log(Level.SEVERE, null, ex);
-            throw new TaskScheduleException(ex);
-        }
+            throw new TaskScheduleException(ex); 
+       }
     }
 
     /**

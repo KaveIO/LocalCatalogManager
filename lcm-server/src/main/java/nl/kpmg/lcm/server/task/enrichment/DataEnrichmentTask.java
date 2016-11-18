@@ -15,14 +15,14 @@
  */
 package nl.kpmg.lcm.server.task.enrichment;
 
+import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import nl.kpmg.lcm.server.backend.Backend;
 import nl.kpmg.lcm.server.backend.exception.BackendException;
 import nl.kpmg.lcm.server.backend.DataSetInformation;
-import nl.kpmg.lcm.server.backend.exception.BackendNotImplementedException;
 import nl.kpmg.lcm.server.data.MetaData;
-import nl.kpmg.lcm.server.data.dao.MetaDataDao;
+import nl.kpmg.lcm.server.data.TaskDescription;
 import nl.kpmg.lcm.server.data.service.exception.MissingStorageException;
 import nl.kpmg.lcm.server.data.service.StorageService;
 import nl.kpmg.lcm.server.task.EnrichmentTask;
@@ -60,12 +60,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 public class DataEnrichmentTask extends EnrichmentTask {
 
     /**
-     * The MetaDataDao.
-     */
-    @Autowired
-    private MetaDataDao metaDataDao;
-
-    /**
      * The BackendService.
      */
     @Autowired
@@ -75,11 +69,12 @@ public class DataEnrichmentTask extends EnrichmentTask {
      * Will store information on the data associated with a piece of MetaData.
      *
      * @param metadata the metadata to enrich
+     * @param options - any option that could be useful during  task execution
      * @return the result of the task
      * @throws TaskException if the backend fails
      */
     @Override
-    protected final TaskResult execute(final MetaData metadata) throws TaskException {
+    protected final TaskResult execute(final MetaData metadata, final Map options) throws TaskException {
         try {
             Backend backend = storageService.getBackend(metadata);
             if (backend == null) {
@@ -102,7 +97,7 @@ public class DataEnrichmentTask extends EnrichmentTask {
             metadata.set("dynamic.data.size", gatherDataSetInformation.getByteSize());
             metadata.set("dynamic.data.update-timestamp", gatherDataSetInformation.getModificationTime().toString());
 
-            metaDataDao.save(metadata);
+            metaDataService.update(metadata.getId(),metadata);
 
             return TaskResult.SUCCESS;
         } catch (BackendException  | MissingStorageException ex) {

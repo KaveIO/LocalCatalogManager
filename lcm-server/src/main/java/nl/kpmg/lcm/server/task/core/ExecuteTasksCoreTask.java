@@ -129,9 +129,10 @@ public class ExecuteTasksCoreTask extends CoreTask {
                     .withIdentity(name, GROUP_KEY)
                     .build();
             jobDetail.getJobDataMap().put(EnrichmentTask.TARGET_KEY, target);
+            jobDetail.getJobDataMap().put(EnrichmentTask.TASK_ID_KEY, name);
 
             Scheduler scheduler = getScheduler();
-            scheduler.addJob(jobDetail, true);
+            scheduler.addJob(jobDetail, true, true);
             scheduler.triggerJob(jobDetail.getKey());
         } catch (SchedulerException ex) {
             Logger.getLogger(TaskManager.class.getName()).log(Level.SEVERE, null, ex);
