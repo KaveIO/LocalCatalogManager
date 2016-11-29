@@ -143,7 +143,7 @@ public class LocalMetaDataController {
 
     MetaData metadata = metaDataService.getMetaDataDao().findOne(metaDataId);
 
-    Backend backend;
+    Backend backend = null;
     switch (request.getOperation()) {
 
       case "download":
@@ -175,6 +175,10 @@ public class LocalMetaDataController {
           } catch (Exception ex) {
               logger.log(Level.WARNING, ex.getMessage());
               return Response.serverError().entity("Error occured! Unable to execute the operation.").build();
+          } finally {
+              if(backend != null ){
+                  backend.free();
+              }
           }
       case "copy":
       // backend = storageService.getBackend(metadata);

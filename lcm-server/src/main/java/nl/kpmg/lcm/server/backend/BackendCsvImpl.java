@@ -13,6 +13,8 @@
  */
 package nl.kpmg.lcm.server.backend;
 
+import nl.kpmg.lcm.server.backend.metatadata.CsvMetaData;
+import nl.kpmg.lcm.validation.Notification;
 import nl.kpmg.lcm.server.data.ContentIterator;
 import java.io.File;
 import java.io.IOException;
@@ -22,6 +24,7 @@ import org.apache.metamodel.data.DataSet;
 import java.io.Writer;
 import java.net.URI;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -29,6 +32,7 @@ import nl.kpmg.lcm.server.backend.exception.BadMetaDataException;
 import nl.kpmg.lcm.server.backend.exception.DataSourceValidationException;
 import nl.kpmg.lcm.server.data.Data;
 import nl.kpmg.lcm.server.data.Storage;
+import nl.kpmg.lcm.server.backend.storage.CsvStorage;
 import org.apache.metamodel.DataContextFactory;
 import org.apache.metamodel.UpdateableDataContext;
 import org.apache.metamodel.csv.CsvConfiguration;
@@ -47,6 +51,7 @@ public class BackendCsvImpl extends AbstractBackend {
 
   private static final Logger logger = Logger.getLogger(BackendCsvImpl.class.getName());
   private File dataSourceFile = null;
+  private final CsvMetaData csvMetaData;
   
   /**
    *
@@ -58,9 +63,10 @@ public class BackendCsvImpl extends AbstractBackend {
    */
   public BackendCsvImpl(Storage backendStorage, MetaData metaData)
       throws DataSourceValidationException, BackendException {
-    super(backendStorage, metaData);
-    String storagePath = (String) backendStorage.getOptions().get("storagePath");
+    super(metaData);
+    String storagePath = new CsvStorage(backendStorage).getStoragePath();
     dataSourceFile = createDataSourceFile(storagePath);
+    this.csvMetaData = new CsvMetaData(metaData);
   }
 
   @Override
@@ -73,7 +79,7 @@ public class BackendCsvImpl extends AbstractBackend {
       throw new IllegalStateException("MetaData parameter could not be null");
     }
 
-    CsvConfiguration csvConfiguration = getConfiguration();
+    CsvConfiguration csvConfiguration = csvMetaData.getConfiguration();
 
     if (!dataSourceFile.exists()) {
       throw new DataSourceValidationException("Unable to find data source file! FilePath"
@@ -83,44 +89,6 @@ public class BackendCsvImpl extends AbstractBackend {
         csvConfiguration);
   }
 
-  private CsvConfiguration getConfiguration() {
-    // TODO these options must be dynamically loaded from metada opject
-    // However, until the metadata is not refactored they will be in this way.
-    int columnNameLine = CsvConfiguration.DEFAULT_COLUMN_NAME_LINE;
-    String encoding = FileHelper.DEFAULT_ENCODING;
-    char separatorChar = CsvConfiguration.DEFAULT_SEPARATOR_CHAR;
-    char quoteChar = CsvConfiguration.DEFAULT_QUOTE_CHAR;
-    char escapeChar = CsvConfiguration.DEFAULT_ESCAPE_CHAR;
-
-    // !TODO
-    // When you refactoring MetaData and objects around it
-    // keep in mind that validation must be done to all imput data
-    // for example this is valid scenario
-    // "column-name-line": "kdlfjhsadjkfh"
-    Map dataOptions = metaData.getDataOptions();
-    if (dataOptions != null) {
-      columnNameLine = CsvConfiguration.DEFAULT_COLUMN_NAME_LINE;
-      if (dataOptions.containsKey("column-name-line")) {
-        columnNameLine = (int) dataOptions.get("column-name-line");
-      }
-      if (dataOptions.containsKey("encoding")) {
-        encoding = (String) dataOptions.get("encoding");
-      }
-      if (dataOptions.containsKey("separator-char")) {
-        separatorChar = (char) dataOptions.get("separator-char");
-      }
-      if (dataOptions.containsKey("quote-char")) {
-        quoteChar = (char) dataOptions.get("quote-char");
-      }
-      if (dataOptions.containsKey("escape-char")) {
-        escapeChar = (char) dataOptions.get("escape-char");
-      }
-    }
-
-    CsvConfiguration csvConfiguration =
-        new CsvConfiguration(columnNameLine, encoding, separatorChar, quoteChar, escapeChar);
-    return csvConfiguration;
-  }
 
   private File createDataSourceFile(String storagePath) throws DataSourceValidationException {
     if (dataSourceFile != null) {
@@ -142,10 +110,6 @@ public class BackendCsvImpl extends AbstractBackend {
 
     return dataSourceFile;
   }
-
- 
-
-
 
   @Override
   public DataSetInformation gatherDataSetInformation() throws BackendException {
@@ -179,7 +143,7 @@ public class BackendCsvImpl extends AbstractBackend {
    *         - @forceUpdateIfExists is false and the content already exists.
    */
   @Override
-  public void store(ContentIterator content, boolean forceOverwrite) throws BackendException {
+  public void store(ContentIterator content, DataTransformationSettings transformationSettings, boolean forceOverwrite) throws BackendException {
     DataSetInformation dataSetInformation = gatherDataSetInformation();
     if (dataSetInformation.isAttached() && !forceOverwrite) {
       throw new BackendException("Data set is already attached, won't overwrite.");
@@ -187,7 +151,7 @@ public class BackendCsvImpl extends AbstractBackend {
 
     try (Writer writer = FileHelper.getBufferedWriter(dataSourceFile);) {
 
-      CsvConfiguration configuration = getConfiguration();
+      CsvConfiguration configuration = csvMetaData.getConfiguration();
       CsvWriter csvWriter = new CsvWriter(configuration);
       int rowNumber = 1;
       while (content.hasNext()) {
@@ -195,14 +159,16 @@ public class BackendCsvImpl extends AbstractBackend {
         Map row = content.next();
 
         if (rowNumber == configuration.getColumnNameLineNumber()) {
-          String[] columnLineInParts = (String[]) row.keySet().toArray(new String[] {});
-          String columnLine = csvWriter.buildLine(columnLineInParts);
+          Object[] lineAsObjectValues = (Object[]) row.keySet().toArray(new Object[] {});
+          String[] lineAsStringValues = toStringArray(lineAsObjectValues);
+          String columnLine = csvWriter.buildLine(lineAsStringValues);
           writer.write(columnLine);
           rowNumber++;
         }
 
-        String[] lineInParts = (String[]) row.values().toArray(new String[] {});
-        String line = csvWriter.buildLine(lineInParts);
+        Object[] lineAsObjectValues = (Object[]) row.values().toArray(new Object[] {});
+        String[] lineAsStringValues = toStringArray(lineAsObjectValues);
+        String line = csvWriter.buildLine(lineAsStringValues);
         writer.write(line);
         rowNumber++;
       }
@@ -212,6 +178,14 @@ public class BackendCsvImpl extends AbstractBackend {
       logger.log(Level.SEVERE, "Error occured during saving information!", ex);
     }
   }
+
+    private String[] toStringArray(Object[] lineAsObjectValues) {
+        String[] lineAsStringValues = new String[lineAsObjectValues.length];
+        for(int i = 0; i < lineAsObjectValues.length; i++) {
+            lineAsStringValues[i] = lineAsObjectValues[i].toString();
+        }
+        return lineAsStringValues;
+    }
 
   /**
    * Method to read some content from a data storage backend.
@@ -229,10 +203,10 @@ public class BackendCsvImpl extends AbstractBackend {
     }
     Table table = schema.getTables()[0];
     DataSet result = dataContext.query().from(table).selectAll().execute();
-
-    return new Data(metaData, new DataSetContentIterator(result));
+    csvMetaData.addColumnsDescription(table.getColumns());
+    return new Data(csvMetaData.getMetaData(), new DataSetContentIterator(result));
   }
-
+ 
   @Override
   public boolean delete() throws BackendException {
     throw new UnsupportedOperationException("Not supported yet."); // To change body of generated
@@ -241,13 +215,15 @@ public class BackendCsvImpl extends AbstractBackend {
   }
 
   @Override
-  protected void extraValidation(Storage backendStorage, MetaData metaData,
+  protected void extraValidation(MetaData metaData,
       Notification notification) {
 
-    String storagePath = (String) backendStorage.getOptions().get("storagePath");
-    if (storagePath == null || storagePath.isEmpty()) {
-      notification.addError("Storage path missing or is empty!", null);
-    }
+   
   }
+
+    @Override
+    public void free() {
+       
+    }
 
 }

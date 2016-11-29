@@ -40,7 +40,7 @@ public interface Backend {
    * @param content {@link ContentIterator} that should be stored.
    * @throws BackendException if the URI is not valid or it is not possible to reach the storage.
    */
-  public void store(ContentIterator content, boolean forceOverwrite) throws BackendException;
+  public void store(ContentIterator content, DataTransformationSettings transformationSettings, boolean forceOverwrite) throws BackendException;
 
   /**
    * Method to read some content from a data storage backend.
@@ -57,4 +57,10 @@ public interface Backend {
    * @throws BackendException if the URI is not valid or it is not possible to reach the storage.
    */
   public boolean delete() throws BackendException;
+  
+    /**
+   * Method finalize is used to free all underlaying resources 
+   * Call it when you are done with the backend.
+   */
+  public void free();
 }

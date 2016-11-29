@@ -13,40 +13,36 @@
  */
 package nl.kpmg.lcm.server.backend;
 
+import nl.kpmg.lcm.validation.Notification;
 import java.net.URI;
 import java.net.URISyntaxException;
 import nl.kpmg.lcm.server.backend.exception.BackendException;
 import nl.kpmg.lcm.server.data.MetaData;
-import nl.kpmg.lcm.server.data.Storage;
 
 /**
  *
  * @author mhoekstra
  */
 abstract class AbstractBackend implements Backend {
-
   protected final MetaData metaData;
-  protected final Storage storage;
   protected final URI dataURI;
 
 
-  protected AbstractBackend(Storage backendStorage, MetaData metaData) throws BackendException {
+  protected AbstractBackend(MetaData metaData) throws BackendException {
     Notification validationNotification = new Notification();
-    validation(backendStorage, metaData, validationNotification);
+    validation(metaData, validationNotification);
     if (validationNotification.hasErrors()) {
       throw new BackendException(validationNotification.errorMessage());
     }
 
     this.metaData = metaData;
     this.dataURI = parseDataUri(metaData.getDataUri());
-    this.storage = backendStorage;
 
   }
 
-  private void validation(Storage backendStorage, MetaData metaData, Notification notification) {
+  private void validation(MetaData metaData, Notification notification) {
     validateMetadata(metaData, notification);
-    validateStorage(backendStorage, notification);
-    extraValidation(backendStorage, metaData, notification);
+    extraValidation(metaData, notification);
   }
 
   /***
@@ -81,23 +77,6 @@ abstract class AbstractBackend implements Backend {
   }
 
   /***
-   * Override this method to add extra validation to storage object
-   * 
-   * @param storage
-   */
-  private void validateStorage(Storage storage, Notification notification) {
-    if (storage == null) {
-      notification.addError("Storage can not be null!", null);
-      return;
-    }
-
-    if (storage.getOptions() == null) {
-      notification.addError("Storage object must have options!", null);
-      return;
-    }
-  }
-
-  /***
    * Override this method to ensure that the passed metaData and storage are compatible with your
    * implementation of the backend
    * 
@@ -105,7 +84,7 @@ abstract class AbstractBackend implements Backend {
    * @param metaData
    * @throws BadMetaDataException
    */
-  protected abstract void extraValidation(Storage backendStorage, MetaData metaData,
+  protected abstract void extraValidation(MetaData metaData,
       Notification notification);
 
   protected abstract String getSupportedUriSchema();

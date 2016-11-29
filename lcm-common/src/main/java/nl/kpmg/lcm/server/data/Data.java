@@ -19,11 +19,11 @@ package nl.kpmg.lcm.server.data;
  * @author Stoyan Hristov<shristov@intracol.com>
  */
 public class Data {
-    private MetaData metaData;
-    private ContentIterator iterator;
+    private final MetaData metaData;
+    private final ContentIterator iterator;
     
     
-    public Data(MetaData metadata, ContentIterator iterator) {
+    public Data(MetaData metaData, ContentIterator iterator) {
         this.metaData = metaData;
         this.iterator =  iterator;
     }
