@@ -33,6 +33,7 @@ import java.util.logging.Logger;
 
 import javax.ws.rs.client.Entity;
 import javax.ws.rs.client.Invocation;
+import javax.ws.rs.client.WebTarget;
 import javax.ws.rs.core.Response;
 import nl.kpmg.lcm.server.data.service.RemoteLcmService;
 import nl.kpmg.lcm.server.rest.authentication.BasicAuthenticationManager;

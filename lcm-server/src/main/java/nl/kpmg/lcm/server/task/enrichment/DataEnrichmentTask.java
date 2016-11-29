@@ -22,7 +22,6 @@ import nl.kpmg.lcm.server.backend.Backend;
 import nl.kpmg.lcm.server.backend.exception.BackendException;
 import nl.kpmg.lcm.server.backend.DataSetInformation;
 import nl.kpmg.lcm.server.data.MetaData;
-import nl.kpmg.lcm.server.data.TaskDescription;
 import nl.kpmg.lcm.server.data.service.exception.MissingStorageException;
 import nl.kpmg.lcm.server.data.service.StorageService;
 import nl.kpmg.lcm.server.task.EnrichmentTask;

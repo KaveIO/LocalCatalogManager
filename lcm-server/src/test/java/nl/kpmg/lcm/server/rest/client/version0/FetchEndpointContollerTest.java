@@ -58,7 +58,6 @@ import nl.kpmg.lcm.server.rest.authentication.BasicAuthenticationManager;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
 
 import com.google.gson.stream.JsonReader;
 import java.io.BufferedReader;
@@ -256,13 +255,12 @@ public class FetchEndpointContollerTest extends LcmBaseServerTest {
             .header(BasicAuthenticationManager.BASIC_AUTHENTICATION_HEADER, basicAuthTokenAdmin).post(entity);
 
     assertEquals(expected, resp.getStatus());
-
   }
 
-  private FetchEndpoint generateFetchURL(String id, int expected) throws ServerException {
+  private FetchEndpoint generateFetchURL(String metadataId, int expected) throws ServerException {
     Response response = getWebTarget()
             .path(GENERATE_FETCH_PATH)
-            .path(id)
+            .path(metadataId)
             .path("fetchUrl")
             .request()
             .header(AUTH_USER_HEADER, "admin")

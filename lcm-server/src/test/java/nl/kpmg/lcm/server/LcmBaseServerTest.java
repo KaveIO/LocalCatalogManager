@@ -24,6 +24,8 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import javax.ws.rs.client.WebTarget;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 
 public abstract class LcmBaseServerTest extends LcmBaseTest {
 
@@ -35,6 +37,13 @@ public abstract class LcmBaseServerTest extends LcmBaseTest {
   protected static Server server;
 
   protected static HttpsClientFactory httpsClientFactory;
+
+  /**
+   * Read configuration to return HTTP or HTTPS UR.
+   */
+  @Autowired
+  @Value("${lcm.server.unsafe}")
+  private String serverUnsafe;
 
   @BeforeClass
   public static void setUpClass() throws Exception {
@@ -57,7 +66,7 @@ public abstract class LcmBaseServerTest extends LcmBaseTest {
 
     } catch (ServerException se) {
       Logger.getLogger(LcmBaseServerTest.class.getName()).log(Level.SEVERE,
-          "Failed to create HTTPS server or client, test will fail", se);
+              "Failed to create HTTPS server or client, test will fail", se);
     }
   }
 
@@ -68,6 +77,11 @@ public abstract class LcmBaseServerTest extends LcmBaseTest {
   }
 
   protected WebTarget getWebTarget() throws ServerException {
-    return httpsClientFactory.createWebTarget(server.getBaseUri());
+    if (Boolean.valueOf(serverUnsafe)) {
+      return httpsClientFactory.createWebTarget(server.getBaseFallbackUri());
+    } else {
+      return httpsClientFactory.createWebTarget(server.getBaseUri());
+    }
+
   }
 }
