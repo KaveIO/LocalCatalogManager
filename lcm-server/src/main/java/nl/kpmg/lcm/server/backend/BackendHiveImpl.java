@@ -14,24 +14,26 @@
 
 package nl.kpmg.lcm.server.backend;
 
-import nl.kpmg.lcm.server.backend.metatadata.RelationalDbMetaData;
-import nl.kpmg.lcm.validation.Notification;
 import nl.kpmg.lcm.server.backend.exception.BackendException;
+import nl.kpmg.lcm.server.backend.metatadata.RelationalDbMetaData;
+import nl.kpmg.lcm.server.backend.storage.HiveStorage;
 import nl.kpmg.lcm.server.data.ContentIterator;
 import nl.kpmg.lcm.server.data.Data;
 import nl.kpmg.lcm.server.data.MetaData;
 import nl.kpmg.lcm.server.data.Storage;
-import nl.kpmg.lcm.server.backend.storage.HiveStorage;
-import java.sql.Connection;
-import java.sql.DriverManager;
-import java.sql.SQLException;
-import java.util.logging.Level;
-import java.util.logging.Logger;
+import nl.kpmg.lcm.validation.Notification;
+
 import org.apache.metamodel.data.DataSet;
 import org.apache.metamodel.drop.DropTable;
 import org.apache.metamodel.jdbc.JdbcDataContext;
 import org.apache.metamodel.schema.Schema;
 import org.apache.metamodel.schema.Table;
+
+import java.sql.Connection;
+import java.sql.DriverManager;
+import java.sql.SQLException;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  *
@@ -106,7 +108,9 @@ public class BackendHiveImpl extends AbstractBackend {
   public void store(ContentIterator content, DataTransformationSettings transformationSettings,
       boolean forceOverwrite) throws BackendException {
     JdbcDataContext dataContext = getDataContext();
-
+    if (transformationSettings == null) {
+      transformationSettings = new DataTransformationSettings();
+    }
     // remove the first symbol as uri Path is something like "/tablex"
     String tableName = getDataUri().getPath().substring(1);
 

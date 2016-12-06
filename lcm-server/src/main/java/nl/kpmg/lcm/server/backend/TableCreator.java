@@ -37,9 +37,13 @@ public class TableCreator {
  private final DataTransformationSettings transformationSettings;
  private static final Logger logger = Logger.getLogger(TableCreator.class.getName());
  
- public TableCreator(JdbcDataContext dataContext, DataTransformationSettings transformationSettings){
-     this.dataContext = dataContext;
-     this.transformationSettings = transformationSettings;
+ public TableCreator(JdbcDataContext dataContext, DataTransformationSettings transformationSettings) {
+    this.dataContext = dataContext;
+    if (transformationSettings != null) {
+      this.transformationSettings = transformationSettings;
+    } else {
+      this.transformationSettings = new DataTransformationSettings();
+    }
  }
  
  public Table createTable(Schema database, String tableName, Map<String, ColumnDescription> columns)
