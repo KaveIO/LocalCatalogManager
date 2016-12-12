@@ -14,6 +14,8 @@
 
 package nl.kpmg.lcm.server.task.enrichment;
 
+import javax.ws.rs.core.Response;
+
 import com.google.gson.stream.JsonReader;
 
 import nl.kpmg.lcm.client.HttpsClientFactory;
@@ -42,9 +44,6 @@ import java.io.InputStreamReader;
 import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-
-import javax.ws.rs.client.WebTarget;
-import javax.ws.rs.core.Response;
 
 /**
  *
@@ -88,6 +87,7 @@ public class DataFetchTask extends EnrichmentTask {
       throw new TaskException(validationNotification.errorMessage());
     }
 
+    initConfiguration(options);
     String fetchUrl = buildFetchURL(options);
 
     InputStream in = openInputStream(fetchUrl);
@@ -100,20 +100,19 @@ public class DataFetchTask extends EnrichmentTask {
   }
 
   private InputStream openInputStream(String fetchUrl) throws TaskException {
-    HttpAuthenticationFeature credentials = HttpAuthenticationFeature.basicBuilder().nonPreemptive()
+    HttpAuthenticationFeature credentials = HttpAuthenticationFeature.basicBuilder()
         .credentials(adminUser, adminPassword).build();
 
     HttpsClientFactory clientFactory = new HttpsClientFactory(configuration, credentials);
 
-    WebTarget target = null;
+    Response response =  null;
     try {
-      target = clientFactory.createWebTarget(fetchUrl);
+      response = clientFactory.createWebTarget(fetchUrl).request().get();
     } catch (ServerException ex) {
       logger.log(Level.SEVERE, null, ex);
       throw new TaskException(ex);
     }
 
-    Response response = target.request().get();
     return response.readEntity(InputStream.class);
   }
 
@@ -158,9 +157,23 @@ public class DataFetchTask extends EnrichmentTask {
     String remoteLcmId = options.get("remoteLcm").toString();
     RemoteLcm remoteLcm = remoteLcmService.findOneById(remoteLcmId);
     String path = options.get("path").toString();
-    String fetchUrl = remoteLcm.getUrl() + path;
+    String fetchUrl = buildRemoteUrl(remoteLcm) + path;
 
     return fetchUrl;
   }
 
+  private String buildRemoteUrl(RemoteLcm lcm) {
+    String url = String.format("%s://%s", lcm.getProtocol(), lcm.getDomain());
+    if (lcm.getPort() != null) {
+      url += ":" + lcm.getPort();
+    }
+    return url;
+  }
+
+  private void initConfiguration(Map options) {
+    String remoteLcmId = options.get("remoteLcm").toString();
+    RemoteLcm remoteLcm = remoteLcmService.findOneById(remoteLcmId);
+    configuration.setTargetHost(remoteLcm.getDomain());
+    configuration.setTargetPort(remoteLcm.getPort().toString());
+  }
 }

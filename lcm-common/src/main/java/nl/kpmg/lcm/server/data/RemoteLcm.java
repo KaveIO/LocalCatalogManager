@@ -16,34 +16,68 @@
 
 package nl.kpmg.lcm.server.data;
 
-import java.util.logging.Logger;
-
 import org.springframework.data.mongodb.core.mapping.Document;
+
+import java.util.logging.Logger;
 
 @Document(collection = "remote_lcm")
 public class RemoteLcm extends AbstractModel {
 
   private static final Logger LOGGER = Logger.getLogger(RemoteLcm.class.getName());
   /**
-   * The url to contact the lcm described here .
+   * The domain to contact the lcm described here .
    */
-  private String url;
+  private String domain;
 
   /**
-   * Gets url.
-   *
-   * @return the url
+   * The protocol - HTTP or HTTPS
    */
-  public String getUrl() {
-    return url;
-  }
+  private String protocol;
 
   /**
-   * Sets url.
-   *
-   * @param url the url to set
+   * The protocol - HTTP or HTTPS
    */
-  public void setUrl(String url) {
-    this.url = url;
-  }
+  private Integer port;
+
+    /**
+     * @return the domain
+     */
+    public String getDomain() {
+        return domain;
+    }
+
+    /**
+     * @param domain the domain to set
+     */
+    public void setDomain(String domain) {
+        this.domain = domain;
+    }
+
+    /**
+     * @return the protocol
+     */
+    public String getProtocol() {
+        return protocol;
+    }
+
+    /**
+     * @param protocol the protocol to set
+     */
+    public void setProtocol(String protocol) {
+        this.protocol = protocol;
+    }
+
+    /**
+     * @return the port
+     */
+    public Integer getPort() {
+        return port;
+    }
+
+    /**
+     * @param port the port to set
+     */
+    public void setPort(Integer port) {
+        this.port = port;
+    }
 }

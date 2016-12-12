@@ -14,33 +14,19 @@
 
 package nl.kpmg.lcm.server.rest.client.version0;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
-
-import java.io.File;
-import java.io.IOException;
-import java.io.PrintWriter;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-
-import org.junit.AfterClass;
-
-import nl.kpmg.lcm.server.LcmBaseServerTest;
-import nl.kpmg.lcm.server.ServerException;
-
-import org.junit.After;
-import org.junit.Test;
-
-import java.util.logging.Logger;
-
 import javax.ws.rs.client.Entity;
 import javax.ws.rs.client.Invocation;
 import javax.ws.rs.core.Response;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
+
+import nl.kpmg.lcm.configuration.ServerConfiguration;
 import nl.kpmg.lcm.rest.types.MetaDataRepresentation;
 import nl.kpmg.lcm.rest.types.MetaDatasRepresentation;
+import nl.kpmg.lcm.server.LcmBaseServerTest;
+import nl.kpmg.lcm.server.ServerException;
 import nl.kpmg.lcm.server.backend.Backend;
 import nl.kpmg.lcm.server.backend.exception.BackendException;
 import nl.kpmg.lcm.server.backend.exception.BackendNotImplementedException;
@@ -50,16 +36,24 @@ import nl.kpmg.lcm.server.data.RemoteLcm;
 import nl.kpmg.lcm.server.data.Storage;
 import nl.kpmg.lcm.server.data.TaskDescription;
 import nl.kpmg.lcm.server.data.service.StorageService;
-
-import nl.kpmg.lcm.server.rest.authentication.BasicAuthenticationManager;
-
 import nl.kpmg.lcm.server.data.service.TaskDescriptionService;
 import nl.kpmg.lcm.server.data.service.exception.MissingStorageException;
+import nl.kpmg.lcm.server.rest.authentication.BasicAuthenticationManager;
 
+import org.junit.After;
+import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;
-import org.junit.Ignore;
+import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
+
+import java.io.File;
+import java.io.IOException;
+import java.io.PrintWriter;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.logging.Logger;
 
 public class DataFetchTriggerContollerTest extends LcmBaseServerTest {
 
@@ -88,6 +82,9 @@ public class DataFetchTriggerContollerTest extends LcmBaseServerTest {
 
   @Autowired
   private StorageService storageService;
+
+  @Autowired
+  private ServerConfiguration serverConfiguration;
 
   /**
    * Always clean up DB.
@@ -119,7 +116,6 @@ public class DataFetchTriggerContollerTest extends LcmBaseServerTest {
   public static void beforeClass() {}
 
   @Test
-  @Ignore
   public void testTrigger() throws ServerException, MissingStorageException, BackendException,
       BackendNotImplementedException, IOException {
     // Client finds the id of the remote lcm that contains the data she wants
@@ -147,7 +143,6 @@ public class DataFetchTriggerContollerTest extends LcmBaseServerTest {
   }
 
   @Test
-  @Ignore
   public void testNonExistingMetadata() throws ServerException, MissingStorageException,
       BackendException, BackendNotImplementedException, IOException {
     RemoteLcm lcm = getLCMId();
@@ -198,7 +193,14 @@ public class DataFetchTriggerContollerTest extends LcmBaseServerTest {
   private RemoteLcm getLCMId() throws ServerException {
     RemoteLcm lcm = new RemoteLcm();
     lcm.setId("uid" + 0);
-    lcm.setUrl(getWebTarget().getUri().toString());
+    lcm.setDomain(serverConfiguration.getServiceName());
+    if(serverConfiguration.isUnsafe()){
+        lcm.setPort(serverConfiguration.getServicePort());
+        lcm.setProtocol("http");
+    } else {
+        lcm.setPort(serverConfiguration.getSecureServicePort());
+        lcm.setProtocol("https");
+    }
     postLcm(lcm, 200);
 
     return lcm;

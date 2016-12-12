@@ -14,6 +14,10 @@
 
 package nl.kpmg.lcm.server.rest.client.version0;
 
+import javax.ws.rs.client.Entity;
+import javax.ws.rs.client.Invocation;
+import javax.ws.rs.core.Response;
+
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
@@ -23,6 +27,8 @@ import nl.kpmg.lcm.rest.types.RemoteLcmsRepresentation;
 import nl.kpmg.lcm.server.LcmBaseServerTest;
 import nl.kpmg.lcm.server.ServerException;
 import nl.kpmg.lcm.server.data.RemoteLcm;
+import nl.kpmg.lcm.server.data.service.RemoteLcmService;
+import nl.kpmg.lcm.server.rest.authentication.BasicAuthenticationManager;
 
 import org.junit.After;
 import org.junit.Test;
@@ -30,13 +36,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 
 import java.util.List;
 import java.util.logging.Logger;
-
-import javax.ws.rs.client.Entity;
-import javax.ws.rs.client.Invocation;
-import javax.ws.rs.client.WebTarget;
-import javax.ws.rs.core.Response;
-import nl.kpmg.lcm.server.data.service.RemoteLcmService;
-import nl.kpmg.lcm.server.rest.authentication.BasicAuthenticationManager;
 
 public class RemoteLcmContollerTest extends LcmBaseServerTest {
 
@@ -81,19 +80,20 @@ public class RemoteLcmContollerTest extends LcmBaseServerTest {
     int numOfElem = 3;
     for (int i = 0; i < numOfElem; i++) {
       lcm.setId("uid" + i);
-      lcm.setUrl("http://lcm" + i);
+      lcm.setProtocol("http");
+      lcm.setDomain("lcm" + i);
       postLcm(lcm, 200);
 
       RemoteLcm retrived = getLcm("uid" + i, 200);
       assertEquals(lcm.getId(), retrived.getId());
-      assertEquals(lcm.getUrl(), retrived.getUrl());
+      assertEquals(getUrl(lcm), getUrl(retrived));
     }
 
     items = getAllItems(200);
     assertEquals("We should have 3 elemnts", 3, items.size());
     for (RemoteLcmRepresentation rLcm : items) {
       String uid = rLcm.getItem().getId();
-      String url = rLcm.getItem().getUrl();
+      String url = getUrl(rLcm.getItem());
       boolean found = false;
       for (int i = 0; i < numOfElem; i++) {
         if (("uid" + i).equals(uid) && ("http://lcm" + i).equals(url)) {
@@ -103,6 +103,14 @@ public class RemoteLcmContollerTest extends LcmBaseServerTest {
       }
       assertTrue("Should have found inserted IDs and URLs", found);
     }
+  }
+
+  private String getUrl(RemoteLcm lcm)   {
+    String url = String.format("%s://%s", lcm.getProtocol(), lcm.getDomain());
+    if(lcm.getPort() !=  null) {
+       url += ":" + lcm.getPort() ;
+    }
+    return url;
   }
 
   @Test
@@ -116,14 +124,15 @@ public class RemoteLcmContollerTest extends LcmBaseServerTest {
 
     RemoteLcm lcm = new RemoteLcm();
     lcm.setId("uid" + 0);
-    lcm.setUrl("http://lcm" + 0);
+    lcm.setProtocol("http");
+    lcm.setDomain("lcm" + 0);
     putLcm(lcm, 404);
 
     postLcm(lcm, 200);
     //Just cheking if it's there 
     getLcm(lcm.getId(), 200);
-
-    lcm.setUrl("http://lcm/new/path");
+    lcm.setProtocol("http");
+    lcm.setDomain("lcm/new/path");
     putLcm(lcm, 200);
   }
 
@@ -141,7 +150,8 @@ public class RemoteLcmContollerTest extends LcmBaseServerTest {
 
     RemoteLcm lcm = new RemoteLcm();
     lcm.setId(uid);
-    lcm.setUrl("http://lcm" + 0);
+    lcm.setProtocol("http");
+    lcm.setDomain("lcm" + 0);
     postLcm(lcm, 200);
     deleteLcm(uid, 200);
   }

@@ -14,13 +14,12 @@
 
 package nl.kpmg.lcm.server.data.service;
 
-import java.util.HashMap;
-import java.util.Map;
 import javax.ws.rs.ClientErrorException;
 import javax.ws.rs.NotFoundException;
 import javax.ws.rs.client.Invocation;
 import javax.ws.rs.client.WebTarget;
 import javax.ws.rs.core.Response;
+
 import nl.kpmg.lcm.client.HttpsClientFactory;
 import nl.kpmg.lcm.configuration.ClientConfiguration;
 import nl.kpmg.lcm.rest.types.FetchEndpointRepresentation;
@@ -32,10 +31,14 @@ import nl.kpmg.lcm.server.data.RemoteLcm;
 import nl.kpmg.lcm.server.data.TaskDescription;
 import nl.kpmg.lcm.server.data.dao.RemoteLcmDao;
 import nl.kpmg.lcm.server.rest.client.version0.HttpResponseHandler;
+
 import org.glassfish.jersey.client.authentication.HttpAuthenticationFeature;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
+
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  *
@@ -71,15 +74,14 @@ public class DataFetchTriggerService {
     if (lcm == null) {
       throw new NotFoundException(String.format("LCM %s not found", lcmId));
     }
-    String remoteLcmURL = lcm.getUrl();
 
     FetchEndpoint fetchURL;
-    MetaData md = getMetadata(metadataId, remoteLcmURL);
+    MetaData md = getMetadata(metadataId, lcm);
     if (md == null) {
       throw new NotFoundException(String.format("Metadata %s not found", metadataId));
     }
     metaDataService.getMetaDataDao().save(md);
-    fetchURL = generateFetchURL(metadataId, remoteLcmURL);
+    fetchURL = generateFetchURL(metadataId, lcm);
     TaskDescription dataFetchTaskDescription = new TaskDescription();
     dataFetchTaskDescription.setJob(this.getClass().getName());
     Map<String, String> options = new HashMap();
@@ -98,9 +100,9 @@ public class DataFetchTriggerService {
    * @throws ServerException
    * @throws ClientErrorException
    */
-  private MetaData getMetadata(String metadataId, String remoteLcmUrl) throws
+  private MetaData getMetadata(String metadataId, RemoteLcm lcm) throws
           ServerException, ClientErrorException {
-    WebTarget webTarget = getWebTarget(remoteLcmUrl).path(METADATA_PATH).path(metadataId);
+    WebTarget webTarget = getWebTarget(lcm).path(METADATA_PATH).path(metadataId);
     Invocation.Builder req = webTarget.request();
     Response response = req.get();
     try {
@@ -120,14 +122,16 @@ public class DataFetchTriggerService {
    * @return the webTarget to contact other LCMs
    * @throws ServerException
    */
-  private WebTarget getWebTarget(String targetURI) throws ServerException {
+  private WebTarget getWebTarget(RemoteLcm lcm) throws ServerException {
     if (credentials == null) {
       credentials
-              = HttpAuthenticationFeature.basicBuilder().nonPreemptive()
-              .credentials(adminUser, adminPassword).build();
+              = HttpAuthenticationFeature.basicBuilder()
+                      .credentials(adminUser, adminPassword).build();
     }
     HttpsClientFactory clientFactory = new HttpsClientFactory(configuration, credentials);
-    return clientFactory.createWebTarget(targetURI);
+    configuration.setTargetHost(lcm.getDomain());
+    configuration.setTargetPort(lcm.getPort().toString());
+    return clientFactory.createWebTarget(buildRemoteUrl(lcm));
   }
 
   /**
@@ -137,9 +141,9 @@ public class DataFetchTriggerService {
    * @param remoteLcmURL
    * @return the FetchEndpoint
    */
-  private FetchEndpoint generateFetchURL(String metadataId, String remoteLcmURL)
+  private FetchEndpoint generateFetchURL(String metadataId, RemoteLcm lcm)
           throws ServerException, ClientErrorException {
-    WebTarget webTarget = getWebTarget(remoteLcmURL);
+    WebTarget webTarget = getWebTarget(lcm);
     Response response = webTarget.path(GENERATE_FETCH_PATH)
             .path(metadataId)
             .path("fetchUrl")
@@ -152,5 +156,13 @@ public class DataFetchTriggerService {
     }
     return response
             .readEntity(FetchEndpointRepresentation.class).getItem();
+  }
+
+  private String buildRemoteUrl(RemoteLcm lcm)   {
+    String url = String.format("%s://%s", lcm.getProtocol(), lcm.getDomain());
+    if(lcm.getPort() !=  null) {
+       url += ":" + lcm.getPort() ;
+    }
+    return url;
   }
 }

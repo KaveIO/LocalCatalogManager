@@ -14,18 +14,18 @@
 
 package nl.kpmg.lcm.server;
 
+import javax.ws.rs.client.WebTarget;
+
 import nl.kpmg.lcm.client.HttpsClientFactory;
 import nl.kpmg.lcm.configuration.ClientConfiguration;
 
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 
 import java.util.logging.Level;
 import java.util.logging.Logger;
-
-import javax.ws.rs.client.WebTarget;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 
 public abstract class LcmBaseServerTest extends LcmBaseTest {
 
@@ -53,14 +53,15 @@ public abstract class LcmBaseServerTest extends LcmBaseTest {
       server.start();
 
       ClientConfiguration clientConfiguration = new ClientConfiguration();
-      clientConfiguration.setKeystore("./src/test/resources/client-keystore.jks");
-      clientConfiguration.setKeystoreType("JKS");
+      clientConfiguration.setKeystore("./src/main/resources/ssl-keys/client.p12");
+      clientConfiguration.setKeystoreType("pkcs12");
       clientConfiguration.setKeystorePassword("storepass");
       clientConfiguration.setKeystoreAlias("cert-ui");
-      clientConfiguration.setKeystoreKeypass("keypass");
-      clientConfiguration.setTruststore("./src/test/resources/client-truststore.jks");
+      clientConfiguration.setKeystoreKeypass("storepass");
+      clientConfiguration.setTruststore("./src/main/resources/ssl-keys/ui.keystore");
       clientConfiguration.setTruststorePassword("storepass");
       clientConfiguration.setTruststoreType("JKS");
+      clientConfiguration.setTargetHost("0.0.0.0");
 
       httpsClientFactory = new HttpsClientFactory(clientConfiguration);
 

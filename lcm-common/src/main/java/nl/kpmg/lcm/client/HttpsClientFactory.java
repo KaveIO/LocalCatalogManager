@@ -41,13 +41,23 @@ public class HttpsClientFactory {
     try {
       sc = SslProvider.createSSLContextConfigurator(configuration).createSSLContext();
     } catch (SslConfigurationException ex) {
+
       LOGGER.log(Level.WARNING,
           "Invalid SSL configuration, client will contact the configured server on HTTP only");
       return builder.build();
     }
     try {
+      builder.hostnameVerifier( new javax.net.ssl.HostnameVerifier() {
+	        public boolean verify(String hostname,
+	                javax.net.ssl.SSLSession sslSession) {
+	            if (hostname.equals(configuration.getTargetHost())) {
+	                return true;
+	            }
+	            return false;
+	        }
+	    });
       builder = builder.sslContext(sc);
-      if(basicAutorization != null) {
+      if (basicAutorization != null) {
         builder.register(basicAutorization);
       }
     } catch (NullPointerException npe) {
