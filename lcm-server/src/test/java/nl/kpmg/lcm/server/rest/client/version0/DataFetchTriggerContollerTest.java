@@ -73,7 +73,7 @@ public class DataFetchTriggerContollerTest extends LcmBaseServerTest {
   private static final String CSV_STORAGE_URI =
       CSV_SCHEME + "://" + CSV_STORAGE_NAME + "/" + CSV_FILE_NAME;
   private static final File CSV_FILE = new File(CSV_STORAGE_PATH + File.separator + CSV_FILE_NAME);
-  private static final String LCM_PATH = "client/v0/remote";
+  private static final String LCM_PATH = "client/v0/remoteLcm";
   private static final String LCM_CONTENT_TYPE =
       "application/nl.kpmg.lcm.server.data.RemoteLcm+json";
 

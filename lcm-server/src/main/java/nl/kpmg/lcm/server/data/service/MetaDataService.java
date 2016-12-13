@@ -13,12 +13,15 @@
  */
 package nl.kpmg.lcm.server.data.service;
 
-import java.util.List;
 import jersey.repackaged.com.google.common.collect.Lists;
+
 import nl.kpmg.lcm.server.data.MetaData;
 import nl.kpmg.lcm.server.data.dao.MetaDataDao;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+
+import java.util.List;
 
 /**
  *
@@ -32,6 +35,10 @@ public class MetaDataService {
 
   public List<MetaData> findAll() {
     return Lists.newLinkedList(metaDataDao.findAll());
+  }
+
+  public MetaData findById(String id) {
+    return metaDataDao.findOne(id);
   }
 
   public MetaDataDao getMetaDataDao() {

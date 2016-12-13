@@ -42,7 +42,7 @@ public class RemoteLcmContollerTest extends LcmBaseServerTest {
   @Autowired
   private RemoteLcmService service;
 
-  private static final String PATH = "client/v0/remote";
+  private static final String PATH = "client/v0/remoteLcm";
   private static final String LCM_CONTENT_TYPE
           = "application/nl.kpmg.lcm.server.data.RemoteLcm+json";
   private static final String AUTH_USER_HEADER = "LCM-Authentication-User";

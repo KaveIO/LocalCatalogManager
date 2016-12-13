@@ -14,12 +14,6 @@
 
 package nl.kpmg.lcm.server.data.service;
 
-import javax.ws.rs.ClientErrorException;
-import javax.ws.rs.NotFoundException;
-import javax.ws.rs.client.Invocation;
-import javax.ws.rs.client.WebTarget;
-import javax.ws.rs.core.Response;
-
 import nl.kpmg.lcm.client.HttpsClientFactory;
 import nl.kpmg.lcm.configuration.ClientConfiguration;
 import nl.kpmg.lcm.rest.types.FetchEndpointRepresentation;
@@ -31,14 +25,23 @@ import nl.kpmg.lcm.server.data.RemoteLcm;
 import nl.kpmg.lcm.server.data.TaskDescription;
 import nl.kpmg.lcm.server.data.dao.RemoteLcmDao;
 import nl.kpmg.lcm.server.rest.client.version0.HttpResponseHandler;
+import nl.kpmg.lcm.server.task.enrichment.DataFetchTask;
 
 import org.glassfish.jersey.client.authentication.HttpAuthenticationFeature;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
+import java.util.Calendar;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
+
+import javax.ws.rs.ClientErrorException;
+import javax.ws.rs.NotFoundException;
+import javax.ws.rs.client.Invocation;
+import javax.ws.rs.client.WebTarget;
+import javax.ws.rs.core.Response;
 
 /**
  *
@@ -83,10 +86,22 @@ public class DataFetchTriggerService {
     metaDataService.getMetaDataDao().save(md);
     fetchURL = generateFetchURL(metadataId, lcm);
     TaskDescription dataFetchTaskDescription = new TaskDescription();
-    dataFetchTaskDescription.setJob(this.getClass().getName());
+    dataFetchTaskDescription.setJob(DataFetchTask.class.getName());
+    dataFetchTaskDescription.setStatus(TaskDescription.TaskStatus.PENDING);
+
+    //TODO there is aproblem with the date
+    //Dockerized mongo is with UTC timezone and this date when is inserted in mongo will be
+    //inserted with UTC time zone which most probablly witll be not the timezone of the
+    //host machine. It is important to fix this in one or another way
+    Calendar calendar = Calendar.getInstance();
+    calendar.add(Calendar.MINUTE, 2);
+    Date startTime = calendar.getTime();
+    dataFetchTaskDescription.setStartTime(startTime);
+
     Map<String, String> options = new HashMap();
     options.put("remoteLcm", lcmId);
     options.put("path", FETCH_DATA_PATH + "/" + fetchURL.getId());
+
     dataFetchTaskDescription.setOptions(options);
     taskDescriptionService.getTaskDescriptionDao().save(dataFetchTaskDescription);
   }

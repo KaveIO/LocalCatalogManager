@@ -15,9 +15,6 @@
 package nl.kpmg.lcm.server.rest.client.version0;
 
 
-import java.util.List;
-import nl.kpmg.lcm.server.rest.authentication.Roles;
-
 import javax.annotation.security.RolesAllowed;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.DELETE;
@@ -35,24 +32,23 @@ import nl.kpmg.lcm.rest.types.RemoteLcmsRepresentation;
 import nl.kpmg.lcm.server.data.RemoteLcm;
 import nl.kpmg.lcm.server.data.dao.RemoteLcmDao;
 import nl.kpmg.lcm.server.data.service.RemoteLcmService;
+import nl.kpmg.lcm.server.rest.authentication.Roles;
 import nl.kpmg.lcm.server.rest.client.version0.types.ConcreteRemoteLcmRepresentation;
 import nl.kpmg.lcm.server.rest.client.version0.types.ConcreteRemoteLcmsRepresentation;
+
 import org.springframework.beans.factory.annotation.Autowired;
+
+import java.util.List;
 
 /**
  *
  * @author mhoekstra, S. Koulouzis
  */
-@Path("client/v0/remote")
-public class RemoteLcmController  {
-
-  private final RemoteLcmService service;
+@Path("client/v0/remoteLcm")
+public class RemoteLcmController {
 
   @Autowired
-  public RemoteLcmController(final RemoteLcmService service) {
-    this.service = service;
-  }
- 
+  private RemoteLcmService service;
 
   /**
    * Gets all registered lcms.
@@ -79,8 +75,7 @@ public class RemoteLcmController  {
   @Path("{id}")
   @Produces({"application/nl.kpmg.lcm.rest.types.RemoteLcmRepresentation+json"})
   @RolesAllowed({Roles.ADMINISTRATOR, Roles.API_USER})
-  public final RemoteLcmRepresentation getOne(
-          @PathParam("id") final String id) {
+  public final RemoteLcmRepresentation getOne(@PathParam("id") final String id) {
 
     RemoteLcmDao dao = service.getDao();
     RemoteLcm lcm = dao.findOneById(id);
@@ -108,8 +103,7 @@ public class RemoteLcmController  {
   @Path("{id}")
   @Consumes({"application/nl.kpmg.lcm.server.data.RemoteLcm+json"})
   @RolesAllowed({Roles.ADMINISTRATOR})
-  public final Response add(@PathParam("id") final String id,
-          RemoteLcm lcm) {
+  public final Response add(@PathParam("id") final String id, RemoteLcm lcm) {
     getOne(id);
     service.getDao().save(lcm);
     return Response.ok().build();
