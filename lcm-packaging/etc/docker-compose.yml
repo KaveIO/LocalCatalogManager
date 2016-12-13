@@ -1,0 +1,44 @@
+version: '2'
+
+services:
+   lcm-mongo1:
+     image: mongo:3
+     ports:
+       - "27017:27017"
+     command: "mongod --port 27017"
+     restart: always
+     
+   lcm-server1:
+     depends_on:
+       - lcm-mongo1
+     image: lcm-server:latest
+     ports:
+       - "4444:4444"
+       - "8081:8081"
+     restart: always
+     environment:
+       LCM_MONGO: lcm-mongo1
+       LCM_MONGO_PORT: 27017
+       PORT: 8081
+       SSL_PORT: 4444
+       
+   lcm-mongo2:
+     image: mongo:3
+     ports:
+       - "27018:27018"
+     command: "mongod --port 27018"
+     restart: always
+     
+   lcm-server2:
+     depends_on:
+       - lcm-mongo2
+     image: lcm-server:latest
+     ports:
+       - "4445:4445"
+       - "8082:8082"
+     restart: always
+     environment:
+       LCM_MONGO: lcm-mongo2
+       LCM_MONGO_PORT: 27018
+       PORT: 8082
+       SSL_PORT: 4445
