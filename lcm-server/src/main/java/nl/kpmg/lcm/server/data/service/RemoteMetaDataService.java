@@ -13,9 +13,6 @@
  */
 package nl.kpmg.lcm.server.data.service;
 
-import javax.ws.rs.NotFoundException;
-import javax.ws.rs.core.Response;
-
 import nl.kpmg.lcm.client.HttpsClientFactory;
 import nl.kpmg.lcm.configuration.ClientConfiguration;
 import nl.kpmg.lcm.rest.types.MetaDatasRepresentation;
@@ -36,6 +33,9 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
+
+import javax.ws.rs.NotFoundException;
+import javax.ws.rs.core.Response;
 
 /**
  *
@@ -134,7 +134,7 @@ public class RemoteMetaDataService {
       ConcreteMetaDatasRepresentation cmdr) {
     List metadatas =
         mdrs.getItems().stream().map(mdr -> mdr.getItem()).collect(Collectors.toList());
-    cmdr.setRepresentedItems(ConcreteMetaDataRepresentation.class, metadatas);
+    cmdr.addRepresentedItems(ConcreteMetaDataRepresentation.class, metadatas);
 
     return cmdr;
   }

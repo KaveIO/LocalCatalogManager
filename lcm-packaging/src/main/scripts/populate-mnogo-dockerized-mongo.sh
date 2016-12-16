@@ -9,8 +9,10 @@ docker exec -t $DOCKER_NAME mongo -eval 'db.metadata.insert({"name":"example2", 
 docker exec -t $DOCKER_NAME mongo -eval 'db.metadata.insert({"name":"hive-default-sample-07", "general": { "creation_date": "01-01-2015 00:00:00", "owner": "bob", "description": "This is the newly computed train schedule for optimized transport flow.", "tags": ["train", "svm", "lolwut"], "size": 351684984631, "records": 3455461}, "data": { "uri": "hive://remote-hive/sample_07"}})' localhost/lcm
 docker exec -t $DOCKER_NAME mongo -eval 'db.metadata.insert({"name":"hive-foodmart-product", "general": { "creation_date": "01-01-2015 00:00:00", "owner": "bob", "description": "This is the newly computed train schedule for optimized transport flow.", "tags": ["train", "svm", "lolwut"], "size": 351684984631, "records": 3455461}, "data": { "uri": "hive://remote-hive-foodmart/product"}})' localhost/lcm
 
-docker exec -t $DOCKER_NAME mongo -eval 'db.taskschedule.insert({"items":[{"name":"Default Enrichment Task", "cron":"0 0 * * * ?", "job":"nl.kpmg.lcm.server.task.enrichment.DataEnrichmentTask", "target":"*"}]})' localhost/lcm
+# this is not needed for now docker exec -t $DOCKER_NAME mongo -eval 'db.taskschedule.insert({"items":[{"name":"Default Enrichment Task", "cron":"0 * * * * ?", "job":"nl.kpmg.lcm.server.task.enrichment.DataEnrichmentTask", "target":"*"}]})' localhost/lcm
 
-docker exec -t $DOCKER_NAME mongo -eval 'db.storage.insert({"name": "local", "options":[{"storagePath":"/tmp"}]})' localhost/lcm
-docker exec -t $DOCKER_NAME mongo -eval 'db.storage.insert({"name": "remote-hive", "options":[{"username": "hive", "password" : "hive", "database": "default", "url": "jdbc:hive2://10.191.30.201:10000", "driver" : "org.apache.hive.jdbc.HiveDriver"}]})' localhost/lcm
-docker exec -t $DOCKER_NAME mongo -eval 'db.storage.insert({"name": "remote-hive-foodmart", "options":[{"username": "hive", "password" : "hive", "database": "foodmart", "url": "jdbc:hive2://10.191.30.201:10000", "driver" : "org.apache.hive.jdbc.HiveDriver"}]})' localhost/lcm
+docker exec -t $DOCKER_NAME mongo -eval 'db.storage.insert({"name": "local", "type": "csv", "options":[{"storagePath":"/tmp"}]})' localhost/lcm
+docker exec -t $DOCKER_NAME mongo -eval 'db.storage.insert({"name": "remote-hive", "type": "hive", "options":[{"username": "hive", "password" : "hive", "database": "default", "url": "jdbc:hive2://10.191.30.201:10000", "driver" : "org.apache.hive.jdbc.HiveDriver"}]})' localhost/lcm
+docker exec -t $DOCKER_NAME mongo -eval 'db.storage.insert({"name": "remote-hive-foodmart", "type": "hive", "options":[{"username": "hive", "password" : "hive", "database": "foodmart", "url": "jdbc:hive2://10.191.30.201:10000", "driver" : "org.apache.hive.jdbc.HiveDriver"}]})' localhost/lcm
+
+docker exec -t $DOCKER_NAME mongo -eval 'db.remote_lcm.insert({"domain" : "0.0.0.0", "protocol" : "https", "port" :"4444"})' localhost/lcm

@@ -13,16 +13,6 @@
  */
 package nl.kpmg.lcm.server.rest.client.version0;
 
-import javax.annotation.security.RolesAllowed;
-import javax.ws.rs.GET;
-import javax.ws.rs.NotFoundException;
-import javax.ws.rs.POST;
-import javax.ws.rs.Path;
-import javax.ws.rs.PathParam;
-import javax.ws.rs.Produces;
-import javax.ws.rs.QueryParam;
-import javax.ws.rs.core.Response;
-
 import nl.kpmg.lcm.client.ClientException;
 import nl.kpmg.lcm.rest.types.MetaDatasRepresentation;
 import nl.kpmg.lcm.server.ServerException;
@@ -32,6 +22,19 @@ import nl.kpmg.lcm.server.rest.authentication.Roles;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
+
+import java.util.Map;
+
+import javax.annotation.security.RolesAllowed;
+import javax.ws.rs.Consumes;
+import javax.ws.rs.GET;
+import javax.ws.rs.NotFoundException;
+import javax.ws.rs.POST;
+import javax.ws.rs.Path;
+import javax.ws.rs.PathParam;
+import javax.ws.rs.Produces;
+import javax.ws.rs.QueryParam;
+import javax.ws.rs.core.Response;
 
 /**
  *
@@ -50,11 +53,17 @@ public class RemoteMetaDataController {
   @POST
   @Path("{lcm_id}/metadata/{metadata_id}")
   @Produces({"text/plain"})
+  @Consumes({"application/json"})
   @RolesAllowed({Roles.ADMINISTRATOR, Roles.API_USER})
   public final Response trigger(@PathParam("lcm_id") final String lcmId,
-      @PathParam("metadata_id") final String metadataId) throws ServerException {
+      @PathParam("metadata_id") final String metadataId, Map payload) throws ServerException {
 
-    dataFetchTriggerService.scheduleDataFetchTask(lcmId, metadataId);
+    if (payload == null || payload.get("local-storage-id") == null) {
+        throw new IllegalArgumentException("Payload must contain local-storage-id!");
+    }
+
+    String localStorageId = (String)payload .get("local-storage-id");
+    dataFetchTriggerService.scheduleDataFetchTask(lcmId, metadataId, localStorageId);
 
     return Response.ok().build();
   }

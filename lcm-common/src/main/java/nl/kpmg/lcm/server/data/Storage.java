@@ -15,10 +15,12 @@
  */
 package nl.kpmg.lcm.server.data;
 
-import java.util.Map;
-import javax.annotation.security.PermitAll;
 import org.springframework.data.mongodb.core.index.Indexed;
 import org.springframework.data.mongodb.core.mapping.Document;
+
+import java.util.Map;
+
+import javax.annotation.security.PermitAll;
 
 /**
  *
@@ -30,7 +32,9 @@ public class Storage extends AbstractModel {
     
     @Indexed(unique = true)
     private String name;
-    
+
+    private String type;
+
     private Map options;
 
     /**
@@ -57,5 +61,19 @@ public class Storage extends AbstractModel {
      */
     public void setName(String name) {
         this.name = name;
+    }
+
+    /**
+     * @return the storage type e. g. "csv", "hive" etc.
+     */
+    public String getType() {
+        return type;
+    }
+
+    /**
+     * @param type - sets the storage type e. g. "csv", "hive" etc.
+     */
+    public void setType(String type) {
+        this.type = type;
     }
 }

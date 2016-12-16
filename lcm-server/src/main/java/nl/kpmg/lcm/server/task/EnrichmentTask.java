@@ -15,21 +15,23 @@
  */
 package nl.kpmg.lcm.server.task;
 
+import nl.kpmg.lcm.server.data.MetaData;
+import nl.kpmg.lcm.server.data.TaskDescription;
+import nl.kpmg.lcm.server.data.dao.TaskDescriptionDao;
+import nl.kpmg.lcm.server.data.service.MetaDataService;
+
+import org.quartz.Job;
+import org.quartz.JobDataMap;
+import org.quartz.JobExecutionContext;
+import org.quartz.JobExecutionException;
+import org.springframework.beans.factory.annotation.Autowired;
+
 import java.util.Date;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import nl.kpmg.lcm.server.data.MetaData;
-import nl.kpmg.lcm.server.data.TaskDescription;
-import nl.kpmg.lcm.server.data.dao.TaskDescriptionDao;
-import nl.kpmg.lcm.server.data.service.MetaDataService;
-import org.quartz.Job;
-import org.quartz.JobDataMap;
-import org.quartz.JobExecutionContext;
-import org.quartz.JobExecutionException;
-import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * A task which is being applied on MetaData to enrich its content.
@@ -121,11 +123,11 @@ public abstract class EnrichmentTask implements Job {
                             String.format("Executing EnrichmentTask %s (%s)",
                                     taskDescription.getId(), taskDescription.getJob()));
 
-                    execute(metadata, taskDescription.getOptions());
+                    TaskResult taskResult = execute(metadata, taskDescription.getOptions());
 
                     Logger.getLogger(EnrichmentTask.class.getName()).log(Level.INFO,
-                            String.format("Done with EnrichmentTask %s (%s)",
-                                    taskDescription.getId(), taskDescription.getJob()));
+                            String.format("Done with EnrichmentTask %s (%s) with status : %s",
+                                    taskDescription.getId(), taskDescription.getJob(), taskResult));
                 } catch (TaskException ex) {
                     Logger.getLogger(EnrichmentTask.class.getName()).log(Level.SEVERE, "Failed executing task", ex);
                 }

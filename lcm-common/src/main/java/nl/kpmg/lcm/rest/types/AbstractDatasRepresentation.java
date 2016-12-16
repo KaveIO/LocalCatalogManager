@@ -1,10 +1,5 @@
 package nl.kpmg.lcm.rest.types;
 
-import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
-import com.fasterxml.jackson.databind.annotation.JsonSerialize;
-
-import nl.kpmg.lcm.server.LinksDeserializer;
-import nl.kpmg.lcm.server.LinksSerializer;
 import nl.kpmg.lcm.server.data.AbstractModel;
 
 import java.util.ArrayList;
@@ -12,8 +7,6 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-
-import javax.ws.rs.core.Link;
 
 /**
  *
@@ -34,10 +27,20 @@ public abstract class AbstractDatasRepresentation<T extends AbstractDataRepresen
     this.items = items;
   }
 
+  public void addRepresentedItems(Class type, List<AbstractModel> items) {
+      setRepresentedItems(type,  items,  true);
+  }
+
   public void setRepresentedItems(Class type, List<AbstractModel> items) {
+      setRepresentedItems(type,  items,  false);
+  }
+
+  private void setRepresentedItems(Class type, List<AbstractModel> items,  boolean update) {
     // Madness? Perhaps... with a bit of love (and defensive programming...) there is some hope to
     // salvage this. This is a lot of risky effort to save code duplication.
-    this.items = new ArrayList();
+    if(this.items ==  null || update == false) {
+        this.items = new ArrayList();
+    }
     try {
       if (AbstractDataRepresentation.class.isAssignableFrom(type)) {
         Class<AbstractDataRepresentation> castedType = (Class<AbstractDataRepresentation>) type;

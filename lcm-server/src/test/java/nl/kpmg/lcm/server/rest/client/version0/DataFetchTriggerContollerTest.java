@@ -14,10 +14,6 @@
 
 package nl.kpmg.lcm.server.rest.client.version0;
 
-import javax.ws.rs.client.Entity;
-import javax.ws.rs.client.Invocation;
-import javax.ws.rs.core.Response;
-
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
@@ -54,6 +50,10 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.logging.Logger;
+
+import javax.ws.rs.client.Entity;
+import javax.ws.rs.client.Invocation;
+import javax.ws.rs.core.Response;
 
 public class DataFetchTriggerContollerTest extends LcmBaseServerTest {
 
@@ -121,10 +121,11 @@ public class DataFetchTriggerContollerTest extends LcmBaseServerTest {
     // Client finds the id of the remote lcm that contains the data she wants
     RemoteLcm lcm = getLCMId();
     // Client disovers after metadata id from the remote lcm
-    MetaData md = createStorgaeAndPostMetadata();
+    Storage csvStorage = createStorage();
+    MetaData md = createStorageAndPostMetadata(csvStorage);
 
     // Sends a request to local lcm to fetch the data and metadata
-    postTrigger(lcm.getId(), md.getId(), 200);
+    postTrigger(lcm.getId(), md.getId(), csvStorage.getId(), 200);
 
     // In the end we should have a task scheduled
     List<TaskDescription> tdList = taskDescriptionService.findAll();
@@ -137,26 +138,34 @@ public class DataFetchTriggerContollerTest extends LcmBaseServerTest {
   public void testNonExistingLcm() throws ServerException, MissingStorageException,
       BackendException, BackendNotImplementedException, IOException {
     // Client disovers after metadata id from the remote lcm
-    MetaData md = createStorgaeAndPostMetadata();
+    Storage csvStorage = createStorage();
+    MetaData md = createStorageAndPostMetadata(csvStorage);
     // Sends a request to local lcm to fetch the data and metadata
-    postTrigger("non-existing-lcm", md.getId(), 404);
+    postTrigger("non-existing-lcm", md.getId(), csvStorage.getId(), 404);
   }
 
   @Test
   public void testNonExistingMetadata() throws ServerException, MissingStorageException,
       BackendException, BackendNotImplementedException, IOException {
     RemoteLcm lcm = getLCMId();
+    Storage csvStorage = createStorage();
     // Sends a request to local lcm to fetch the data and metadata
-    postTrigger(lcm.getId(), "non-existing-metadata", 404);
+    postTrigger(lcm.getId(), "non-existing-metadata", csvStorage.getId(), 404);
   }
 
-  private MetaData createStorgaeAndPostMetadata() throws BackendNotImplementedException,
-      MissingStorageException, BackendException, IOException, ServerException {
-    Storage csvStorage = new Storage();
-    csvStorage.setName(CSV_STORAGE_NAME);
-    Map options = new HashMap();
-    options.put("storagePath", CSV_STORAGE_PATH);
-    csvStorage.setOptions(options);
+  @Test
+  public void testNonExistingStorage() throws ServerException, MissingStorageException,
+      BackendException, BackendNotImplementedException, IOException {
+    RemoteLcm lcm = getLCMId();
+    Storage csvStorage = createStorage();
+    MetaData md = createStorageAndPostMetadata(csvStorage);
+    // Sends a request to local lcm to fetch the data and metadata
+    postTrigger(lcm.getId(), md.getId(), "non-existing-storage", 404);
+  }
+
+  private MetaData createStorageAndPostMetadata(Storage csvStorage)
+      throws BackendNotImplementedException, MissingStorageException, BackendException,
+      IOException, ServerException {
 
     MetaData metadata = new MetaData();
     metadata.setDataUri(CSV_STORAGE_URI);
@@ -172,6 +181,15 @@ public class DataFetchTriggerContollerTest extends LcmBaseServerTest {
     return metadata;
   }
 
+    private Storage createStorage() {
+        Storage csvStorage = new Storage();
+        csvStorage.setName(CSV_STORAGE_NAME);
+        Map options = new HashMap();
+        options.put("storagePath", CSV_STORAGE_PATH);
+        csvStorage.setOptions(options);
+        return csvStorage;
+    }
+
   private void postMeadata(MetaData metadata, int expected) throws ServerException {
     Entity<MetaData> entity = Entity.entity(metadata, METADATA_CONTENT_TYPE);
 
@@ -182,11 +200,13 @@ public class DataFetchTriggerContollerTest extends LcmBaseServerTest {
     assertEquals(expected, resp.getStatus());
   }
 
-  private void postTrigger(String lcmId, String metadataId, int expected) throws ServerException {
+  private void postTrigger(String lcmId, String metadataId, String storageId, int expected) throws ServerException {
+    String payload = "{\"local-storage-id\" : \"" + storageId + "\"}";
+    Entity<String> entity = Entity.entity(payload, "application/json");
     Response resp = getWebTarget().path(TRIGGER_PATH).path(lcmId).path("metadata").path(metadataId)
         .request().header(AUTH_USER_HEADER, "admin")
         .header(BasicAuthenticationManager.BASIC_AUTHENTICATION_HEADER, basicAuthTokenAdmin)
-        .post(null);
+        .post(entity);
     assertEquals(expected, resp.getStatus());
   }
 

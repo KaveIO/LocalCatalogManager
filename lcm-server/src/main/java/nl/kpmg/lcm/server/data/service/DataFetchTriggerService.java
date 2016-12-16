@@ -1,11 +1,11 @@
 /*
  * Copyright 2016 KPMG N.V. (unless otherwise stated).
- *
+ * 
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except
  * in compliance with the License. You may obtain a copy of the License at
- *
+ * 
  * http://www.apache.org/licenses/LICENSE-2.0
- *
+ * 
  * Unless required by applicable law or agreed to in writing, software distributed under the License
  * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
  * or implied. See the License for the specific language governing permissions and limitations under
@@ -22,6 +22,7 @@ import nl.kpmg.lcm.server.ServerException;
 import nl.kpmg.lcm.server.data.FetchEndpoint;
 import nl.kpmg.lcm.server.data.MetaData;
 import nl.kpmg.lcm.server.data.RemoteLcm;
+import nl.kpmg.lcm.server.data.Storage;
 import nl.kpmg.lcm.server.data.TaskDescription;
 import nl.kpmg.lcm.server.data.dao.RemoteLcmDao;
 import nl.kpmg.lcm.server.rest.client.version0.HttpResponseHandler;
@@ -32,6 +33,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.HashMap;
@@ -53,6 +56,8 @@ public class DataFetchTriggerService {
   @Autowired
   private MetaDataService metaDataService;
   @Autowired
+  private StorageService storageService;
+  @Autowired
   private RemoteLcmService lcmService;
   @Autowired
   private TaskDescriptionService taskDescriptionService;
@@ -71,28 +76,35 @@ public class DataFetchTriggerService {
   private static final String FETCH_DATA_PATH = FETCH_ENDPOINT_CONTROLLER_PATH + "/fetch";
   private HttpAuthenticationFeature credentials;
 
-  public void scheduleDataFetchTask(String lcmId, String metadataId) throws ServerException {
+  public void scheduleDataFetchTask(String lcmId, String metadataId, String localStorageId)
+      throws ServerException {
     RemoteLcmDao dao = lcmService.getDao();
     RemoteLcm lcm = dao.findOneById(lcmId);
     if (lcm == null) {
       throw new NotFoundException(String.format("LCM %s not found", lcmId));
     }
 
-    FetchEndpoint fetchURL;
-    MetaData md = getMetadata(metadataId, lcm);
-    if (md == null) {
+    MetaData metaData = getMetadata(metadataId, lcm);
+    if (metaData == null) {
       throw new NotFoundException(String.format("Metadata %s not found", metadataId));
     }
-    metaDataService.getMetaDataDao().save(md);
-    fetchURL = generateFetchURL(metadataId, lcm);
+    Storage localStorage = storageService.getStorageDao().findOne(localStorageId);
+    if (localStorage == null) {
+      throw new NotFoundException(String.format("Storage %s not found", localStorage));
+    }
+
+    updateMetaData(metaData, localStorage);
+
+    createFetchTask(metadataId, lcmId, lcm);
+  }
+
+  private void createFetchTask(String metadataId, String lcmId, RemoteLcm lcm)
+      throws ServerException, ClientErrorException {
     TaskDescription dataFetchTaskDescription = new TaskDescription();
     dataFetchTaskDescription.setJob(DataFetchTask.class.getName());
     dataFetchTaskDescription.setStatus(TaskDescription.TaskStatus.PENDING);
+    dataFetchTaskDescription.setTarget(metadataId);
 
-    //TODO there is aproblem with the date
-    //Dockerized mongo is with UTC timezone and this date when is inserted in mongo will be
-    //inserted with UTC time zone which most probablly witll be not the timezone of the
-    //host machine. It is important to fix this in one or another way
     Calendar calendar = Calendar.getInstance();
     calendar.add(Calendar.MINUTE, 2);
     Date startTime = calendar.getTime();
@@ -100,10 +112,21 @@ public class DataFetchTriggerService {
 
     Map<String, String> options = new HashMap();
     options.put("remoteLcm", lcmId);
+    FetchEndpoint fetchURL = generateFetchURL(metadataId, lcm);
     options.put("path", FETCH_DATA_PATH + "/" + fetchURL.getId());
 
     dataFetchTaskDescription.setOptions(options);
     taskDescriptionService.getTaskDescriptionDao().save(dataFetchTaskDescription);
+  }
+
+  private void updateMetaData(MetaData metaData, Storage localStorage) throws ServerException,
+      NotFoundException, ClientErrorException {
+
+    String path = parseDataUri(metaData.getDataUri()).getPath();
+    String metaDataURI = localStorage.getType() + "://" + localStorage.getName() + path;
+    metaData.setDataUri(metaDataURI);
+    metaData.set("dynamic.data.state", "DETACHED");
+    metaDataService.getMetaDataDao().save(metaData);
   }
 
   /**
@@ -115,8 +138,8 @@ public class DataFetchTriggerService {
    * @throws ServerException
    * @throws ClientErrorException
    */
-  private MetaData getMetadata(String metadataId, RemoteLcm lcm) throws
-          ServerException, ClientErrorException {
+  private MetaData getMetadata(String metadataId, RemoteLcm lcm) throws ServerException,
+      ClientErrorException {
     WebTarget webTarget = getWebTarget(lcm).path(METADATA_PATH).path(metadataId);
     Invocation.Builder req = webTarget.request();
     Response response = req.get();
@@ -125,8 +148,7 @@ public class DataFetchTriggerService {
     } catch (ClientErrorException ex) {
       throw ex;
     }
-    return response
-            .readEntity(MetaDataRepresentation.class).getItem();
+    return response.readEntity(MetaDataRepresentation.class).getItem();
   }
 
   /**
@@ -139,9 +161,8 @@ public class DataFetchTriggerService {
    */
   private WebTarget getWebTarget(RemoteLcm lcm) throws ServerException {
     if (credentials == null) {
-      credentials
-              = HttpAuthenticationFeature.basicBuilder()
-                      .credentials(adminUser, adminPassword).build();
+      credentials =
+          HttpAuthenticationFeature.basicBuilder().credentials(adminUser, adminPassword).build();
     }
     HttpsClientFactory clientFactory = new HttpsClientFactory(configuration, credentials);
     configuration.setTargetHost(lcm.getDomain());
@@ -156,28 +177,33 @@ public class DataFetchTriggerService {
    * @param remoteLcmURL
    * @return the FetchEndpoint
    */
-  private FetchEndpoint generateFetchURL(String metadataId, RemoteLcm lcm)
-          throws ServerException, ClientErrorException {
+  private FetchEndpoint generateFetchURL(String metadataId, RemoteLcm lcm) throws ServerException,
+      ClientErrorException {
     WebTarget webTarget = getWebTarget(lcm);
-    Response response = webTarget.path(GENERATE_FETCH_PATH)
-            .path(metadataId)
-            .path("fetchUrl")
-            .request()
-            .get();
+    Response response =
+        webTarget.path(GENERATE_FETCH_PATH).path(metadataId).path("fetchUrl").request().get();
     try {
       HttpResponseHandler.handleResponse(response);
     } catch (ClientErrorException ex) {
       throw ex;
     }
-    return response
-            .readEntity(FetchEndpointRepresentation.class).getItem();
+    return response.readEntity(FetchEndpointRepresentation.class).getItem();
   }
 
-  private String buildRemoteUrl(RemoteLcm lcm)   {
+  private String buildRemoteUrl(RemoteLcm lcm) {
     String url = String.format("%s://%s", lcm.getProtocol(), lcm.getDomain());
-    if(lcm.getPort() !=  null) {
-       url += ":" + lcm.getPort() ;
+    if (lcm.getPort() != null) {
+      url += ":" + lcm.getPort();
     }
     return url;
+  }
+
+  private URI parseDataUri(String uri) throws ServerException {
+
+    try {
+      return new URI(uri);
+    } catch (URISyntaxException ex) {
+      throw new ServerException(String.format("Failure while trying to parse URI '%s'", uri), ex);
+    }
   }
 }

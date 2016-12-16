@@ -14,8 +14,6 @@
 
 package nl.kpmg.lcm.server.task.enrichment;
 
-import javax.ws.rs.core.Response;
-
 import com.google.gson.stream.JsonReader;
 
 import nl.kpmg.lcm.client.HttpsClientFactory;
@@ -44,6 +42,8 @@ import java.io.InputStreamReader;
 import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+
+import javax.ws.rs.core.Response;
 
 /**
  *
@@ -100,17 +100,23 @@ public class DataFetchTask extends EnrichmentTask {
   }
 
   private InputStream openInputStream(String fetchUrl) throws TaskException {
+
     HttpAuthenticationFeature credentials = HttpAuthenticationFeature.basicBuilder()
         .credentials(adminUser, adminPassword).build();
 
     HttpsClientFactory clientFactory = new HttpsClientFactory(configuration, credentials);
 
-    Response response =  null;
+    Response response = null;
+
     try {
       response = clientFactory.createWebTarget(fetchUrl).request().get();
     } catch (ServerException ex) {
-      logger.log(Level.SEVERE, null, ex);
       throw new TaskException(ex);
+    }
+    if (response.getStatus() != Response.Status.OK.getStatusCode()) {
+      String responseMessage = response.readEntity(String.class);
+      responseMessage = responseMessage.substring(0, Math.min(responseMessage.length(), 300));
+      throw new TaskException(responseMessage);
     }
 
     return response.readEntity(InputStream.class);
@@ -148,8 +154,8 @@ public class DataFetchTask extends EnrichmentTask {
     }
 
     if (options.get("path") == null) {
-      validationNotification
-          .addError("Error! Options parameter must contain relative path to the resoruce", null);
+      validationNotification.addError(
+          "Error! Options parameter must contain relative path to the resoruce", null);
     }
   }
 
