@@ -26,11 +26,13 @@ import nl.kpmg.lcm.server.rest.authentication.Roles;
 import nl.kpmg.lcm.server.task.TaskManager;
 import nl.kpmg.lcm.server.task.TaskManagerException;
 
+import org.glassfish.grizzly.servlet.WebappContext;
 import org.glassfish.jersey.jackson.JacksonFeature;
 import org.glassfish.jersey.linking.DeclarativeLinkingFeature;
 import org.glassfish.jersey.message.filtering.EntityFilteringFeature;
 import org.glassfish.jersey.message.filtering.SecurityAnnotations;
 import org.glassfish.jersey.server.ResourceConfig;
+import org.glassfish.jersey.servlet.ServletContainer;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
 
@@ -38,6 +40,8 @@ import java.io.IOException;
 import java.lang.annotation.Annotation;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+
+import javax.servlet.ServletRegistration;
 
 public class Server {
 
@@ -59,15 +63,15 @@ public class Server {
     // context. However this approach failed. Currently we load the
     // parentContext just for the Configuration bean. Moments later we load
     // the actuall ApplicationContext and ignore the ParentContext.
-    ApplicationContext parentContext
-            = new ClassPathXmlApplicationContext(new String[]{"application-context-server.xml"});
+    ApplicationContext parentContext =
+        new ClassPathXmlApplicationContext(new String[] {"application-context-server.xml"});
     configuration = parentContext.getBean(ServerConfiguration.class);
 
     String storage = configuration.getServerStorage();
     baseUri = String.format("%s://%s:%d/", "https", configuration.getServiceName(),
-            configuration.getSecureServicePort());
+        configuration.getSecureServicePort());
     baseFallbackUri = String.format("%s://%s:%d/", "http", configuration.getServiceName(),
-            configuration.getServicePort());
+        configuration.getServicePort());
 
     // Switching the application context based on the configuration. The configuration
     // allows for different storage backend which are Autwired with Spring.
@@ -75,12 +79,12 @@ public class Server {
       case "file":
         LOGGER.log(Level.INFO, "Loading file based storage ApplicationContext");
         context = new ClassPathXmlApplicationContext(
-                new String[]{"application-context-server-file.xml"});
+            new String[] {"application-context-server-file.xml"});
         break;
       case "mongo":
         LOGGER.log(Level.INFO, "Loading mongo based storage ApplicationContext");
         context = new ClassPathXmlApplicationContext(
-                new String[]{"application-context-server-mongo.xml"});
+            new String[] {"application-context-server-mongo.xml"});
         break;
       default:
         throw new ServerException("Couldn't determine LCM storage engine.");
@@ -88,19 +92,18 @@ public class Server {
   }
 
   /**
-   * Starts Grizzly HTTP server exposing JAX-RS resources defined in this
-   * application.
+   * Starts Grizzly HTTP server exposing JAX-RS resources defined in this application.
    *
    * @return Grizzly HTTP server.
    */
-  public HttpsServerWrapper startRestInterface() throws SslConfigurationException, IOException {
+  private HttpsServerWrapper startRestInterface() throws SslConfigurationException, IOException {
     // create a resource config that scans for JAX-RS resources and providers
     // in nl.kpmg.lcm.server.rest
-    final ResourceConfig rc
-            = new ResourceConfig().packages("nl.kpmg.lcm.server.rest").property("contextConfig", context)
+    final ResourceConfig rc =
+        new ResourceConfig().packages("nl.kpmg.lcm.server.rest").property("contextConfig", context)
             .property(EntityFilteringFeature.ENTITY_FILTERING_SCOPE,
-                    new Annotation[]{SecurityAnnotations
-                      .rolesAllowed(new String[]{Roles.ADMINISTRATOR, Roles.API_USER})})
+                new Annotation[] {SecurityAnnotations
+                    .rolesAllowed(new String[] {Roles.ADMINISTRATOR, Roles.API_USER})})
             .register(JacksonFeature.class).register(JacksonJsonProvider.class)
             .register(RequestFilter.class).register(ResponseFilter.class)
             .register(DeclarativeLinkingFeature.class).register(UriBuilderEntityProcessor.class)
@@ -126,15 +129,15 @@ public class Server {
       taskManager = startTaskManager();
     } catch (SslConfigurationException ex) {
       Logger.getLogger(Server.class.getName()).log(Level.SEVERE,
-              "Failed starting the LocalCatalogManager due to invalid SSL configuration", ex);
+          "Failed starting the LocalCatalogManager due to invalid SSL configuration", ex);
       throw new ServerException(ex);
     } catch (IOException ex) {
       Logger.getLogger(Server.class.getName()).log(Level.SEVERE,
-              "Failed starting the LocalCatalogManager due to the redirect server ", ex);
+          "Failed starting the LocalCatalogManager due to the redirect server ", ex);
       throw new ServerException(ex);
     } catch (TaskManagerException ex) {
       Logger.getLogger(Server.class.getName()).log(Level.SEVERE,
-              "Failed starting the LocalCatalogManager due to the TaskManager", ex);
+          "Failed starting the LocalCatalogManager due to the TaskManager", ex);
       throw new ServerException(ex);
     }
   }
@@ -149,7 +152,7 @@ public class Server {
   }
 
   /**
-   * 
+   *
    * @return the HTTP URI of the server
    */
   public String getBaseFallbackUri() {

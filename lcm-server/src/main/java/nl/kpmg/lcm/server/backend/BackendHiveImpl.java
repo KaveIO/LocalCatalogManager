@@ -113,6 +113,9 @@ public class BackendHiveImpl extends AbstractBackend {
     }
     // remove the first symbol as uri Path is something like "/tablex"
     String tableName = getDataUri().getPath().substring(1);
+    if(tableName.contains(".")) {
+        tableName =  tableName.replace(".", "_");
+    }
 
     Schema database = dataContext.getSchemaByName(hiveStorage.getDatabase());
     Table table = database.getTableByName(tableName);

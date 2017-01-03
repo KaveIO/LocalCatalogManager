@@ -14,6 +14,12 @@
 
 package nl.kpmg.lcm.server.backend;
 
+import nl.kpmg.lcm.server.data.ContentIterator;
+
+import org.apache.metamodel.schema.ColumnType;
+import org.apache.metamodel.util.FileHelper;
+import org.apache.metamodel.util.FormatHelper;
+
 import java.io.InputStream;
 import java.io.Reader;
 import java.sql.Blob;
@@ -31,10 +37,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import nl.kpmg.lcm.server.data.ContentIterator;
-import org.apache.metamodel.schema.ColumnType;
-import org.apache.metamodel.util.FileHelper;
-import org.apache.metamodel.util.FormatHelper;
 
 /**
  *
@@ -60,7 +62,7 @@ class JdbcMultipleRowsWriter {
   public void write(ContentIterator content, int maximumInsertedRowsPerQuery) throws SQLException {
 
     String[] columnNames = (String[]) columns.keySet().toArray(new String[] {});
-
+    int totalCount = 0;
     while (content.hasNext()) {
 
       List<Map> rows = getRowsToInsert(content, maximumInsertedRowsPerQuery);
@@ -69,14 +71,21 @@ class JdbcMultipleRowsWriter {
       try {
         PreparedStatement pst = createPrepareStatement(query, rows);
         pst.executeUpdate();
+        totalCount += rows.size(); 
         logger.log(Level.INFO, "Written sucessfully {0} rows in table: {1}",
             new Object[] {rows.size(), tableName});
       } catch (SQLException ex) {
+        if(totalCount > 0) {
+            logger.log(Level.INFO, "The content is inserted partially, only {0} rows in table: {1}",
+                new Object[] {totalCount, tableName});
+        }
         logger.log(Level.WARNING, "Unable to execute query starting with : {0}",
             query.substring(0, 300));
         throw ex;
       }
     }
+    logger.log(Level.INFO, "All the content inserted sucessfully {0} rows in table: {1}",
+            new Object[] {totalCount, tableName});
   }
 
   private List<Map> getRowsToInsert(ContentIterator content, int maximumInsertedRowsPerQuery) {

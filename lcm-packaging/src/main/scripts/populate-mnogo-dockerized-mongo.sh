@@ -5,9 +5,10 @@
 
 DOCKER_NAME="lcm-mongo"
 
-docker exec -t $DOCKER_NAME mongo -eval 'db.metadata.insert({"name":"example2", "general": { "creation_date": "01-01-2015 00:00:00", "owner": "bob", "description": "This is the newly computed train schedule for optimized transport flow.", "tags": ["train", "svm", "lolwut"], "size": 351684984631, "records": 3455461}, "data": { "uri": "csv://local/test.csv"}})' localhost/lcm
+docker exec -t $DOCKER_NAME mongo -eval 'db.metadata.insert({"name":"example2", "general": { "creation_date": "01-01-2015 00:00:00", "owner": "bob", "description": "This is the newly computed train schedule for optimized transport flow.", "tags": ["train", "svm", "lolwut"], "size": 58084631, "records": 3455461}, "data": { "uri": "csv://local/mock.csv"}})' localhost/lcm
 docker exec -t $DOCKER_NAME mongo -eval 'db.metadata.insert({"name":"hive-default-sample-07", "general": { "creation_date": "01-01-2015 00:00:00", "owner": "bob", "description": "This is the newly computed train schedule for optimized transport flow.", "tags": ["train", "svm", "lolwut"], "size": 351684984631, "records": 3455461}, "data": { "uri": "hive://remote-hive/sample_07"}})' localhost/lcm
 docker exec -t $DOCKER_NAME mongo -eval 'db.metadata.insert({"name":"hive-foodmart-product", "general": { "creation_date": "01-01-2015 00:00:00", "owner": "bob", "description": "This is the newly computed train schedule for optimized transport flow.", "tags": ["train", "svm", "lolwut"], "size": 351684984631, "records": 3455461}, "data": { "uri": "hive://remote-hive-foodmart/product"}})' localhost/lcm
+docker exec -t $DOCKER_NAME mongo -eval 'db.metadata.insert({"name":"csvExample", "general": { "creation_date": "01-21-2016 00:00:00", "owner": "bob", "description": "This is the newly computed train schedule for optimized transport flow.", "tags": ["train", "svm", "lolwut"], "size": 58084631, "records": 3455461}, "data": { "uri": "csv://local/mock.csv","options" : { "table-description" : { "columns" : {"gender" : {}, "last_name": {}, "id": {}, "ip_address": {}, "first_name": {}, "email": {} }}}}})' localhost/lcm
 
 # this is not needed for now docker exec -t $DOCKER_NAME mongo -eval 'db.taskschedule.insert({"items":[{"name":"Default Enrichment Task", "cron":"0 * * * * ?", "job":"nl.kpmg.lcm.server.task.enrichment.DataEnrichmentTask", "target":"*"}]})' localhost/lcm
 

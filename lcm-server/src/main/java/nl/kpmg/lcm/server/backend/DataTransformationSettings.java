@@ -23,7 +23,7 @@ package nl.kpmg.lcm.server.backend;
 public class DataTransformationSettings {
   private static final int DEFAULT_DECIMAL_PRECISION = 10;
   private static final int DEFAULT_VARCHAR_SIZE = 255;
-  private static final int DEAFULT_MAXIMUM_INSERTED_RECORDS_PER_QUERY = 100;
+  private static final int DEAFULT_MAXIMUM_INSERTED_RECORDS_PER_QUERY =10000;
   
   private Integer maximumInsertedRecordsPerQuery = DEAFULT_MAXIMUM_INSERTED_RECORDS_PER_QUERY;
   private Integer varCharSize = DEFAULT_VARCHAR_SIZE;

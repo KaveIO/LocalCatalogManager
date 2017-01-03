@@ -18,10 +18,12 @@ import nl.kpmg.lcm.configuration.BasicConfiguration;
 
 import org.glassfish.grizzly.http.server.HttpHandler;
 import org.glassfish.grizzly.http.server.HttpServer;
+import org.glassfish.grizzly.http.server.NetworkListener;
 import org.glassfish.grizzly.http.server.Request;
 import org.glassfish.grizzly.http.server.Response;
 import org.glassfish.grizzly.http.util.Header;
 import org.glassfish.grizzly.http.util.HttpStatus;
+import org.glassfish.grizzly.nio.transport.TCPNIOTransport;
 import org.glassfish.grizzly.ssl.SSLContextConfigurator;
 import org.glassfish.grizzly.ssl.SSLEngineConfigurator;
 import org.glassfish.jersey.grizzly2.httpserver.GrizzlyHttpServerFactory;
@@ -29,6 +31,8 @@ import org.glassfish.jersey.server.ResourceConfig;
 
 import java.io.IOException;
 import java.net.URI;
+import java.util.Collection;
+import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -46,7 +50,7 @@ public class HttpsServerProvider {
 
       HttpServer server =
           GrizzlyHttpServerFactory.createHttpServer(URI.create(baseFallbackUri), rc);
-
+      initListeners(server.getListeners());
       return new HttpsServerWrapper(server);
     } else {
       try {
@@ -56,9 +60,10 @@ public class HttpsServerProvider {
         HttpServer server = GrizzlyHttpServerFactory.createHttpServer(URI.create(baseUri), rc, true,
             new SSLEngineConfigurator(sslContextConfigurator).setClientMode(false)
                 .setNeedClientAuth(clientAuth));
-
+        initListeners(server.getListeners());
         HttpServer redirectServer =
             HttpServer.createSimpleServer(null, configuration.getServicePort());
+        initListeners(redirectServer.getListeners());
         redirectServer.getServerConfiguration().addHttpHandler(new HttpHandler() {
           @Override
           public void service(Request request, Response response) throws Exception {
@@ -76,5 +81,17 @@ public class HttpsServerProvider {
         throw ex;
       }
     }
+  }
+
+  private static void initListeners(Collection<NetworkListener> listeners) {
+    for (NetworkListener listener : listeners) {
+      initNetworkListener(listener);
+    }
+  }
+
+  private static void initNetworkListener(NetworkListener listener) {
+    final TCPNIOTransport transport = listener.getTransport();
+    transport.setKeepAlive(true);
+    transport.setWriteTimeout(0, TimeUnit.MINUTES);
   }
 }
