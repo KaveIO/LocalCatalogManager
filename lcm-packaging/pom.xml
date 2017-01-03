@@ -6,7 +6,7 @@
     <parent>
         <groupId>nl.kpmg.lcm</groupId>
         <artifactId>LocalCatalogManager</artifactId>
-        <version>0.1.3-SNAPSHOT</version>
+        <version>0.2.0-SNAPSHOT</version>
     </parent>
     <artifactId>lcm-packaging</artifactId>
     <packaging>jar</packaging>
@@ -21,17 +21,17 @@
         <dependency>
             <groupId>nl.kpmg.lcm</groupId>
             <artifactId>lcm-common</artifactId>
-            <version>0.1.3-SNAPSHOT</version>
+            <version>0.2.0-SNAPSHOT</version>
         </dependency>
         <dependency>
             <groupId>nl.kpmg.lcm</groupId>
             <artifactId>lcm-server</artifactId>
-            <version>0.1.3-SNAPSHOT</version>
+            <version>0.2.0-SNAPSHOT</version>
         </dependency>
         <dependency>
             <groupId>nl.kpmg.lcm</groupId>
             <artifactId>lcm-ui</artifactId>
-            <version>0.1.3-SNAPSHOT</version>
+            <version>0.2.0-SNAPSHOT</version>
         </dependency>
     </dependencies>
     
@@ -52,7 +52,7 @@
                 <artifactId>maven-jar-plugin</artifactId>
                 <version>3.0.2</version>
                 <configuration>
-                    <finalName>lcm-runner-${version}</finalName>                   
+                    <finalName>lcm-runner-${project.version}</finalName>                   
                     <excludes>
                         <exclude>**/log4j.properties</exclude>
                     </excludes>
@@ -70,7 +70,7 @@
                 <artifactId>maven-assembly-plugin</artifactId>
                 <version>2.5.2</version>
                 <configuration>
-                    <finalName>lcm-complete-${version}</finalName>
+                    <finalName>lcm-complete-${project.version}</finalName>
                     <descriptors>
                         <descriptor>src/main/assembly/assembly.xml</descriptor>
                     </descriptors>

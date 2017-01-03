@@ -11,6 +11,7 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
+
 package nl.kpmg.lcm.server.rest.client.version0;
 
 import nl.kpmg.lcm.client.ClientException;
@@ -59,10 +60,10 @@ public class RemoteMetaDataController {
       @PathParam("metadata_id") final String metadataId, Map payload) throws ServerException {
 
     if (payload == null || payload.get("local-storage-id") == null) {
-        throw new IllegalArgumentException("Payload must contain local-storage-id!");
+      throw new IllegalArgumentException("Payload must contain local-storage-id!");
     }
 
-    String localStorageId = (String)payload .get("local-storage-id");
+    String localStorageId = (String) payload.get("local-storage-id");
     dataFetchTriggerService.scheduleDataFetchTask(lcmId, metadataId, localStorageId);
 
     return Response.ok().build();
@@ -74,8 +75,8 @@ public class RemoteMetaDataController {
   @Produces({"application/nl.kpmg.lcm.rest.types.MetaDatasRepresentation+json"})
   @RolesAllowed({Roles.ADMINISTRATOR})
   public MetaDatasRepresentation searchMetadata(@PathParam("scope") final String scope,
-      @QueryParam("text") String searchString) throws ServerException, ClientException,
-      NotFoundException {
+      @QueryParam("text") String searchString)
+      throws ServerException, ClientException, NotFoundException {
     if (scope == null) {
       throw new IllegalArgumentException("Scope could not be null!");
     }

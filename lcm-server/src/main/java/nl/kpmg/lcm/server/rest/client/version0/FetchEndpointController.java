@@ -14,19 +14,6 @@
 
 package nl.kpmg.lcm.server.rest.client.version0;
 
-import javax.annotation.security.RolesAllowed;
-import javax.servlet.http.HttpServletRequest;
-import javax.ws.rs.GET;
-import javax.ws.rs.NotFoundException;
-import javax.ws.rs.Path;
-import javax.ws.rs.PathParam;
-import javax.ws.rs.Produces;
-import javax.ws.rs.WebApplicationException;
-import javax.ws.rs.core.Context;
-import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.Response;
-import javax.ws.rs.core.StreamingOutput;
-
 import com.google.gson.Gson;
 import com.google.gson.stream.JsonWriter;
 
@@ -56,6 +43,19 @@ import java.net.URISyntaxException;
 import java.util.Date;
 import java.util.Map;
 
+import javax.annotation.security.RolesAllowed;
+import javax.servlet.http.HttpServletRequest;
+import javax.ws.rs.GET;
+import javax.ws.rs.NotFoundException;
+import javax.ws.rs.Path;
+import javax.ws.rs.PathParam;
+import javax.ws.rs.Produces;
+import javax.ws.rs.WebApplicationException;
+import javax.ws.rs.core.Context;
+import javax.ws.rs.core.MediaType;
+import javax.ws.rs.core.Response;
+import javax.ws.rs.core.StreamingOutput;
+
 /**
  *
  * @author S. Koulouzis
@@ -79,9 +79,9 @@ public class FetchEndpointController {
   @Path("/{id}")
   @Produces(MediaType.APPLICATION_OCTET_STREAM)
   @RolesAllowed({Roles.ADMINISTRATOR, Roles.API_USER})
-  public final Response getOne(@PathParam("id") final String id) throws MissingStorageException,
-      BadMetaDataException, DataSourceValidationException, BackendException, URISyntaxException,
-      IOException {
+  public final Response getOne(@PathParam("id") final String id)
+      throws MissingStorageException, BadMetaDataException, DataSourceValidationException,
+      BackendException, URISyntaxException, IOException {
 
     FetchEndpointDao dao = fetchEndpointService.getDao();
     FetchEndpoint fe = dao.findOneById(id);

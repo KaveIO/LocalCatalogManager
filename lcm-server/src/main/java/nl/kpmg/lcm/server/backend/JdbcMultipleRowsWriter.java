@@ -1,11 +1,11 @@
 /*
  * Copyright 2016 KPMG N.V. (unless otherwise stated).
- * 
+ *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except
  * in compliance with the License. You may obtain a copy of the License at
- * 
+ *
  * http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software distributed under the License
  * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
  * or implied. See the License for the specific language governing permissions and limitations under
@@ -71,13 +71,13 @@ class JdbcMultipleRowsWriter {
       try {
         PreparedStatement pst = createPrepareStatement(query, rows);
         pst.executeUpdate();
-        totalCount += rows.size(); 
+        totalCount += rows.size();
         logger.log(Level.INFO, "Written sucessfully {0} rows in table: {1}",
             new Object[] {rows.size(), tableName});
       } catch (SQLException ex) {
-        if(totalCount > 0) {
-            logger.log(Level.INFO, "The content is inserted partially, only {0} rows in table: {1}",
-                new Object[] {totalCount, tableName});
+        if (totalCount > 0) {
+          logger.log(Level.INFO, "The content is inserted partially, only {0} rows in table: {1}",
+              new Object[] {totalCount, tableName});
         }
         logger.log(Level.WARNING, "Unable to execute query starting with : {0}",
             query.substring(0, 300));
@@ -85,7 +85,7 @@ class JdbcMultipleRowsWriter {
       }
     }
     logger.log(Level.INFO, "All the content inserted sucessfully {0} rows in table: {1}",
-            new Object[] {totalCount, tableName});
+        new Object[] {totalCount, tableName});
   }
 
   private List<Map> getRowsToInsert(ContentIterator content, int maximumInsertedRowsPerQuery) {
@@ -217,8 +217,8 @@ class JdbcMultipleRowsWriter {
         st.setObject(valueIndex, value);
       }
     } catch (SQLException e) {
-      logger.log(Level.SEVERE, "Failed to set parameter {" + valueIndex + "} to value: { " + value
-          + "}");
+      logger.log(Level.SEVERE,
+          "Failed to set parameter {" + valueIndex + "} to value: { " + value + "}");
       throw e;
     }
   }

@@ -14,14 +14,12 @@
 
 package nl.kpmg.lcm.ui.rest;
 
-import nl.kpmg.lcm.client.ClientException;
-
 import com.vaadin.server.VaadinService;
 import com.vaadin.server.WrappedSession;
 
+import nl.kpmg.lcm.client.ClientException;
 import nl.kpmg.lcm.client.HttpsClientFactory;
 import nl.kpmg.lcm.configuration.ClientConfiguration;
-import nl.kpmg.lcm.rest.types.AbstractDatasRepresentation;
 import nl.kpmg.lcm.rest.types.AbstractRepresentation;
 import nl.kpmg.lcm.rest.types.MetaDatasRepresentation;
 import nl.kpmg.lcm.rest.types.StoragesRepresentation;

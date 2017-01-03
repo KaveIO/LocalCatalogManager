@@ -37,10 +37,9 @@ import java.util.logging.Logger;
  * should be by quite metadata model agnostic. Any attributes we process in the LCM code we should
  * convert to hard attributes.
  *
- * @TODO This layer should be pure data container and all business logic must be moved out.
- *  * move the duplicates business logic to a service layer.
- *  * Do not add any new business logic
- * 
+ * @TODO This layer should be pure data container and all business logic must be moved out. * move
+ *       the duplicates business logic to a service layer. * Do not add any new business logic
+ *
  */
 @Document(collection = "metadata")
 public class MetaData extends AbstractModel {
@@ -193,8 +192,8 @@ public class MetaData extends AbstractModel {
     this.set("duplicates", duplicates);
   }
 
-  
-   
+
+
   public void addDuplicate(MetaData duplicate) {
     List<MetaData> lmdata = new LinkedList();
     if (getDuplicates() != null) {

@@ -11,15 +11,8 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-package nl.kpmg.lcm.server.rest.remote.version0;
 
-import javax.annotation.security.RolesAllowed;
-import javax.ws.rs.GET;
-import javax.ws.rs.NotFoundException;
-import javax.ws.rs.Path;
-import javax.ws.rs.PathParam;
-import javax.ws.rs.Produces;
-import javax.ws.rs.QueryParam;
+package nl.kpmg.lcm.server.rest.remote.version0;
 
 import nl.kpmg.lcm.rest.types.FetchEndpointRepresentation;
 import nl.kpmg.lcm.rest.types.MetaDataRepresentation;
@@ -43,6 +36,14 @@ import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
+
+import javax.annotation.security.RolesAllowed;
+import javax.ws.rs.GET;
+import javax.ws.rs.NotFoundException;
+import javax.ws.rs.Path;
+import javax.ws.rs.PathParam;
+import javax.ws.rs.Produces;
+import javax.ws.rs.QueryParam;
 
 /**
  *
@@ -113,8 +114,8 @@ public class RemoteLcmMetaDataController {
   @Produces({"application/nl.kpmg.lcm.rest.types.FetchEndpointRepresentation+json"})
   @RolesAllowed({Roles.ADMINISTRATOR, Roles.API_USER})
   public final FetchEndpointRepresentation generateFetch(
-      @PathParam("metadata_id") final String metadata_id) throws BackendException,
-      BackendNotImplementedException, MissingStorageException {
+      @PathParam("metadata_id") final String metadata_id)
+      throws BackendException, BackendNotImplementedException, MissingStorageException {
 
     MetaData md = metaDataService.getMetaDataDao().findOne(metadata_id);
     if (md == null) {

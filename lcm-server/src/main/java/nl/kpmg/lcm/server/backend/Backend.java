@@ -11,11 +11,13 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
+
 package nl.kpmg.lcm.server.backend;
 
-import nl.kpmg.lcm.server.data.ContentIterator;
 import nl.kpmg.lcm.server.backend.exception.BackendException;
+import nl.kpmg.lcm.server.data.ContentIterator;
 import nl.kpmg.lcm.server.data.Data;
+
 import org.apache.metamodel.data.DataSet;
 
 /**
@@ -32,15 +34,17 @@ public interface Backend {
    */
   public DataSetInformation gatherDataSetInformation() throws BackendException;
 
-  
-    /**
+
+  /**
    * Method to store some content on a data storage backend.
-   * @param forceOverwrite - if set to true the @content is stored no mater 
-   * if it already exists. When set to false the @content is stored only if it does not exist.
+   *
+   * @param forceOverwrite - if set to true the @content is stored no mater if it already exists.
+   *        When set to false the @content is stored only if it does not exist.
    * @param content {@link ContentIterator} that should be stored.
    * @throws BackendException if the URI is not valid or it is not possible to reach the storage.
    */
-  public void store(ContentIterator content, DataTransformationSettings transformationSettings, boolean forceOverwrite) throws BackendException;
+  public void store(ContentIterator content, DataTransformationSettings transformationSettings,
+      boolean forceOverwrite) throws BackendException;
 
   /**
    * Method to read some content from a data storage backend.
@@ -57,10 +61,10 @@ public interface Backend {
    * @throws BackendException if the URI is not valid or it is not possible to reach the storage.
    */
   public boolean delete() throws BackendException;
-  
-    /**
-   * Method finalize is used to free all underlaying resources 
-   * Call it when you are done with the backend.
+
+  /**
+   * Method finalize is used to free all underlaying resources Call it when you are done with the
+   * backend.
    */
   public void free();
 }

@@ -17,6 +17,8 @@ package nl.kpmg.lcm.server.rest.client.version0.types;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 
 import nl.kpmg.lcm.rest.types.LinkInjectable;
+import nl.kpmg.lcm.rest.types.RemoteLcmsRepresentation;
+import nl.kpmg.lcm.server.rest.client.version0.RemoteLcmController;
 
 import org.glassfish.jersey.linking.InjectLink;
 import org.glassfish.jersey.linking.InjectLinks;
@@ -24,8 +26,6 @@ import org.glassfish.jersey.linking.InjectLinks;
 import java.util.List;
 
 import javax.ws.rs.core.Link;
-import nl.kpmg.lcm.rest.types.RemoteLcmsRepresentation;
-import nl.kpmg.lcm.server.rest.client.version0.RemoteLcmController;
 
 /**
  * A wrapper class
@@ -33,17 +33,12 @@ import nl.kpmg.lcm.server.rest.client.version0.RemoteLcmController;
  * @author S. Koulouzis
  */
 public class ConcreteRemoteLcmsRepresentation extends RemoteLcmsRepresentation
-        implements LinkInjectable {
+    implements LinkInjectable {
 
   private List<RemoteLcmsRepresentation> items;
 
-  @InjectLinks(
-          {
-            @InjectLink(
-                    resource = RemoteLcmController.class,
-                    style = InjectLink.Style.ABSOLUTE, 
-                    rel = "remote.lcm.overview"
-            )})
+  @InjectLinks({@InjectLink(resource = RemoteLcmController.class, style = InjectLink.Style.ABSOLUTE,
+      rel = "remote.lcm.overview")})
 
   @JsonIgnore
   private List<Link> injectedLinks;

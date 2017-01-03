@@ -1,11 +1,11 @@
 /*
  * Copyright 2016 KPMG N.V. (unless otherwise stated).
- * 
+ *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except
  * in compliance with the License. You may obtain a copy of the License at
- * 
+ *
  * http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software distributed under the License
  * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
  * or implied. See the License for the specific language governing permissions and limitations under
@@ -31,7 +31,7 @@ import java.util.logging.Logger;
 /**
  * This is Decorator around MeataData that parse its fields for Relational Data sources like Hive
  * and SQL
- * 
+ *
  * @author Stoyan Hristov<shristov@intracol.com>
  */
 public class RelationalDbMetaData {
@@ -50,8 +50,8 @@ public class RelationalDbMetaData {
     for (Map.Entry<String, Map> entry : metaDataColumns.entrySet()) {
       Map<String, Object> columnDescription = entry.getValue();
       String type = (String) columnDescription.get("type");
-      if(type == null){
-          logger.log(Level.WARNING, "Type of column {0} is null", entry.getKey());
+      if (type == null) {
+        logger.log(Level.WARNING, "Type of column {0} is null", entry.getKey());
       }
       ColumnType columnType = matchColumnType(type);
       ColumnDescription column = new ColumnDescription(entry.getKey(), columnType);
@@ -65,7 +65,7 @@ public class RelationalDbMetaData {
       }
 
       columns.put(entry.getKey(), column);
-    };
+    }
 
     return columns;
   }
@@ -86,7 +86,7 @@ public class RelationalDbMetaData {
   /***
    * Trying to match the type of the input data to metamodel data system. If the type is not matched
    * then null is returned.
-   * 
+   *
    * @param value - Name of the type
    * @return
    */

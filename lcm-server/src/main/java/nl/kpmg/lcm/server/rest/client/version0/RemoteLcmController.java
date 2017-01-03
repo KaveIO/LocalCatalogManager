@@ -15,18 +15,6 @@
 package nl.kpmg.lcm.server.rest.client.version0;
 
 
-import javax.annotation.security.RolesAllowed;
-import javax.ws.rs.Consumes;
-import javax.ws.rs.DELETE;
-import javax.ws.rs.GET;
-import javax.ws.rs.NotFoundException;
-import javax.ws.rs.POST;
-import javax.ws.rs.PUT;
-import javax.ws.rs.Path;
-import javax.ws.rs.PathParam;
-import javax.ws.rs.Produces;
-import javax.ws.rs.core.Response;
-
 import nl.kpmg.lcm.rest.types.RemoteLcmRepresentation;
 import nl.kpmg.lcm.rest.types.RemoteLcmsRepresentation;
 import nl.kpmg.lcm.server.data.RemoteLcm;
@@ -39,6 +27,18 @@ import nl.kpmg.lcm.server.rest.client.version0.types.ConcreteRemoteLcmsRepresent
 import org.springframework.beans.factory.annotation.Autowired;
 
 import java.util.List;
+
+import javax.annotation.security.RolesAllowed;
+import javax.ws.rs.Consumes;
+import javax.ws.rs.DELETE;
+import javax.ws.rs.GET;
+import javax.ws.rs.NotFoundException;
+import javax.ws.rs.POST;
+import javax.ws.rs.PUT;
+import javax.ws.rs.Path;
+import javax.ws.rs.PathParam;
+import javax.ws.rs.Produces;
+import javax.ws.rs.core.Response;
 
 /**
  *

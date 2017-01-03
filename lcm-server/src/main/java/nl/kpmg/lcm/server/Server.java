@@ -26,13 +26,11 @@ import nl.kpmg.lcm.server.rest.authentication.Roles;
 import nl.kpmg.lcm.server.task.TaskManager;
 import nl.kpmg.lcm.server.task.TaskManagerException;
 
-import org.glassfish.grizzly.servlet.WebappContext;
 import org.glassfish.jersey.jackson.JacksonFeature;
 import org.glassfish.jersey.linking.DeclarativeLinkingFeature;
 import org.glassfish.jersey.message.filtering.EntityFilteringFeature;
 import org.glassfish.jersey.message.filtering.SecurityAnnotations;
 import org.glassfish.jersey.server.ResourceConfig;
-import org.glassfish.jersey.servlet.ServletContainer;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
 
@@ -40,8 +38,6 @@ import java.io.IOException;
 import java.lang.annotation.Annotation;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-
-import javax.servlet.ServletRegistration;
 
 public class Server {
 

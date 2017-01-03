@@ -1,11 +1,11 @@
 /*
  * Copyright 2016 KPMG N.V. (unless otherwise stated).
- * 
+ *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except
  * in compliance with the License. You may obtain a copy of the License at
- * 
+ *
  * http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software distributed under the License
  * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
  * or implied. See the License for the specific language governing permissions and limitations under
@@ -64,9 +64,8 @@ public class BackendHiveImpl extends AbstractBackend {
 
     try {
       Class.forName(hiveStorage.getDriver());
-      connection =
-          DriverManager.getConnection(hiveStorage.getUrl(), hiveStorage.getUsername(),
-              hiveStorage.getPassword());
+      connection = DriverManager.getConnection(hiveStorage.getUrl(), hiveStorage.getUsername(),
+          hiveStorage.getPassword());
     } catch (Exception e) {
       throw new BackendException("Failed to create JDBC connection for " + className, e);
     }
@@ -113,8 +112,8 @@ public class BackendHiveImpl extends AbstractBackend {
     }
     // remove the first symbol as uri Path is something like "/tablex"
     String tableName = getDataUri().getPath().substring(1);
-    if(tableName.contains(".")) {
-        tableName =  tableName.replace(".", "_");
+    if (tableName.contains(".")) {
+      tableName = tableName.replace(".", "_");
     }
 
     Schema database = dataContext.getSchemaByName(hiveStorage.getDatabase());
@@ -124,11 +123,11 @@ public class BackendHiveImpl extends AbstractBackend {
       throw new BackendException("Error, can not store the data! Table: \"" + tableName
           + "\" already exists and storing is started without overwriting!");
     }
-    
+
     if (table != null && forceOverwrite) {
-        DropTable dropTable  = new DropTable(database, tableName);
-        dataContext.executeUpdate(dropTable);
-        table = null;
+      DropTable dropTable = new DropTable(database, tableName);
+      dataContext.executeUpdate(dropTable);
+      table = null;
     }
 
     if (table == null) {
@@ -137,9 +136,8 @@ public class BackendHiveImpl extends AbstractBackend {
     }
 
     try {
-      JdbcMultipleRowsWriter hiveWriter =
-          new JdbcMultipleRowsWriter(connection, tableName, hiveStorage.getDatabase(),
-              hiveMetaData.getColumns());
+      JdbcMultipleRowsWriter hiveWriter = new JdbcMultipleRowsWriter(connection, tableName,
+          hiveStorage.getDatabase(), hiveMetaData.getColumns());
 
       hiveWriter.write(content, transformationSettings.getMaximumInsertedRecordsPerQuery());
 
@@ -164,8 +162,8 @@ public class BackendHiveImpl extends AbstractBackend {
 
     Schema schema = dataContext.getSchemaByName(hiveStorage.getDatabase());
     if (schema == null) {
-      throw new BackendException("Error: database \"" + hiveStorage.getDatabase()
-          + "\" is not found!");
+      throw new BackendException(
+          "Error: database \"" + hiveStorage.getDatabase() + "\" is not found!");
     }
     // remove the first symbol as uri Path is something like "/tablex"
     String tableName = getDataUri().getPath().substring(1);
@@ -173,8 +171,8 @@ public class BackendHiveImpl extends AbstractBackend {
     Table table = schema.getTableByName(tableName);
 
     if (table == null) {
-      throw new BackendException("Error: specified table \"" + tableName
-          + "\" in the metadata is not found!");
+      throw new BackendException(
+          "Error: specified table \"" + tableName + "\" in the metadata is not found!");
     }
 
     hiveMetaData.addColumnsDescription(table.getColumns());
