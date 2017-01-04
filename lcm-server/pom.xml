@@ -17,7 +17,6 @@
         <maven.compiler.target>1.8</maven.compiler.target>
         <spring.version>4.3.4.RELEASE</spring.version>
         <jersey.version>2.25</jersey.version>
-        <spring-data-mongodb>1.9.2.RELEASE</spring-data-mongodb>
         <spring-data.version>Gosling-RELEASE</spring-data.version>
         <mongo-java-driver>3.3.0</mongo-java-driver>
         <jasyptspring.version>1.9.2</jasyptspring.version>
@@ -48,9 +47,9 @@
                 <scope>import</scope>
                 <type>pom</type>
             </dependency>
-            
         </dependencies>
     </dependencyManagement>
+    
     <dependencies>
         <dependency>
             <groupId>nl.kpmg.lcm</groupId>
