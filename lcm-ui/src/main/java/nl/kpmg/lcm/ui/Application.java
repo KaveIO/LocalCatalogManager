@@ -18,7 +18,9 @@ import com.vaadin.annotations.Theme;
 import com.vaadin.annotations.Widgetset;
 import com.vaadin.navigator.Navigator;
 import com.vaadin.server.VaadinRequest;
+import com.vaadin.spring.annotation.EnableVaadin;
 import com.vaadin.spring.annotation.SpringUI;
+import com.vaadin.spring.navigator.SpringViewProvider;
 import com.vaadin.ui.Button;
 import com.vaadin.ui.Button.ClickEvent;
 import com.vaadin.ui.Button.ClickListener;
@@ -33,19 +35,25 @@ import com.vaadin.ui.themes.ValoTheme;
 import nl.kpmg.lcm.ui.view.AdministrationViewImpl;
 import nl.kpmg.lcm.ui.view.MetadataOverviewViewImpl;
 
-import org.springframework.context.annotation.Scope;
-import org.springframework.stereotype.Component;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Configuration;
 
-import ru.xpoft.vaadin.DiscoveryNavigator;
 
 @Theme("lcm_main_theme")
 @Widgetset("nl.kpmg.lcm.ui.LCMWidgetset")
-@Scope("prototype")
-@Component(value = "ui")
 @SpringUI
 public class Application extends UI {
 
   private Navigator navigator;
+
+  @Autowired
+  private SpringViewProvider viewProvider;
+
+  @Configuration
+  @EnableVaadin
+  public static class MyConfiguration {
+
+  }
 
   @Override
   protected void init(VaadinRequest vaadinRequest) {
@@ -78,8 +86,9 @@ public class Application extends UI {
     root.addComponent(viewContainer);
     root.setExpandRatio(viewContainer, 1.0f);
 
-    navigator = new DiscoveryNavigator(this, viewContainer);
-    navigator.navigateTo("");
+    navigator = new Navigator(this, viewContainer);
+    navigator.addProvider(viewProvider);
+    navigator.navigateTo("login");
   }
 
   private Button createNavigationButton(String caption, final String viewName) {

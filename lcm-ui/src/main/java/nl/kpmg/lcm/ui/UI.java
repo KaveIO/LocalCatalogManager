@@ -14,6 +14,8 @@
 
 package nl.kpmg.lcm.ui;
 
+import com.vaadin.spring.server.SpringVaadinServlet;
+
 import nl.kpmg.lcm.HttpsServerProvider;
 import nl.kpmg.lcm.HttpsServerWrapper;
 import nl.kpmg.lcm.SslConfigurationException;
@@ -26,12 +28,12 @@ import org.glassfish.grizzly.servlet.WebappContext;
 import org.glassfish.jersey.server.ResourceConfig;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
+import org.springframework.web.context.ContextLoaderListener;
+import org.springframework.web.context.support.XmlWebApplicationContext;
 
 import java.io.IOException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-
-import ru.xpoft.vaadin.SpringApplicationContext;
 
 public class UI {
   private static final Logger LOGGER = Logger.getLogger(UI.class.getName());
@@ -68,21 +70,22 @@ public class UI {
     final ResourceConfig rc = new ResourceConfig().property("contextConfig", context)
         .registerClasses(LoggingExceptionMapper.class);
 
+    XmlWebApplicationContext appContext = new XmlWebApplicationContext();
+    appContext.setConfigLocation("application-context-ui.xml");
+
     // Grizzly ssl configuration
     HttpsServerWrapper grizzlyServer =
         HttpsServerProvider.createHttpsServer(configuration, baseUri, unsafeUri, rc, false);
 
     // Create default servlet and manual configuration
-    WebappContext webappContext = new WebappContext("Grizzly web context", "");
-    ServletRegistration servlet =
-        webappContext.addServlet("vaadin", ru.xpoft.vaadin.SpringVaadinServlet.class);
-    SpringApplicationContext.setApplicationContext(context);
+    WebappContext webappContext = new WebappContext("Grizzly web context", "/");
+    webappContext.addListener(new ContextLoaderListener(appContext));
+    ServletRegistration servlet = webappContext.addServlet("vaadin", SpringVaadinServlet.class);
 
-    servlet.addMapping("");
+    servlet.addMapping("/");
     servlet.addMapping("/*");
     servlet.addMapping("/VAADIN/*");
 
-    servlet.setInitParameter("UI", "nl.kpmg.lcm.ui.Application");
     servlet.setInitParameter("productionMode", "false");
     servlet.setLoadOnStartup(1);
 

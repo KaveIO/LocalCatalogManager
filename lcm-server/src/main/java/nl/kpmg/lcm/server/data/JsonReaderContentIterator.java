@@ -27,40 +27,14 @@ import java.util.logging.Logger;
  *
  * @author Stoyan Hristov<shristov@intracol.com>
  */
-public class JsonReaderContentIterator implements ContentIterator{
-  private JsonReader reader =  null;
+public class JsonReaderContentIterator implements ContentIterator {
+  private JsonReader reader = null;
   private static final Logger logger = Logger.getLogger(JsonReaderContentIterator.class.getName());
-    
-  public JsonReaderContentIterator(JsonReader reader) throws IOException{
-    this.reader = reader;        
+
+  public JsonReaderContentIterator(JsonReader reader) throws IOException {
+    this.reader = reader;
     this.reader.beginArray();
   }
-    
-  @Override
-  public boolean hasNext() {
-    try {
-      return reader.hasNext();
-    } catch (IOException ex) {
-      logger.log(Level.WARNING, "reader.hasNext() threw and exception. {0}", ex.getMessage());
-      return false;
-    }
-  }
-
-  @Override
-  public Map next() {
-    Gson gson =  new Gson();
-    try {
-      Map next =  null;
-      if (reader.hasNext()) {
-        next = gson.fromJson(reader, Map.class);
-      }
-      return next;
-    } catch (IOException ex) {
-      logger.log(Level.WARNING, "reader.hasNext() threw and exception while reading next element. {0}", ex.getMessage());
-      return null;
-    }
-
-  }
 
   @Override
   public boolean hasNext() {
@@ -74,6 +48,7 @@ public class JsonReaderContentIterator implements ContentIterator{
 
   @Override
   public Map next() {
+    Gson gson = new Gson();
     try {
       Map next = null;
       if (reader.hasNext()) {

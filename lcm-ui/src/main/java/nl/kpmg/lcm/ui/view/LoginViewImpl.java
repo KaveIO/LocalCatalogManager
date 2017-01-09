@@ -14,12 +14,17 @@
 
 package nl.kpmg.lcm.ui.view;
 
-import com.ejt.vaadin.loginform.DefaultVerticalLoginForm;
-import com.ejt.vaadin.loginform.LoginForm;
+import com.vaadin.navigator.View;
 import com.vaadin.navigator.ViewChangeListener;
+import com.vaadin.spring.annotation.SpringView;
 import com.vaadin.spring.annotation.UIScope;
+import com.vaadin.ui.Button;
 import com.vaadin.ui.Label;
+import com.vaadin.ui.LoginForm;
+import com.vaadin.ui.LoginForm.LoginListener;
 import com.vaadin.ui.Notification;
+import com.vaadin.ui.PasswordField;
+import com.vaadin.ui.TextField;
 import com.vaadin.ui.VerticalLayout;
 
 import nl.kpmg.lcm.server.ServerException;
@@ -27,54 +32,58 @@ import nl.kpmg.lcm.ui.rest.AuthenticationException;
 import nl.kpmg.lcm.ui.rest.RestClientService;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.annotation.Scope;
-import org.springframework.stereotype.Component;
-
-import ru.xpoft.vaadin.VaadinView;
 
 /**
  *
  * @author mhoekstra
  */
-@Component
-@Scope("prototype")
 @UIScope
-@VaadinView(LoginViewImpl.VIEW_NAME)
-public class LoginViewImpl extends VerticalLayout implements LoginView {
+@SpringView(name = LoginViewImpl.VIEW_NAME)
+public class LoginViewImpl extends LoginForm implements View, LoginListener {
 
-  public static final String VIEW_NAME = "";
+  public static final String VIEW_NAME = "login";
 
   @Autowired
   private RestClientService restClientService;
-
-  public LoginViewImpl() {
-    setMargin(true);
-    Label header = new Label("Login");
-    addComponent(header);
-
-    DefaultVerticalLoginForm loginForm = new DefaultVerticalLoginForm();
-    loginForm.addLoginListener(new LoginForm.LoginListener() {
-      @Override
-      public void onLogin(LoginForm.LoginEvent event) {
-        try {
-          restClientService.authenticate(event.getUserName(), event.getPassword());
-          Notification.show("Login successful!");
-          getUI().getNavigator().navigateTo(MetadataOverviewViewImpl.VIEW_NAME);
-        } catch (AuthenticationException ex) {
-          Notification.show("Login failed!");
-        } catch (ServerException se) {
-          Notification.show("Cannot instantiate client HTTPS endpoint");
-        }
-      }
-    });
-
-    addComponent(loginForm);
-  }
 
   @Override
   public void enter(ViewChangeListener.ViewChangeEvent event) {
     if (restClientService.isAuthenticated()) {
       getUI().getNavigator().navigateTo(MetadataOverviewViewImpl.VIEW_NAME);
+    }
+  }
+
+
+
+  @Override
+  protected com.vaadin.ui.Component createContent(TextField userNameField,
+      PasswordField passwordField, Button loginButton) {
+    VerticalLayout layout = new VerticalLayout();
+    layout.setSpacing(true);
+    layout.setMargin(true);
+
+    layout.addComponent(new Label("Login"));
+    userNameField.setWidth(20, Unit.EM);
+    layout.addComponent(userNameField);
+    layout.addComponent(passwordField);
+    layout.addComponent(loginButton);
+
+    addLoginListener(this);
+
+    return layout;
+  }
+
+  @Override
+  public void onLogin(LoginEvent event) {
+    try {
+      restClientService.authenticate(event.getLoginParameter("username"),
+          event.getLoginParameter("password"));
+      Notification.show("Login successful!");
+      getUI().getNavigator().navigateTo(MetadataOverviewViewImpl.VIEW_NAME);
+    } catch (AuthenticationException ex) {
+      Notification.show("Login failed!");
+    } catch (ServerException se) {
+      Notification.show("Cannot instantiate client HTTPS endpoint");
     }
   }
 }
