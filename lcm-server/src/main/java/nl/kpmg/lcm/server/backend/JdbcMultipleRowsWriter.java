@@ -62,14 +62,22 @@ class JdbcMultipleRowsWriter {
   public void write(ContentIterator content, int maximumInsertedRowsPerQuery) throws SQLException {
 
     String[] columnNames = (String[]) columns.keySet().toArray(new String[] {});
+    String maximumQuery = constructQuery(maximumInsertedRowsPerQuery, columnNames);
     int totalCount = 0;
     while (content.hasNext()) {
 
       List<Map> rows = getRowsToInsert(content, maximumInsertedRowsPerQuery);
 
-      String query = constructQuery(rows, columnNames);
+      String query;
+      if (rows.size() == maximumInsertedRowsPerQuery) {
+          query = maximumQuery;
+      } else {
+        query = constructQuery(rows.size(), columnNames);
+      }
+
+      PreparedStatement pst = null;
       try {
-        PreparedStatement pst = createPrepareStatement(query, rows);
+        pst = createPrepareStatement(query, rows);
         pst.executeUpdate();
         totalCount += rows.size();
         logger.log(Level.INFO, "Written sucessfully {0} rows in table: {1}",
@@ -82,6 +90,10 @@ class JdbcMultipleRowsWriter {
         logger.log(Level.WARNING, "Unable to execute query starting with : {0}",
             query.substring(0, 300));
         throw ex;
+      } finally {
+          if(pst !=  null) {
+            pst.close();
+          }
       }
     }
     logger.log(Level.INFO, "All the content inserted sucessfully {0} rows in table: {1}",
@@ -99,7 +111,7 @@ class JdbcMultipleRowsWriter {
     return rows;
   }
 
-  private String constructQuery(List<Map> rows, String[] columnNames) {
+  private String constructQuery(int rowsCount, String[] columnNames) {
     StringBuilder query = new StringBuilder();
     query.append("INSERT INTO ").append(dbName).append(".").append(tableName).append("(");
     for (int i = 0; i < columnNames.length; i++) {
@@ -111,7 +123,7 @@ class JdbcMultipleRowsWriter {
     query.append(") ");
 
     query.append(" VALUES ");
-    for (int j = 0; j < rows.size(); j++) {
+    for (int j = 0; j < rowsCount; j++) {
       query.append(" (");
       for (int i = 0; i < columnNames.length; i++) {
         query.append("?");
@@ -120,7 +132,7 @@ class JdbcMultipleRowsWriter {
         }
       }
       query.append(") ");
-      if (j < rows.size() - 1) {
+      if (j < rowsCount - 1) {
         query.append(", ");
       }
     }
@@ -132,8 +144,8 @@ class JdbcMultipleRowsWriter {
       throws SQLException {
     PreparedStatement pst = connection.prepareStatement(query);
     int rowCounter = 0;
+    String[] columnNames = (String[]) columns.keySet().toArray(new String[] {});
     for (Map row : rows) {
-      String[] columnNames = (String[]) columns.keySet().toArray(new String[] {});
       Object[] rowValues = (Object[]) row.values().toArray(new Object[] {});
       for (int i = 0; i < rowValues.length; i++) {
         ColumnType type = columns.get(columnNames[i]).getType();
