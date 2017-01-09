@@ -11,7 +11,10 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
+
 package nl.kpmg.lcm.server;
+
+import com.fasterxml.jackson.databind.JsonMappingException;
 
 import java.io.IOException;
 import java.util.logging.Level;
@@ -22,8 +25,6 @@ import javax.ws.rs.NotFoundException;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.ext.ExceptionMapper;
 import javax.ws.rs.ext.Provider;
-
-import com.fasterxml.jackson.databind.JsonMappingException;
 
 /**
  * Catch all exception mapper for the REST interface.

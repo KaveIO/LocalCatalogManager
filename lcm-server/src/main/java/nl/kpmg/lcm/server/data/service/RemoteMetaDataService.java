@@ -11,6 +11,7 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
+
 package nl.kpmg.lcm.server.data.service;
 
 import nl.kpmg.lcm.client.HttpsClientFactory;
@@ -119,14 +120,14 @@ public class RemoteMetaDataService {
     if (targetLcm.isPresent())
       return concretize(Stream.of(fetchRemoteLcmMetadata(targetLcm.get(), searchString)));
     else
-      throw new NotFoundException(String.format(
-          "Unknown LCM remote peer: %s. Make sure to add it via the API.", scope));
+      throw new NotFoundException(
+          String.format("Unknown LCM remote peer: %s. Make sure to add it via the API.", scope));
   }
 
   protected MetaDatasRepresentation concretize(Stream<MetaDatasRepresentation> mdrss) {
     ConcreteMetaDatasRepresentation metaDatasRepresentation = new ConcreteMetaDatasRepresentation();
-    mdrss.filter(mdrs -> mdrs.getItems() != null).forEach(
-        mdrs -> concretize(mdrs, metaDatasRepresentation));
+    mdrss.filter(mdrs -> mdrs.getItems() != null)
+        .forEach(mdrs -> concretize(mdrs, metaDatasRepresentation));
     return metaDatasRepresentation;
   }
 

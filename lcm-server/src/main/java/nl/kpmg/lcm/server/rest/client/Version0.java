@@ -1,11 +1,11 @@
 /*
  * Copyright 2016 KPMG N.V. (unless otherwise stated).
- * 
+ *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except
  * in compliance with the License. You may obtain a copy of the License at
- * 
+ *
  * http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software distributed under the License
  * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
  * or implied. See the License for the specific language governing permissions and limitations under
@@ -27,9 +27,8 @@ import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
 
 /**
- * First Implementation of the LCM Client interface.
- *
- * The client interface is the REST API to which all clients will make their requests.
+ * First Implementation of the LCM Client interface. The client interface is the REST API to which
+ * all clients will make their requests.
  *
  * @author mhoekstra
  */
@@ -37,9 +36,6 @@ import javax.ws.rs.core.MediaType;
 @Path("client/v0")
 public class Version0 {
 
-  /**
-   *
-   */
   @GET
   @Produces(MediaType.APPLICATION_JSON)
   @RolesAllowed({Roles.ADMINISTRATOR, Roles.API_USER})

@@ -15,7 +15,6 @@
 package nl.kpmg.lcm.ui.view.metadata;
 
 import com.vaadin.ui.Button;
-import com.vaadin.ui.Component;
 import com.vaadin.ui.FormLayout;
 import com.vaadin.ui.Notification;
 import com.vaadin.ui.TextArea;

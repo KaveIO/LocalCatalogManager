@@ -1,34 +1,37 @@
 /*
  * Copyright 2016 KPMG N.V. (unless otherwise stated).
- * 
+ *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except
  * in compliance with the License. You may obtain a copy of the License at
- * 
+ *
  * http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software distributed under the License
  * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
+
 package nl.kpmg.lcm.server.backend;
 
+import nl.kpmg.lcm.server.backend.exception.BackendException;
 import nl.kpmg.lcm.server.backend.exception.BackendNotImplementedException;
+import nl.kpmg.lcm.server.backend.exception.BadMetaDataException;
+import nl.kpmg.lcm.server.backend.exception.DataSourceValidationException;
+import nl.kpmg.lcm.server.data.MetaData;
+import nl.kpmg.lcm.server.data.Storage;
+
+import org.springframework.beans.factory.config.BeanDefinition;
+import org.springframework.context.annotation.ClassPathScanningCandidateComponentProvider;
+import org.springframework.core.type.filter.AnnotationTypeFilter;
+import org.springframework.stereotype.Service;
+
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import nl.kpmg.lcm.server.backend.exception.BackendException;
-import nl.kpmg.lcm.server.backend.exception.BadMetaDataException;
-import nl.kpmg.lcm.server.backend.exception.DataSourceValidationException;
-import nl.kpmg.lcm.server.data.MetaData;
-import nl.kpmg.lcm.server.data.Storage;
-import org.springframework.beans.factory.config.BeanDefinition;
-import org.springframework.context.annotation.ClassPathScanningCandidateComponentProvider;
-import org.springframework.core.type.filter.AnnotationTypeFilter;
-import org.springframework.stereotype.Service;
 
 /**
  *
@@ -61,8 +64,8 @@ public class BackendFactory {
 
     if (backendClassMap == null || backendClassMap.size() == 0
         || backendClassMap.get(sourceType) == null) {
-      throw new BackendNotImplementedException("Backend is not implemented for soruce with type: "
-          + sourceType);
+      throw new BackendNotImplementedException(
+          "Backend is not implemented for soruce with type: " + sourceType);
     }
 
     Class backendClass = backendClassMap.get(sourceType);
@@ -77,8 +80,8 @@ public class BackendFactory {
     // TODO it seems that currently the filter is working on half - return only classes
     // that has annotation but doesn't case about annotations type.
     // The code bellow works correct but it will make extra cycles.
-    scanner.addIncludeFilter(new AnnotationTypeFilter(
-        nl.kpmg.lcm.server.backend.BackendSource.class));
+    scanner
+        .addIncludeFilter(new AnnotationTypeFilter(nl.kpmg.lcm.server.backend.BackendSource.class));
     backendClassMap = new ConcurrentHashMap();
     for (BeanDefinition bd : scanner.findCandidateComponents(backendSourcePackage)) {
       logger.log(Level.FINE, "Found class: {0}", bd.getBeanClassName());
@@ -93,8 +96,8 @@ public class BackendFactory {
 
       if (sourceType != null) {
         logger.log(Level.FINE,
-            "Put to backendClassMap entity with  key: {0} and object of type: {1}", new Object[] {
-                sourceType, bd.getBeanClassName()});
+            "Put to backendClassMap entity with  key: {0} and object of type: {1}",
+            new Object[] {sourceType, bd.getBeanClassName()});
         if (backendClassMap.get(sourceType) != null) {
           logger.log(Level.SEVERE,
               "There are more then one Class that implements \"{0}\" source Type!",

@@ -11,6 +11,7 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
+
 package nl.kpmg.lcm.configuration;
 
 /**
@@ -28,5 +29,4 @@ public class ServerConfiguration extends BasicConfiguration {
   public void setServerStorage(String serverStorage) {
     this.serverStorage = serverStorage;
   }
-
 }

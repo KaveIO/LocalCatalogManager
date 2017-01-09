@@ -1,11 +1,11 @@
 /*
  * Copyright 2016 KPMG N.V. (unless otherwise stated).
- * 
+ *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except
  * in compliance with the License. You may obtain a copy of the License at
- * 
+ *
  * http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software distributed under the License
  * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
  * or implied. See the License for the specific language governing permissions and limitations under
@@ -33,27 +33,27 @@ import javax.ws.rs.ext.Provider;
 @PreMatching
 public class ResponseFilter implements ContainerResponseFilter {
 
-    /**
-     * The class logger.
-     */
-    private static final Logger LOGGER = Logger.getLogger(ResponseFilter.class.getName());
+  /**
+   * The class logger.
+   */
+  private static final Logger LOGGER = Logger.getLogger(ResponseFilter.class.getName());
 
-    /**
-     * Filters the responses and adds the appropriate authentication headers.
-     *
-     * @param requestContext the request
-     * @param responseContext the response
-     */
-    @Override
-    public final void filter(final ContainerRequestContext requestContext,
-            final ContainerResponseContext responseContext) {
-        LOGGER.log(Level.FINE, "LCMRESTResponseFilter called with Entity {0}", responseContext.getEntity());
+  /**
+   * Filters the responses and adds the appropriate authentication headers.
+   *
+   * @param requestContext the request
+   * @param responseContext the response
+   */
+  @Override
+  public final void filter(final ContainerRequestContext requestContext,
+      final ContainerResponseContext responseContext) {
+    LOGGER.log(Level.FINE, "LCMRESTResponseFilter called with Entity {0}",
+        responseContext.getEntity());
 
-        MultivaluedMap<String, Object> headers = responseContext.getHeaders();
-        headers.add("Acces-Control-Allow-Headers",
-                String.format("%s, %s",
-                SessionAuthenticationManager.LCM_AUTHENTICATION_USER_HEADER,
-                SessionAuthenticationManager.LCM_AUTHENTICATION_TOKEN_HEADER));
-        headers.add("WWW-Authenticate", "Basic realm=\"LCM\", LCMToken realm=\"LCM\"");
-    }
+    MultivaluedMap<String, Object> headers = responseContext.getHeaders();
+    headers.add("Acces-Control-Allow-Headers",
+        String.format("%s, %s", SessionAuthenticationManager.LCM_AUTHENTICATION_USER_HEADER,
+            SessionAuthenticationManager.LCM_AUTHENTICATION_TOKEN_HEADER));
+    headers.add("WWW-Authenticate", "Basic realm=\"LCM\", LCMToken realm=\"LCM\"");
+  }
 }

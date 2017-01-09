@@ -1,46 +1,48 @@
 /*
  * Copyright 2015 KPMG N.V. (unless otherwise stated).
- * 
+ *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except
  * in compliance with the License. You may obtain a copy of the License at
- * 
+ *
  * http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software distributed under the License
  * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
+
 package nl.kpmg.lcm.server.backend;
 
-import nl.kpmg.lcm.server.backend.metatadata.CsvMetaData;
-import nl.kpmg.lcm.validation.Notification;
-import nl.kpmg.lcm.server.data.ContentIterator;
-import java.io.File;
-import java.io.IOException;
 import nl.kpmg.lcm.server.backend.exception.BackendException;
-import nl.kpmg.lcm.server.data.MetaData;
-import org.apache.metamodel.data.DataSet;
-import java.io.Writer;
-import java.net.URI;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import nl.kpmg.lcm.server.backend.exception.BadMetaDataException;
 import nl.kpmg.lcm.server.backend.exception.DataSourceValidationException;
-import nl.kpmg.lcm.server.data.Data;
-import nl.kpmg.lcm.server.data.Storage;
+import nl.kpmg.lcm.server.backend.metatadata.CsvMetaData;
 import nl.kpmg.lcm.server.backend.storage.CsvStorage;
+import nl.kpmg.lcm.server.data.ContentIterator;
+import nl.kpmg.lcm.server.data.Data;
+import nl.kpmg.lcm.server.data.MetaData;
+import nl.kpmg.lcm.server.data.Storage;
+import nl.kpmg.lcm.validation.Notification;
+
 import org.apache.metamodel.DataContextFactory;
 import org.apache.metamodel.UpdateableDataContext;
 import org.apache.metamodel.csv.CsvConfiguration;
 import org.apache.metamodel.csv.CsvDataContext;
 import org.apache.metamodel.csv.CsvWriter;
+import org.apache.metamodel.data.DataSet;
 import org.apache.metamodel.schema.Schema;
 import org.apache.metamodel.schema.Table;
 import org.apache.metamodel.util.FileHelper;
+
+import java.io.File;
+import java.io.IOException;
+import java.io.Writer;
+import java.net.URI;
+import java.util.Date;
+import java.util.Map;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  *
@@ -52,7 +54,7 @@ public class BackendCsvImpl extends AbstractBackend {
   private static final Logger logger = Logger.getLogger(BackendCsvImpl.class.getName());
   private File dataSourceFile = null;
   private final CsvMetaData csvMetaData;
-  
+
   /**
    *
    * @param backendStorage valid storage. This storage name must be extracted from @metaData object
@@ -82,8 +84,8 @@ public class BackendCsvImpl extends AbstractBackend {
     CsvConfiguration csvConfiguration = csvMetaData.getConfiguration();
 
     if (!dataSourceFile.exists()) {
-      throw new DataSourceValidationException("Unable to find data source file! FilePath"
-          + dataSourceFile.getPath());
+      throw new DataSourceValidationException(
+          "Unable to find data source file! FilePath" + dataSourceFile.getPath());
     }
     return (CsvDataContext) DataContextFactory.createCsvDataContext(dataSourceFile,
         csvConfiguration);
@@ -143,7 +145,8 @@ public class BackendCsvImpl extends AbstractBackend {
    *         - @forceUpdateIfExists is false and the content already exists.
    */
   @Override
-  public void store(ContentIterator content, DataTransformationSettings transformationSettings, boolean forceOverwrite) throws BackendException {
+  public void store(ContentIterator content, DataTransformationSettings transformationSettings,
+      boolean forceOverwrite) throws BackendException {
     DataSetInformation dataSetInformation = gatherDataSetInformation();
     if (dataSetInformation.isAttached() && !forceOverwrite) {
       throw new BackendException("Data set is already attached, won't overwrite.");
@@ -179,13 +182,13 @@ public class BackendCsvImpl extends AbstractBackend {
     }
   }
 
-    private String[] toStringArray(Object[] lineAsObjectValues) {
-        String[] lineAsStringValues = new String[lineAsObjectValues.length];
-        for(int i = 0; i < lineAsObjectValues.length; i++) {
-            lineAsStringValues[i] = lineAsObjectValues[i].toString();
-        }
-        return lineAsStringValues;
+  private String[] toStringArray(Object[] lineAsObjectValues) {
+    String[] lineAsStringValues = new String[lineAsObjectValues.length];
+    for (int i = 0; i < lineAsObjectValues.length; i++) {
+      lineAsStringValues[i] = lineAsObjectValues[i].toString();
     }
+    return lineAsStringValues;
+  }
 
   /**
    * Method to read some content from a data storage backend.
@@ -206,7 +209,7 @@ public class BackendCsvImpl extends AbstractBackend {
     csvMetaData.addColumnsDescription(table.getColumns());
     return new Data(csvMetaData.getMetaData(), new DataSetContentIterator(result));
   }
- 
+
   @Override
   public boolean delete() throws BackendException {
     throw new UnsupportedOperationException("Not supported yet."); // To change body of generated
@@ -215,15 +218,14 @@ public class BackendCsvImpl extends AbstractBackend {
   }
 
   @Override
-  protected void extraValidation(MetaData metaData,
-      Notification notification) {
+  protected void extraValidation(MetaData metaData, Notification notification) {
 
-   
+
   }
 
-    @Override
-    public void free() {
-       
-    }
+  @Override
+  public void free() {
+
+  }
 
 }

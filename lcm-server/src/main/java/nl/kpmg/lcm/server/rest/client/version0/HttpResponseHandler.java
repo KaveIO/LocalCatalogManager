@@ -33,14 +33,14 @@ import javax.ws.rs.core.Response;
 public class HttpResponseHandler {
 
   /**
-   * Given a Response will throw the appropriate exception
+   * Given a Response will throw the appropriate exception.
    *
    * @param response
    * @throws ClientErrorException
    */
   public static void handleResponse(Response response) throws ClientErrorException {
     int status = response.getStatus();
-    //Don't bother looking 
+    // Don't bother looking
     if (status < 400) {
       return;
     }

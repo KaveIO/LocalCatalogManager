@@ -26,13 +26,13 @@ public class SslProvider {
     SSLContextConfigurator sslContextConfigurator = new SSLContextConfigurator();
 
     // set up security context
-    sslContextConfigurator.setKeyStoreFile(configuration.getKeystore()); // contains the server
-                                                                         // keypair
+    // contains the server keypair
+    sslContextConfigurator.setKeyStoreFile(configuration.getKeystore());
     sslContextConfigurator.setKeyStorePass(configuration.getKeystorePassword());
     sslContextConfigurator.setKeyStoreType(configuration.getKeystoreType());
     sslContextConfigurator.setKeyPass(configuration.getKeystoreKeypass());
-    sslContextConfigurator.setTrustStoreFile(configuration.getTruststore()); // contains the list of
-                                                                             // trusted certificates
+    // contains the list of trusted certificates
+    sslContextConfigurator.setTrustStoreFile(configuration.getTruststore());
     sslContextConfigurator.setTrustStorePass(configuration.getTruststorePassword());
     sslContextConfigurator.setTrustStoreType(configuration.getTruststoreType());
 

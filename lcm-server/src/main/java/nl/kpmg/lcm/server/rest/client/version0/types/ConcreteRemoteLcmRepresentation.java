@@ -17,38 +17,34 @@ package nl.kpmg.lcm.server.rest.client.version0.types;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 
 import nl.kpmg.lcm.rest.types.LinkInjectable;
+import nl.kpmg.lcm.rest.types.RemoteLcmRepresentation;
+import nl.kpmg.lcm.server.data.RemoteLcm;
+import nl.kpmg.lcm.server.rest.client.version0.RemoteLcmController;
+
 import org.glassfish.jersey.linking.InjectLink;
 import org.glassfish.jersey.linking.InjectLinks;
 
 import java.util.List;
 
 import javax.ws.rs.core.Link;
-import nl.kpmg.lcm.rest.types.RemoteLcmRepresentation;
-import nl.kpmg.lcm.server.data.RemoteLcm;
-import nl.kpmg.lcm.server.rest.client.version0.RemoteLcmController;
 
-public class ConcreteRemoteLcmRepresentation extends RemoteLcmRepresentation implements LinkInjectable {
+public class ConcreteRemoteLcmRepresentation extends RemoteLcmRepresentation
+    implements LinkInjectable {
 
-  @InjectLinks(
-          {
-            @InjectLink(
-                    resource = RemoteLcmController.class,
-                    style = InjectLink.Style.ABSOLUTE, rel = "self"
-            //                    method = "getLocalMetaData",
-            //                    bindings = {
-            //                      @Binding(
-            //                              name = "meta_data_id", 
-            //                              value = "${instance.item.id}"
-            //                      )
-            //                    }
-            )
-          }
-  )
+  @InjectLinks({@InjectLink(resource = RemoteLcmController.class, style = InjectLink.Style.ABSOLUTE,
+      rel = "self"
+      // method = "getLocalMetaData",
+      // bindings = {
+      // @Binding(
+      // name = "meta_data_id",
+      // value = "${instance.item.id}"
+      // )
+      // }
+      )})
   @JsonIgnore
   private List<Link> injectedLinks;
 
-  public ConcreteRemoteLcmRepresentation() {
-  }
+  public ConcreteRemoteLcmRepresentation() {}
 
   public ConcreteRemoteLcmRepresentation(RemoteLcm lcm) {
     setItem(lcm);

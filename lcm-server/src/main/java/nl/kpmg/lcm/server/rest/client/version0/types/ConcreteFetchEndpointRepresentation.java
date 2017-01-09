@@ -16,39 +16,35 @@ package nl.kpmg.lcm.server.rest.client.version0.types;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 
+import nl.kpmg.lcm.rest.types.FetchEndpointRepresentation;
 import nl.kpmg.lcm.rest.types.LinkInjectable;
+import nl.kpmg.lcm.server.data.FetchEndpoint;
+import nl.kpmg.lcm.server.rest.client.version0.FetchEndpointController;
+
 import org.glassfish.jersey.linking.InjectLink;
 import org.glassfish.jersey.linking.InjectLinks;
 
 import java.util.List;
 
 import javax.ws.rs.core.Link;
-import nl.kpmg.lcm.rest.types.FetchEndpointRepresentation;
-import nl.kpmg.lcm.server.data.FetchEndpoint;
-import nl.kpmg.lcm.server.rest.client.version0.FetchEndpointController;
 
-public class ConcreteFetchEndpointRepresentation extends FetchEndpointRepresentation implements LinkInjectable {
+public class ConcreteFetchEndpointRepresentation extends FetchEndpointRepresentation
+    implements LinkInjectable {
 
-  @InjectLinks(
-          {
-            @InjectLink(
-                    resource = FetchEndpointController.class,
-                    style = InjectLink.Style.ABSOLUTE, rel = "self"
-            //                    method = "getLocalMetaData",
-            //                    bindings = {
-            //                      @Binding(
-            //                              name = "meta_data_id", 
-            //                              value = "${instance.item.id}"
-            //                      )
-            //                    }
-            )
-          }
-  )
+  @InjectLinks({@InjectLink(resource = FetchEndpointController.class,
+      style = InjectLink.Style.ABSOLUTE, rel = "self"
+      // method = "getLocalMetaData",
+      // bindings = {
+      // @Binding(
+      // name = "meta_data_id",
+      // value = "${instance.item.id}"
+      // )
+      // }
+      )})
   @JsonIgnore
   private List<Link> injectedLinks;
 
-  public ConcreteFetchEndpointRepresentation() {
-  }
+  public ConcreteFetchEndpointRepresentation() {}
 
   public ConcreteFetchEndpointRepresentation(FetchEndpoint fe) {
     setItem(fe);
