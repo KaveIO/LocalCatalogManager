@@ -59,6 +59,7 @@ public class JsonReaderContentIterator implements ContentIterator{
       logger.log(Level.WARNING, "reader.hasNext() threw and exception while reading next element. {0}", ex.getMessage());
       return null;
     }
+
   }
 
   @Override
