@@ -15,9 +15,8 @@
 package nl.kpmg.lcm.server.backend.metatadata;
 
 import nl.kpmg.lcm.server.backend.ColumnDescription;
-import nl.kpmg.lcm.server.backend.exception.BackendException;
-import nl.kpmg.lcm.server.backend.exception.BadMetaDataException;
 import nl.kpmg.lcm.server.data.MetaData;
+import nl.kpmg.lcm.server.exception.LcmException;
 
 import org.apache.metamodel.schema.Column;
 import org.apache.metamodel.schema.ColumnType;
@@ -42,7 +41,7 @@ public class RelationalDbMetaData {
     this.metaData = metaData;
   }
 
-  public Map<String, ColumnDescription> getColumns() throws BackendException {
+  public Map<String, ColumnDescription> getColumns() {
 
     Map<String, Map> metaDataColumns = getColumnsMap();
 
@@ -71,7 +70,7 @@ public class RelationalDbMetaData {
   }
 
 
-  private Integer toInteger(Object value) throws BackendException {
+  private Integer toInteger(Object value) {
     if (value == null) {
       return null;
     }
@@ -79,7 +78,8 @@ public class RelationalDbMetaData {
     if (value instanceof Integer) {
       return (Integer) value;
     } else {
-      throw new BackendException("Object is not valid integer" + value);
+      logger.log(Level.WARNING, "Unable to convert metadata value: {0}.", value);
+      return null;
     }
   }
 
@@ -104,14 +104,14 @@ public class RelationalDbMetaData {
     return columnType;
   }
 
-  private Map<String, Map> getColumnsMap() throws BackendException {
+  private Map<String, Map> getColumnsMap() {
     Map<String, Map> metaDataColumns = null;
     Map dataOptions = getMetaData().getDataOptions();
     if (dataOptions != null) {
       if (dataOptions.containsKey("table-description")) {
         metaDataColumns = getMetaData().get("data.options.table-description.columns");
       } else {
-        throw new BadMetaDataException(
+        throw new LcmException(
             "There is no \"table-description\" section in the metadata! At least column names are required.");
       }
     }

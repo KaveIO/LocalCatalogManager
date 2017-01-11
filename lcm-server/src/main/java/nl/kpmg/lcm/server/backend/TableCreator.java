@@ -14,8 +14,7 @@
 
 package nl.kpmg.lcm.server.backend;
 
-import nl.kpmg.lcm.server.backend.exception.BackendException;
-import nl.kpmg.lcm.server.backend.exception.BadMetaDataException;
+import nl.kpmg.lcm.server.exception.LcmException;
 
 import org.apache.metamodel.create.CreateTable;
 import org.apache.metamodel.create.CreateTableColumnBuilder;
@@ -48,11 +47,11 @@ public class TableCreator {
   }
 
   public Table createTable(Schema database, String tableName,
-      Map<String, ColumnDescription> columns) throws BackendException {
+      Map<String, ColumnDescription> columns) {
 
     CreateTable createTable = new CreateTable(database, tableName);
     if (columns == null) {
-      throw new BadMetaDataException(
+      throw new LcmException(
           "There is no \"table-description\" section in the metadata! At least column names are required.");
     }
 
@@ -61,14 +60,13 @@ public class TableCreator {
     dataContext.executeUpdate(createTable);
     Table table = database.getTableByName(tableName);
     if (table == null) {
-      throw new BackendException("Unable to create table with name: " + tableName);
+      throw new LcmException("Unable to create table with name: " + tableName);
     }
 
     return table;
   }
 
-  private void fillCreateTable(Map<String, ColumnDescription> columns, CreateTable createTable)
-      throws BackendException {
+  private void fillCreateTable(Map<String, ColumnDescription> columns, CreateTable createTable) {
 
     for (Map.Entry<String, ColumnDescription> entry : columns.entrySet()) {
       ColumnType columnType = entry.getValue().getType();

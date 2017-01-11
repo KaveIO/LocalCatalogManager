@@ -14,12 +14,11 @@
 
 package nl.kpmg.lcm.server.backend;
 
-import nl.kpmg.lcm.server.backend.exception.BackendException;
-import nl.kpmg.lcm.server.backend.exception.BackendNotImplementedException;
-import nl.kpmg.lcm.server.backend.exception.BadMetaDataException;
-import nl.kpmg.lcm.server.backend.exception.DataSourceValidationException;
 import nl.kpmg.lcm.server.data.MetaData;
 import nl.kpmg.lcm.server.data.Storage;
+import nl.kpmg.lcm.server.exception.LcmException;
+import nl.kpmg.lcm.server.exception.LcmValidationException;
+import nl.kpmg.lcm.validation.Notification;
 
 import org.springframework.beans.factory.config.BeanDefinition;
 import org.springframework.context.annotation.ClassPathScanningCandidateComponentProvider;
@@ -45,26 +44,21 @@ public class BackendFactory {
   private static final int MAX_KEY_LENGTH = 1024;
   private final String backendSourcePackage = "nl.kpmg.lcm.server.backend";
 
-  public Backend createBackend(String sourceType, Storage storage, MetaData metadata)
-      throws BackendNotImplementedException, BadMetaDataException, DataSourceValidationException,
-      BackendException {
+  public Backend createBackend(String sourceType, Storage storage, MetaData metadata) {
 
-    if (sourceType == null || sourceType.isEmpty() || sourceType.length() > MAX_KEY_LENGTH) {
-      throw new IllegalArgumentException(
-          "Schame parameter could not be null or empty! The maximun length is: " + MAX_KEY_LENGTH);
-    }
+    Notification notification = validate(sourceType, storage);
 
-    if (storage == null) {
-      throw new IllegalArgumentException("Storage parameter could not be null");
+    if (notification.hasErrors()) {
+        throw new LcmValidationException(notification);
     }
 
     if (backendClassMap == null) {
       scan();
     }
 
-    if (backendClassMap == null || backendClassMap.size() == 0
+    if (backendClassMap == null || backendClassMap.isEmpty()
         || backendClassMap.get(sourceType) == null) {
-      throw new BackendNotImplementedException(
+      throw new LcmException(
           "Backend is not implemented for soruce with type: " + sourceType);
     }
 
@@ -72,6 +66,24 @@ public class BackendFactory {
     Backend backendImpl = getBackendImplementation(backendClass, storage, metadata);
     return backendImpl;
   }
+
+    private Notification validate(String sourceType, Storage storage) {
+        Notification notification = new Notification();
+        if (sourceType == null) {
+            notification.addError("Data source type could not be null", null);
+        } else if (sourceType.isEmpty()) {
+            notification.addError("Data source type could not be empty!", null);
+        } else if (sourceType.length() > MAX_KEY_LENGTH) {
+            notification.addError("Data source type could not be longer then: "
+                    + MAX_KEY_LENGTH, null);
+        }
+
+        if (storage == null) {
+          notification.addError("Storage parameter could not be null", null);
+        }
+
+        return notification;
+    }
 
   private void scan() {
     ClassPathScanningCandidateComponentProvider scanner =
@@ -122,8 +134,7 @@ public class BackendFactory {
     return null;
   }
 
-  private Backend getBackendImplementation(Class<?> clazz, Storage storage, MetaData metadata)
-      throws BadMetaDataException, DataSourceValidationException, BackendException {
+  private Backend getBackendImplementation(Class<?> clazz, Storage storage, MetaData metadata) {
     try {
       Constructor<?> constructor = clazz.getConstructor(Storage.class, MetaData.class);
       Backend backendImpl = (Backend) constructor.newInstance(new Object[] {storage, metadata});
@@ -142,14 +153,11 @@ public class BackendFactory {
       logger.log(Level.WARNING, "Unable to call constructor with param: " + storage.getId(), ex);
     } catch (InvocationTargetException ex) {
       logger.log(Level.WARNING, null, ex);
-      if (ex.getCause() instanceof BadMetaDataException) {
-        throw (BadMetaDataException) ex.getCause();
+      if (ex.getCause() instanceof LcmException) {
+        throw (LcmException) ex.getCause();
       }
-      if (ex.getCause() instanceof DataSourceValidationException) {
-        throw (DataSourceValidationException) ex.getCause();
-      }
-      if (ex.getCause() instanceof Exception) {
-        throw (BackendException) ex.getCause();
+      if (ex.getCause() instanceof LcmValidationException) {
+        throw (LcmValidationException) ex.getCause();
       }
     }
 

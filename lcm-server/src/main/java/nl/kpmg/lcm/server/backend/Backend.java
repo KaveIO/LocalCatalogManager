@@ -14,7 +14,6 @@
 
 package nl.kpmg.lcm.server.backend;
 
-import nl.kpmg.lcm.server.backend.exception.BackendException;
 import nl.kpmg.lcm.server.data.ContentIterator;
 import nl.kpmg.lcm.server.data.Data;
 
@@ -30,9 +29,8 @@ public interface Backend {
    * Method to gather information necessary for the dataset manipulation.
    *
    * @return information whether URI points to existing resource, and its properties.
-   * @throws BackendException if the URI is not valid or it is not possible to reach the resource.
    */
-  public DataSetInformation gatherDataSetInformation() throws BackendException;
+  public DataSetInformation gatherDataSetInformation();
 
 
   /**
@@ -41,26 +39,23 @@ public interface Backend {
    * @param forceOverwrite - if set to true the @content is stored no mater if it already exists.
    *        When set to false the @content is stored only if it does not exist.
    * @param content {@link ContentIterator} that should be stored.
-   * @throws BackendException if the URI is not valid or it is not possible to reach the storage.
    */
   public void store(ContentIterator content, DataTransformationSettings transformationSettings,
-      boolean forceOverwrite) throws BackendException;
+      boolean forceOverwrite);
 
   /**
    * Method to read some content from a data storage backend.
    *
    * @return {@link DataSet} with the data to be read.
-   * @throws BackendException if the URI is not valid or it is not possible to reach the storage.
    */
-  public Data read() throws BackendException;
+  public Data read();
 
   /**
    * Method to delete some content on a data storage backend.
    *
    * @return true if delete is successful, false otherwise.
-   * @throws BackendException if the URI is not valid or it is not possible to reach the storage.
    */
-  public boolean delete() throws BackendException;
+  public boolean delete();
 
   /**
    * Method finalize is used to free all underlaying resources Call it when you are done with the

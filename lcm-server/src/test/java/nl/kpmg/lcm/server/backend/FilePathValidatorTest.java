@@ -14,12 +14,14 @@
 
 package nl.kpmg.lcm.server.backend;
 
-import nl.kpmg.lcm.validation.Notification;
-import java.io.File;
-import nl.kpmg.lcm.server.backend.exception.BackendException;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
+
+import nl.kpmg.lcm.validation.Notification;
+
 import org.junit.Test;
+
+import java.io.File;
 
 /**
  *
@@ -28,7 +30,7 @@ import org.junit.Test;
 public class FilePathValidatorTest {
 
   @Test
-  public final void testValidatePositive() throws BackendException {
+  public final void testValidatePositive() {
     // This false are located in the directory of execution
     File baseDir = new File("test/");
     File file = new File("test/file.csv");
@@ -40,7 +42,7 @@ public class FilePathValidatorTest {
   }
 
   @Test
-  public final void testValidateNegativeSameLevel() throws BackendException {
+  public final void testValidateNegativeSameLevel() {
     // This false are located in the directory of execution
     File baseDir = new File("test/");
     File file = new File("file.csv");
@@ -52,7 +54,7 @@ public class FilePathValidatorTest {
   }
 
   @Test
-  public final void testValidateNegative1() throws BackendException {
+  public final void testValidateNegative1() {
     // This false are located in the directory of execution
     File baseDir = new File("test/");
     File file = new File("test/../../file.csv");
@@ -64,7 +66,7 @@ public class FilePathValidatorTest {
   }
 
   @Test
-  public final void testValidateNegative2() throws BackendException {
+  public final void testValidateNegative2() {
     // This false are located in the directory of execution
     File baseDir = new File("test/");
     File file = new File("~/file.csv");
@@ -78,7 +80,7 @@ public class FilePathValidatorTest {
 
 
   @Test
-  public final void testValidateNegative3() throws BackendException {
+  public final void testValidateNegative3() {
     // This false are located in the directory of execution
     File baseDir = new File("test/");
     File file = new File("/etc/passwd");
@@ -90,7 +92,7 @@ public class FilePathValidatorTest {
   }
 
   @Test
-  public final void testValidateNegative4() throws BackendException {
+  public final void testValidateNegative4() {
     // This false are located in the directory of execution
     File baseDir = new File("test/");
     File file = new File("google.com");

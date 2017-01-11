@@ -14,7 +14,6 @@
 
 package nl.kpmg.lcm.server.backend;
 
-import nl.kpmg.lcm.server.backend.exception.DataSourceValidationException;
 import nl.kpmg.lcm.validation.Notification;
 
 import java.io.File;
@@ -37,8 +36,7 @@ class FilePathValidator {
    *
    * @return true if @subdir File is subdirectory of @baseDir or
    */
-  public static boolean validate(File baseDirectory, File subDirectory, Notification notification)
-      throws DataSourceValidationException {
+  public static boolean validate(File baseDirectory, File subDirectory, Notification notification) {
     try {
       baseDirectory = baseDirectory.getCanonicalFile();
       subDirectory = subDirectory.getCanonicalFile();

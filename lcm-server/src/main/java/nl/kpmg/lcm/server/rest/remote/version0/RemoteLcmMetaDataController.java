@@ -17,14 +17,11 @@ package nl.kpmg.lcm.server.rest.remote.version0;
 import nl.kpmg.lcm.rest.types.FetchEndpointRepresentation;
 import nl.kpmg.lcm.rest.types.MetaDataRepresentation;
 import nl.kpmg.lcm.rest.types.MetaDatasRepresentation;
-import nl.kpmg.lcm.server.backend.exception.BackendException;
-import nl.kpmg.lcm.server.backend.exception.BackendNotImplementedException;
 import nl.kpmg.lcm.server.data.FetchEndpoint;
 import nl.kpmg.lcm.server.data.MetaData;
 import nl.kpmg.lcm.server.data.service.FetchEndpointService;
 import nl.kpmg.lcm.server.data.service.MetaDataService;
 import nl.kpmg.lcm.server.data.service.StorageService;
-import nl.kpmg.lcm.server.data.service.exception.MissingStorageException;
 import nl.kpmg.lcm.server.rest.authentication.Roles;
 import nl.kpmg.lcm.server.rest.client.version0.types.ConcreteFetchEndpointRepresentation;
 import nl.kpmg.lcm.server.rest.client.version0.types.ConcreteMetaDataRepresentation;
@@ -114,8 +111,7 @@ public class RemoteLcmMetaDataController {
   @Produces({"application/nl.kpmg.lcm.rest.types.FetchEndpointRepresentation+json"})
   @RolesAllowed({Roles.ADMINISTRATOR, Roles.API_USER})
   public final FetchEndpointRepresentation generateFetch(
-      @PathParam("metadata_id") final String metadata_id)
-      throws BackendException, BackendNotImplementedException, MissingStorageException {
+      @PathParam("metadata_id") final String metadata_id) {
 
     MetaData md = metaDataService.getMetaDataDao().findOne(metadata_id);
     if (md == null) {

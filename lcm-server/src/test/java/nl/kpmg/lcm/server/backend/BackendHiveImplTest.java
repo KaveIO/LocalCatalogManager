@@ -16,14 +16,14 @@ package nl.kpmg.lcm.server.backend;
 
 import static org.junit.Assert.assertEquals;
 
-import nl.kpmg.lcm.server.backend.exception.BackendException;
 import nl.kpmg.lcm.server.data.MetaData;
 import nl.kpmg.lcm.server.data.Storage;
+
+import org.junit.Test;
+
 import java.net.URI;
 import java.util.HashMap;
 import java.util.Map;
-import org.junit.Test;
-import static org.junit.Assert.assertEquals;
 
 
 /***
@@ -60,7 +60,7 @@ public class BackendHiveImplTest {
    * Test to check if "hive" URI scheme is supported by getSupportedUriSchema() method.
    */
   @Test
-  public final void testGetSupportedUriSchema() throws BackendException {
+  public final void testGetSupportedUriSchema() {
     String uri = "hive://remote-hive-foodmart/product";
     MetaData metaData = new MetaData();
     metaData.setDataUri(uri);
@@ -76,7 +76,7 @@ public class BackendHiveImplTest {
    * @throws BackendException if it is not possible to parse the URI
    */
   @Test
-  public final void testParseUri() throws BackendException {
+  public final void testParseUri() {
    String uri = "hive://remote-hive-foodmart/product";
     MetaData metaData = new MetaData();
     metaData.setDataUri(uri);

@@ -14,8 +14,8 @@
 
 package nl.kpmg.lcm.server.backend.storage;
 
-import nl.kpmg.lcm.server.backend.exception.BackendException;
 import nl.kpmg.lcm.server.data.Storage;
+import nl.kpmg.lcm.server.exception.LcmValidationException;
 import nl.kpmg.lcm.validation.Notification;
 
 /**
@@ -27,7 +27,7 @@ abstract class AbstractStorageContainer {
 
   protected Storage storage;
 
-  protected AbstractStorageContainer(Storage storage) throws BackendException {
+  protected AbstractStorageContainer(Storage storage) {
     Notification notification = new Notification();
     basicValidation(storage, notification);
     if(!notification.hasErrors()) {
@@ -35,7 +35,7 @@ abstract class AbstractStorageContainer {
     }
 
     if (notification.hasErrors()) {
-      throw new BackendException(notification.errorMessage());
+      throw new LcmValidationException(notification);
     }
     this.storage = storage;
   }

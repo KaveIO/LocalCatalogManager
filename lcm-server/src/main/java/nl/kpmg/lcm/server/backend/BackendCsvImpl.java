@@ -14,15 +14,14 @@
 
 package nl.kpmg.lcm.server.backend;
 
-import nl.kpmg.lcm.server.backend.exception.BackendException;
-import nl.kpmg.lcm.server.backend.exception.BadMetaDataException;
-import nl.kpmg.lcm.server.backend.exception.DataSourceValidationException;
 import nl.kpmg.lcm.server.backend.metatadata.CsvMetaData;
 import nl.kpmg.lcm.server.backend.storage.CsvStorage;
 import nl.kpmg.lcm.server.data.ContentIterator;
 import nl.kpmg.lcm.server.data.Data;
 import nl.kpmg.lcm.server.data.MetaData;
 import nl.kpmg.lcm.server.data.Storage;
+import nl.kpmg.lcm.server.exception.LcmException;
+import nl.kpmg.lcm.server.exception.LcmValidationException;
 import nl.kpmg.lcm.validation.Notification;
 
 import org.apache.metamodel.DataContextFactory;
@@ -60,11 +59,8 @@ public class BackendCsvImpl extends AbstractBackend {
    * @param backendStorage valid storage. This storage name must be extracted from @metaData object
    *        and then the storage object loaded be loaded .
    * @param metaData - valid @metaData that representing CSV data source.
-   * @throws BadMetaDataException when the @metaData is null or it is not consistent.
-   * @throws nl.kpmg.lcm.server.backend.exception.DataSourceValidationException
    */
-  public BackendCsvImpl(Storage backendStorage, MetaData metaData)
-      throws DataSourceValidationException, BackendException {
+  public BackendCsvImpl(Storage backendStorage, MetaData metaData) {
     super(metaData);
     String storagePath = new CsvStorage(backendStorage).getStoragePath();
     dataSourceFile = createDataSourceFile(storagePath);
@@ -76,7 +72,7 @@ public class BackendCsvImpl extends AbstractBackend {
     return "csv";
   }
 
-  private UpdateableDataContext createDataContext() throws BackendException {
+  private UpdateableDataContext createDataContext() {
     if (metaData == null) {
       throw new IllegalStateException("MetaData parameter could not be null");
     }
@@ -84,7 +80,7 @@ public class BackendCsvImpl extends AbstractBackend {
     CsvConfiguration csvConfiguration = csvMetaData.getConfiguration();
 
     if (!dataSourceFile.exists()) {
-      throw new DataSourceValidationException(
+      throw new LcmException(
           "Unable to find data source file! FilePath" + dataSourceFile.getPath());
     }
     return (CsvDataContext) DataContextFactory.createCsvDataContext(dataSourceFile,
@@ -92,7 +88,7 @@ public class BackendCsvImpl extends AbstractBackend {
   }
 
 
-  private File createDataSourceFile(String storagePath) throws DataSourceValidationException {
+  private File createDataSourceFile(String storagePath) {
     if (dataSourceFile != null) {
       return dataSourceFile;
     }
@@ -107,14 +103,14 @@ public class BackendCsvImpl extends AbstractBackend {
     FilePathValidator.validate(baseDir, dataSourceFile, notification);
 
     if (notification.hasErrors()) {
-      throw new DataSourceValidationException(notification.errorMessage());
+      throw new LcmValidationException(notification);
     }
 
     return dataSourceFile;
   }
 
   @Override
-  public DataSetInformation gatherDataSetInformation() throws BackendException {
+  public DataSetInformation gatherDataSetInformation() {
     DataSetInformation info = new DataSetInformation();
     try {
       info.setUri(dataSourceFile.getCanonicalPath());
@@ -127,7 +123,7 @@ public class BackendCsvImpl extends AbstractBackend {
     } catch (IOException ex) {
       logger.log(Level.SEVERE, "Unable to get info about datasource: " + dataSourceFile.getPath(),
           ex);
-      throw new BackendException(ex);
+      throw new LcmException("Unable to get info about datasource: " + dataSourceFile.getPath(), ex);
     }
 
     return info;
@@ -140,16 +136,14 @@ public class BackendCsvImpl extends AbstractBackend {
    * @param forceOverwrite - indicates how to proceed if the content already exists - in case of
    *        true the content is written no matter if already persists or not - in case it is set to
    *        false then the content is written only when it doesn't exist - in case it is set to
-   *        false and the content already exists then BackendExceptionis thrown
-   * @throws BackendException if - the URI is not valid or it is not possible to reach the storage.
-   *         - @forceUpdateIfExists is false and the content already exists.
+   *        false and the content already exists then LcmException is thrown.
    */
   @Override
   public void store(ContentIterator content, DataTransformationSettings transformationSettings,
-      boolean forceOverwrite) throws BackendException {
+      boolean forceOverwrite) {
     DataSetInformation dataSetInformation = gatherDataSetInformation();
     if (dataSetInformation.isAttached() && !forceOverwrite) {
-      throw new BackendException("Data set is already attached, won't overwrite.");
+      throw new LcmException("Data set is already attached, won't overwrite.");
     }
 
     try (Writer writer = FileHelper.getBufferedWriter(dataSourceFile);) {
@@ -195,10 +189,9 @@ public class BackendCsvImpl extends AbstractBackend {
    *
    * @return {@link DataSet} with all the data specified in the @metaData object passed during
    *         initialization.
-   * @throws BackendException if the URI is not valid or it is not possible to reach the storage.
    */
   @Override
-  public Data read() throws BackendException {
+  public Data read() {
     UpdateableDataContext dataContext = createDataContext();
     Schema schema = dataContext.getDefaultSchema();
     if (schema.getTableCount() == 0) {
@@ -211,7 +204,7 @@ public class BackendCsvImpl extends AbstractBackend {
   }
 
   @Override
-  public boolean delete() throws BackendException {
+  public boolean delete() {
     throw new UnsupportedOperationException("Not supported yet."); // To change body of generated
                                                                    // methods, choose Tools |
                                                                    // Templates.

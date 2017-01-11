@@ -81,16 +81,16 @@ public class DataFetchTriggerService {
     RemoteLcmDao dao = lcmService.getDao();
     RemoteLcm lcm = dao.findOneById(lcmId);
     if (lcm == null) {
-      throw new NotFoundException(String.format("LCM %s not found", lcmId));
+      throw new NotFoundException(String.format("Remote LCM with id: %s is not found", lcmId));
     }
 
     MetaData metaData = getMetadata(metadataId, lcm);
     if (metaData == null) {
-      throw new NotFoundException(String.format("Metadata %s not found", metadataId));
+      throw new NotFoundException(String.format("Metadata with id: %s is not found", metadataId));
     }
     Storage localStorage = storageService.getStorageDao().findOne(localStorageId);
     if (localStorage == null) {
-      throw new NotFoundException(String.format("Storage %s not found", localStorage));
+      throw new NotFoundException(String.format("Storage with id: %s is not found", localStorageId));
     }
 
     updateMetaData(metaData, localStorage);

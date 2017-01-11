@@ -14,8 +14,9 @@
 
 package nl.kpmg.lcm.server.backend;
 
-import nl.kpmg.lcm.server.backend.exception.BackendException;
 import nl.kpmg.lcm.server.data.MetaData;
+import nl.kpmg.lcm.server.exception.LcmException;
+import nl.kpmg.lcm.server.exception.LcmValidationException;
 import nl.kpmg.lcm.validation.Notification;
 
 import java.net.URI;
@@ -30,11 +31,11 @@ abstract class AbstractBackend implements Backend {
   protected final URI dataURI;
 
 
-  protected AbstractBackend(MetaData metaData) throws BackendException {
+  protected AbstractBackend(MetaData metaData) {
     Notification validationNotification = new Notification();
     validation(metaData, validationNotification);
     if (validationNotification.hasErrors()) {
-      throw new BackendException(validationNotification.errorMessage());
+      throw new LcmValidationException(validationNotification);
     }
 
     this.metaData = metaData;
@@ -52,7 +53,6 @@ abstract class AbstractBackend implements Backend {
    * of the backend
    *
    * @param metaData
-   * @throws BadMetaDataException
    */
   private void validateMetadata(MetaData metaData, Notification notification) {
     if (metaData == null) {
@@ -84,7 +84,6 @@ abstract class AbstractBackend implements Backend {
    *
    * @param storage
    * @param metaData
-   * @throws BadMetaDataException
    */
   protected abstract void extraValidation(MetaData metaData, Notification notification);
 
@@ -94,12 +93,12 @@ abstract class AbstractBackend implements Backend {
     return dataURI;
   }
 
-  private URI parseDataUri(String uri) throws BackendException {
+  private URI parseDataUri(String uri) throws LcmException {
 
     try {
       return new URI(uri);
     } catch (URISyntaxException ex) {
-      throw new BackendException(String.format("Failure while trying to parse URI '%s'", uri), ex);
+      throw new LcmException(String.format("Failure while trying to parse URI '%s'", uri), ex);
     }
   }
 

@@ -19,6 +19,7 @@ import nl.kpmg.lcm.configuration.ClientConfiguration;
 import nl.kpmg.lcm.rest.types.MetaDatasRepresentation;
 import nl.kpmg.lcm.server.ServerException;
 import nl.kpmg.lcm.server.data.RemoteLcm;
+import nl.kpmg.lcm.server.exception.LcmException;
 import nl.kpmg.lcm.server.rest.client.version0.types.ConcreteMetaDataRepresentation;
 import nl.kpmg.lcm.server.rest.client.version0.types.ConcreteMetaDatasRepresentation;
 
@@ -35,7 +36,6 @@ import java.util.logging.Logger;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import javax.ws.rs.NotFoundException;
 import javax.ws.rs.core.Response;
 
 /**
@@ -120,8 +120,9 @@ public class RemoteMetaDataService {
     if (targetLcm.isPresent())
       return concretize(Stream.of(fetchRemoteLcmMetadata(targetLcm.get(), searchString)));
     else
-      throw new NotFoundException(
-          String.format("Unknown LCM remote peer: %s. Make sure to add it via the API.", scope));
+      throw new LcmException(
+          String.format("Unknown LCM remote peer: %s. Make sure to add it via the API.", scope),
+          Response.Status.BAD_REQUEST);
   }
 
   protected MetaDatasRepresentation concretize(Stream<MetaDatasRepresentation> mdrss) {

@@ -18,14 +18,10 @@ import jersey.repackaged.com.google.common.collect.Lists;
 
 import nl.kpmg.lcm.server.backend.Backend;
 import nl.kpmg.lcm.server.backend.BackendFactory;
-import nl.kpmg.lcm.server.backend.exception.BackendException;
-import nl.kpmg.lcm.server.backend.exception.BackendNotImplementedException;
-import nl.kpmg.lcm.server.backend.exception.BadMetaDataException;
-import nl.kpmg.lcm.server.backend.exception.DataSourceValidationException;
 import nl.kpmg.lcm.server.data.MetaData;
 import nl.kpmg.lcm.server.data.Storage;
 import nl.kpmg.lcm.server.data.dao.StorageDao;
-import nl.kpmg.lcm.server.data.service.exception.MissingStorageException;
+import nl.kpmg.lcm.server.exception.LcmException;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -66,17 +62,14 @@ public class StorageService {
    *
    * @param metadata of which the dataUri is used
    * @return the requested backend
-   * @throws nl.kpmg.lcm.server.backend.exception.BackendNotImplementedException
    */
-  public final Backend getBackend(final MetaData metadata)
-      throws BackendNotImplementedException, MissingStorageException, BadMetaDataException,
-      DataSourceValidationException, BackendException {
+  public final Backend getBackend(final MetaData metadata) {
     if (metadata == null || metadata.getDataUri() == null || metadata.getDataUri().isEmpty()) {
       String errorMessage =
           "Invalid input data! Metata data could not be null nither the data URI!";
       logger.warning(errorMessage);
 
-      throw new IllegalArgumentException(errorMessage);
+      throw new LcmException(errorMessage);
     }
 
     try {
@@ -88,7 +81,7 @@ public class StorageService {
       Storage storage = storageDao.findOneByName(storageName);
 
       if (storage == null) {
-        throw new MissingStorageException(
+        throw new LcmException(
             "Error! Unable to find Storage for the given metadata! Storage name:" + storageName);
       }
 

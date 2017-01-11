@@ -20,7 +20,7 @@ import nl.kpmg.lcm.HttpsServerProvider;
 import nl.kpmg.lcm.HttpsServerWrapper;
 import nl.kpmg.lcm.SslConfigurationException;
 import nl.kpmg.lcm.configuration.UiConfiguration;
-import nl.kpmg.lcm.server.LoggingExceptionMapper;
+import nl.kpmg.lcm.server.GeneralExceptionMapper;
 import nl.kpmg.lcm.server.ServerException;
 
 import org.glassfish.grizzly.servlet.ServletRegistration;
@@ -68,7 +68,7 @@ public class UI {
     // create a resource config that scans for JAX-RS resources and providers
     // in nl.kpmg.lcm.server.rest
     final ResourceConfig rc = new ResourceConfig().property("contextConfig", context)
-        .registerClasses(LoggingExceptionMapper.class);
+        .registerClasses(GeneralExceptionMapper.class);
 
     XmlWebApplicationContext appContext = new XmlWebApplicationContext();
     appContext.setConfigLocation("application-context-ui.xml");

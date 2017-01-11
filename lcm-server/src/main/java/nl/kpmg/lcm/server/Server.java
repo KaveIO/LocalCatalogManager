@@ -20,6 +20,8 @@ import nl.kpmg.lcm.HttpsServerProvider;
 import nl.kpmg.lcm.HttpsServerWrapper;
 import nl.kpmg.lcm.SslConfigurationException;
 import nl.kpmg.lcm.configuration.ServerConfiguration;
+import nl.kpmg.lcm.server.exception.mapper.LcmExceptionMapper;
+import nl.kpmg.lcm.server.exception.mapper.ValidationExceptionMapper;
 import nl.kpmg.lcm.server.rest.authentication.AuthenticationRequestFilter;
 import nl.kpmg.lcm.server.rest.authentication.ResponseFilter;
 import nl.kpmg.lcm.server.rest.authentication.Roles;
@@ -102,10 +104,10 @@ public class Server {
                 new Annotation[] {SecurityAnnotations
                     .rolesAllowed(new String[] {Roles.ADMINISTRATOR, Roles.API_USER})})
             .register(JacksonFeature.class).register(JacksonJsonProvider.class)
-            .register(AuthenticationRequestFilter.class)
-            .register(AuthorizationRequestFilter.class).register(ResponseFilter.class)
-            .register(DeclarativeLinkingFeature.class).register(UriBuilderEntityProcessor.class)
-            .register(LoggingExceptionMapper.class);
+            .register(AuthenticationRequestFilter.class).register(AuthorizationRequestFilter.class)
+            .register(ResponseFilter.class).register(DeclarativeLinkingFeature.class)
+            .register(UriBuilderEntityProcessor.class).register(ValidationExceptionMapper.class)
+            .register(LcmExceptionMapper.class).register(GeneralExceptionMapper.class);
 
     return HttpsServerProvider.createHttpsServer(configuration, baseUri, baseFallbackUri, rc, true);
   }

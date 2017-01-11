@@ -24,8 +24,6 @@ import nl.kpmg.lcm.rest.types.MetaDatasRepresentation;
 import nl.kpmg.lcm.server.LcmBaseServerTest;
 import nl.kpmg.lcm.server.ServerException;
 import nl.kpmg.lcm.server.backend.Backend;
-import nl.kpmg.lcm.server.backend.exception.BackendException;
-import nl.kpmg.lcm.server.backend.exception.BackendNotImplementedException;
 import nl.kpmg.lcm.server.data.Data;
 import nl.kpmg.lcm.server.data.MetaData;
 import nl.kpmg.lcm.server.data.RemoteLcm;
@@ -33,7 +31,6 @@ import nl.kpmg.lcm.server.data.Storage;
 import nl.kpmg.lcm.server.data.TaskDescription;
 import nl.kpmg.lcm.server.data.service.StorageService;
 import nl.kpmg.lcm.server.data.service.TaskDescriptionService;
-import nl.kpmg.lcm.server.data.service.exception.MissingStorageException;
 import nl.kpmg.lcm.server.rest.authentication.BasicAuthenticationManager;
 
 import org.junit.After;
@@ -116,8 +113,7 @@ public class DataFetchTriggerContollerTest extends LcmBaseServerTest {
   public static void beforeClass() {}
 
   @Test
-  public void testTrigger() throws ServerException, MissingStorageException, BackendException,
-      BackendNotImplementedException, IOException {
+  public void testTrigger() throws ServerException, IOException {
     // Client finds the id of the remote lcm that contains the data she wants
     RemoteLcm lcm = getLCMId();
     // Client disovers after metadata id from the remote lcm
@@ -135,8 +131,7 @@ public class DataFetchTriggerContollerTest extends LcmBaseServerTest {
   }
 
   @Test
-  public void testNonExistingLcm() throws ServerException, MissingStorageException,
-      BackendException, BackendNotImplementedException, IOException {
+  public void testNonExistingLcm() throws ServerException, IOException {
     // Client disovers after metadata id from the remote lcm
     Storage csvStorage = createStorage();
     MetaData md = createStorageAndPostMetadata(csvStorage);
@@ -145,8 +140,7 @@ public class DataFetchTriggerContollerTest extends LcmBaseServerTest {
   }
 
   @Test
-  public void testNonExistingMetadata() throws ServerException, MissingStorageException,
-      BackendException, BackendNotImplementedException, IOException {
+  public void testNonExistingMetadata() throws ServerException, IOException {
     RemoteLcm lcm = getLCMId();
     Storage csvStorage = createStorage();
     // Sends a request to local lcm to fetch the data and metadata
@@ -154,8 +148,7 @@ public class DataFetchTriggerContollerTest extends LcmBaseServerTest {
   }
 
   @Test
-  public void testNonExistingStorage() throws ServerException, MissingStorageException,
-      BackendException, BackendNotImplementedException, IOException {
+  public void testNonExistingStorage() throws ServerException, IOException {
     RemoteLcm lcm = getLCMId();
     Storage csvStorage = createStorage();
     MetaData md = createStorageAndPostMetadata(csvStorage);
@@ -164,8 +157,7 @@ public class DataFetchTriggerContollerTest extends LcmBaseServerTest {
   }
 
   private MetaData createStorageAndPostMetadata(Storage csvStorage)
-      throws BackendNotImplementedException, MissingStorageException, BackendException,
-      IOException, ServerException {
+      throws IOException, ServerException {
 
     MetaData metadata = new MetaData();
     metadata.setDataUri(CSV_STORAGE_URI);

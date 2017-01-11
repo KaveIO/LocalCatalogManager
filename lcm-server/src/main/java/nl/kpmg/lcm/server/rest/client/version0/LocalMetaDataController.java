@@ -18,15 +18,10 @@ import nl.kpmg.lcm.rest.types.MetaDataOperationRequest;
 import nl.kpmg.lcm.rest.types.MetaDataRepresentation;
 import nl.kpmg.lcm.rest.types.MetaDatasRepresentation;
 import nl.kpmg.lcm.server.backend.Backend;
-import nl.kpmg.lcm.server.backend.exception.BackendException;
-import nl.kpmg.lcm.server.backend.exception.BackendNotImplementedException;
-import nl.kpmg.lcm.server.backend.exception.BadMetaDataException;
-import nl.kpmg.lcm.server.backend.exception.DataSourceValidationException;
 import nl.kpmg.lcm.server.data.Data;
 import nl.kpmg.lcm.server.data.MetaData;
 import nl.kpmg.lcm.server.data.service.MetaDataService;
 import nl.kpmg.lcm.server.data.service.StorageService;
-import nl.kpmg.lcm.server.data.service.exception.MissingStorageException;
 import nl.kpmg.lcm.server.rest.authentication.Roles;
 import nl.kpmg.lcm.server.rest.client.version0.types.ConcreteMetaDataRepresentation;
 import nl.kpmg.lcm.server.rest.client.version0.types.ConcreteMetaDatasRepresentation;
@@ -35,7 +30,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
-import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import javax.annotation.security.RolesAllowed;
@@ -157,30 +151,6 @@ public class LocalMetaDataController {
                 String.format("attachment; filename=%s.%s", metadata.getName(), fType)).build();
 
           }
-        } catch (MissingStorageException ex) {
-          logger.log(Level.WARNING, ex.getMessage());
-          return Response.serverError().entity("Unable to find storage specified in the metadata!")
-              .build();
-        } catch (BadMetaDataException ex) {
-          logger.log(Level.WARNING, ex.getMessage());
-          return Response.serverError().entity("Specified metadata is wrong or incomplete!")
-              .build();
-        } catch (DataSourceValidationException ex) {
-          logger.log(Level.WARNING, ex.getMessage());
-          return Response.serverError()
-              .entity("Unable to validate the datasoruce specified by the metadata!").build();
-        } catch (BackendNotImplementedException ex) {
-          logger.log(Level.WARNING, ex.getMessage());
-          return Response.serverError()
-              .entity("Datasource specified in the metadata is not supported!").build();
-        } catch (BackendException ex) {
-          logger.log(Level.WARNING, ex.getMessage());
-          return Response.serverError().entity("Unable to read a data specified by the metadata!")
-              .build();
-        } catch (Exception ex) {
-          logger.log(Level.WARNING, ex.getMessage());
-          return Response.serverError().entity("Error occured! Unable to execute the operation.")
-              .build();
         } finally {
           if (backend != null) {
             backend.free();

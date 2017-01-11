@@ -13,18 +13,20 @@
  */
 package nl.kpmg.lcm.server.backend;
 
-import java.util.HashMap;
-import java.util.Map;
-import nl.kpmg.lcm.server.backend.exception.BackendNotImplementedException;
+import static org.junit.Assert.*;
+
 import nl.kpmg.lcm.server.data.MetaData;
 import nl.kpmg.lcm.server.data.Storage;
-import org.junit.Before;
+import nl.kpmg.lcm.server.exception.LcmException;
+
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import static org.junit.Assert.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
+
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  *
@@ -62,7 +64,7 @@ public class BackendFactoryTest {
         assertTrue(csvBackend instanceof BackendCsvImpl);
     }
 
-    @Test(expected = BackendNotImplementedException.class)
+    @Test(expected = LcmException.class)
     public void testCreateBackendInvalidSchema() throws Exception {
         backendFactory.createBackend("this_is_invalid_schema", csvStorage, validMetaData);
     }

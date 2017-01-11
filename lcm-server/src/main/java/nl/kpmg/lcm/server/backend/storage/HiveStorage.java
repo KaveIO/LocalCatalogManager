@@ -14,7 +14,6 @@
 
 package nl.kpmg.lcm.server.backend.storage;
 
-import nl.kpmg.lcm.server.backend.exception.BackendException;
 import nl.kpmg.lcm.server.data.Storage;
 import nl.kpmg.lcm.validation.Notification;
 
@@ -24,7 +23,7 @@ import nl.kpmg.lcm.validation.Notification;
  */
 public class HiveStorage extends AbstractStorageContainer {
 
-  public HiveStorage(Storage storage) throws BackendException {
+  public HiveStorage(Storage storage) {
     super(storage);
   }
 

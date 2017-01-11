@@ -18,9 +18,6 @@ import com.google.gson.Gson;
 import com.google.gson.stream.JsonWriter;
 
 import nl.kpmg.lcm.server.backend.Backend;
-import nl.kpmg.lcm.server.backend.exception.BackendException;
-import nl.kpmg.lcm.server.backend.exception.BadMetaDataException;
-import nl.kpmg.lcm.server.backend.exception.DataSourceValidationException;
 import nl.kpmg.lcm.server.data.ContentIterator;
 import nl.kpmg.lcm.server.data.Data;
 import nl.kpmg.lcm.server.data.FetchEndpoint;
@@ -29,7 +26,7 @@ import nl.kpmg.lcm.server.data.dao.FetchEndpointDao;
 import nl.kpmg.lcm.server.data.service.FetchEndpointService;
 import nl.kpmg.lcm.server.data.service.MetaDataService;
 import nl.kpmg.lcm.server.data.service.StorageService;
-import nl.kpmg.lcm.server.data.service.exception.MissingStorageException;
+import nl.kpmg.lcm.server.exception.LcmException;
 import nl.kpmg.lcm.server.rest.authentication.Roles;
 
 import org.apache.commons.io.FilenameUtils;
@@ -80,8 +77,7 @@ public class FetchEndpointController {
   @Produces(MediaType.APPLICATION_OCTET_STREAM)
   @RolesAllowed({Roles.ADMINISTRATOR, Roles.API_USER})
   public final Response getOne(@PathParam("id") final String id)
-      throws MissingStorageException, BadMetaDataException, DataSourceValidationException,
-      BackendException, URISyntaxException, IOException {
+      throws URISyntaxException, IOException {
 
     FetchEndpointDao dao = fetchEndpointService.getDao();
     FetchEndpoint fe = dao.findOneById(id);
@@ -91,11 +87,11 @@ public class FetchEndpointController {
     }
     if (new Date(System.currentTimeMillis()).after(fe.getTimeToLive())) {
       fetchEndpointService.getDao().delete(fe);
-      throw new NotFoundException(String.format("FetchEndpoint %s has expired", id));
+      throw new LcmException(String.format("FetchEndpoint %s has expired", id), Response.Status.BAD_REQUEST);
     }
     MetaData md = metaDataService.getMetaDataDao().findOne(fe.getMetadataId());
     if (md == null) {
-      throw new NotFoundException(String.format("Metadata %s not found", fe.getMetadataId()));
+      throw new LcmException(String.format("Metadata %s not found", fe.getMetadataId()));
     }
 
     Backend backend = storageService.getBackend(md);

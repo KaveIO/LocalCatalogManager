@@ -16,10 +16,10 @@ package nl.kpmg.lcm.server.task.enrichment;
 
 import nl.kpmg.lcm.server.backend.Backend;
 import nl.kpmg.lcm.server.backend.DataSetInformation;
-import nl.kpmg.lcm.server.backend.exception.BackendException;
 import nl.kpmg.lcm.server.data.MetaData;
 import nl.kpmg.lcm.server.data.service.StorageService;
-import nl.kpmg.lcm.server.data.service.exception.MissingStorageException;
+import nl.kpmg.lcm.server.exception.LcmException;
+import nl.kpmg.lcm.server.exception.LcmValidationException;
 import nl.kpmg.lcm.server.task.EnrichmentTask;
 import nl.kpmg.lcm.server.task.TaskException;
 import nl.kpmg.lcm.server.task.TaskResult;
@@ -93,8 +93,11 @@ public class DataEnrichmentTask extends EnrichmentTask {
       metaDataService.update(metadata.getId(), metadata);
 
       return TaskResult.SUCCESS;
-    } catch (BackendException | MissingStorageException ex) {
-      Logger.getLogger(DataEnrichmentTask.class.getName()).log(Level.WARNING, null, ex);
+    } catch (LcmValidationException ex) {
+      Logger.getLogger(DataEnrichmentTask.class.getName()).log(Level.WARNING, ex.getNotification().errorMessage());
+      return TaskResult.FAILURE;
+    } catch ( LcmException ex) {
+      Logger.getLogger(DataEnrichmentTask.class.getName()).log(Level.WARNING, ex.getMessage(), ex);
       return TaskResult.FAILURE;
     }
   }

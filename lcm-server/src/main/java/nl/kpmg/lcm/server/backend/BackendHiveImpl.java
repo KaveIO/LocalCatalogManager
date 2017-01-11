@@ -14,13 +14,13 @@
 
 package nl.kpmg.lcm.server.backend;
 
-import nl.kpmg.lcm.server.backend.exception.BackendException;
 import nl.kpmg.lcm.server.backend.metatadata.RelationalDbMetaData;
 import nl.kpmg.lcm.server.backend.storage.HiveStorage;
 import nl.kpmg.lcm.server.data.ContentIterator;
 import nl.kpmg.lcm.server.data.Data;
 import nl.kpmg.lcm.server.data.MetaData;
 import nl.kpmg.lcm.server.data.Storage;
+import nl.kpmg.lcm.server.exception.LcmException;
 import nl.kpmg.lcm.validation.Notification;
 
 import org.apache.metamodel.data.DataSet;
@@ -49,13 +49,13 @@ public class BackendHiveImpl extends AbstractBackend {
 
   private Connection connection;
 
-  public BackendHiveImpl(Storage backendStorage, MetaData metaData) throws BackendException {
+  public BackendHiveImpl(Storage backendStorage, MetaData metaData) {
     super(metaData);
     this.hiveStorage = new HiveStorage(backendStorage);
     this.hiveMetaData = new RelationalDbMetaData(metaData);
   }
 
-  private Connection getConnection() throws BackendException {
+  private Connection getConnection() {
     final String className = getClass().getName();
 
     if (connection != null) {
@@ -67,13 +67,13 @@ public class BackendHiveImpl extends AbstractBackend {
       connection = DriverManager.getConnection(hiveStorage.getUrl(), hiveStorage.getUsername(),
           hiveStorage.getPassword());
     } catch (Exception e) {
-      throw new BackendException("Failed to create JDBC connection for " + className, e);
+      throw new LcmException("Failed to create JDBC connection for " + className, e);
     }
 
     return connection;
   }
 
-  private JdbcDataContext getDataContext() throws BackendException {
+  private JdbcDataContext getDataContext() {
     return new JdbcDataContext(getConnection());
   }
 
@@ -83,7 +83,7 @@ public class BackendHiveImpl extends AbstractBackend {
   }
 
   @Override
-  public DataSetInformation gatherDataSetInformation() throws BackendException {
+  public DataSetInformation gatherDataSetInformation() {
 
     JdbcDataContext dataContext = getDataContext();
 
@@ -105,7 +105,7 @@ public class BackendHiveImpl extends AbstractBackend {
 
   @Override
   public void store(ContentIterator content, DataTransformationSettings transformationSettings,
-      boolean forceOverwrite) throws BackendException {
+      boolean forceOverwrite) {
     JdbcDataContext dataContext = getDataContext();
     if (transformationSettings == null) {
       transformationSettings = new DataTransformationSettings();
@@ -120,7 +120,7 @@ public class BackendHiveImpl extends AbstractBackend {
     Table table = database.getTableByName(tableName);
 
     if (table != null && !forceOverwrite) {
-      throw new BackendException("Error, can not store the data! Table: \"" + tableName
+      throw new LcmException("Error, can not store the data! Table: \"" + tableName
           + "\" already exists and storing is started without overwriting!");
     }
 
@@ -142,12 +142,12 @@ public class BackendHiveImpl extends AbstractBackend {
       hiveWriter.write(content, transformationSettings.getMaximumInsertedRecordsPerQuery());
 
     } catch (SQLException ex) {
-      throw new BackendException("Unable to stora the data: ", ex);
+      throw new LcmException("Unable to stora the data: ", ex);
     }
   }
 
   @Override
-  public boolean delete() throws BackendException {
+  public boolean delete() {
     throw new UnsupportedOperationException("Not supported yet.");
   }
 
@@ -157,12 +157,12 @@ public class BackendHiveImpl extends AbstractBackend {
   }
 
   @Override
-  public Data read() throws BackendException {
+  public Data read()  {
     JdbcDataContext dataContext = getDataContext();
 
     Schema schema = dataContext.getSchemaByName(hiveStorage.getDatabase());
     if (schema == null) {
-      throw new BackendException(
+      throw new LcmException(
           "Error: database \"" + hiveStorage.getDatabase() + "\" is not found!");
     }
     // remove the first symbol as uri Path is something like "/tablex"
@@ -171,7 +171,7 @@ public class BackendHiveImpl extends AbstractBackend {
     Table table = schema.getTableByName(tableName);
 
     if (table == null) {
-      throw new BackendException(
+      throw new LcmException(
           "Error: specified table \"" + tableName + "\" in the metadata is not found!");
     }
 

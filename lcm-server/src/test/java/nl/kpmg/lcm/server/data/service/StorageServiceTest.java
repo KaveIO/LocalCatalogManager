@@ -13,25 +13,27 @@
  */
 package nl.kpmg.lcm.server.data.service;
 
-import java.util.HashMap;
-import java.util.Map;
+import static org.junit.Assert.*;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.BDDMockito.given;
+
 import nl.kpmg.lcm.server.backend.Backend;
 import nl.kpmg.lcm.server.backend.BackendCsvImpl;
 import nl.kpmg.lcm.server.backend.BackendFactory;
 import nl.kpmg.lcm.server.data.MetaData;
 import nl.kpmg.lcm.server.data.Storage;
 import nl.kpmg.lcm.server.data.dao.StorageDao;
-import nl.kpmg.lcm.server.data.service.exception.MissingStorageException;
+import nl.kpmg.lcm.server.exception.LcmException;
+
 import org.junit.Before;
 import org.junit.Test;
-import static org.junit.Assert.*;
-import static org.mockito.ArgumentMatchers.eq;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.BDDMockito.given;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 import org.springframework.test.context.ContextConfiguration;
+
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  *
@@ -93,14 +95,14 @@ public class StorageServiceTest {
         storageService.getBackend(metadata);
     }
 
-    @Test(expected = IllegalArgumentException.class)
+    @Test(expected = LcmException.class)
     public void testGetBackendCSVNullMetadata() throws Exception {
         given(storageDao.findOneByName(csvStorageName)).willReturn(csvStorage);
         given(backendFactory.createBackend(csvSchame, csvStorage, validMetaData)).willReturn(backendCsvImp);
         storageService.getBackend(null);
     }
 
-    @Test(expected = MissingStorageException.class)
+    @Test(expected = LcmException.class)
     public void testGetBackendCSVMissingStorage() throws Exception {
         String nonExistingStorageName = "nonExistingStorageName";
         given(storageDao.findOneByName(nonExistingStorageName)).willReturn(null);

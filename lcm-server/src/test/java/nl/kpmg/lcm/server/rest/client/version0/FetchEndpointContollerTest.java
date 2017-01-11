@@ -26,8 +26,6 @@ import nl.kpmg.lcm.server.LcmBaseServerTest;
 import nl.kpmg.lcm.server.ServerException;
 import nl.kpmg.lcm.server.backend.Backend;
 import nl.kpmg.lcm.server.backend.DataTransformationSettings;
-import nl.kpmg.lcm.server.backend.exception.BackendException;
-import nl.kpmg.lcm.server.backend.exception.BackendNotImplementedException;
 import nl.kpmg.lcm.server.data.ContentIterator;
 import nl.kpmg.lcm.server.data.Data;
 import nl.kpmg.lcm.server.data.FetchEndpoint;
@@ -36,7 +34,6 @@ import nl.kpmg.lcm.server.data.MetaData;
 import nl.kpmg.lcm.server.data.Storage;
 import nl.kpmg.lcm.server.data.service.FetchEndpointService;
 import nl.kpmg.lcm.server.data.service.StorageService;
-import nl.kpmg.lcm.server.data.service.exception.MissingStorageException;
 import nl.kpmg.lcm.server.rest.authentication.BasicAuthenticationManager;
 
 import org.junit.After;
@@ -126,16 +123,16 @@ public class FetchEndpointContollerTest extends LcmBaseServerTest {
   }
 
   @Test
-  public void testExpiration() throws ServerException, MissingStorageException, BackendException,
-      BackendNotImplementedException, IOException, InterruptedException {
+  public void testExpiration() throws ServerException,
+      IOException, InterruptedException {
     FetchEndpoint fe = addTestFetchEndpoint();
     Thread.sleep(1);
-    getFetchURL(fe.getId(), 404);
+    getFetchURL(fe.getId(), 400);
   }
 
   @Test
-  public void testGetFetchURL() throws MissingStorageException, BackendException,
-      BackendNotImplementedException, IOException, ServerException {
+  public void testGetFetchURL() throws
+       IOException, ServerException {
     createStorgaeAndPostMetadata();
     // Discover metadata
     List<MetaDataRepresentation> list = getMetadata(200);
@@ -189,8 +186,8 @@ public class FetchEndpointContollerTest extends LcmBaseServerTest {
     return items;
   }
 
-  private MetaData createStorgaeAndPostMetadata() throws BackendNotImplementedException,
-      MissingStorageException, BackendException, IOException, ServerException {
+  private MetaData createStorgaeAndPostMetadata() throws 
+      IOException, ServerException {
     Storage csvStorage = new Storage();
     csvStorage.setName(CSV_STORAGE_NAME);
     Map options = new HashMap();
@@ -267,8 +264,8 @@ public class FetchEndpointContollerTest extends LcmBaseServerTest {
     return fEr.getItem();
   }
 
-  private FetchEndpoint addTestFetchEndpoint() throws MissingStorageException, BackendException,
-      BackendNotImplementedException, IOException, ServerException {
+  private FetchEndpoint addTestFetchEndpoint() throws
+       IOException, ServerException {
 
     MetaData md = createStorgaeAndPostMetadata();
 

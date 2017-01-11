@@ -14,8 +14,8 @@
 
 package nl.kpmg.lcm.server.backend.storage;
 
-import nl.kpmg.lcm.server.backend.exception.BackendException;
 import nl.kpmg.lcm.server.data.Storage;
+import nl.kpmg.lcm.server.exception.LcmValidationException;
 
 import org.junit.Assert;
 import org.junit.Test;
@@ -36,7 +36,7 @@ public class HiveStorageTest {
    private String driver = "org.apache.hive.jdbc.HiveDriver";
 
   @Test
-  public void testCreateStorage() throws BackendException {
+  public void testCreateStorage() {
     Storage correctStorage = new Storage();
     correctStorage.setName(storageName);
     Map options = new HashMap();
@@ -52,8 +52,8 @@ public class HiveStorageTest {
   }
 
 
-  @Test(expected = BackendException.class)
-  public void testValidateStorageMissingUsername() throws BackendException {
+  @Test(expected = LcmValidationException.class)
+  public void testValidateStorageMissingUsername() {
     Storage incorrectStorage = new Storage();
     incorrectStorage.setName(storageName);
     Map options = new HashMap();
@@ -66,8 +66,8 @@ public class HiveStorageTest {
     new HiveStorage(incorrectStorage);
   }
 
-  @Test(expected = BackendException.class)
-  public void testValidateStorageMissingPassword() throws BackendException {
+  @Test(expected = LcmValidationException.class)
+  public void testValidateStorageMissingPassword() {
     Storage incorrectStorage = new Storage();
     incorrectStorage.setName(storageName);
     Map options = new HashMap();
@@ -81,8 +81,8 @@ public class HiveStorageTest {
     
   }
 
-  @Test(expected = BackendException.class)
-  public void testValidateStorageMissingDatabase() throws BackendException {
+  @Test(expected = LcmValidationException.class)
+  public void testValidateStorageMissingDatabase() {
     Storage incorrectStorage = new Storage();
     incorrectStorage.setName(storageName);
     Map options = new HashMap();
@@ -96,8 +96,8 @@ public class HiveStorageTest {
 
   }
 
-  @Test(expected = BackendException.class)
-  public void testValidateStorageMissingDriver() throws BackendException {
+  @Test(expected = LcmValidationException.class)
+  public void testValidateStorageMissingDriver() {
     Storage incorrectStorage = new Storage();
     incorrectStorage.setName(storageName);
     Map options = new HashMap();
@@ -110,8 +110,8 @@ public class HiveStorageTest {
     new HiveStorage(incorrectStorage);
   }
 
-  @Test(expected = BackendException.class)
-  public void testValidateStorageMissingUrl() throws BackendException {
+  @Test(expected = LcmValidationException.class)
+  public void testValidateStorageMissingUrl() {
     Storage incorrectStorage = new Storage();
     incorrectStorage.setName(storageName);
     Map options = new HashMap();
