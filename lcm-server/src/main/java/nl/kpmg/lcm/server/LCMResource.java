@@ -16,7 +16,7 @@ package nl.kpmg.lcm.server;
 
 import com.fasterxml.jackson.jaxrs.json.JacksonJsonProvider;
 
-import nl.kpmg.lcm.server.rest.authentication.RequestFilter;
+import nl.kpmg.lcm.server.rest.authentication.AuthenticationRequestFilter;
 import nl.kpmg.lcm.server.rest.authentication.ResponseFilter;
 import nl.kpmg.lcm.server.rest.authentication.Roles;
 
@@ -40,7 +40,7 @@ public class LCMResource extends ResourceConfig {
             new Annotation[] {SecurityAnnotations
                 .rolesAllowed(new String[] {Roles.ADMINISTRATOR, Roles.API_USER})})
         .register(JacksonFeature.class).register(JacksonJsonProvider.class)
-        .register(RequestFilter.class).register(ResponseFilter.class)
+        .register(AuthenticationRequestFilter.class).register(ResponseFilter.class)
         .register(DeclarativeLinkingFeature.class).register(UriBuilderEntityProcessor.class)
         .register(LoggingExceptionMapper.class);
   }

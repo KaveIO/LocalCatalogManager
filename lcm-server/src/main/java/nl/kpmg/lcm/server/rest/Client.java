@@ -17,12 +17,14 @@ package nl.kpmg.lcm.server.rest;
 import nl.kpmg.lcm.server.LoginException;
 import nl.kpmg.lcm.server.LogoutException;
 import nl.kpmg.lcm.server.data.service.UserService;
+import nl.kpmg.lcm.server.rest.authentication.Roles;
 import nl.kpmg.lcm.server.rest.authentication.SessionAuthenticationManager;
 import nl.kpmg.lcm.server.rest.client.types.ClientRepresentation;
 import nl.kpmg.lcm.server.rest.client.types.LoginRequest;
 
 import org.springframework.beans.factory.annotation.Autowired;
 
+import javax.annotation.security.RolesAllowed;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.GET;
 import javax.ws.rs.HeaderParam;
@@ -55,55 +57,63 @@ public class Client {
     this.authenticationManager = authenticationManager;
   }
 
-  /**
-   * Method returning the versions of the client interface available. The returned object will be
-   * sent to the client as "application/json" media type.
-   *
-   * @return String that will be returned as a application/json response.
-   */
-  @GET
-  @Produces({"application/json"})
-  public final ClientRepresentation getIndex() {
-    return new ClientRepresentation();
-  }
 
-  /**
-   * Tries to log in based on provided credentials.
-   *
-   * @param loginRequest request containing username and password
-   * @return Authorization token if successful. status 400 if not.
-   */
-  @POST
-  @Consumes({"application/nl.kpmg.lcm.server.rest.client.types.LoginRequest+json"})
-  @Produces({"text/plain"})
-  @Path("/login")
-  public final Response login(final LoginRequest loginRequest) {
-    String authorizationToken;
-    try {
-      authorizationToken = authenticationManager.getAuthenticationToken(loginRequest.getUsername(),
-          loginRequest.getPassword());
-      return Response.ok().entity(authorizationToken).build();
-    } catch (LoginException ex) {
-      return Response.status(Response.Status.BAD_REQUEST).entity("login unsuccessful").build();
+    /**
+     * Method returning the versions of the client interface available.
+     * The returned object will be sent to the client as "application/json"
+     * media type.
+     *
+     * @return String that will be returned as a application/json response.
+     */
+    @GET
+    @Produces({"application/json" })
+    @RolesAllowed({Roles.ANY_USER})
+    public final ClientRepresentation getIndex() {
+        return new ClientRepresentation();
+    }
+
+        /**
+     * Tries to log in based on provided credentials.
+     *
+     * @param loginRequest request containing username and password
+     * @return Authorization token if successful. status 400 if not.
+     */
+    @POST
+    @Consumes({"application/nl.kpmg.lcm.server.rest.client.types.LoginRequest+json" })
+    @Produces({"text/plain" })
+    @RolesAllowed({Roles.ANY_USER})
+    @Path("/login")
+    public final Response login(final LoginRequest loginRequest) {
+        String authorizationToken;
+        try {
+            authorizationToken = authenticationManager.getAuthenticationToken(
+                    loginRequest.getUsername(),
+                    loginRequest.getPassword());
+            return Response.ok().entity(authorizationToken).build();
+        } catch (LoginException ex) {
+            return Response.status(Response.Status.BAD_REQUEST).entity("login unsuccessful").build();
+        }
+    }
+  
+
+    /**
+     * Logs the current user out.
+     *
+     * @param authenticationToken provided via the header
+     * @return 200 if successful, 400 Bad Request if the user couldn't be logged out
+     */
+    @POST
+    @Produces({"text/plain" })
+    @RolesAllowed({Roles.ANY_USER})
+    @Path("/logout")
+    public final Response logout(
+            @HeaderParam(SessionAuthenticationManager.LCM_AUTHENTICATION_TOKEN_HEADER) final String authenticationToken) {
+        try {
+            authenticationManager.removeAuthenticationToken(authenticationToken);
+            return Response.ok().build();
+        } catch (LogoutException ex) {
+            return Response.status(Response.Status.BAD_REQUEST).entity("logout unsuccessful").build();
+        }
     }
   }
 
-  /**
-   * Logs the current user out.
-   *
-   * @param authenticationToken provided via the header
-   * @return 200 if successful, 400 Bad Request if the user couldn't be logged out
-   */
-  @POST
-  @Produces({"text/plain"})
-  @Path("/logout")
-  public final Response logout(
-      @HeaderParam(SessionAuthenticationManager.LCM_AUTHENTICATION_TOKEN_HEADER) final String authenticationToken) {
-    try {
-      authenticationManager.removeAuthenticationToken(authenticationToken);
-      return Response.ok().build();
-    } catch (LogoutException ex) {
-      return Response.status(Response.Status.BAD_REQUEST).entity("logout unsuccessful").build();
-    }
-  }
-}

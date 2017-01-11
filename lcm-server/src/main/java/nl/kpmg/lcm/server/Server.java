@@ -20,9 +20,10 @@ import nl.kpmg.lcm.HttpsServerProvider;
 import nl.kpmg.lcm.HttpsServerWrapper;
 import nl.kpmg.lcm.SslConfigurationException;
 import nl.kpmg.lcm.configuration.ServerConfiguration;
-import nl.kpmg.lcm.server.rest.authentication.RequestFilter;
+import nl.kpmg.lcm.server.rest.authentication.AuthenticationRequestFilter;
 import nl.kpmg.lcm.server.rest.authentication.ResponseFilter;
 import nl.kpmg.lcm.server.rest.authentication.Roles;
+import nl.kpmg.lcm.server.rest.authorization.AuthorizationRequestFilter;
 import nl.kpmg.lcm.server.task.TaskManager;
 import nl.kpmg.lcm.server.task.TaskManagerException;
 
@@ -101,7 +102,8 @@ public class Server {
                 new Annotation[] {SecurityAnnotations
                     .rolesAllowed(new String[] {Roles.ADMINISTRATOR, Roles.API_USER})})
             .register(JacksonFeature.class).register(JacksonJsonProvider.class)
-            .register(RequestFilter.class).register(ResponseFilter.class)
+            .register(AuthenticationRequestFilter.class)
+            .register(AuthorizationRequestFilter.class).register(ResponseFilter.class)
             .register(DeclarativeLinkingFeature.class).register(UriBuilderEntityProcessor.class)
             .register(LoggingExceptionMapper.class);
 

@@ -21,6 +21,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import javax.annotation.Priority;
+import javax.ws.rs.Priorities;
 import javax.ws.rs.container.ContainerRequestContext;
 import javax.ws.rs.container.ContainerRequestFilter;
 import javax.ws.rs.container.PreMatching;
@@ -34,12 +36,13 @@ import javax.ws.rs.ext.Provider;
  */
 @Provider
 @PreMatching
-public class RequestFilter implements ContainerRequestFilter {
+@Priority(value = Priorities.AUTHENTICATION)
+public class AuthenticationRequestFilter implements ContainerRequestFilter {
 
   /**
    * The class logger.
    */
-  private static final Logger LOGGER = Logger.getLogger(RequestFilter.class.getName());
+  private static final Logger LOGGER = Logger.getLogger(AuthenticationRequestFilter.class.getName());
 
   /**
    * The authentication manager.
@@ -64,7 +67,7 @@ public class RequestFilter implements ContainerRequestFilter {
    * @param userService The service used to find the users for the SecurityContext
    */
   @Autowired
-  public RequestFilter(final SessionAuthenticationManager sessionAuthenticationManager,
+  public AuthenticationRequestFilter(final SessionAuthenticationManager sessionAuthenticationManager,
       final BasicAuthenticationManager basicAuthenticationManager, final UserService userService) {
     this.sessionAuthenticationManager = sessionAuthenticationManager;
     this.basicAuthenticationManager = basicAuthenticationManager;
