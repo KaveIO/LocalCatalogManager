@@ -35,9 +35,6 @@ public class Main {
    * @throws IOException
    */
   public static void main(String[] args) throws IOException {
-    LOG.log(Level.INFO, "LCM UI disabled pending bug fixes.");
-    System.exit(0);
-
     try {
       LOG.log(Level.INFO, "Starting LCM UI");
       final UI ui = new UI();

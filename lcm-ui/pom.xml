@@ -58,7 +58,10 @@
         <dependency>
             <groupId>org.glassfish.grizzly</groupId>
             <artifactId>grizzly-http-servlet</artifactId>
-            <version>2.3.28</version>
+            <!--Be careful with when upgrading the version!After upgrade test the UI! -->
+            <!--There are problems with version 2.3.19 and above -->
+            <!-- The session id is not initialized properly! It affects the UI mostly!-->
+            <version>2.3.18</version>
         </dependency>
         
         <dependency>
