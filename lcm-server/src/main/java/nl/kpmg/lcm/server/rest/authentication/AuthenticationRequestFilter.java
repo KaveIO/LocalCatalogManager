@@ -14,19 +14,20 @@
 
 package nl.kpmg.lcm.server.rest.authentication;
 
-import nl.kpmg.lcm.server.data.service.UserService;
-
 import org.springframework.beans.factory.annotation.Autowired;
 
+import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import javax.annotation.Priority;
+import javax.inject.Inject;
 import javax.ws.rs.Priorities;
 import javax.ws.rs.container.ContainerRequestContext;
 import javax.ws.rs.container.ContainerRequestFilter;
 import javax.ws.rs.container.PreMatching;
 import javax.ws.rs.core.Response;
+import javax.ws.rs.core.SecurityContext;
 import javax.ws.rs.ext.Provider;
 
 /**
@@ -39,45 +40,22 @@ import javax.ws.rs.ext.Provider;
 @Priority(value = Priorities.AUTHENTICATION)
 public class AuthenticationRequestFilter implements ContainerRequestFilter {
 
-  /**
-   * The class logger.
-   */
-  private static final Logger LOGGER = Logger.getLogger(AuthenticationRequestFilter.class.getName());
-
-  /**
-   * The authentication manager.
-   */
-  private final BasicAuthenticationManager basicAuthenticationManager;
-
-  /**
-   * The authentication manager.
-   */
-  private final SessionAuthenticationManager sessionAuthenticationManager;
+  private static final Logger LOGGER = Logger
+      .getLogger(AuthenticationRequestFilter.class.getName());
 
   /**
    * The path where the login call on the API is placed.
+   * 
+   * Hard loginPath to allow for anonymous access to the login url. This should be changed to a role
+   * definition for allowing anonymous access on certain resources.
    */
-  private final String loginPath;
+  private final String loginPath = "client/login";
 
-  /**
-   * Default constructor.
-   *
-   * @param sessionAuthenticationManager The manager for session based authentications
-   * @param basicAuthenticationManager The manager for basic authentications
-   * @param userService The service used to find the users for the SecurityContext
-   */
   @Autowired
-  public AuthenticationRequestFilter(final SessionAuthenticationManager sessionAuthenticationManager,
-      final BasicAuthenticationManager basicAuthenticationManager, final UserService userService) {
-    this.sessionAuthenticationManager = sessionAuthenticationManager;
-    this.basicAuthenticationManager = basicAuthenticationManager;
+  private List<AuthenticationManager> authenticationManagers;
 
-    /*
-     * Hard loginPath to allow for anonymous access to the login url. This should be changed to a
-     * role defintion for allowing anonymous access on certain resources.
-     */
-    loginPath = "client/login";
-  }
+  @Inject
+  private javax.inject.Provider<org.glassfish.grizzly.http.server.Request> request;
 
   /**
    * Checks of Authentication Token for all URI's other than Login URI.
@@ -87,27 +65,40 @@ public class AuthenticationRequestFilter implements ContainerRequestFilter {
   @Override
   public final void filter(final ContainerRequestContext requestContext) {
     String path = requestContext.getUriInfo().getPath();
-
+    String ip = request != null ? request.get().getRemoteAddr() : "unknown";
     LOGGER.log(Level.INFO, "LCMRESTRequestFilter called with request path {0}", path);
     if (requestContext.getRequest().getMethod().equals("OPTIONS")) {
       requestContext.abortWith(Response.status(Response.Status.OK).build());
       return;
     }
     if (!path.equals(loginPath)) {
-      if (basicAuthenticationManager.isEnabled()
-          && basicAuthenticationManager.isAuthenticationValid(requestContext)) {
-        LOGGER.log(Level.INFO, "RequestFilter authenticates with basicAuthenticationManager");
-        requestContext
-            .setSecurityContext(basicAuthenticationManager.getSecurityContext(requestContext));
-      } else if (sessionAuthenticationManager.isEnabled()
-          && sessionAuthenticationManager.isAuthenticationValid(requestContext)) {
-        LOGGER.log(Level.INFO, "RequestFilter authenticates with sessionAuthenticationManager");
-        requestContext
-            .setSecurityContext(sessionAuthenticationManager.getSecurityContext(requestContext));
-      } else {
-        requestContext.abortWith(Response.status(Response.Status.UNAUTHORIZED)
-            .entity("You are not Authorized to access LCM").build());
+      for (AuthenticationManager authenticationManager : authenticationManagers) {
+        if (authenticationManager.isEnabled()
+            && authenticationManager.isAuthenticationValid(requestContext)) {
+          SecurityContext securityContext =
+              authenticationManager.getSecurityContext(requestContext);
+
+          if (securityContext == null) {
+            continue;
+          }
+
+          // TODO when authentication log file is created then this log massage must be moved to it.
+          LOGGER.log(Level.INFO, "AuthenticationRequestFilter authenticates with: "
+              + authenticationManager.getClass().getName() + " user: "
+              + securityContext.getUserPrincipal().getName() + " IP: " + ip);
+
+          requestContext.setSecurityContext(securityContext);
+
+          return;
+        }
       }
+
+      // TODO when authentication log file is created then this log massage must be moved to it.
+      LOGGER.log(Level.INFO, "AuthenticationRequestFilter was not able to authenticate user. "
+          + " IP: " + ip);
+      requestContext.abortWith(Response.status(Response.Status.UNAUTHORIZED)
+          .entity("You are not authorized to access LCM!").build());
+
     }
   }
 }

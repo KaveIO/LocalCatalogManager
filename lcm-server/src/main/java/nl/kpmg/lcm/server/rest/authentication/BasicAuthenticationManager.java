@@ -1,11 +1,11 @@
 /*
  * Copyright 2016 KPMG N.V. (unless otherwise stated).
- *
+ * 
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except
  * in compliance with the License. You may obtain a copy of the License at
- *
+ * 
  * http://www.apache.org/licenses/LICENSE-2.0
- *
+ * 
  * Unless required by applicable law or agreed to in writing, software distributed under the License
  * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
  * or implied. See the License for the specific language governing permissions and limitations under
@@ -21,10 +21,8 @@ import org.apache.commons.codec.binary.Base64;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-
-import java.util.HashMap;
-import java.util.Map;
-import java.util.logging.Level;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.stereotype.Service;
 
 import javax.ws.rs.container.ContainerRequestContext;
 
@@ -33,7 +31,15 @@ import javax.ws.rs.container.ContainerRequestContext;
  *
  * @author mhoekstra
  */
-public class BasicAuthenticationManager extends AuthenticationManager {
+@Service
+public class BasicAuthenticationManager extends AbstractAuthenticationManager {
+
+  private Boolean isBasicAuthenticationEnabled;
+
+  @Value("${lcm.server.basic.authentication.enabled}")
+  public final void setIsBasicAuthenticationEnabled(final String isEnabled) {
+    this.isBasicAuthenticationEnabled = Boolean.valueOf(isEnabled);
+  }
 
   /**
    * The name of the http request header containing the authentication user.
@@ -45,21 +51,6 @@ public class BasicAuthenticationManager extends AuthenticationManager {
    */
   private static final Logger LOGGER = LoggerFactory.getLogger(BasicAuthenticationManager.class);
 
-  /**
-   * the hard admin username provided by the properties file.
-   */
-  private String adminUser;
-
-  /**
-   * the hard admin password provided by the properties file.
-   */
-  private String adminPassword;
-
-  /**
-   * The map containing all users that have been properly authenticated.
-   */
-  private final Map<String, Session> authenticationTokenMap = new HashMap();
-
   @Autowired
   public BasicAuthenticationManager(UserService userService) {
     super(userService);
@@ -67,7 +58,7 @@ public class BasicAuthenticationManager extends AuthenticationManager {
 
   @Override
   public boolean isEnabled() {
-    return true;
+    return isBasicAuthenticationEnabled;
   }
 
   @Override
@@ -85,13 +76,16 @@ public class BasicAuthenticationManager extends AuthenticationManager {
   public UserSecurityContext getSecurityContext(ContainerRequestContext requestContext) {
     String authenticationString = requestContext.getHeaderString(BASIC_AUTHENTICATION_HEADER);
     Credentials credentials = authenticationStringToCredentials(authenticationString);
-
+    if (credentials == null) {
+      LOGGER.warn("Unable to parse credentials for authentication string: " + authenticationString);
+      return null;
+    }
     try {
       Session session = createSessionForUser(credentials.getUsername());
+      LOGGER.debug("Successfully created session for user: " + credentials.getUsername());
       return new UserSecurityContext(session);
     } catch (LoginException ex) {
-      java.util.logging.Logger.getLogger(BasicAuthenticationManager.class.getName())
-          .log(Level.SEVERE, null, ex);
+      LOGGER.error(ex.getMessage(), ex);
     }
     return null;
   }

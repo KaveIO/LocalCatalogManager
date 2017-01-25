@@ -1,11 +1,11 @@
 /*
  * Copyright 2015 KPMG N.V. (unless otherwise stated).
- *
+ * 
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except
  * in compliance with the License. You may obtain a copy of the License at
- *
+ * 
  * http://www.apache.org/licenses/LICENSE-2.0
- *
+ * 
  * Unless required by applicable law or agreed to in writing, software distributed under the License
  * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
  * or implied. See the License for the specific language governing permissions and limitations under
@@ -28,8 +28,8 @@ public final class Session {
   /**
    * The role of the logged in user.
    *
-   * {@note Currently users can only have a single role since the role based authentication is
-   * pretty basic. Perhaps in the future we'll support multiple roles per user.}
+   * {@note Currently users can only have a single role since the role based authentication
+   * is pretty basic. Perhaps in the future we'll support multiple roles per user.}
    */
   private final String role;
 
@@ -53,18 +53,26 @@ public final class Session {
   private Date lastSeen;
 
   /**
+   * ID of the client LCM.
+   */
+  private String lcmUID;
+
+  /**
    * Default constructor.
    *
    * @param username of the user owning this session
    * @param role of the user owning this session
    * @param userOrigin which caused this session to be created
+   * @param lcmUID unique id of the client lcm
    */
-  public Session(final String username, final String role, final UserOrigin userOrigin) {
+  public Session(final String username, final String role, final UserOrigin userOrigin,
+      String lcmUID) {
     this.username = username;
     this.role = role;
     this.userOrigin = userOrigin;
     this.loginSince = new Date();
     this.lastSeen = new Date();
+    this.lcmUID = lcmUID;
   }
 
   /**
@@ -107,5 +115,12 @@ public final class Session {
    */
   public Date getLastSeen() {
     return lastSeen;
+  }
+
+  /**
+   * @return the lcmUID
+   */
+  public String getLcmUID() {
+    return lcmUID;
   }
 }

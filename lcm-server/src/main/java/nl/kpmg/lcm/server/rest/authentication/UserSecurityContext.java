@@ -74,4 +74,8 @@ public final class UserSecurityContext implements SecurityContext {
   public String getUserRole() {
     return session.getRole();
   }
+
+  public String getRemoteLcmUID() {
+    return session.getLcmUID();
+  }
 }

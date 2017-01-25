@@ -36,7 +36,7 @@ public class PermissionCheckerTest {
 
   @Test
   public void testSimpleCheck() {
-    Session session = new Session("admin", Roles.ADMINISTRATOR, UserOrigin.LOCAL);
+    Session session = new Session("admin", Roles.ADMINISTRATOR, UserOrigin.LOCAL, null);
     UserSecurityContext securityContext = new UserSecurityContext(session);
     boolean result =
         simpleChecker.check(securityContext, new String[] {Roles.ADMINISTRATOR, Roles.API_USER});
@@ -45,7 +45,7 @@ public class PermissionCheckerTest {
 
   @Test
   public void testSimpleCheckUnauthorized() {
-    Session session = new Session("admin", Roles.ADMINISTRATOR, UserOrigin.LOCAL);
+    Session session = new Session("admin", Roles.ADMINISTRATOR, UserOrigin.LOCAL, null);
     UserSecurityContext securityContext = new UserSecurityContext(session);
     boolean result =
         simpleChecker.check(securityContext, new String[] {Roles.REMOTE_USER, Roles.API_USER});
@@ -54,7 +54,7 @@ public class PermissionCheckerTest {
 
   @Test
   public void testExternalCheck() {
-    Session session = new Session("admin", Roles.ADMINISTRATOR, UserOrigin.LOCAL);
+    Session session = new Session("admin", Roles.ADMINISTRATOR, UserOrigin.LOCAL, null);
     UserSecurityContext securityContext = new UserSecurityContext(session);
     boolean result =
         externalChecker.check(securityContext, new String[] {Roles.ADMINISTRATOR, Roles.API_USER});
@@ -63,7 +63,7 @@ public class PermissionCheckerTest {
 
   @Test
   public void testExternalCheckUnauthorized() {
-    Session session = new Session("admin", Roles.ADMINISTRATOR, UserOrigin.LOCAL);
+    Session session = new Session("admin", Roles.ADMINISTRATOR, UserOrigin.LOCAL, null);
     UserSecurityContext securityContext = new UserSecurityContext(session);
     boolean result =
         externalChecker.check(securityContext, new String[] {Roles.ADMINISTRATOR, Roles.API_USER});
@@ -72,7 +72,7 @@ public class PermissionCheckerTest {
 
   @Test
   public void testExternalCheckUnauthorizedMissingResourceId() {
-    Session session = new Session("admin", Roles.ADMINISTRATOR, UserOrigin.LOCAL);
+    Session session = new Session("admin", Roles.ADMINISTRATOR, UserOrigin.LOCAL, null);
     UserSecurityContext securityContext = new UserSecurityContext(session);
     boolean result =
         externalChecker.check(securityContext, new String[] {Roles.REMOTE_USER, Roles.API_USER});
@@ -81,7 +81,7 @@ public class PermissionCheckerTest {
 
   @Test
   public void testExternalCheckResourceId() {
-    Session session = new Session("admin", Roles.ADMINISTRATOR, UserOrigin.LOCAL);
+    Session session = new Session("admin", Roles.ADMINISTRATOR, UserOrigin.LOCAL, null);
     UserSecurityContext securityContext = new UserSecurityContext(session);
 
     String resourceName = PermissionCheckerTest.class.getName() + ".testExternalCheck";
@@ -93,7 +93,7 @@ public class PermissionCheckerTest {
 
   @Test
   public void testExternalCheckWithResourceIdUnauthorized() {
-    Session session = new Session("admin", Roles.ADMINISTRATOR, UserOrigin.LOCAL);
+    Session session = new Session("admin", Roles.ADMINISTRATOR, UserOrigin.LOCAL, null);
     UserSecurityContext securityContext = new UserSecurityContext(session);
 
     String resourceName = PermissionCheckerTest.class.getName() + ".testExternalCheckUnauthorized";
