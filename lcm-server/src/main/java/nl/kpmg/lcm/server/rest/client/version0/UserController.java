@@ -75,7 +75,7 @@ public class UserController {
    */
   @GET
   @Produces({"application/nl.kpmg.lcm.rest.types.UsersRepresentation+json"})
-  @RolesAllowed({Roles.ADMINISTRATOR, Roles.API_USER})
+  @RolesAllowed({Roles.ADMINISTRATOR})
   public final UsersRepresentation getUsers() {
     List users = userService.findAll();
     ConcreteUsersRepresentation concreteUsersRepresentation = new ConcreteUsersRepresentation();
@@ -87,7 +87,7 @@ public class UserController {
   @GET
   @Produces({"application/nl.kpmg.lcm.rest.types.UserRepresentation+json"})
   @Path("/{user_id}")
-  @RolesAllowed({Roles.ADMINISTRATOR, Roles.API_USER})
+  @RolesAllowed({Roles.ADMINISTRATOR})
   public final Response getUser(@PathParam("user_id") String userId) {
     UserDao userDao = userService.getUserDao();
 

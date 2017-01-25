@@ -75,7 +75,7 @@ public class FetchEndpointController {
   @GET
   @Path("/{id}")
   @Produces(MediaType.APPLICATION_OCTET_STREAM)
-  @RolesAllowed({Roles.ADMINISTRATOR, Roles.API_USER})
+  @RolesAllowed({Roles.ADMINISTRATOR, Roles.REMOTE_USER})
   public final Response getOne(@PathParam("id") final String id)
       throws URISyntaxException, IOException {
 

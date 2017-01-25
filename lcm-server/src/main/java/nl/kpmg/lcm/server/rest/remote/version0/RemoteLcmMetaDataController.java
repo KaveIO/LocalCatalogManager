@@ -65,7 +65,7 @@ public class RemoteLcmMetaDataController {
    */
   @GET
   @Produces({"application/nl.kpmg.lcm.rest.types.MetaDatasRepresentation+json"})
-  @RolesAllowed({Roles.ADMINISTRATOR, Roles.API_USER})
+  @RolesAllowed({Roles.ADMINISTRATOR, Roles.REMOTE_USER})
   public final MetaDatasRepresentation getLocalMetaDataOverview(
       @QueryParam("search") String searchString) {
 
@@ -94,7 +94,7 @@ public class RemoteLcmMetaDataController {
   @GET
   @Path("{meta_data_id}")
   @Produces({"application/nl.kpmg.lcm.rest.types.MetaDataRepresentation+json"})
-  @RolesAllowed({Roles.ADMINISTRATOR, Roles.API_USER})
+  @RolesAllowed({Roles.ADMINISTRATOR, Roles.REMOTE_USER})
   public final MetaDataRepresentation getLocalMetaData(
       @PathParam("meta_data_id") final String metaDataId) {
 
@@ -109,7 +109,7 @@ public class RemoteLcmMetaDataController {
   @GET
   @Path("{metadata_id}/fetchUrl")
   @Produces({"application/nl.kpmg.lcm.rest.types.FetchEndpointRepresentation+json"})
-  @RolesAllowed({Roles.ADMINISTRATOR, Roles.API_USER})
+  @RolesAllowed({Roles.ADMINISTRATOR, Roles.REMOTE_USER})
   public final FetchEndpointRepresentation generateFetch(
       @PathParam("metadata_id") final String metadata_id) {
 

@@ -52,7 +52,7 @@ public class UserGroupController {
 
   @GET
   @Produces({"application/nl.kpmg.lcm.rest.types.UserGroupsRepresentation+json"})
-  @RolesAllowed({Roles.ADMINISTRATOR, Roles.API_USER})
+  @RolesAllowed({Roles.ADMINISTRATOR})
   public final UserGroupsRepresentation getUserGroups() {
     List userGroups = userGroupService.findAll();
     ConcreteUserGroupsRepresentation concreteUserGroupsRepresentation =
@@ -66,7 +66,7 @@ public class UserGroupController {
   @GET
   @Path("/{user_group_id}")
   @Produces({"application/nl.kpmg.lcm.rest.types.UserGroupRepresentation+json"})
-  @RolesAllowed({Roles.ADMINISTRATOR, Roles.API_USER})
+  @RolesAllowed({Roles.ADMINISTRATOR})
   public final Response getUserGroup(@PathParam("user_group_id") String userGroupId) {
     UserGroupDao userGroupDao = userGroupService.getUserGroupDao();
     UserGroup userGroup = userGroupDao.findOne(userGroupId);
