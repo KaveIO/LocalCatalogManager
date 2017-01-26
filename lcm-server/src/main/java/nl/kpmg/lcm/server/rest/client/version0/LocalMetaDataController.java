@@ -30,7 +30,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
-import java.util.logging.Logger;
 
 import javax.annotation.security.RolesAllowed;
 import javax.ws.rs.Consumes;
@@ -53,7 +52,6 @@ import javax.ws.rs.core.Response.Status;
 @Component
 @Path("client/v0/local")
 public class LocalMetaDataController {
-  private final Logger logger = Logger.getLogger(LocalMetaDataController.class.getName());
 
   /**
    * The MetaDataService.
@@ -176,7 +174,7 @@ public class LocalMetaDataController {
         //
         // return Response.ok().build();
         // } catch (IOException ex) {
-        // Logger.getLogger(LocalMetaDataController.class.getName()).log(Level.SEVERE,
+        // LoggerFactory.getLogger(LocalMetaDataController.class.getName()).error(
         // String.format("Couldn't find path: %s/%s.%s", sPath, fPath, fType), ex);
         // }
 

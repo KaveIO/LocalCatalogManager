@@ -19,14 +19,14 @@ import com.fasterxml.jackson.annotation.JsonAnySetter;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 
 import org.apache.commons.lang.ArrayUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.data.mongodb.core.mapping.Document;
 
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
 /**
  * MetaData model class.
@@ -47,7 +47,7 @@ public class MetaData extends AbstractModel {
   /**
    * The Logger.
    */
-  private static final Logger LOGGER = Logger.getLogger(MetaData.class.getName());
+  private static final Logger LOGGER = LoggerFactory.getLogger(MetaData.class.getName());
 
   /**
    * The unique name of the metadata object.
@@ -107,8 +107,7 @@ public class MetaData extends AbstractModel {
       String[] split = path.split("\\.");
       return get(innerMap, split);
     } catch (Exception ex) {
-      Logger.getLogger(MetaData.class.getName()).log(Level.SEVERE, "Couldn't find path: " + path,
-          ex);
+      LOGGER.error("Couldn't find path: " + path, ex);
       return null;
     }
 
@@ -134,8 +133,7 @@ public class MetaData extends AbstractModel {
       String[] split = path.split("\\.");
       set(innerMap, split, value);
     } catch (Exception ex) {
-      Logger.getLogger(MetaData.class.getName()).log(Level.SEVERE, "Couldn't find path: " + path,
-          ex);
+      LOGGER.error("Couldn't find path: " + path, ex);
     }
 
   }
@@ -220,7 +218,7 @@ public class MetaData extends AbstractModel {
         } else if (Map.class.isAssignableFrom(duplicate.getClass())) {
           lmdata.add(new MetaData((Map) duplicate));
         } else {
-          LOGGER.log(Level.WARNING, "Error while constructing duplicates list for MetaData: {0}",
+          LOGGER.warn( "Error while constructing duplicates list for MetaData: {0}",
               this.getName());
         }
       }

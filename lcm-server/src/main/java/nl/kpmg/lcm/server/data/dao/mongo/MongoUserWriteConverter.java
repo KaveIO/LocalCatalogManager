@@ -22,10 +22,8 @@ import nl.kpmg.lcm.server.rest.authentication.PasswordHash;
 import nl.kpmg.lcm.server.rest.authentication.UserPasswordHashException;
 
 import org.bson.types.ObjectId;
+import org.slf4j.LoggerFactory;
 import org.springframework.core.convert.converter.Converter;
-
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
 /**
  * Specific Write Converter for User objects. This class converts User objects to DBObjects at the
@@ -58,7 +56,7 @@ public class MongoUserWriteConverter implements Converter<User, DBObject> {
 
       return dbo;
     } catch (UserPasswordHashException ex) {
-      Logger.getLogger(MongoUserWriteConverter.class.getName()).log(Level.SEVERE,
+      LoggerFactory.getLogger(MongoUserWriteConverter.class.getName()).error(
           "Failure in hashing password while writing to DB", ex);
     }
     return null;

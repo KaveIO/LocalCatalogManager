@@ -20,6 +20,8 @@ import nl.kpmg.lcm.server.exception.LcmException;
 import nl.kpmg.lcm.server.exception.LcmValidationException;
 import nl.kpmg.lcm.validation.Notification;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.config.BeanDefinition;
 import org.springframework.context.annotation.ClassPathScanningCandidateComponentProvider;
 import org.springframework.core.type.filter.AnnotationTypeFilter;
@@ -29,8 +31,6 @@ import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
 /**
  *
@@ -39,7 +39,7 @@ import java.util.logging.Logger;
 @Service
 public class BackendFactory {
 
-  private final Logger logger = Logger.getLogger(BackendFactory.class.getName());
+  private final Logger LOGGER = LoggerFactory.getLogger(BackendFactory.class.getName());
   private Map<String, Class<?>> backendClassMap = null;
   private static final int MAX_KEY_LENGTH = 1024;
   private final String backendSourcePackage = "nl.kpmg.lcm.server.backend";
@@ -49,7 +49,7 @@ public class BackendFactory {
     Notification notification = validate(sourceType, storage);
 
     if (notification.hasErrors()) {
-        throw new LcmValidationException(notification);
+      throw new LcmValidationException(notification);
     }
 
     if (backendClassMap == null) {
@@ -58,8 +58,7 @@ public class BackendFactory {
 
     if (backendClassMap == null || backendClassMap.isEmpty()
         || backendClassMap.get(sourceType) == null) {
-      throw new LcmException(
-          "Backend is not implemented for soruce with type: " + sourceType);
+      throw new LcmException("Backend is not implemented for soruce with type: " + sourceType);
     }
 
     Class backendClass = backendClassMap.get(sourceType);
@@ -67,23 +66,22 @@ public class BackendFactory {
     return backendImpl;
   }
 
-    private Notification validate(String sourceType, Storage storage) {
-        Notification notification = new Notification();
-        if (sourceType == null) {
-            notification.addError("Data source type could not be null", null);
-        } else if (sourceType.isEmpty()) {
-            notification.addError("Data source type could not be empty!", null);
-        } else if (sourceType.length() > MAX_KEY_LENGTH) {
-            notification.addError("Data source type could not be longer then: "
-                    + MAX_KEY_LENGTH, null);
-        }
-
-        if (storage == null) {
-          notification.addError("Storage parameter could not be null", null);
-        }
-
-        return notification;
+  private Notification validate(String sourceType, Storage storage) {
+    Notification notification = new Notification();
+    if (sourceType == null) {
+      notification.addError("Data source type could not be null", null);
+    } else if (sourceType.isEmpty()) {
+      notification.addError("Data source type could not be empty!", null);
+    } else if (sourceType.length() > MAX_KEY_LENGTH) {
+      notification.addError("Data source type could not be longer then: " + MAX_KEY_LENGTH, null);
     }
+
+    if (storage == null) {
+      notification.addError("Storage parameter could not be null", null);
+    }
+
+    return notification;
+  }
 
   private void scan() {
     ClassPathScanningCandidateComponentProvider scanner =
@@ -92,14 +90,14 @@ public class BackendFactory {
     // TODO it seems that currently the filter is working on half - return only classes
     // that has annotation but doesn't case about annotations type.
     // The code bellow works correct but it will make extra cycles.
-    scanner
-        .addIncludeFilter(new AnnotationTypeFilter(nl.kpmg.lcm.server.backend.BackendSource.class));
+    scanner.addIncludeFilter(new AnnotationTypeFilter(
+        nl.kpmg.lcm.server.backend.BackendSource.class));
     backendClassMap = new ConcurrentHashMap();
     for (BeanDefinition bd : scanner.findCandidateComponents(backendSourcePackage)) {
-      logger.log(Level.FINE, "Found class: {0}", bd.getBeanClassName());
+      LOGGER.trace("Found class: {0}", bd.getBeanClassName());
       Class backendClass = getClassForName(bd.getBeanClassName());
       if (backendClass == null) {
-        logger.log(Level.WARNING, "Found class with scanner: {0} but was not able to laod it",
+        LOGGER.warn("Found class with scanner: {0} but was not able to laod it",
             new Object[] {bd.getBeanClassName()});
         continue;
       }
@@ -107,12 +105,10 @@ public class BackendFactory {
       String sourceType = getSupportedSourceType(backendClass);
 
       if (sourceType != null) {
-        logger.log(Level.FINE,
-            "Put to backendClassMap entity with  key: {0} and object of type: {1}",
+        LOGGER.trace("Put to backendClassMap entity with  key: {0} and object of type: {1}",
             new Object[] {sourceType, bd.getBeanClassName()});
         if (backendClassMap.get(sourceType) != null) {
-          logger.log(Level.SEVERE,
-              "There are more then one Class that implements \"{0}\" source Type!",
+          LOGGER.error("There are more then one Class that implements \"{0}\" source Type!",
               new Object[] {sourceType});
         }
         backendClassMap.put(sourceType, backendClass);
@@ -128,7 +124,7 @@ public class BackendFactory {
 
       return clazz;
     } catch (ClassNotFoundException ex) {
-      logger.log(Level.WARNING, "Unable to find class: " + className, ex);
+      LOGGER.warn("Unable to find class: " + className, ex);
     }
 
     return null;
@@ -141,18 +137,17 @@ public class BackendFactory {
 
       return backendImpl;
     } catch (NoSuchMethodException ex) {
-      logger.log(Level.WARNING, "Unable to find a constructor with Storage class as paraqmeter ",
-          ex);
+      LOGGER.warn("Unable to find a constructor with Storage class as paraqmeter ", ex);
     } catch (SecurityException ex) {
-      logger.log(Level.WARNING, null, ex);
+      LOGGER.warn(null, ex);
     } catch (InstantiationException ex) {
-      logger.log(Level.WARNING, "Unable to instantiate " + clazz.getName(), ex);
+      LOGGER.warn("Unable to instantiate " + clazz.getName(), ex);
     } catch (IllegalAccessException ex) {
-      logger.log(Level.WARNING, null, ex);
+      LOGGER.warn(null, ex);
     } catch (IllegalArgumentException ex) {
-      logger.log(Level.WARNING, "Unable to call constructor with param: " + storage.getId(), ex);
+      LOGGER.warn("Unable to call constructor with param: " + storage.getId(), ex);
     } catch (InvocationTargetException ex) {
-      logger.log(Level.WARNING, null, ex);
+      LOGGER.warn(null, ex);
       if (ex.getCause() instanceof LcmException) {
         throw (LcmException) ex.getCause();
       }
@@ -172,7 +167,7 @@ public class BackendFactory {
         return source.type();
       }
     } catch (SecurityException ex) {
-      logger.log(Level.WARNING, null, ex);
+      LOGGER.warn(null, ex);
     }
 
     return null;

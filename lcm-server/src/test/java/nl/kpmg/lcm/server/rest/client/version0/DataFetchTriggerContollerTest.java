@@ -38,6 +38,8 @@ import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import java.io.File;
@@ -46,7 +48,6 @@ import java.io.PrintWriter;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.logging.Logger;
 
 import javax.ws.rs.client.Entity;
 import javax.ws.rs.client.Invocation;
@@ -62,7 +63,7 @@ public class DataFetchTriggerContollerTest extends LcmBaseServerTest {
       "application/nl.kpmg.lcm.server.data.MetaData+json";
   private static final String METADATA_PATH = "client/v0/local";
   private static final String TRIGGER_PATH = "client/v0/remote";
-  private static final Logger LOG = Logger.getLogger(DataFetchTriggerContollerTest.class.getName());
+  private static final Logger LOGGER = LoggerFactory.getLogger(DataFetchTriggerContollerTest.class.getName());
   private static final String CSV_SCHEME = "csv";
   private static final String CSV_STORAGE_PATH = System.getProperty("java.io.tmpdir");
   private static final String CSV_STORAGE_NAME = "csv-storage";

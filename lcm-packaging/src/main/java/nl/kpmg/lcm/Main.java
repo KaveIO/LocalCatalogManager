@@ -18,10 +18,10 @@ import nl.kpmg.lcm.server.ServerException;
 import nl.kpmg.lcm.ui.UI;
 
 import org.apache.commons.lang.ArrayUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
 /**
  * Main class.
@@ -29,7 +29,7 @@ import java.util.logging.Logger;
  */
 public class Main {
 
-  private static final Logger LOG = Logger.getLogger(Main.class.getName());
+  private static final Logger LOG = LoggerFactory.getLogger(Main.class.getName());
 
   /**
    * Main method.
@@ -48,27 +48,27 @@ public class Main {
       final String[] arguments = (String[]) ArrayUtils.removeElement(args, command);
 
       if (command.equals("server")) {
-        LOG.log(Level.INFO, "Starting LCM server");
+        LOG.info( "Starting LCM server");
 
         final Server server = new Server();
         server.start();
 
-        LOG.log(Level.INFO, "Hit enter to stop it...");
+        LOG.info( "Hit enter to stop it...");
         System.in.read();
 
         server.stop();
       } else if (command.equals("ui")) {
-        LOG.log(Level.INFO, "Starting LCM UI");
+        LOG.info( "Starting LCM UI");
 
         final UI ui = new UI();
         ui.start();
 
-        LOG.log(Level.INFO, "Hit enter to stop it...");
+        LOG.info( "Hit enter to stop it...");
         System.in.read();
 
         ui.stop();
       } else if (command.equals("cli")) {
-        LOG.log(Level.INFO, "Cli not implemented yet.");
+        LOG.info( "Cli not implemented yet.");
       } else if (command.equals("help")) {
         if (arguments.length == 1) {
           displayHelp(arguments[0]);
@@ -82,7 +82,7 @@ public class Main {
     } catch (InvalidArgumentsException e) {
       displayHelp(e);
     } catch (ServerException ex) {
-      Logger.getLogger(Main.class.getName()).log(Level.SEVERE, "Failed starting the server", ex);
+      LOG.error( "Failed starting the server", ex);
     }
   }
 

@@ -24,11 +24,11 @@ import nl.kpmg.lcm.server.task.EnrichmentTask;
 import nl.kpmg.lcm.server.task.TaskException;
 import nl.kpmg.lcm.server.task.TaskResult;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import java.util.Map;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
 /**
  * Fills data on a MetaData object concerning the described Data.
@@ -50,6 +50,7 @@ import java.util.logging.Logger;
  */
 public class DataEnrichmentTask extends EnrichmentTask {
 
+  private final Logger LOGGER = LoggerFactory.getLogger(DataEnrichmentTask.class.getName());
   /**
    * The BackendService.
    */
@@ -94,10 +95,10 @@ public class DataEnrichmentTask extends EnrichmentTask {
 
       return TaskResult.SUCCESS;
     } catch (LcmValidationException ex) {
-      Logger.getLogger(DataEnrichmentTask.class.getName()).log(Level.WARNING, ex.getNotification().errorMessage());
+      LOGGER.warn( ex.getNotification().errorMessage());
       return TaskResult.FAILURE;
     } catch ( LcmException ex) {
-      Logger.getLogger(DataEnrichmentTask.class.getName()).log(Level.WARNING, ex.getMessage(), ex);
+      LOGGER.warn( ex.getMessage(), ex);
       return TaskResult.FAILURE;
     }
   }

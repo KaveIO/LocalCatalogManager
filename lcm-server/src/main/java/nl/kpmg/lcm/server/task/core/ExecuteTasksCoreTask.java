@@ -17,23 +17,21 @@ package nl.kpmg.lcm.server.task.core;
 import static org.quartz.JobBuilder.newJob;
 
 import nl.kpmg.lcm.server.data.TaskDescription;
-import nl.kpmg.lcm.server.data.TaskSchedule;
 import nl.kpmg.lcm.server.data.service.TaskDescriptionService;
 import nl.kpmg.lcm.server.task.CoreTask;
 import nl.kpmg.lcm.server.task.EnrichmentTask;
 import nl.kpmg.lcm.server.task.TaskException;
-import nl.kpmg.lcm.server.task.TaskManager;
 import nl.kpmg.lcm.server.task.TaskResult;
 import nl.kpmg.lcm.server.task.TaskScheduleException;
 
 import org.quartz.JobDetail;
 import org.quartz.Scheduler;
 import org.quartz.SchedulerException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import java.util.List;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
 /**
  * Executor of ad-hoc tasks. EnrichmentTasks can be created either through a schedule or in an
@@ -43,6 +41,7 @@ import java.util.logging.Logger;
  */
 public class ExecuteTasksCoreTask extends CoreTask {
 
+  private final Logger LOGGER = LoggerFactory.getLogger(ExecuteTasksCoreTask.class.getName());
   /**
    * The group key which is used to register the ad-hoc tasks.
    */
@@ -72,8 +71,7 @@ public class ExecuteTasksCoreTask extends CoreTask {
           taskDescription.setStatus(TaskDescription.TaskStatus.SCHEDULED);
           taskDescriptionService.getTaskDescriptionDao().save(taskDescription);
         } catch (TaskScheduleException ex) {
-          Logger.getLogger(ExecuteTasksCoreTask.class.getName()).log(Level.WARNING,
-              "Failed scheduling task.");
+          LOGGER.warn("Failed scheduling task.");
           taskDescription.setStatus(TaskDescription.TaskStatus.FAILED);
           taskDescriptionService.getTaskDescriptionDao().save(taskDescription);
         }
@@ -107,7 +105,7 @@ public class ExecuteTasksCoreTask extends CoreTask {
       Class<? extends EnrichmentTask> enrichmentTaskClass = getEnrichmentTaskClass(job);
       scheduleEnrichmentTask(name, enrichmentTaskClass, target);
     } catch (TaskException ex) {
-      Logger.getLogger(ExecuteTasksCoreTask.class.getName()).log(Level.SEVERE, null, ex);
+      LOGGER.error(ex.getMessage());
       throw new TaskScheduleException(ex);
     }
   }
@@ -131,7 +129,7 @@ public class ExecuteTasksCoreTask extends CoreTask {
       scheduler.addJob(jobDetail, true, true);
       scheduler.triggerJob(jobDetail.getKey());
     } catch (SchedulerException ex) {
-      Logger.getLogger(TaskManager.class.getName()).log(Level.SEVERE, null, ex);
+      LOGGER.error( null, ex);
       throw new TaskScheduleException(ex);
     }
   }
@@ -155,7 +153,7 @@ public class ExecuteTasksCoreTask extends CoreTask {
         throw new TaskException("Task definition doesn't contain a schedulable job");
       }
     } catch (ClassNotFoundException ex) {
-      Logger.getLogger(TaskSchedule.class.getName()).log(Level.SEVERE, null, ex);
+      LOGGER.error( null, ex);
       throw new TaskException(ex);
     }
   }

@@ -16,11 +16,12 @@ package nl.kpmg.lcm.rest.types;
 
 import nl.kpmg.lcm.server.data.AbstractModel;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
 /**
  *
@@ -30,7 +31,7 @@ public abstract class AbstractDatasRepresentation<T extends AbstractDataRepresen
     extends AbstractRepresentation {
 
   private static final Logger logger =
-      Logger.getLogger(AbstractDatasRepresentation.class.getName());
+      LoggerFactory.getLogger(AbstractDatasRepresentation.class.getName());
 
   /**
    * The actual TaskDescription.
@@ -64,11 +65,11 @@ public abstract class AbstractDatasRepresentation<T extends AbstractDataRepresen
           this.items.add(newDataRepresentation);
         }
       } else {
-        logger.log(Level.WARNING, "Couldn't instantiate represented item. Of type: {0}",
+        logger.warn( "Couldn't instantiate represented item. Of type: {0}",
             type.getTypeName());
       }
     } catch (InstantiationException | IllegalAccessException ex) {
-      logger.log(Level.WARNING, "Couldn't instantiate represented item. Of type: {0}",
+      logger.warn( "Couldn't instantiate represented item. Of type: {0}",
           type.getTypeName());
     }
   }

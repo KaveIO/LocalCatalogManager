@@ -22,10 +22,10 @@ import org.apache.metamodel.jdbc.JdbcDataContext;
 import org.apache.metamodel.schema.ColumnType;
 import org.apache.metamodel.schema.Schema;
 import org.apache.metamodel.schema.Table;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.Map;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
 /**
  *
@@ -34,7 +34,7 @@ import java.util.logging.Logger;
 public class TableCreator {
   private final JdbcDataContext dataContext;
   private final DataTransformationSettings transformationSettings;
-  private static final Logger logger = Logger.getLogger(TableCreator.class.getName());
+  private static final Logger logger = LoggerFactory.getLogger(TableCreator.class.getName());
 
   public TableCreator(JdbcDataContext dataContext,
       DataTransformationSettings transformationSettings) {
@@ -74,7 +74,7 @@ public class TableCreator {
       // In case that there is no type we adopt varchar
       // this could happen when the original data source doesn't support types i.e. CSV
       if (columnType == null) {
-        logger.log(Level.WARNING, "Missing type for column {0}. Varchar will be used further.",
+        logger.warn( "Missing type for column {0}. Varchar will be used further.",
             entry.getKey());
         columnType = ColumnType.VARCHAR;
       }

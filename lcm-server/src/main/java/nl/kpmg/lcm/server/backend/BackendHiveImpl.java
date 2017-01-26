@@ -28,12 +28,12 @@ import org.apache.metamodel.drop.DropTable;
 import org.apache.metamodel.jdbc.JdbcDataContext;
 import org.apache.metamodel.schema.Schema;
 import org.apache.metamodel.schema.Table;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
 /**
  *
@@ -42,7 +42,7 @@ import java.util.logging.Logger;
 @BackendSource(type = "hive")
 public class BackendHiveImpl extends AbstractBackend {
 
-  private static final Logger logger = Logger.getLogger(BackendCsvImpl.class.getName());
+  private static final Logger LOGGER = LoggerFactory.getLogger(BackendCsvImpl.class.getName());
 
   private final HiveStorage hiveStorage;
   private final RelationalDbMetaData hiveMetaData;
@@ -178,7 +178,7 @@ public class BackendHiveImpl extends AbstractBackend {
     hiveMetaData.addColumnsDescription(table.getColumns());
 
     DataSet dataSet = dataContext.query().from(table).selectAll().execute();
-    logger.log(Level.INFO, "Read from table: {0} sucessfully", tableName);
+    LOGGER.info( "Read from table: {0} sucessfully", tableName);
     ContentIterator iterator = new DataSetContentIterator(dataSet);
 
     return new Data(hiveMetaData.getMetaData(), iterator);
@@ -190,7 +190,7 @@ public class BackendHiveImpl extends AbstractBackend {
       try {
         connection.close();
       } catch (SQLException ex) {
-        logger.log(Level.SEVERE, "Unsble to close connection.", ex);
+        LOGGER.error( "Unsble to close connection.", ex);
       }
       connection = null;
     }

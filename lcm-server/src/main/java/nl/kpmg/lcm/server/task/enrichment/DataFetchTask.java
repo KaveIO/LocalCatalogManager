@@ -34,14 +34,14 @@ import nl.kpmg.lcm.server.task.TaskResult;
 import nl.kpmg.lcm.validation.Notification;
 
 import org.glassfish.jersey.client.authentication.HttpAuthenticationFeature;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.util.Map;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
 import javax.ws.rs.core.Response;
 
@@ -51,7 +51,7 @@ import javax.ws.rs.core.Response;
  */
 public class DataFetchTask extends EnrichmentTask {
 
-  private static final Logger logger = Logger.getLogger(BackendCsvImpl.class.getName());
+  private static final Logger LOGGER = LoggerFactory.getLogger(BackendCsvImpl.class.getName());
 
   @Autowired
   private StorageService storageService;
@@ -132,7 +132,7 @@ public class DataFetchTask extends EnrichmentTask {
       metadata.set("dynamic.data.state", "ATTACHED");
       metaDataService.update(metadata.getId(), metadata);
     } catch (Exception ex) {
-      logger.log(Level.SEVERE, ex.getMessage());
+      LOGGER.error(ex.getMessage());
 
       return false;
     }

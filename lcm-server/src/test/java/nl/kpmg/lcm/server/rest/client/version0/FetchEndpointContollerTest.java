@@ -39,6 +39,8 @@ import nl.kpmg.lcm.server.rest.authentication.BasicAuthenticationManager;
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Test;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import java.io.BufferedReader;
@@ -55,7 +57,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.logging.Logger;
 
 import javax.ws.rs.client.Entity;
 import javax.ws.rs.client.Invocation;
@@ -76,7 +77,7 @@ public class FetchEndpointContollerTest extends LcmBaseServerTest {
   private static final String METADATA_CONTENT_TYPE =
       "application/nl.kpmg.lcm.server.data.MetaData+json";
 
-  private static final Logger LOG = Logger.getLogger(FetchEndpointContollerTest.class.getName());
+  private static final Logger LOG = LoggerFactory.getLogger(FetchEndpointContollerTest.class.getName());
 
   private static final String CSV_SCHEME = "csv";
   private static final String CSV_STORAGE_PATH = System.getProperty("java.io.tmpdir");

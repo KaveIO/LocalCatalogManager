@@ -19,9 +19,8 @@ import org.quartz.JobDataMap;
 import org.quartz.JobExecutionContext;
 import org.quartz.JobExecutionException;
 import org.quartz.Scheduler;
-
-import java.util.logging.Level;
-import java.util.logging.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * A core task is a task which is needed to keep the system itself running.
@@ -36,6 +35,7 @@ public abstract class CoreTask implements Job {
    */
   public static final String SCHEDULER = "scheduler";
 
+  private final Logger LOGGER = LoggerFactory.getLogger(CoreTask.class.getName());
   /**
    * The quartz scheduler.
    */
@@ -61,15 +61,15 @@ public abstract class CoreTask implements Job {
     scheduler = (Scheduler) jobDataMap.get(SCHEDULER);
 
     try {
-      Logger.getLogger(CoreTask.class.getName()).log(Level.FINE,
+      LOGGER.trace(
           String.format("Executing CoreTask %s ", context.getJobDetail().getKey().getName()));
 
       execute();
 
-      Logger.getLogger(CoreTask.class.getName()).log(Level.FINE,
+      LOGGER.trace(
           String.format("Done with CoreTask %s ", context.getJobDetail().getKey().getName()));
     } catch (Exception ex) {
-      Logger.getLogger(CoreTask.class.getName()).log(Level.SEVERE, "Failed executing task", ex);
+      LOGGER.error( "Failed executing task", ex);
       throw new JobExecutionException(ex);
     }
   }

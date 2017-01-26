@@ -21,11 +21,11 @@ import nl.kpmg.lcm.server.exception.LcmException;
 import org.apache.metamodel.schema.Column;
 import org.apache.metamodel.schema.ColumnType;
 import org.apache.metamodel.schema.ColumnTypeImpl;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.HashMap;
 import java.util.Map;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
 /**
  * This is Decorator around MeataData that parse its fields for Relational Data sources like Hive
@@ -35,7 +35,7 @@ import java.util.logging.Logger;
  */
 public class RelationalDbMetaData {
   private final MetaData metaData;
-  private static final Logger logger = Logger.getLogger(RelationalDbMetaData.class.getName());
+  private static final Logger LOGGER = LoggerFactory.getLogger(RelationalDbMetaData.class.getName());
 
   public RelationalDbMetaData(MetaData metaData) {
     this.metaData = metaData;
@@ -50,7 +50,7 @@ public class RelationalDbMetaData {
       Map<String, Object> columnDescription = entry.getValue();
       String type = (String) columnDescription.get("type");
       if (type == null) {
-        logger.log(Level.WARNING, "Type of column {0} is null", entry.getKey());
+        LOGGER.warn( "Type of column {0} is null", entry.getKey());
       }
       ColumnType columnType = matchColumnType(type);
       ColumnDescription column = new ColumnDescription(entry.getKey(), columnType);
@@ -78,7 +78,7 @@ public class RelationalDbMetaData {
     if (value instanceof Integer) {
       return (Integer) value;
     } else {
-      logger.log(Level.WARNING, "Unable to convert metadata value: {0}.", value);
+      LOGGER.warn( "Unable to convert metadata value: {0}.", value);
       return null;
     }
   }

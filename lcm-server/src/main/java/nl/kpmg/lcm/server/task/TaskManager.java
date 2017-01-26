@@ -25,11 +25,10 @@ import org.quartz.CronTrigger;
 import org.quartz.JobDetail;
 import org.quartz.Scheduler;
 import org.quartz.SchedulerException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.context.ApplicationContext;
 import org.springframework.scheduling.quartz.SchedulerFactoryBean;
-
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
 /**
  * The Singleton class the manages the execution of Tasks. The TaskManager uses quartz as a
@@ -41,6 +40,7 @@ import java.util.logging.Logger;
  */
 public final class TaskManager {
 
+  private final Logger LOGGER = LoggerFactory.getLogger(TaskManager.class.getName());
   /***
    * Bellow schedule expressions are valid cron expressions which means that each column
    * representing one metric of the time i.e the first is seconds, the second is minutes, the third
@@ -101,18 +101,15 @@ public final class TaskManager {
             "Trying to initialize the TaskManager while its already running.");
       }
     } catch (SchedulerException ex) {
-      Logger.getLogger(TaskManager.class.getName()).log(Level.SEVERE,
-          "Initialization of the quartz scheduler failed", ex);
+      LOGGER.error("Initialization of the quartz scheduler failed", ex);
 
       throw new TaskManagerException(ex);
     } catch (TaskScheduleException ex) {
-      Logger.getLogger(TaskManager.class.getName()).log(Level.SEVERE,
-          "Core task couldn't be scheduled", ex);
+      LOGGER.error("Core task couldn't be scheduled", ex);
 
       throw new TaskManagerException(ex);
     } catch (Exception ex) {
-      Logger.getLogger(TaskManager.class.getName()).log(Level.SEVERE,
-          "Initialization of the quartz scheduler failed", ex);
+      LOGGER.error("Initialization of the quartz scheduler failed", ex);
 
       throw new TaskManagerException(ex);
     }
@@ -149,7 +146,7 @@ public final class TaskManager {
 
       scheduler.scheduleJob(job, trigger);
     } catch (SchedulerException ex) {
-      Logger.getLogger(TaskManager.class.getName()).log(Level.SEVERE, null, ex);
+      LOGGER.error(null, ex);
       throw new TaskScheduleException(ex);
     }
   }
@@ -161,8 +158,7 @@ public final class TaskManager {
     try {
       scheduler.shutdown();
     } catch (SchedulerException ex) {
-      Logger.getLogger(TaskManager.class.getName()).log(Level.WARNING,
-          "failed shuting down the schedulere", ex);
+      LOGGER.warn("failed shuting down the schedulere", ex);
     }
   }
 }

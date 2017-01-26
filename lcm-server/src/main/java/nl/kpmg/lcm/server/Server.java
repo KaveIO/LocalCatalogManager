@@ -34,17 +34,17 @@ import org.glassfish.jersey.linking.DeclarativeLinkingFeature;
 import org.glassfish.jersey.message.filtering.EntityFilteringFeature;
 import org.glassfish.jersey.message.filtering.SecurityAnnotations;
 import org.glassfish.jersey.server.ResourceConfig;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
 
 import java.io.IOException;
 import java.lang.annotation.Annotation;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
 public class Server {
 
-  private static final Logger LOGGER = Logger.getLogger(Server.class.getName());
+  private static final Logger LOGGER = LoggerFactory.getLogger(Server.class.getName());
 
   private final ServerConfiguration configuration;
   private final ApplicationContext context;
@@ -76,12 +76,12 @@ public class Server {
     // allows for different storage backend which are Autwired with Spring.
     switch (storage) {
       case "file":
-        LOGGER.log(Level.INFO, "Loading file based storage ApplicationContext");
+        LOGGER.info( "Loading file based storage ApplicationContext");
         context = new ClassPathXmlApplicationContext(
             new String[] {"application-context-server-file.xml"});
         break;
       case "mongo":
-        LOGGER.log(Level.INFO, "Loading mongo based storage ApplicationContext");
+        LOGGER.info( "Loading mongo based storage ApplicationContext");
         context = new ClassPathXmlApplicationContext(
             new String[] {"application-context-server-mongo.xml"});
         break;
@@ -128,15 +128,15 @@ public class Server {
       restServer = startRestInterface();
       taskManager = startTaskManager();
     } catch (SslConfigurationException ex) {
-      Logger.getLogger(Server.class.getName()).log(Level.SEVERE,
+      LOGGER.error(
           "Failed starting the LocalCatalogManager due to invalid SSL configuration", ex);
       throw new ServerException(ex);
     } catch (IOException ex) {
-      Logger.getLogger(Server.class.getName()).log(Level.SEVERE,
+      LOGGER.error(
           "Failed starting the LocalCatalogManager due to the redirect server ", ex);
       throw new ServerException(ex);
     } catch (TaskManagerException ex) {
-      Logger.getLogger(Server.class.getName()).log(Level.SEVERE,
+      LOGGER.error(
           "Failed starting the LocalCatalogManager due to the TaskManager", ex);
       throw new ServerException(ex);
     }

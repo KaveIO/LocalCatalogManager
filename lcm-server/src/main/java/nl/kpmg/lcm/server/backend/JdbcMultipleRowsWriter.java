@@ -19,6 +19,8 @@ import nl.kpmg.lcm.server.data.ContentIterator;
 import org.apache.metamodel.schema.ColumnType;
 import org.apache.metamodel.util.FileHelper;
 import org.apache.metamodel.util.FormatHelper;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.InputStream;
 import java.io.Reader;
@@ -35,8 +37,6 @@ import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
 /**
  *
@@ -44,7 +44,7 @@ import java.util.logging.Logger;
  */
 class JdbcMultipleRowsWriter {
 
-  private static final Logger logger = Logger.getLogger(JdbcMultipleRowsWriter.class.getName());
+  private static final Logger LOGGER = LoggerFactory.getLogger(JdbcMultipleRowsWriter.class.getName());
 
   private final String tableName;
   private final String dbName;
@@ -80,14 +80,14 @@ class JdbcMultipleRowsWriter {
         pst = createPrepareStatement(query, rows);
         pst.executeUpdate();
         totalCount += rows.size();
-        logger.log(Level.INFO, "Written sucessfully {0} rows in table: {1}",
+        LOGGER.info( "Written sucessfully {0} rows in table: {1}",
             new Object[] {rows.size(), tableName});
       } catch (SQLException ex) {
         if (totalCount > 0) {
-          logger.log(Level.INFO, "The content is inserted partially, only {0} rows in table: {1}",
+          LOGGER.info( "The content is inserted partially, only {0} rows in table: {1}",
               new Object[] {totalCount, tableName});
         }
-        logger.log(Level.WARNING, "Unable to execute query starting with : {0}",
+        LOGGER.warn( "Unable to execute query starting with : {0}",
             query.substring(0, 300));
         throw ex;
       } finally {
@@ -96,7 +96,7 @@ class JdbcMultipleRowsWriter {
           }
       }
     }
-    logger.log(Level.INFO, "All the content inserted sucessfully {0} rows in table: {1}",
+    LOGGER.info( "All the content inserted sucessfully {0} rows in table: {1}",
         new Object[] {totalCount, tableName});
   }
 
@@ -229,7 +229,7 @@ class JdbcMultipleRowsWriter {
         st.setObject(valueIndex, value);
       }
     } catch (SQLException e) {
-      logger.log(Level.SEVERE,
+      LOGGER.error(
           "Failed to set parameter {" + valueIndex + "} to value: { " + value + "}");
       throw e;
     }

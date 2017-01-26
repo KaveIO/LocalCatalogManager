@@ -23,14 +23,14 @@ import nl.kpmg.lcm.server.data.Storage;
 import nl.kpmg.lcm.server.data.dao.StorageDao;
 import nl.kpmg.lcm.server.exception.LcmException;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.List;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
 /**
  * Crude service to work with backends.
@@ -39,7 +39,7 @@ import java.util.logging.Logger;
  */
 @Service
 public class StorageService {
-  private final Logger logger = Logger.getLogger(StorageService.class.getName());
+  private final Logger LOGGER = LoggerFactory.getLogger(StorageService.class.getName());
 
   @Autowired
   private StorageDao storageDao;
@@ -67,7 +67,7 @@ public class StorageService {
     if (metadata == null || metadata.getDataUri() == null || metadata.getDataUri().isEmpty()) {
       String errorMessage =
           "Invalid input data! Metata data could not be null nither the data URI!";
-      logger.warning(errorMessage);
+      LOGGER.warn(errorMessage);
 
       throw new LcmException(errorMessage);
     }
@@ -90,7 +90,7 @@ public class StorageService {
       return backend;
 
     } catch (URISyntaxException ex) {
-      logger.log(Level.SEVERE, null, ex);
+      LOGGER.error( null, ex);
       throw new IllegalArgumentException("Error! Unable to parse medata data URI!");
     }
   }

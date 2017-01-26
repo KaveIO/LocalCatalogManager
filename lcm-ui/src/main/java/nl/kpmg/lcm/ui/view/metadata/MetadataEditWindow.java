@@ -33,9 +33,10 @@ import nl.kpmg.lcm.ui.rest.AuthenticationException;
 import nl.kpmg.lcm.ui.rest.DataCreationException;
 import nl.kpmg.lcm.ui.rest.RestClientService;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.util.List;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
 import javax.ws.rs.core.Link;
 
@@ -45,6 +46,7 @@ import javax.ws.rs.core.Link;
  */
 public class MetadataEditWindow extends Window implements Button.ClickListener {
 
+  private static final Logger LOGGER = LoggerFactory.getLogger(MetadataEditWindow.class.getName());
   /**
    * The default size of the side panels of this view.
    */
@@ -118,8 +120,7 @@ public class MetadataEditWindow extends Window implements Button.ClickListener {
       textArea.setValue(rawMetadata);
     } catch (JsonProcessingException ex) {
       textArea.setEnabled(false);
-      Logger.getLogger(MetadataEditWindow.class.getName()).log(Level.WARNING,
-          "Couldn't serialize metadata object", ex);
+      LOGGER.warn("Couldn't serialize metadata object", ex);
     }
 
     saveButton = new Button("Save");
@@ -158,8 +159,7 @@ public class MetadataEditWindow extends Window implements Button.ClickListener {
         this.close();
       } catch (ServerException | DataCreationException | AuthenticationException ex) {
         Notification.show("Edit of metadata failed.");
-        Logger.getLogger(MetadataEditWindow.class.getName()).log(Level.WARNING,
-            "Creation of metadata failed.", ex);
+        LOGGER.warn("Creation of metadata failed.", ex);
       }
     } else if (event.getSource() == deleteButton) {
       try {
@@ -168,8 +168,7 @@ public class MetadataEditWindow extends Window implements Button.ClickListener {
         this.close();
       } catch (ServerException | DataCreationException | AuthenticationException ex) {
         Notification.show("Edit of metadata failed.");
-        Logger.getLogger(MetadataEditWindow.class.getName()).log(Level.WARNING,
-            "Creation of metadata failed.", ex);
+        LOGGER.warn("Creation of metadata failed.", ex);
       }
     }
   }

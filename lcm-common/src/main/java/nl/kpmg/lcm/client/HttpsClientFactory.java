@@ -20,11 +20,10 @@ import nl.kpmg.lcm.configuration.ClientConfiguration;
 import nl.kpmg.lcm.server.ServerException;
 
 import org.glassfish.jersey.client.authentication.HttpAuthenticationFeature;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
-
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
 import javax.net.ssl.SSLContext;
 import javax.ws.rs.client.Client;
@@ -33,7 +32,7 @@ import javax.ws.rs.client.WebTarget;
 
 @Component
 public class HttpsClientFactory {
-  private static final Logger LOGGER = Logger.getLogger(HttpsClientFactory.class.getName());
+  private static final Logger LOGGER = LoggerFactory.getLogger(HttpsClientFactory.class.getName());
 
   private final ClientConfiguration configuration;
   private HttpAuthenticationFeature basicAutorization;
@@ -56,7 +55,7 @@ public class HttpsClientFactory {
       sc = SslProvider.createSSLContextConfigurator(configuration).createSSLContext();
     } catch (SslConfigurationException ex) {
 
-      LOGGER.log(Level.WARNING,
+      LOGGER.warn(
           "Invalid SSL configuration, client will contact the configured server on HTTP only");
       return builder.build();
     }
@@ -74,7 +73,7 @@ public class HttpsClientFactory {
         builder.register(basicAutorization);
       }
     } catch (NullPointerException npe) {
-      LOGGER.log(Level.WARNING, "Null SSL context, skipping client SSL configuration", npe);
+      LOGGER.warn( "Null SSL context, skipping client SSL configuration", npe);
     }
     return builder.build();
   }
@@ -85,10 +84,10 @@ public class HttpsClientFactory {
       WebTarget webTarget = client.target(targetURI);
       return webTarget;
     } catch (NullPointerException npe) {
-      LOGGER.log(Level.SEVERE, "Cannot create the web target, null target uri", npe);
+      LOGGER.error( "Cannot create the web target, null target uri", npe);
       throw new ServerException(npe);
     } catch (IllegalArgumentException iae) {
-      LOGGER.log(Level.SEVERE, "Cannot create the web target, malformed target uri", iae);
+      LOGGER.error( "Cannot create the web target, malformed target uri", iae);
       throw new ServerException(iae);
     }
   }

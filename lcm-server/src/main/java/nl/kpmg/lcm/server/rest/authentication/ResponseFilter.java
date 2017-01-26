@@ -14,8 +14,8 @@
 
 package nl.kpmg.lcm.server.rest.authentication;
 
-import java.util.logging.Level;
-import java.util.logging.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import javax.ws.rs.container.ContainerRequestContext;
 import javax.ws.rs.container.ContainerResponseContext;
@@ -36,7 +36,7 @@ public class ResponseFilter implements ContainerResponseFilter {
   /**
    * The class logger.
    */
-  private static final Logger LOGGER = Logger.getLogger(ResponseFilter.class.getName());
+  private static final Logger LOGGER = LoggerFactory.getLogger(ResponseFilter.class.getName());
 
   /**
    * Filters the responses and adds the appropriate authentication headers.
@@ -47,7 +47,7 @@ public class ResponseFilter implements ContainerResponseFilter {
   @Override
   public final void filter(final ContainerRequestContext requestContext,
       final ContainerResponseContext responseContext) {
-    LOGGER.log(Level.FINE, "LCMRESTResponseFilter called with Entity {0}",
+    LOGGER.trace( "LCMRESTResponseFilter called with Entity {0}",
         responseContext.getEntity());
 
     MultivaluedMap<String, Object> headers = responseContext.getHeaders();

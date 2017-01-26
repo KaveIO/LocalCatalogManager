@@ -27,11 +27,10 @@ import nl.kpmg.lcm.server.data.service.UserService;
 import nl.kpmg.lcm.server.rest.authentication.SessionAuthenticationManager;
 
 import org.junit.Test;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import java.lang.reflect.Method;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
 /**
  * @author venkateswarlub
@@ -56,8 +55,7 @@ public class SessionAuthenticationManagerTest extends LcmBaseTest {
           .getDeclaredMethod("isAuthenticationTokenValid", String.class, String.class);
       isAuthenticationTokenValid.setAccessible(true);
     } catch (NoSuchMethodException | SecurityException ex) {
-      Logger.getLogger(SessionAuthenticationManagerTest.class.getName()).log(Level.SEVERE, null,
-          ex);
+        LoggerFactory.getLogger(SessionAuthenticationManagerTest.class.getName()).error(null, ex);
     }
   }
 

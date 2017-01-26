@@ -14,18 +14,16 @@
 
 package nl.kpmg.lcm.server;
 
-import javax.ws.rs.client.WebTarget;
-
 import nl.kpmg.lcm.client.HttpsClientFactory;
 import nl.kpmg.lcm.configuration.ClientConfiguration;
 
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 
-import java.util.logging.Level;
-import java.util.logging.Logger;
+import javax.ws.rs.client.WebTarget;
 
 public abstract class LcmBaseServerTest extends LcmBaseTest {
 
@@ -66,7 +64,7 @@ public abstract class LcmBaseServerTest extends LcmBaseTest {
       httpsClientFactory = new HttpsClientFactory(clientConfiguration);
 
     } catch (ServerException se) {
-      Logger.getLogger(LcmBaseServerTest.class.getName()).log(Level.SEVERE,
+      LoggerFactory.getLogger(LcmBaseServerTest.class.getName()).error(
               "Failed to create HTTPS server or client, test will fail", se);
     }
   }

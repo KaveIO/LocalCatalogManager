@@ -23,12 +23,12 @@ import nl.kpmg.lcm.server.rest.authentication.UserPasswordHashException;
 import nl.kpmg.lcm.server.rest.client.version0.types.ConcreteUserRepresentation;
 import nl.kpmg.lcm.server.rest.client.version0.types.ConcreteUsersRepresentation;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
 import javax.annotation.security.RolesAllowed;
 import javax.ws.rs.Consumes;
@@ -51,7 +51,7 @@ import javax.ws.rs.core.Response.Status;
 @Path("client/v0/users")
 public class UserController {
 
-  private static final Logger logger = Logger.getLogger(UserController.class.getName());
+  private static final Logger LOGGER = LoggerFactory.getLogger(UserController.class.getName());
 
   /**
    * The user service.
@@ -117,7 +117,7 @@ public class UserController {
       userService.updateUser(userId, user);
       return Response.ok().build();
     } catch (UserPasswordHashException ex) {
-      logger.log(Level.SEVERE, "Password hashing failed during user modification", ex);
+      LOGGER.error("Password hashing failed during user modification", ex);
       return Response.serverError().build();
     }
   }

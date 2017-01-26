@@ -26,17 +26,17 @@ import nl.kpmg.lcm.server.ServerException;
 import org.glassfish.grizzly.servlet.ServletRegistration;
 import org.glassfish.grizzly.servlet.WebappContext;
 import org.glassfish.jersey.server.ResourceConfig;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
 import org.springframework.web.context.ContextLoaderListener;
 import org.springframework.web.context.support.XmlWebApplicationContext;
 
 import java.io.IOException;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
 public class UI {
-  private static final Logger LOGGER = Logger.getLogger(UI.class.getName());
+  private static final Logger LOGGER = LoggerFactory.getLogger(UI.class.getName());
 
   private final UiConfiguration configuration;
   private final ApplicationContext context;
@@ -103,11 +103,11 @@ public class UI {
     try {
       uiServer = startUserInterface();
     } catch (SslConfigurationException ex) {
-      Logger.getLogger(UI.class.getName()).log(Level.SEVERE,
+      LOGGER.error(
           "Failed starting the LocalCatalogManager due to invalid SSL configuration", ex);
       throw new ServerException(ex);
     } catch (IOException ex) {
-      Logger.getLogger(UI.class.getName()).log(Level.SEVERE,
+      LOGGER.error(
           "Failed starting the LocalCatalogManager due to the redirect server ", ex);
       throw new ServerException(ex);
     }

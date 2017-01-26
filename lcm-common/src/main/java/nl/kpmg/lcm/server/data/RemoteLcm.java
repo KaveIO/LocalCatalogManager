@@ -14,14 +14,14 @@
 
 package nl.kpmg.lcm.server.data;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.data.mongodb.core.mapping.Document;
-
-import java.util.logging.Logger;
 
 @Document(collection = "remote_lcm")
 public class RemoteLcm extends AbstractModel {
 
-  private static final Logger LOGGER = Logger.getLogger(RemoteLcm.class.getName());
+  private static final Logger LOGGER = LoggerFactory.getLogger(RemoteLcm.class.getName());
   /**
    * The domain to contact the lcm described here .
    */

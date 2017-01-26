@@ -33,6 +33,8 @@ import org.apache.metamodel.data.DataSet;
 import org.apache.metamodel.schema.Schema;
 import org.apache.metamodel.schema.Table;
 import org.apache.metamodel.util.FileHelper;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.File;
 import java.io.IOException;
@@ -40,8 +42,6 @@ import java.io.Writer;
 import java.net.URI;
 import java.util.Date;
 import java.util.Map;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
 /**
  *
@@ -50,7 +50,7 @@ import java.util.logging.Logger;
 @BackendSource(type = "csv")
 public class BackendCsvImpl extends AbstractBackend {
 
-  private static final Logger logger = Logger.getLogger(BackendCsvImpl.class.getName());
+  private static final Logger LOGGER = LoggerFactory.getLogger(BackendCsvImpl.class.getName());
   private File dataSourceFile = null;
   private final CsvMetaData csvMetaData;
 
@@ -121,7 +121,7 @@ public class BackendCsvImpl extends AbstractBackend {
         info.setModificationTime(new Date(dataSourceFile.lastModified()));
       }
     } catch (IOException ex) {
-      logger.log(Level.SEVERE, "Unable to get info about datasource: " + dataSourceFile.getPath(),
+      LOGGER.error( "Unable to get info about datasource: " + dataSourceFile.getPath(),
           ex);
       throw new LcmException("Unable to get info about datasource: " + dataSourceFile.getPath(), ex);
     }
@@ -172,7 +172,7 @@ public class BackendCsvImpl extends AbstractBackend {
 
       writer.flush();
     } catch (IOException ex) {
-      logger.log(Level.SEVERE, "Error occured during saving information!", ex);
+      LOGGER.error( "Error occured during saving information!", ex);
     }
   }
 

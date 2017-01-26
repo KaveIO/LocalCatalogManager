@@ -19,10 +19,8 @@ import com.mongodb.DBObject;
 import nl.kpmg.lcm.server.data.User;
 import nl.kpmg.lcm.server.rest.authentication.UserPasswordHashException;
 
+import org.slf4j.LoggerFactory;
 import org.springframework.core.convert.converter.Converter;
-
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
 /**
  * Specific Read Converter for User objects.
@@ -45,7 +43,7 @@ public class MongoUserReadConverter implements Converter<DBObject, User> {
       user.setHashed(true);
       return user;
     } catch (UserPasswordHashException ex) {
-      Logger.getLogger(MongoUserReadConverter.class.getName()).log(Level.SEVERE,
+      LoggerFactory.getLogger(MongoUserReadConverter.class.getName()).error(
           "Couldn't load user", ex);
       return null;
     }

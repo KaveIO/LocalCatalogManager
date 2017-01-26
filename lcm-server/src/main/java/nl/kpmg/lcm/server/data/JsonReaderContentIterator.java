@@ -17,11 +17,12 @@ package nl.kpmg.lcm.server.data;
 import com.google.gson.Gson;
 import com.google.gson.stream.JsonReader;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.io.IOException;
 import java.util.Iterator;
 import java.util.Map;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
 /**
  *
@@ -29,7 +30,7 @@ import java.util.logging.Logger;
  */
 public class JsonReaderContentIterator implements ContentIterator {
   private JsonReader reader = null;
-  private static final Logger logger = Logger.getLogger(JsonReaderContentIterator.class.getName());
+  private static final Logger logger = LoggerFactory.getLogger(JsonReaderContentIterator.class.getName());
 
   public JsonReaderContentIterator(JsonReader reader) throws IOException {
     this.reader = reader;
@@ -41,7 +42,7 @@ public class JsonReaderContentIterator implements ContentIterator {
     try {
       return reader.hasNext();
     } catch (IOException ex) {
-      logger.log(Level.WARNING, "reader.hasNext() threw and exception. {0}", ex.getMessage());
+      logger.warn( "reader.hasNext() threw and exception. {0}", ex.getMessage());
       return false;
     }
   }
@@ -56,7 +57,7 @@ public class JsonReaderContentIterator implements ContentIterator {
       }
       return next;
     } catch (IOException ex) {
-      logger.log(Level.WARNING,
+      logger.warn(
           "reader.hasNext() threw and exception while reading next element. {0}", ex.getMessage());
       return null;
     }

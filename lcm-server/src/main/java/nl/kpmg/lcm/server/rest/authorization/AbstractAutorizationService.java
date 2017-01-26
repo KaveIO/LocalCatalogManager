@@ -13,10 +13,11 @@
  */
 package nl.kpmg.lcm.server.rest.authorization;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.util.List;
 import java.util.Map;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
 /**
  * This class is designed to be super class of implementations of AuthorizationService. When you
@@ -25,7 +26,7 @@ import java.util.logging.Logger;
  * @author shristov
  */
 public abstract class AbstractAutorizationService implements AuthorizationService {
-  private final Logger logger = Logger.getLogger(AbstractAutorizationService.class.getName());
+  private final Logger logger = LoggerFactory.getLogger(AbstractAutorizationService.class.getName());
 
   private Map<String, List<String>> authorizationMap;
 
@@ -36,7 +37,7 @@ public abstract class AbstractAutorizationService implements AuthorizationServic
   @Override
   public boolean isAuthorized(String resourceId, String role) {
     if (authorizationMap == null) {
-      logger.log(Level.SEVERE, "AuhotrizationService is used without initialization");
+      logger.error("AuhotrizationService is used without initialization");
       return false;
     }
 

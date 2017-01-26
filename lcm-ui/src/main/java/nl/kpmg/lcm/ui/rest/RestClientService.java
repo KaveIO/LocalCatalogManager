@@ -29,11 +29,10 @@ import nl.kpmg.lcm.rest.types.UserGroupsRepresentation;
 import nl.kpmg.lcm.rest.types.UsersRepresentation;
 import nl.kpmg.lcm.server.ServerException;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
-
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
 import javax.ws.rs.ProcessingException;
 import javax.ws.rs.client.Entity;
@@ -47,7 +46,7 @@ import javax.ws.rs.core.Response;
 @Component
 public class RestClientService {
 
-  private static final Logger LOGGER = Logger.getLogger(RestClientService.class.getName());
+  private static final Logger LOGGER = LoggerFactory.getLogger(RestClientService.class.getName());
 
   private final String uri;
   private final String unsafeUri;
@@ -97,7 +96,7 @@ public class RestClientService {
     try {
       post = post(uri, path, payload);
     } catch (ServerException | ProcessingException e) {
-      LOGGER.log(Level.WARNING,
+      LOGGER.warn(
           "Server error in LCM target server HTTPS REST invocation, trying HTTP...", e);
       post = post(unsafeUri, path, payload);
       secure = false;
@@ -153,13 +152,13 @@ public class RestClientService {
   public <T extends AbstractRepresentation> T getDatasRepresentation(String path, Class<T> type)
       throws AuthenticationException, ServerException, ClientException {
 
-    LOGGER.log(Level.INFO, "Executing get on LCM-Server on path: {0}", path);
+    LOGGER.info( "Executing get on LCM-Server on path: {0}", path);
     Response response = getClient(path).get();
     if (response.getStatusInfo().getFamily() == Response.Status.Family.SUCCESSFUL) {
       T datasRepresentation = response.readEntity(type);
       return datasRepresentation;
     } else {
-      LOGGER.log(Level.WARNING, "Call to LCM-Server failed with: {0} - {1}",
+      LOGGER.warn( "Call to LCM-Server failed with: {0} - {1}",
           new Object[] {response.getStatus(), response.getStatusInfo().getReasonPhrase()});
       throw new ClientException("Call to LCM-Server failed", response);
     }

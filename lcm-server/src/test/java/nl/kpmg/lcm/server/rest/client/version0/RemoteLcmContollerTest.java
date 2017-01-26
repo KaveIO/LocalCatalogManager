@@ -14,10 +14,6 @@
 
 package nl.kpmg.lcm.server.rest.client.version0;
 
-import javax.ws.rs.client.Entity;
-import javax.ws.rs.client.Invocation;
-import javax.ws.rs.core.Response;
-
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
@@ -35,7 +31,10 @@ import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import java.util.List;
-import java.util.logging.Logger;
+
+import javax.ws.rs.client.Entity;
+import javax.ws.rs.client.Invocation;
+import javax.ws.rs.core.Response;
 
 public class RemoteLcmContollerTest extends LcmBaseServerTest {
 
@@ -46,7 +45,6 @@ public class RemoteLcmContollerTest extends LcmBaseServerTest {
   private static final String LCM_CONTENT_TYPE
           = "application/nl.kpmg.lcm.server.data.RemoteLcm+json";
   private static final String AUTH_USER_HEADER = "LCM-Authentication-User";
-  private static final Logger LOG = Logger.getLogger(RemoteLcmContollerTest.class.getName());
 
   /**
    * Always clean up DB.

@@ -24,6 +24,8 @@ import nl.kpmg.lcm.server.rest.client.version0.types.ConcreteMetaDataRepresentat
 import nl.kpmg.lcm.server.rest.client.version0.types.ConcreteMetaDatasRepresentation;
 
 import org.glassfish.jersey.client.authentication.HttpAuthenticationFeature;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
@@ -31,8 +33,6 @@ import org.springframework.stereotype.Service;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -45,7 +45,7 @@ import javax.ws.rs.core.Response;
 @Service
 public class RemoteMetaDataService {
 
-  private static final Logger logger = Logger.getLogger(RemoteMetaDataService.class.getName());
+  private static final Logger logger = LoggerFactory.getLogger(RemoteMetaDataService.class.getName());
   private final String remoteMetaDataPath = "remote/v0/metadata?search=";
   @Autowired
   private ClientConfiguration configuration;
@@ -87,7 +87,7 @@ public class RemoteMetaDataService {
         return datasRepresentation;
       }
     } catch (ServerException ex) {
-      logger.log(Level.SEVERE, "Unable to make request. Error " + ex.getMessage());
+      logger.error( "Unable to make request. Error " + ex.getMessage());
       MetaDatasRepresentation emptObject = new MetaDatasRepresentation();
       emptObject.setItems(Collections.emptyList());
 

@@ -24,7 +24,6 @@ import nl.kpmg.lcm.server.data.dao.TaskScheduleDao;
 import nl.kpmg.lcm.server.task.CoreTask;
 import nl.kpmg.lcm.server.task.EnrichmentTask;
 import nl.kpmg.lcm.server.task.TaskException;
-import nl.kpmg.lcm.server.task.TaskManager;
 import nl.kpmg.lcm.server.task.TaskResult;
 import nl.kpmg.lcm.server.task.TaskScheduleException;
 
@@ -34,12 +33,11 @@ import org.quartz.JobKey;
 import org.quartz.Scheduler;
 import org.quartz.SchedulerException;
 import org.quartz.impl.matchers.GroupMatcher;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import java.util.Set;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-
 /**
  * TaskSchedule update task. This task will try and install all task items in the most current
  * TaskSchedule. The current implementation doesn't do this with much intelligence. A backoff should
@@ -48,6 +46,8 @@ import java.util.logging.Logger;
  * @author mhoekstra
  */
 public class LoadScheduleCoreTask extends CoreTask {
+
+  private static final Logger LOGGER = LoggerFactory.getLogger(LoadScheduleCoreTask.class.getName());
   /**
    * The group key which is used to register the scheduled tasks.
    */
@@ -77,8 +77,7 @@ public class LoadScheduleCoreTask extends CoreTask {
       try {
         removeTasks();
       } catch (SchedulerException ex) {
-        Logger.getLogger(LoadScheduleCoreTask.class.getName()).log(Level.SEVERE,
-            "couldn't remove the previous schedule.", ex);
+        LOGGER.error("couldn't remove the previous schedule.", ex);
         return TaskResult.FAILURE;
       }
 
@@ -88,8 +87,7 @@ public class LoadScheduleCoreTask extends CoreTask {
             scheduleEnrichmentTask(taskScheduleItem.getName(), taskScheduleItem.getJob(),
                 taskScheduleItem.getTarget(), taskScheduleItem.getCron());
           } catch (TaskScheduleException ex) {
-            Logger.getLogger(TaskManager.class.getName()).log(Level.WARNING, "Failed to schedule ",
-                ex);
+            LOGGER.warn( "Failed to schedule ", ex);
           }
         });
       }
@@ -126,7 +124,7 @@ public class LoadScheduleCoreTask extends CoreTask {
         throw new TaskScheduleException("Task definition doesn't contain a schedulable job");
       }
     } catch (ClassNotFoundException ex) {
-      Logger.getLogger(TaskSchedule.class.getName()).log(Level.SEVERE, null, ex);
+      LOGGER.error( null, ex);
       throw new TaskScheduleException(ex);
     }
   }
@@ -163,7 +161,7 @@ public class LoadScheduleCoreTask extends CoreTask {
       Scheduler scheduler = getScheduler();
       scheduler.scheduleJob(jobDetail, trigger);
     } catch (SchedulerException ex) {
-      Logger.getLogger(TaskManager.class.getName()).log(Level.SEVERE, null, ex);
+      LOGGER.error( null, ex);
       throw new TaskScheduleException(ex);
     }
   }
@@ -182,8 +180,7 @@ public class LoadScheduleCoreTask extends CoreTask {
       try {
         scheduler.deleteJob(jobKey);
       } catch (SchedulerException ex) {
-        Logger.getLogger(LoadScheduleCoreTask.class.getName()).log(Level.SEVERE,
-            "failed removing task", ex);
+        LOGGER.error("failed removing task", ex);
       }
     });
   }

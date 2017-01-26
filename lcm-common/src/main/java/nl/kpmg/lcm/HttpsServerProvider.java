@@ -28,24 +28,24 @@ import org.glassfish.grizzly.ssl.SSLContextConfigurator;
 import org.glassfish.grizzly.ssl.SSLEngineConfigurator;
 import org.glassfish.jersey.grizzly2.httpserver.GrizzlyHttpServerFactory;
 import org.glassfish.jersey.server.ResourceConfig;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.net.URI;
 import java.util.Collection;
 import java.util.concurrent.TimeUnit;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
 public class HttpsServerProvider {
 
-  private static final Logger LOGGER = Logger.getLogger(HttpsServerProvider.class.getName());
+  private static final Logger LOGGER = LoggerFactory.getLogger(HttpsServerProvider.class.getName());
 
   public static HttpsServerWrapper createHttpsServer(BasicConfiguration configuration,
       String baseUri, String baseFallbackUri, ResourceConfig rc, boolean clientAuth)
       throws SslConfigurationException, IOException {
 
     if (configuration.isUnsafe()) {
-      LOGGER.log(Level.WARNING,
+      LOGGER.warn(
           "Server configured as unsafe. Server will start on the non-secure port and run on HTTP only");
 
       HttpServer server =
@@ -77,7 +77,7 @@ public class HttpsServerProvider {
 
         return new HttpsServerWrapper(server, redirectServer);
       } catch (SslConfigurationException ex) {
-        LOGGER.log(Level.SEVERE, "Invalid SSL configuration and unsafe mode off, abort");
+        LOGGER.error( "Invalid SSL configuration and unsafe mode off, abort");
         throw ex;
       }
     }

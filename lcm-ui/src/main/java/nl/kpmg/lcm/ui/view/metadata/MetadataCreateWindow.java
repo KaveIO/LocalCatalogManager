@@ -25,8 +25,7 @@ import nl.kpmg.lcm.ui.rest.AuthenticationException;
 import nl.kpmg.lcm.ui.rest.DataCreationException;
 import nl.kpmg.lcm.ui.rest.RestClientService;
 
-import java.util.logging.Level;
-import java.util.logging.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  *
@@ -85,7 +84,7 @@ public class MetadataCreateWindow extends Window implements Button.ClickListener
         this.close();
       } catch (ServerException | DataCreationException | AuthenticationException ex) {
         Notification.show("Creation of metadata failed.");
-        Logger.getLogger(MetadataCreateWindow.class.getName()).log(Level.WARNING,
+        LoggerFactory.getLogger(MetadataCreateWindow.class.getName()).warn(
             "Creation of metadata failed.", ex);
       }
     }
