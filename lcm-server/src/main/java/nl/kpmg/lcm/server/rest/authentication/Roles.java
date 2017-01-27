@@ -47,6 +47,9 @@ public final class Roles {
    */
   public static final String ANY_USER = "anyUser";
 
+  public static String[]  getRoles(){
+      return new String[]{ADMINISTRATOR, API_USER, REMOTE_USER, ANY_USER};
+  }
   private Roles() {}
 
 }
