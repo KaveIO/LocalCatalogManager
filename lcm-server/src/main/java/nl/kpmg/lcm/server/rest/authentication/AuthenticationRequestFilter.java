@@ -40,9 +40,10 @@ import javax.ws.rs.ext.Provider;
 @Priority(value = Priorities.AUTHENTICATION)
 public class AuthenticationRequestFilter implements ContainerRequestFilter {
 
-  private static final Logger LOGGER = LoggerFactory
-      .getLogger(AuthenticationRequestFilter.class.getName());
-
+  private static final Logger AUTHENTICATION_LOGGER = LoggerFactory
+      .getLogger("authenticationLogger");
+  private static final Logger LOGGER = LoggerFactory.getLogger(AuthenticationRequestFilter.class
+      .getName());
   /**
    * The path where the login call on the API is placed.
    * 
@@ -67,7 +68,7 @@ public class AuthenticationRequestFilter implements ContainerRequestFilter {
   public final void filter(final ContainerRequestContext requestContext) {
     String path = requestContext.getUriInfo().getPath();
     String ip = request != null ? request.get().getRemoteAddr() : "unknown";
-    LOGGER.info( "LCMRESTRequestFilter called with request path {0}", path);
+    LOGGER.info("LCMRESTRequestFilter called with request path {0}", path);
     if (requestContext.getRequest().getMethod().equals("OPTIONS")) {
       requestContext.abortWith(Response.status(Response.Status.OK).build());
       return;
@@ -83,8 +84,7 @@ public class AuthenticationRequestFilter implements ContainerRequestFilter {
             continue;
           }
 
-          // TODO when authentication log file is created then this log massage must be moved to it.
-          LOGGER.info( "AuthenticationRequestFilter authenticates with: "
+          AUTHENTICATION_LOGGER.info("AuthenticationRequestFilter authenticates with: "
               + authenticationManager.getClass().getName() + " user: "
               + securityContext.getUserPrincipal().getName() + " IP: " + ip);
 
@@ -94,9 +94,7 @@ public class AuthenticationRequestFilter implements ContainerRequestFilter {
         }
       }
 
-      // TODO when authentication log file is created then this log massage must be moved to it.
-      LOGGER.info( "AuthenticationRequestFilter was not able to authenticate user. "
-          + " IP: " + ip);
+      AUTHENTICATION_LOGGER.info("AuthenticationRequestFilter was not able to authenticate user. " + " IP: " + ip);
       requestContext.abortWith(Response.status(Response.Status.UNAUTHORIZED)
           .entity("You are not authorized to access LCM!").build());
 

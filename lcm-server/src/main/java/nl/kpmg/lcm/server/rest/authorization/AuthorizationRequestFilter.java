@@ -37,7 +37,9 @@ import javax.ws.rs.ext.Provider;
 @Provider
 @Priority(value = Priorities.AUTHORIZATION)
 public class AuthorizationRequestFilter implements ContainerRequestFilter {
-  private static final Logger LOGGER = LoggerFactory.getLogger(AuthorizationRequestFilter.class.getName());
+  private static final Logger AUTHORIZATION_LOGGER = LoggerFactory.getLogger("authorizationLogger");
+  private static final Logger LOGGER = LoggerFactory.getLogger(AuthorizationRequestFilter.class
+      .getName());
 
   @Inject
   private ResourceInfo resourceInfo;
@@ -49,7 +51,7 @@ public class AuthorizationRequestFilter implements ContainerRequestFilter {
   public void filter(ContainerRequestContext requestContext) throws IOException {
     String path = requestContext.getUriInfo().getPath();
     if (path == null) {
-      LOGGER.error( "Path is null!");
+      LOGGER.error("Path is null!");
       requestContext.abortWith(Response.status(Response.Status.INTERNAL_SERVER_ERROR)
           .entity("Error occured, please contact the system administrator!").build());
       return;
@@ -58,8 +60,7 @@ public class AuthorizationRequestFilter implements ContainerRequestFilter {
     RolesAllowed annotation = resourceInfo.getResourceMethod().getAnnotation(RolesAllowed.class);
     if (annotation == null) {
       LOGGER
-          .warn( "Path: " + path
-              + " does not have allowed roles and nobody can access it! User: \""
+          .warn("Path: " + path + " does not have allowed roles and nobody can access it! User: \""
               + requestContext.getSecurityContext().getUserPrincipal().getName()
               + "\" has just tried.");
 
@@ -70,8 +71,7 @@ public class AuthorizationRequestFilter implements ContainerRequestFilter {
 
     SecurityContext securityContext = requestContext.getSecurityContext();
     if (securityContext == null) {
-      // TODO once the logging is redesign add here logging in authorization log
-      LOGGER.error( "Security context is null! Path: " + path);
+      AUTHORIZATION_LOGGER.error("Security context is null! Path: " + path);
 
       requestContext.abortWith(Response.status(Response.Status.INTERNAL_SERVER_ERROR)
           .entity("Error occured, please contact the system administrator!").build());
@@ -79,8 +79,7 @@ public class AuthorizationRequestFilter implements ContainerRequestFilter {
     }
 
     if (!permissionChecker.check(securityContext, path, annotation.value())) {
-      // TODO once the logging is redesign add here logging in authorization log
-      LOGGER.warn( "User: " + securityContext.getUserPrincipal().getName()
+      AUTHORIZATION_LOGGER.warn("User: " + securityContext.getUserPrincipal().getName()
           + " tried to access " + path + " but it is not authorized!");
       requestContext.abortWith(Response.status(Response.Status.UNAUTHORIZED)
           .entity("You are not authorized to access: " + path).build());
@@ -90,8 +89,7 @@ public class AuthorizationRequestFilter implements ContainerRequestFilter {
     String userName =
         securityContext.getUserPrincipal() != null ? "User "
             + securityContext.getUserPrincipal().getName() : "Unknown user";
-    // TODO once the logging is redesign add here logging in authorization log
-    LOGGER.info( userName + " was successfuly authorized to access: " + path);
+    AUTHORIZATION_LOGGER.info(userName + " was successfuly authorized to access: " + path);
 
   }
 }
