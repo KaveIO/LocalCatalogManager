@@ -14,26 +14,23 @@
 
 package nl.kpmg.lcm.server.backend.metatadata;
 
-import nl.kpmg.lcm.server.data.MetaData;
+import nl.kpmg.lcm.server.data.meatadata.MetaData;
 
 import org.apache.metamodel.csv.CsvConfiguration;
-import org.apache.metamodel.schema.Column;
-import org.apache.metamodel.schema.ColumnType;
 import org.apache.metamodel.util.FileHelper;
 
-import java.util.HashMap;
 import java.util.Map;
 
 /**
  *
  * @author Stoyan Hristov<shristov@intracol.com>
  */
-public class CsvMetaData {
-  private final MetaData metaData;
+public class CsvMetaData extends TabularMetaData {
 
   public CsvMetaData(MetaData metaData) {
-    this.metaData = metaData;
+    super(metaData);
   }
+
 
   public CsvConfiguration getConfiguration() {
     // TODO these options must be dynamically loaded from metada opject
@@ -49,7 +46,7 @@ public class CsvMetaData {
     // keep in mind that validation must be done to all imput data
     // for example this is valid scenario
     // "column-name-line": "kdlfjhsadjkfh"
-    Map dataOptions = metaData.getDataOptions();
+    Map dataOptions = getDataOptions();
     if (dataOptions != null) {
       if (dataOptions.containsKey("column-name-line")) {
         columnNameLine = (int) dataOptions.get("column-name-line");
@@ -72,21 +69,4 @@ public class CsvMetaData {
         new CsvConfiguration(columnNameLine, encoding, separatorChar, quoteChar, escapeChar);
     return csvConfiguration;
   }
-
-  /**
-   * @return the metaData
-   */
-  public MetaData getMetaData() {
-    return metaData;
-  }
-
-  public void addColumnsDescription(Column[] columnNames) {
-    for (Column column : columnNames) {
-      String name = "data.options.table-description.columns." + column.getName();
-      Map columnDescription = new HashMap<>();
-      columnDescription.put("type", ColumnType.STRING.getName());
-      metaData.set(name, columnDescription);
-    }
-  }
-
 }

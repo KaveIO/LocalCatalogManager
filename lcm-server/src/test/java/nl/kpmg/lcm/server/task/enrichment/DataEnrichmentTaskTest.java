@@ -17,10 +17,11 @@ package nl.kpmg.lcm.server.task.enrichment;
 import static org.junit.Assert.assertEquals;
 
 import nl.kpmg.lcm.server.LcmBaseTest;
-import nl.kpmg.lcm.server.data.MetaData;
 import nl.kpmg.lcm.server.data.Storage;
+import nl.kpmg.lcm.server.data.TaskDescription;
 import nl.kpmg.lcm.server.data.dao.MetaDataDao;
 import nl.kpmg.lcm.server.data.dao.StorageDao;
+import nl.kpmg.lcm.server.data.meatadata.MetaDataWrapper;
 import nl.kpmg.lcm.server.data.service.StorageService;
 import nl.kpmg.lcm.server.task.TaskException;
 
@@ -33,7 +34,6 @@ import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
 
 import java.util.HashMap;
-import nl.kpmg.lcm.server.data.TaskDescription;
 
 /**
  *
@@ -72,15 +72,15 @@ public class DataEnrichmentTaskTest extends LcmBaseTest implements ApplicationCo
     backendDao.save(backendModel);
 
 
-    MetaData metaData = new MetaData();
-    metaData.setDataUri("file://test/test");
-    metaDataDao.save(metaData);
+    MetaDataWrapper metaDataWrapper = new MetaDataWrapper();
+    metaDataWrapper.setDataUri("file://test/test");
+    metaDataDao.save(metaDataWrapper.getMetaData());
 
     DataEnrichmentTask dataEnrichmentTask = new DataEnrichmentTask();
     autowire(dataEnrichmentTask);
     TaskDescription td = new TaskDescription();
-    dataEnrichmentTask.execute(metaData, td.getOptions());
+    dataEnrichmentTask.execute(metaDataWrapper, td.getOptions());
 
-    assertEquals("DETACHED", metaData.get("dynamic.data.state"));
+    assertEquals("DETACHED", metaDataWrapper.getDataState());
   }
 }

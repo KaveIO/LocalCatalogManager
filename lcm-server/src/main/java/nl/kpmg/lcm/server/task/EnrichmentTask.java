@@ -14,9 +14,10 @@
 
 package nl.kpmg.lcm.server.task;
 
-import nl.kpmg.lcm.server.data.MetaData;
 import nl.kpmg.lcm.server.data.TaskDescription;
 import nl.kpmg.lcm.server.data.dao.TaskDescriptionDao;
+import nl.kpmg.lcm.server.data.meatadata.MetaData;
+import nl.kpmg.lcm.server.data.meatadata.MetaDataWrapper;
 import nl.kpmg.lcm.server.data.service.MetaDataService;
 
 import org.quartz.Job;
@@ -72,7 +73,7 @@ public abstract class EnrichmentTask implements Job {
    * @return The result of the task
    * @throws TaskException if the task can't be executed properly
    */
-  protected abstract TaskResult execute(MetaData metadata, Map options) throws TaskException;
+  protected abstract TaskResult execute(MetaDataWrapper metadataWrapper, Map options) throws TaskException;
 
   /**
    * Execute method invoked by the quartz scheduler.
@@ -109,7 +110,7 @@ public abstract class EnrichmentTask implements Job {
     if (target.equals("*")) {
       targets = metaDataService.findAll();
     } else {
-      MetaData metadata = metaDataService.getMetaDataDao().findOne(target);
+      MetaData metadata = metaDataService.findById(target);
       targets = new LinkedList();
       if (metadata != null) {
         targets.add(metadata);
@@ -123,7 +124,7 @@ public abstract class EnrichmentTask implements Job {
           LOGGER.info(String.format("Executing EnrichmentTask %s (%s)", taskDescription.getId(),
               taskDescription.getJob()));
 
-          TaskResult taskResult = execute(metadata, taskDescription.getOptions());
+          TaskResult taskResult = execute(new MetaDataWrapper(metadata), taskDescription.getOptions());
 
           LOGGER.info(String.format("Done with EnrichmentTask %s (%s) with status : %s",
               taskDescription.getId(), taskDescription.getJob(), taskResult));

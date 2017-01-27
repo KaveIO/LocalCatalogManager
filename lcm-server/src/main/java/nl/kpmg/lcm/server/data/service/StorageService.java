@@ -18,9 +18,9 @@ import jersey.repackaged.com.google.common.collect.Lists;
 
 import nl.kpmg.lcm.server.backend.Backend;
 import nl.kpmg.lcm.server.backend.BackendFactory;
-import nl.kpmg.lcm.server.data.MetaData;
 import nl.kpmg.lcm.server.data.Storage;
 import nl.kpmg.lcm.server.data.dao.StorageDao;
+import nl.kpmg.lcm.server.data.meatadata.MetaDataWrapper;
 import nl.kpmg.lcm.server.exception.LcmException;
 
 import org.slf4j.Logger;
@@ -56,15 +56,16 @@ public class StorageService {
   }
 
   /**
-   * Get a storage backend based on a MetaData object.
+   * Get a storage backend based on a MetaDataWrapper object.
    *
    * This will use the dataUri to retrieve the appropriate Backend.
    *
-   * @param metadata of which the dataUri is used
+   * @param metadataWrapper of which the dataUri is used
    * @return the requested backend
    */
-  public final Backend getBackend(final MetaData metadata) {
-    if (metadata == null || metadata.getDataUri() == null || metadata.getDataUri().isEmpty()) {
+  public final Backend getBackend(final MetaDataWrapper metadataWrapper) {
+    if (metadataWrapper == null || metadataWrapper.isEmpty() || metadataWrapper.getDataUri() == null
+        || metadataWrapper.getDataUri().isEmpty()) {
       String errorMessage =
           "Invalid input data! Metata data could not be null nither the data URI!";
       LOGGER.warn(errorMessage);
@@ -73,7 +74,7 @@ public class StorageService {
     }
 
     try {
-      URI parsedUri = new URI(metadata.getDataUri());
+      URI parsedUri = new URI(metadataWrapper.getDataUri());
       String scheme = parsedUri.getScheme();
 
       String storageName =
@@ -85,13 +86,13 @@ public class StorageService {
             "Error! Unable to find Storage for the given metadata! Storage name:" + storageName);
       }
 
-      Backend backend = backendFactory.createBackend(scheme, storage, metadata);
+      Backend backend = backendFactory.createBackend(scheme, storage, metadataWrapper);
 
       return backend;
 
     } catch (URISyntaxException ex) {
       LOGGER.error( null, ex);
-      throw new IllegalArgumentException("Error! Unable to parse medata data URI!");
+      throw new LcmException("Error! Unable to parse medata data URI!");
     }
   }
 }

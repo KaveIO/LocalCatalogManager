@@ -16,8 +16,8 @@ package nl.kpmg.lcm.server.backend;
 
 import static org.junit.Assert.assertEquals;
 
-import nl.kpmg.lcm.server.data.MetaData;
 import nl.kpmg.lcm.server.data.Storage;
+import nl.kpmg.lcm.server.data.meatadata.MetaDataWrapper;
 
 import org.junit.Test;
 
@@ -57,9 +57,9 @@ public class BackendCsvImplTest {
   @Test
   public final void testGetSupportedUriSchema() {
     String uri = "csv://test/temp.csv";
-    MetaData metaData = new MetaData();
-    metaData.setDataUri(uri);
-    BackendCsvImpl testBackend = new BackendCsvImpl(backendStorage, metaData);
+    MetaDataWrapper metaDataWrapper = new MetaDataWrapper();
+    metaDataWrapper.setDataUri(uri);
+    BackendCsvImpl testBackend = new BackendCsvImpl(backendStorage, metaDataWrapper.getMetaData());
     String testSchema = testBackend.getSupportedUriSchema();
     assertEquals("csv", testSchema);
   }
@@ -72,10 +72,10 @@ public class BackendCsvImplTest {
   @Test
   public final void testParseUri() {
     String uri = "csv://test/temp.csv";
-    MetaData metaData = new MetaData();
-    metaData.setDataUri(uri);
+    MetaDataWrapper metaDataWrapper = new MetaDataWrapper();
+    metaDataWrapper.setDataUri(uri);
 
-    BackendCsvImpl testBackend = new BackendCsvImpl(backendStorage, metaData);
+    BackendCsvImpl testBackend = new BackendCsvImpl(backendStorage, metaDataWrapper.getMetaData());
     URI dataUri = testBackend.getDataUri();
 
     assertEquals("csv", dataUri.getScheme());

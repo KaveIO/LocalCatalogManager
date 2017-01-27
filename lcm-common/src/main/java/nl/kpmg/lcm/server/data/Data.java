@@ -14,6 +14,8 @@
 
 package nl.kpmg.lcm.server.data;
 
+import nl.kpmg.lcm.server.data.meatadata.MetaData;
+
 /**
  *
  * @author Stoyan Hristov<shristov@intracol.com>

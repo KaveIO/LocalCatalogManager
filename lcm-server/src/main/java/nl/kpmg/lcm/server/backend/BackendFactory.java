@@ -14,8 +14,9 @@
 
 package nl.kpmg.lcm.server.backend;
 
-import nl.kpmg.lcm.server.data.MetaData;
 import nl.kpmg.lcm.server.data.Storage;
+import nl.kpmg.lcm.server.data.meatadata.MetaData;
+import nl.kpmg.lcm.server.data.meatadata.MetaDataWrapper;
 import nl.kpmg.lcm.server.exception.LcmException;
 import nl.kpmg.lcm.server.exception.LcmValidationException;
 import nl.kpmg.lcm.validation.Notification;
@@ -44,7 +45,7 @@ public class BackendFactory {
   private static final int MAX_KEY_LENGTH = 1024;
   private final String backendSourcePackage = "nl.kpmg.lcm.server.backend";
 
-  public Backend createBackend(String sourceType, Storage storage, MetaData metadata) {
+  public Backend createBackend(String sourceType, Storage storage, MetaDataWrapper metaDataWrapper) {
 
     Notification notification = validate(sourceType, storage);
 
@@ -62,7 +63,7 @@ public class BackendFactory {
     }
 
     Class backendClass = backendClassMap.get(sourceType);
-    Backend backendImpl = getBackendImplementation(backendClass, storage, metadata);
+    Backend backendImpl = getBackendImplementation(backendClass, storage, metaDataWrapper);
     return backendImpl;
   }
 
@@ -130,10 +131,11 @@ public class BackendFactory {
     return null;
   }
 
-  private Backend getBackendImplementation(Class<?> clazz, Storage storage, MetaData metadata) {
+  private Backend getBackendImplementation(Class<?> clazz, Storage storage, MetaDataWrapper metaDataWrapper) {
     try {
       Constructor<?> constructor = clazz.getConstructor(Storage.class, MetaData.class);
-      Backend backendImpl = (Backend) constructor.newInstance(new Object[] {storage, metadata});
+      Backend backendImpl =
+          (Backend) constructor.newInstance(new Object[] {storage, metaDataWrapper.getMetaData()});
 
       return backendImpl;
     } catch (NoSuchMethodException ex) {

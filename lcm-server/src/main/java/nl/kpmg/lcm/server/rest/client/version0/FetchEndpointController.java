@@ -21,8 +21,9 @@ import nl.kpmg.lcm.server.backend.Backend;
 import nl.kpmg.lcm.server.data.ContentIterator;
 import nl.kpmg.lcm.server.data.Data;
 import nl.kpmg.lcm.server.data.FetchEndpoint;
-import nl.kpmg.lcm.server.data.MetaData;
 import nl.kpmg.lcm.server.data.dao.FetchEndpointDao;
+import nl.kpmg.lcm.server.data.meatadata.MetaData;
+import nl.kpmg.lcm.server.data.meatadata.MetaDataWrapper;
 import nl.kpmg.lcm.server.data.service.FetchEndpointService;
 import nl.kpmg.lcm.server.data.service.MetaDataService;
 import nl.kpmg.lcm.server.data.service.StorageService;
@@ -90,14 +91,15 @@ public class FetchEndpointController {
       throw new LcmException(String.format("FetchEndpoint %s has expired", id), Response.Status.BAD_REQUEST);
     }
     MetaData md = metaDataService.getMetaDataDao().findOne(fe.getMetadataId());
-    if (md == null) {
+    MetaDataWrapper metaDataWrapper = new MetaDataWrapper(md);
+    if (metaDataWrapper.isEmpty()) {
       throw new LcmException(String.format("Metadata %s not found", fe.getMetadataId()));
     }
 
-    Backend backend = storageService.getBackend(md);
+    Backend backend = storageService.getBackend(metaDataWrapper);
 
     Data data = backend.read();
-    URI uri = new URI(md.getDataUri());
+    URI uri = new URI(metaDataWrapper.getDataUri());
     String type = "json";// uri.getScheme();
     String name = FilenameUtils.getBaseName(uri.toString());
     StreamingOutput result = new StreamingOutput() {

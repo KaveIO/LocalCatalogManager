@@ -16,7 +16,7 @@ package nl.kpmg.lcm.server.task.enrichment;
 
 import nl.kpmg.lcm.server.backend.Backend;
 import nl.kpmg.lcm.server.backend.DataSetInformation;
-import nl.kpmg.lcm.server.data.MetaData;
+import nl.kpmg.lcm.server.data.meatadata.MetaDataWrapper;
 import nl.kpmg.lcm.server.data.service.StorageService;
 import nl.kpmg.lcm.server.exception.LcmException;
 import nl.kpmg.lcm.server.exception.LcmValidationException;
@@ -66,10 +66,10 @@ public class DataEnrichmentTask extends EnrichmentTask {
    * @throws TaskException if the backend fails
    */
   @Override
-  protected final TaskResult execute(final MetaData metadata, final Map options)
+  protected final TaskResult execute(final MetaDataWrapper metadataWrapper, final Map options)
       throws TaskException {
     try {
-      Backend backend = storageService.getBackend(metadata);
+      Backend backend = storageService.getBackend(metadataWrapper);
       if (backend == null) {
         return TaskResult.FAILURE;
       }
@@ -77,21 +77,20 @@ public class DataEnrichmentTask extends EnrichmentTask {
       DataSetInformation gatherDataSetInformation = backend.gatherDataSetInformation();
 
       if (!gatherDataSetInformation.isAttached()) {
-        metadata.set("dynamic.data.state", "DETACHED");
+        metadataWrapper.setDataState("DETACHED");
         return TaskResult.SUCCESS;
       }
-      metadata.set("dynamic.data.state", "ATTACHED");
+      metadataWrapper.setDataState("ATTACHED");
 
       if (!gatherDataSetInformation.isReadable()) {
-        metadata.set("dynamic.data.readable", "UNREADABLE");
+        metadataWrapper.setDataReadable("UNREADABLE");
         return TaskResult.SUCCESS;
       }
-      metadata.set("dynamic.data.readable", "READABLE");
-      metadata.set("dynamic.data.size", gatherDataSetInformation.getByteSize());
-      metadata.set("dynamic.data.update-timestamp",
-          gatherDataSetInformation.getModificationTime().toString());
+      metadataWrapper.setDataReadable("READABLE");
+      metadataWrapper.setDataSize(gatherDataSetInformation.getByteSize());
+      metadataWrapper.setDataUpdateTimestamp(gatherDataSetInformation.getModificationTime().toString());
 
-      metaDataService.update(metadata.getId(), metadata);
+      metaDataService.update(metadataWrapper.getMetaData().getId(), metadataWrapper.getMetaData());
 
       return TaskResult.SUCCESS;
     } catch (LcmValidationException ex) {

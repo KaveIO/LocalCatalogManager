@@ -18,7 +18,7 @@ import nl.kpmg.lcm.rest.types.FetchEndpointRepresentation;
 import nl.kpmg.lcm.rest.types.MetaDataRepresentation;
 import nl.kpmg.lcm.rest.types.MetaDatasRepresentation;
 import nl.kpmg.lcm.server.data.FetchEndpoint;
-import nl.kpmg.lcm.server.data.MetaData;
+import nl.kpmg.lcm.server.data.meatadata.MetaData;
 import nl.kpmg.lcm.server.data.service.FetchEndpointService;
 import nl.kpmg.lcm.server.data.service.MetaDataService;
 import nl.kpmg.lcm.server.data.service.StorageService;

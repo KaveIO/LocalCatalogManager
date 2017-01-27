@@ -14,7 +14,8 @@
 
 package nl.kpmg.lcm.server.backend;
 
-import nl.kpmg.lcm.server.data.MetaData;
+import nl.kpmg.lcm.server.data.meatadata.MetaData;
+import nl.kpmg.lcm.server.data.meatadata.MetaDataWrapper;
 import nl.kpmg.lcm.server.exception.LcmException;
 import nl.kpmg.lcm.server.exception.LcmValidationException;
 import nl.kpmg.lcm.validation.Notification;
@@ -27,65 +28,64 @@ import java.net.URISyntaxException;
  * @author mhoekstra
  */
 abstract class AbstractBackend implements Backend {
-  protected final MetaData metaData;
+  protected final MetaDataWrapper metaDataWrapper;
   protected final URI dataURI;
 
 
   protected AbstractBackend(MetaData metaData) {
+    metaDataWrapper = new MetaDataWrapper(metaData);
     Notification validationNotification = new Notification();
-    validation(metaData, validationNotification);
+    validation(metaDataWrapper, validationNotification);
     if (validationNotification.hasErrors()) {
       throw new LcmValidationException(validationNotification);
     }
-
-    this.metaData = metaData;
-    this.dataURI = parseDataUri(metaData.getDataUri());
+    this.dataURI = parseDataUri(metaDataWrapper.getDataUri());
 
   }
 
-  private void validation(MetaData metaData, Notification notification) {
-    validateMetadata(metaData, notification);
-    extraValidation(metaData, notification);
+  private void validation(MetaDataWrapper metaDataWrapper, Notification notification) {
+    validateMetadata(metaDataWrapper, notification);
+    extraValidation(metaDataWrapper, notification);
   }
 
   /***
-   * Override this method to ensure that the passed metaData is compatible with your implementation
+   * Override this method to ensure that the passed metaDataWrapper is compatible with your implementation
    * of the backend
    *
-   * @param metaData
+   * @param metaDataWrapper
    */
-  private void validateMetadata(MetaData metaData, Notification notification) {
-    if (metaData == null) {
+  private void validateMetadata(MetaDataWrapper metaDataWrapper, Notification notification) {
+    if (metaDataWrapper.isEmpty()) {
       notification.addError("The metaData could not be null!", null);
       return;
     }
 
-    if (metaData.getDataUri() == null) {
-      notification.addError("The metaData data uri could not be null!", null);
+    if (metaDataWrapper.getDataUri() == null) {
+      notification.addError("The metaDataWrapper data uri could not be null!", null);
       return;
     }
 
     try {
-      URI parsedUri = new URI(metaData.getDataUri());
+      URI parsedUri = new URI(metaDataWrapper.getDataUri());
       if (!getSupportedUriSchema().equals(parsedUri.getScheme())) {
         notification.addError(String.format(
             "Detected uri schema (%s) doesn't match with this backends supported uri schema (%s)",
             parsedUri.getScheme(), getSupportedUriSchema()), null);
       }
     } catch (URISyntaxException ex) {
-      notification.addError(String.format("Unable to parse URI (%s) ", metaData.getDataUri()), ex);
+      notification.addError(String.format("Unable to parse URI (%s) ", metaDataWrapper.getDataUri()), ex);
     }
 
   }
 
   /***
-   * Override this method to ensure that the passed metaData and storage are compatible with your
+   * Override this method to ensure that the passed metaDataWrapper and storage are compatible with your
    * implementation of the backend
    *
    * @param storage
-   * @param metaData
+   * @param metaDataWrapper
    */
-  protected abstract void extraValidation(MetaData metaData, Notification notification);
+  protected abstract void extraValidation(MetaDataWrapper metaDataWrapper, Notification notification);
 
   protected abstract String getSupportedUriSchema();
 

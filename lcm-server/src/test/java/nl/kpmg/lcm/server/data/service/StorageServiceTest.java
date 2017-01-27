@@ -20,9 +20,10 @@ import static org.mockito.BDDMockito.given;
 import nl.kpmg.lcm.server.backend.Backend;
 import nl.kpmg.lcm.server.backend.BackendCsvImpl;
 import nl.kpmg.lcm.server.backend.BackendFactory;
-import nl.kpmg.lcm.server.data.MetaData;
 import nl.kpmg.lcm.server.data.Storage;
 import nl.kpmg.lcm.server.data.dao.StorageDao;
+import nl.kpmg.lcm.server.data.meatadata.MetaData;
+import nl.kpmg.lcm.server.data.meatadata.MetaDataWrapper;
 import nl.kpmg.lcm.server.exception.LcmException;
 
 import org.junit.Before;
@@ -62,6 +63,7 @@ public class StorageServiceTest {
     private String csvStorageURI = csvSchame + "://" + csvStorageName + "/test.csv";
     
     private MetaData validMetaData = new MetaData();
+    private MetaDataWrapper validMetaDataWrapper = new MetaDataWrapper(validMetaData);
 
     @Before
     public void setUp() {
@@ -71,34 +73,34 @@ public class StorageServiceTest {
         Map options = new HashMap();
         options.put("storagePath", csvStoragePath);
         csvStorage.setOptions(options);
-        
-        validMetaData.setDataUri(csvStorageURI);
+
+        validMetaDataWrapper.setDataUri(csvStorageURI);
     }
 
     @Test
     public void testGetBackendCSV() throws Exception {
         given(storageDao.findOneByName(csvStorageName)).willReturn(csvStorage);        
-        MetaData metadata = new MetaData();
-        metadata.setDataUri(csvStorageURI);
-        given(backendFactory.createBackend(eq(csvSchame), eq(csvStorage), eq(metadata))).willReturn(backendCsvImp);        
-        Backend result = storageService.getBackend(metadata);
+        MetaDataWrapper metadataWapper = new MetaDataWrapper();
+        metadataWapper.setDataUri(csvStorageURI);
+        given(backendFactory.createBackend(eq(csvSchame), eq(csvStorage), eq(metadataWapper))).willReturn(backendCsvImp);
+        Backend result = storageService.getBackend(metadataWapper);
 
         assertNotNull(result);
     }
 
-    @Test(expected = IllegalArgumentException.class)
+    @Test(expected = LcmException.class)
     public void testGetBackendCSVInvalidURI() throws Exception {
         given(storageDao.findOneByName(csvStorageName)).willReturn(csvStorage);
-        given(backendFactory.createBackend(csvSchame, csvStorage, validMetaData)).willReturn(backendCsvImp);
-        MetaData metadata = new MetaData();
-        metadata.setDataUri("invalid URI");
-        storageService.getBackend(metadata);
+        given(backendFactory.createBackend(csvSchame, csvStorage, validMetaDataWrapper)).willReturn(backendCsvImp);
+        MetaDataWrapper metadataWapper = new MetaDataWrapper();
+        metadataWapper.setDataUri("invalid URI");
+        storageService.getBackend(metadataWapper);
     }
 
     @Test(expected = LcmException.class)
     public void testGetBackendCSVNullMetadata() throws Exception {
         given(storageDao.findOneByName(csvStorageName)).willReturn(csvStorage);
-        given(backendFactory.createBackend(csvSchame, csvStorage, validMetaData)).willReturn(backendCsvImp);
+        given(backendFactory.createBackend(csvSchame, csvStorage, validMetaDataWrapper)).willReturn(backendCsvImp);
         storageService.getBackend(null);
     }
 
@@ -106,9 +108,9 @@ public class StorageServiceTest {
     public void testGetBackendCSVMissingStorage() throws Exception {
         String nonExistingStorageName = "nonExistingStorageName";
         given(storageDao.findOneByName(nonExistingStorageName)).willReturn(null);
-        MetaData metadata = new MetaData();
-        metadata.setDataUri("csv://" + nonExistingStorageName + "/test.csv");
-        Backend result = storageService.getBackend(metadata);
+        MetaDataWrapper metadataWapper = new MetaDataWrapper();
+        metadataWapper.setDataUri("csv://" + nonExistingStorageName + "/test.csv");
+        Backend result = storageService.getBackend(metadataWapper);
 
         assertNotNull(result);
     }

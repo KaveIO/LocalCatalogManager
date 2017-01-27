@@ -14,18 +14,17 @@
 package nl.kpmg.lcm.server.data;
 
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNull;
+
+import nl.kpmg.lcm.server.data.meatadata.MetaData;
+
+import org.junit.Test;
+
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.HashMap;
 import java.util.Map;
-
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNull;
-
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
-
-import org.junit.Test;
 
 /**
  *
@@ -139,19 +138,5 @@ public class MetaDataTest {
     assertEquals(expected1, (String) ((Map) metaData.get("firstLevelKey")).get("secondLevelKey"));
     assertEquals(expected2,
         (String) ((Map) metaData.get("firstLevelKey")).get("secondSecondLevelKey"));
-  }
-
-  @Test
-  public void testJacksonObjectMapperDoesntIncludeUnusedFields() throws JsonProcessingException {
-    ObjectMapper objectMapper = new ObjectMapper();
-
-    MetaData metaData = new MetaData();
-
-    metaData.setName("test");
-    metaData.setDataUri("file://local/bla.csv");
-
-    String expected = "{\"id\":null,\"name\":\"test\",\"data\":{\"uri\":\"file://local/bla.csv\"}}";
-    String actual = objectMapper.writeValueAsString(metaData);
-    assertEquals(expected, actual);
   }
 }

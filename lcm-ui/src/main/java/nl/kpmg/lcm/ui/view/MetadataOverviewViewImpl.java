@@ -27,7 +27,7 @@ import nl.kpmg.lcm.client.ClientException;
 import nl.kpmg.lcm.rest.types.MetaDataRepresentation;
 import nl.kpmg.lcm.rest.types.MetaDatasRepresentation;
 import nl.kpmg.lcm.server.ServerException;
-import nl.kpmg.lcm.server.data.MetaData;
+import nl.kpmg.lcm.server.data.meatadata.MetaDataWrapper;
 import nl.kpmg.lcm.ui.rest.AuthenticationException;
 import nl.kpmg.lcm.ui.rest.RestClientService;
 import nl.kpmg.lcm.ui.view.metadata.MetadataCreateWindow;
@@ -151,9 +151,9 @@ public class MetadataOverviewViewImpl extends VerticalLayout
         viewButton.addClickListener(new ViewButtonClickListener());
         viewButton.addStyleName("link");
 
-        MetaData metaData = item.getItem();
-        table.addItem(new Object[] {metaData.getName(), metaData.getDataUri(), viewButton},
-            metaData.getName());
+        MetaDataWrapper metaDataWrapper = new MetaDataWrapper(item.getItem());
+        table.addItem(new Object[] {metaDataWrapper.getName(), metaDataWrapper.getDataUri(), viewButton},
+            metaDataWrapper.getName());
       }
     } catch (AuthenticationException ex) {
       getUI().getNavigator().navigateTo("");

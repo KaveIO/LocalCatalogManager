@@ -20,11 +20,12 @@ import nl.kpmg.lcm.rest.types.FetchEndpointRepresentation;
 import nl.kpmg.lcm.rest.types.MetaDataRepresentation;
 import nl.kpmg.lcm.server.ServerException;
 import nl.kpmg.lcm.server.data.FetchEndpoint;
-import nl.kpmg.lcm.server.data.MetaData;
 import nl.kpmg.lcm.server.data.RemoteLcm;
 import nl.kpmg.lcm.server.data.Storage;
 import nl.kpmg.lcm.server.data.TaskDescription;
 import nl.kpmg.lcm.server.data.dao.RemoteLcmDao;
+import nl.kpmg.lcm.server.data.meatadata.MetaData;
+import nl.kpmg.lcm.server.data.meatadata.MetaDataWrapper;
 import nl.kpmg.lcm.server.rest.client.version0.HttpResponseHandler;
 import nl.kpmg.lcm.server.task.enrichment.DataFetchTask;
 
@@ -84,8 +85,8 @@ public class DataFetchTriggerService {
       throw new NotFoundException(String.format("Remote LCM with id: %s is not found", lcmId));
     }
 
-    MetaData metaData = getMetadata(metadataId, lcm);
-    if (metaData == null) {
+    MetaDataWrapper metaDataWrapper = getMetadata(metadataId, lcm);
+    if (metaDataWrapper.isEmpty()) {
       throw new NotFoundException(String.format("Metadata with id: %s is not found", metadataId));
     }
     Storage localStorage = storageService.getStorageDao().findOne(localStorageId);
@@ -93,7 +94,7 @@ public class DataFetchTriggerService {
       throw new NotFoundException(String.format("Storage with id: %s is not found", localStorageId));
     }
 
-    updateMetaData(metaData, localStorage);
+    updateMetaData(metaDataWrapper, localStorage);
 
     createFetchTask(metadataId, lcmId, lcm);
   }
@@ -119,14 +120,14 @@ public class DataFetchTriggerService {
     taskDescriptionService.getTaskDescriptionDao().save(dataFetchTaskDescription);
   }
 
-  private void updateMetaData(MetaData metaData, Storage localStorage) throws ServerException,
-      NotFoundException, ClientErrorException {
+  private void updateMetaData(MetaDataWrapper metaDataWrapper, Storage localStorage)
+      throws ServerException, NotFoundException, ClientErrorException {
 
-    String path = parseDataUri(metaData.getDataUri()).getPath();
+    String path = parseDataUri(metaDataWrapper.getDataUri()).getPath();
     String metaDataURI = localStorage.getType() + "://" + localStorage.getName() + path;
-    metaData.setDataUri(metaDataURI);
-    metaData.set("dynamic.data.state", "DETACHED");
-    metaDataService.getMetaDataDao().save(metaData);
+    metaDataWrapper.setDataUri(metaDataURI);
+    metaDataWrapper.setDataState("DETACHED");
+    metaDataService.getMetaDataDao().save(metaDataWrapper.getMetaData());
   }
 
   /**
@@ -138,7 +139,7 @@ public class DataFetchTriggerService {
    * @throws ServerException
    * @throws ClientErrorException
    */
-  private MetaData getMetadata(String metadataId, RemoteLcm lcm) throws ServerException,
+  private MetaDataWrapper getMetadata(String metadataId, RemoteLcm lcm) throws ServerException,
       ClientErrorException {
     WebTarget webTarget = getWebTarget(lcm).path(METADATA_PATH).path(metadataId);
     Invocation.Builder req = webTarget.request();
@@ -148,7 +149,9 @@ public class DataFetchTriggerService {
     } catch (ClientErrorException ex) {
       throw ex;
     }
-    return response.readEntity(MetaDataRepresentation.class).getItem();
+    MetaData metaData = response.readEntity(MetaDataRepresentation.class).getItem();
+
+    return new MetaDataWrapper(metaData);
   }
 
   /**

@@ -18,7 +18,7 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 
 import nl.kpmg.lcm.rest.types.LinkInjectable;
 import nl.kpmg.lcm.rest.types.MetaDataRepresentation;
-import nl.kpmg.lcm.server.data.MetaData;
+import nl.kpmg.lcm.server.data.meatadata.MetaData;
 import nl.kpmg.lcm.server.rest.client.version0.LocalMetaDataController;
 
 import org.glassfish.jersey.linking.Binding;

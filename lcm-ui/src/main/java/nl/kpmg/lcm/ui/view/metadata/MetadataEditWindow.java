@@ -27,7 +27,8 @@ import com.vaadin.ui.Window;
 
 import nl.kpmg.lcm.rest.types.MetaDataRepresentation;
 import nl.kpmg.lcm.server.ServerException;
-import nl.kpmg.lcm.server.data.MetaData;
+import nl.kpmg.lcm.server.data.meatadata.MetaData;
+import nl.kpmg.lcm.server.data.meatadata.MetaDataWrapper;
 import nl.kpmg.lcm.ui.component.DefinedLabel;
 import nl.kpmg.lcm.ui.rest.AuthenticationException;
 import nl.kpmg.lcm.ui.rest.DataCreationException;
@@ -97,14 +98,14 @@ public class MetadataEditWindow extends Window implements Button.ClickListener {
   private Layout initViewPanel() {
     VerticalLayout panelContent = new VerticalLayout();
 
-    MetaData item = metaDataRepresentation.getItem();
+    MetaDataWrapper item = new MetaDataWrapper(metaDataRepresentation.getItem());
     List<Link> links = metaDataRepresentation.getLinks();
 
     panelContent.setMargin(true);
     addDefinedLabel(panelContent, "Name", item.getName());
     addDefinedLabel(panelContent, "Location", item.getDataUri());
-    addDefinedLabel(panelContent, "Owner", item.get("general.owner"));
-    addDefinedLabel(panelContent, "Description", item.get("general.description"));
+    addDefinedLabel(panelContent, "Owner", item.getOwner());
+    addDefinedLabel(panelContent, "Description", item.getDescription());
 
     return panelContent;
   }

@@ -30,8 +30,9 @@ import nl.kpmg.lcm.server.data.ContentIterator;
 import nl.kpmg.lcm.server.data.Data;
 import nl.kpmg.lcm.server.data.FetchEndpoint;
 import nl.kpmg.lcm.server.data.JsonReaderContentIterator;
-import nl.kpmg.lcm.server.data.MetaData;
 import nl.kpmg.lcm.server.data.Storage;
+import nl.kpmg.lcm.server.data.meatadata.MetaData;
+import nl.kpmg.lcm.server.data.meatadata.MetaDataWrapper;
 import nl.kpmg.lcm.server.data.service.FetchEndpointService;
 import nl.kpmg.lcm.server.data.service.StorageService;
 import nl.kpmg.lcm.server.rest.authentication.BasicAuthenticationManager;
@@ -137,7 +138,7 @@ public class FetchEndpointContollerTest extends LcmBaseServerTest {
     createStorgaeAndPostMetadata();
     // Discover metadata
     List<MetaDataRepresentation> list = getMetadata(200);
-    MetaData md = list.get(0).getItem();
+    MetaDataWrapper md = new MetaDataWrapper(list.get(0).getItem());
     // Get metadata id
     String id = md.getId();
     // Get transfer token
@@ -187,7 +188,7 @@ public class FetchEndpointContollerTest extends LcmBaseServerTest {
     return items;
   }
 
-  private MetaData createStorgaeAndPostMetadata() throws 
+  private MetaDataWrapper createStorgaeAndPostMetadata() throws
       IOException, ServerException {
     Storage csvStorage = new Storage();
     csvStorage.setName(CSV_STORAGE_NAME);
@@ -195,7 +196,7 @@ public class FetchEndpointContollerTest extends LcmBaseServerTest {
     options.put("storagePath", CSV_STORAGE_PATH);
     csvStorage.setOptions(options);
 
-    MetaData metadata = new MetaData();
+    MetaDataWrapper metadata = new MetaDataWrapper();
     metadata.setDataUri(CSV_STORAGE_URI);
 
     storageService.getStorageDao().save(csvStorage);
@@ -204,9 +205,8 @@ public class FetchEndpointContollerTest extends LcmBaseServerTest {
     generateCsvTestFile(CSV_FILE);
     Data data = backend.read();
     assertNotNull(data);
-    postMeadata(metadata, 200);
-    metadata = getMetadata(200).get(0).getItem();
-    return metadata;
+    postMetadata(metadata, 200);
+    return new MetaDataWrapper(getMetadata(200).get(0).getItem());
   }
 
   private void generateCsvTestFile(File f) throws IOException {
@@ -245,8 +245,8 @@ public class FetchEndpointContollerTest extends LcmBaseServerTest {
 
   }
 
-  private void postMeadata(MetaData metadata, int expected) throws ServerException {
-    Entity<MetaData> entity = Entity.entity(metadata, METADATA_CONTENT_TYPE);
+  private void postMetadata(MetaDataWrapper metadata, int expected) throws ServerException {
+    Entity<MetaData> entity = Entity.entity(metadata.getMetaData(), METADATA_CONTENT_TYPE);
 
     Response resp = getWebTarget().path(METADATA_PATH).request().header(AUTH_USER_HEADER, "admin")
         .header(BasicAuthenticationManager.BASIC_AUTHENTICATION_HEADER, basicAuthTokenAdmin)
@@ -268,7 +268,7 @@ public class FetchEndpointContollerTest extends LcmBaseServerTest {
   private FetchEndpoint addTestFetchEndpoint() throws
        IOException, ServerException {
 
-    MetaData md = createStorgaeAndPostMetadata();
+    MetaDataWrapper md = createStorgaeAndPostMetadata();
 
     FetchEndpoint fe = new FetchEndpoint();
     Date now = new Date();

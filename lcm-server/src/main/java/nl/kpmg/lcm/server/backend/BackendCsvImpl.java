@@ -18,8 +18,9 @@ import nl.kpmg.lcm.server.backend.metatadata.CsvMetaData;
 import nl.kpmg.lcm.server.backend.storage.CsvStorage;
 import nl.kpmg.lcm.server.data.ContentIterator;
 import nl.kpmg.lcm.server.data.Data;
-import nl.kpmg.lcm.server.data.MetaData;
 import nl.kpmg.lcm.server.data.Storage;
+import nl.kpmg.lcm.server.data.meatadata.MetaData;
+import nl.kpmg.lcm.server.data.meatadata.MetaDataWrapper;
 import nl.kpmg.lcm.server.exception.LcmException;
 import nl.kpmg.lcm.server.exception.LcmValidationException;
 import nl.kpmg.lcm.validation.Notification;
@@ -73,15 +74,14 @@ public class BackendCsvImpl extends AbstractBackend {
   }
 
   private UpdateableDataContext createDataContext() {
-    if (metaData == null) {
+    if (csvMetaData == null) {
       throw new IllegalStateException("MetaData parameter could not be null");
     }
 
     CsvConfiguration csvConfiguration = csvMetaData.getConfiguration();
 
     if (!dataSourceFile.exists()) {
-      throw new LcmException(
-          "Unable to find data source file! FilePath" + dataSourceFile.getPath());
+      throw new LcmException("Unable to find data source file! FilePath: " + dataSourceFile.getPath());
     }
     return (CsvDataContext) DataContextFactory.createCsvDataContext(dataSourceFile,
         csvConfiguration);
@@ -121,8 +121,7 @@ public class BackendCsvImpl extends AbstractBackend {
         info.setModificationTime(new Date(dataSourceFile.lastModified()));
       }
     } catch (IOException ex) {
-      LOGGER.error( "Unable to get info about datasource: " + dataSourceFile.getPath(),
-          ex);
+      LOGGER.error("Unable to get info about datasource: " + dataSourceFile.getPath(), ex);
       throw new LcmException("Unable to get info about datasource: " + dataSourceFile.getPath(), ex);
     }
 
@@ -172,7 +171,7 @@ public class BackendCsvImpl extends AbstractBackend {
 
       writer.flush();
     } catch (IOException ex) {
-      LOGGER.error( "Error occured during saving information!", ex);
+      LOGGER.error("Error occured during saving information!", ex);
     }
   }
 
@@ -211,13 +210,12 @@ public class BackendCsvImpl extends AbstractBackend {
   }
 
   @Override
-  protected void extraValidation(MetaData metaData, Notification notification) {
-
+  public void free() {
 
   }
 
   @Override
-  public void free() {
+  protected void extraValidation(MetaDataWrapper metaDataWrapper, Notification notification) {
 
   }
 

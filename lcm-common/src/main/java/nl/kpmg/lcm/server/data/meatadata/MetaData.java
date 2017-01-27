@@ -12,11 +12,12 @@
  * the License.
  */
 
-package nl.kpmg.lcm.server.data;
+package nl.kpmg.lcm.server.data.meatadata;
 
 import com.fasterxml.jackson.annotation.JsonAnyGetter;
 import com.fasterxml.jackson.annotation.JsonAnySetter;
-import com.fasterxml.jackson.annotation.JsonIgnore;
+
+import nl.kpmg.lcm.server.data.AbstractModel;
 
 import org.apache.commons.lang.ArrayUtils;
 import org.slf4j.Logger;
@@ -24,8 +25,6 @@ import org.slf4j.LoggerFactory;
 import org.springframework.data.mongodb.core.mapping.Document;
 
 import java.util.HashMap;
-import java.util.LinkedList;
-import java.util.List;
 import java.util.Map;
 
 /**
@@ -42,7 +41,7 @@ import java.util.Map;
  *
  */
 @Document(collection = "metadata")
-public class MetaData extends AbstractModel {
+public class MetaData extends AbstractModel implements MetaDataIdentificator {
 
   /**
    * The Logger.
@@ -53,6 +52,11 @@ public class MetaData extends AbstractModel {
    * The unique name of the metadata object.
    */
   private String name;
+
+  /**
+   * The type of described  data, i.e csv, hive, etc.
+   */
+  private String sourceType;
 
   /**
    * The inner map in which all the unknown attributes are stored.
@@ -157,74 +161,67 @@ public class MetaData extends AbstractModel {
     }
   }
 
+  @Override
   public final String getName() {
     return name;
   }
 
+  @Override
   public final void setName(final String name) {
     this.name = name;
   }
 
-  @JsonIgnore
-  public final String getDataUri() {
-    return get("data.uri");
-  }
+//
+//  @JsonIgnore
+//  public void setDuplicates(List<MetaData> duplicates) {
+//    this.set("duplicates", duplicates);
+//  }
+//
+//
+//
+//  public void addDuplicate(MetaData duplicate) {
+//    List<MetaData> lmdata = new LinkedList();
+//    if (getDuplicates() != null) {
+//      lmdata = this.getDuplicates();
+//      lmdata.add(duplicate);
+//      this.setDuplicates(lmdata);
+//    } else {
+//      lmdata.add(duplicate);
+//      this.setDuplicates(lmdata);
+//
+//    }
+//  }
+//
+//  @JsonIgnore
+//  public List<MetaData> getDuplicates() {
+//    List<MetaData> lmdata = new LinkedList();
+//    if (innerMap.containsKey("duplicates") && innerMap.get("duplicates") != null) {
+//      List nestedMetaData = this.get("duplicates");
+//
+//      for (Object duplicate : nestedMetaData) {
+//
+//        if (MetaData.class.isAssignableFrom(duplicate.getClass())) {
+//          lmdata.add((MetaData) duplicate);
+//        } else if (Map.class.isAssignableFrom(duplicate.getClass())) {
+//          lmdata.add(new MetaData((Map) duplicate));
+//        } else {
+//          LOGGER.warn( "Error while constructing duplicates list for MetaData: {0}",
+//              this.getName());
+//        }
+//      }
+//      return lmdata;
+//    } else {
+//      return null;
+//    }
+//  }
 
-  @JsonIgnore
-  public final void setDataUri(final String dataUri) {
-    set("data.uri", dataUri);
-  }
-
-  @JsonIgnore
-  public final Map getDataOptions() {
-    return get("data.options");
-  }
-
-  @JsonIgnore
-  public final void setDataOptions(final Map dataOptions) {
-    set("data.options", dataOptions);
-  }
-
-  @JsonIgnore
-  public void setDuplicates(List<MetaData> duplicates) {
-    this.set("duplicates", duplicates);
-  }
-
-
-
-  public void addDuplicate(MetaData duplicate) {
-    List<MetaData> lmdata = new LinkedList();
-    if (getDuplicates() != null) {
-      lmdata = this.getDuplicates();
-      lmdata.add(duplicate);
-      this.setDuplicates(lmdata);
-    } else {
-      lmdata.add(duplicate);
-      this.setDuplicates(lmdata);
-
+    @Override
+    public String getSourceType() {
+        return sourceType;
     }
-  }
 
-  @JsonIgnore
-  public List<MetaData> getDuplicates() {
-    List<MetaData> lmdata = new LinkedList();
-    if (innerMap.containsKey("duplicates") && innerMap.get("duplicates") != null) {
-      List nestedMetaData = this.get("duplicates");
-
-      for (Object duplicate : nestedMetaData) {
-
-        if (MetaData.class.isAssignableFrom(duplicate.getClass())) {
-          lmdata.add((MetaData) duplicate);
-        } else if (Map.class.isAssignableFrom(duplicate.getClass())) {
-          lmdata.add(new MetaData((Map) duplicate));
-        } else {
-          LOGGER.warn( "Error while constructing duplicates list for MetaData: {0}",
-              this.getName());
-        }
-      }
-      return lmdata;
-    } else {
-      return null;
+    @Override
+    public void setSourceType(String sourceType) {
+        this.sourceType =  sourceType;
     }
-  }
 }

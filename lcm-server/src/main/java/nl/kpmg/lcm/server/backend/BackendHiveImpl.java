@@ -14,12 +14,13 @@
 
 package nl.kpmg.lcm.server.backend;
 
-import nl.kpmg.lcm.server.backend.metatadata.RelationalDbMetaData;
+import nl.kpmg.lcm.server.backend.metatadata.TabularMetaData;
 import nl.kpmg.lcm.server.backend.storage.HiveStorage;
 import nl.kpmg.lcm.server.data.ContentIterator;
 import nl.kpmg.lcm.server.data.Data;
-import nl.kpmg.lcm.server.data.MetaData;
 import nl.kpmg.lcm.server.data.Storage;
+import nl.kpmg.lcm.server.data.meatadata.MetaData;
+import nl.kpmg.lcm.server.data.meatadata.MetaDataWrapper;
 import nl.kpmg.lcm.server.exception.LcmException;
 import nl.kpmg.lcm.validation.Notification;
 
@@ -42,17 +43,17 @@ import java.sql.SQLException;
 @BackendSource(type = "hive")
 public class BackendHiveImpl extends AbstractBackend {
 
-  private static final Logger LOGGER = LoggerFactory.getLogger(BackendCsvImpl.class.getName());
+  private static final Logger LOGGER = LoggerFactory.getLogger(BackendHiveImpl.class.getName());
 
   private final HiveStorage hiveStorage;
-  private final RelationalDbMetaData hiveMetaData;
+  private final TabularMetaData hiveMetaData;
 
   private Connection connection;
 
   public BackendHiveImpl(Storage backendStorage, MetaData metaData) {
     super(metaData);
     this.hiveStorage = new HiveStorage(backendStorage);
-    this.hiveMetaData = new RelationalDbMetaData(metaData);
+    this.hiveMetaData = new TabularMetaData(metaData);
   }
 
   private Connection getConnection() {
@@ -152,7 +153,7 @@ public class BackendHiveImpl extends AbstractBackend {
   }
 
   @Override
-  protected void extraValidation(MetaData metaData, Notification notification) {
+  protected void extraValidation(MetaDataWrapper metaDataWrapper, Notification notification) {
 
   }
 

@@ -53,19 +53,21 @@ public class GeneralExceptionMapper implements ExceptionMapper<Throwable> {
           Response.status(Response.Status.NOT_FOUND).type("text/plain")
               .entity("Resource not found on server.").build();
     } else if (ForbiddenException.class.isAssignableFrom(ex.getClass())) {
-      LOGGER.warn("Access is forbidden for the user role!", ex.getMessage());
+      LOGGER.warn("Access is forbidden for the user role! Error message: ", ex.getMessage());
       response =
           Response.status(Response.Status.FORBIDDEN).type("text/plain")
               .entity("Request failed! Check logs for more information.").build();
     } else {
-      LOGGER.warn("Request failed!", ex.getMessage());
+      String logErrorMessage =
+          ex.getMessage() != null ? "Error message: " + ex.getMessage() : "" + "Exception type: "
+              + ex.getClass().getName();
+      LOGGER.warn("Request failed!", logErrorMessage);
+
+      String eMessage =
+          ex.getMessage() != null ? "Error message: " + ex.getMessage() : ex.getClass().getName();
       response =
-          Response
-              .status(Response.Status.INTERNAL_SERVER_ERROR)
-              .type("text/plain")
-              .entity(
-                  "Request failed! Check logs for more information."
-                      + ex.getMessage()).build();
+          Response.status(Response.Status.INTERNAL_SERVER_ERROR).type("text/plain")
+              .entity("Request failed! Check logs for more information." + eMessage).build();
     }
 
     return response;

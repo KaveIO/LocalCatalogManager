@@ -19,7 +19,8 @@ import nl.kpmg.lcm.rest.types.MetaDataRepresentation;
 import nl.kpmg.lcm.rest.types.MetaDatasRepresentation;
 import nl.kpmg.lcm.server.backend.Backend;
 import nl.kpmg.lcm.server.data.Data;
-import nl.kpmg.lcm.server.data.MetaData;
+import nl.kpmg.lcm.server.data.meatadata.MetaData;
+import nl.kpmg.lcm.server.data.meatadata.MetaDataWrapper;
 import nl.kpmg.lcm.server.data.service.MetaDataService;
 import nl.kpmg.lcm.server.data.service.StorageService;
 import nl.kpmg.lcm.server.rest.authentication.Roles;
@@ -134,14 +135,14 @@ public class LocalMetaDataController {
       MetaDataOperationRequest request) {
 
     MetaData metadata = metaDataService.getMetaDataDao().findOne(metaDataId);
-
+    MetaDataWrapper metaDataWrapper = new MetaDataWrapper(metadata);
     Backend backend = null;
     switch (request.getOperation()) {
 
       case "download":
 
         try {
-          backend = storageService.getBackend(metadata);
+          backend = storageService.getBackend(metaDataWrapper);
           if (backend != null) {
             Data input = backend.read();
             String fType = (String) request.getParameters().get("type");

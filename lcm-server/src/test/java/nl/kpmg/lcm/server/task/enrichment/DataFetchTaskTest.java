@@ -14,11 +14,13 @@
 
 package nl.kpmg.lcm.server.task.enrichment;
 
+import nl.kpmg.lcm.server.data.meatadata.MetaDataWrapper;
+import nl.kpmg.lcm.server.task.TaskException;
+
+import org.junit.Test;
+
 import java.util.HashMap;
 import java.util.Map;
-import nl.kpmg.lcm.server.data.MetaData;
-import nl.kpmg.lcm.server.task.TaskException;
-import org.junit.Test;
 
 /**
  *
@@ -30,8 +32,8 @@ public class DataFetchTaskTest {
     public void testValidationMissingOptions() throws TaskException{
         DataFetchTask task =  new DataFetchTask();
         Map options = null;
-        MetaData metaData = new MetaData();
-        task.execute(metaData, options);
+        MetaDataWrapper metaDataWrapper = new MetaDataWrapper();
+        task.execute(metaDataWrapper, options);
     }
 
     @Test(expected = TaskException.class)
@@ -39,8 +41,8 @@ public class DataFetchTaskTest {
         DataFetchTask task =  new DataFetchTask();
         Map options = new HashMap();
         options.put("remoteLcm", "349bncdwqe8g89g74137823tr8");
-        MetaData metaData = new MetaData();
-        task.execute(metaData, options);
+        MetaDataWrapper metaDataWrapper = new MetaDataWrapper();
+        task.execute(metaDataWrapper, options);
     }
 
     @Test(expected = TaskException.class)
@@ -48,7 +50,7 @@ public class DataFetchTaskTest {
         DataFetchTask task =  new DataFetchTask();
         Map options = new HashMap();
         options.put("path", "/x/y/z");
-        MetaData metaData = new MetaData();
-        task.execute(metaData, options);
+        MetaDataWrapper metaDataWrapper = new MetaDataWrapper();
+        task.execute(metaDataWrapper, options);
     }
 }

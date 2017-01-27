@@ -14,7 +14,7 @@
 
 package nl.kpmg.lcm.rest.types;
 
-import nl.kpmg.lcm.server.data.MetaData;
+import nl.kpmg.lcm.server.data.meatadata.MetaData;
 
 
 /**

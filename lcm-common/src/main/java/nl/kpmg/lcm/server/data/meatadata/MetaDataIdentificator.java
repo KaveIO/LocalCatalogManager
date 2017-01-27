@@ -1,5 +1,5 @@
 /*
- * Copyright 2015 KPMG N.V. (unless otherwise stated).
+ * Copyright 2017 KPMG N.V. (unless otherwise stated).
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except
  * in compliance with the License. You may obtain a copy of the License at
@@ -11,17 +11,18 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-
-package nl.kpmg.lcm.server.data.dao;
-
-import nl.kpmg.lcm.server.data.meatadata.MetaData;
-
-import org.springframework.data.repository.PagingAndSortingRepository;
+package nl.kpmg.lcm.server.data.meatadata;
 
 /**
  *
- * @author mhoekstra
+ * @author shristov
  */
-public interface MetaDataDao extends PagingAndSortingRepository<MetaData, String> {
-  public MetaData findOneByName(String name);
+public interface MetaDataIdentificator {
+  public String getSourceType();
+
+  public void setSourceType(String sourceType);
+
+  public String getName();
+
+  public void setName(String name);
 }

@@ -16,7 +16,9 @@ package nl.kpmg.lcm.server.data.dao.mongo;
 
 import com.mongodb.BasicDBObject;
 import com.mongodb.DBObject;
-import nl.kpmg.lcm.server.data.MetaData;
+
+import nl.kpmg.lcm.server.data.meatadata.MetaData;
+
 import org.bson.types.ObjectId;
 import org.springframework.core.convert.converter.Converter;
 

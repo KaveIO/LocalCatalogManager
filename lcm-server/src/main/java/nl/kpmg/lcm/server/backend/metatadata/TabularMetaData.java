@@ -1,5 +1,5 @@
 /*
- * Copyright 2016 KPMG N.V. (unless otherwise stated).
+ * Copyright 2017 KPMG N.V. (unless otherwise stated).
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except
  * in compliance with the License. You may obtain a copy of the License at
@@ -11,11 +11,11 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-
 package nl.kpmg.lcm.server.backend.metatadata;
 
 import nl.kpmg.lcm.server.backend.ColumnDescription;
-import nl.kpmg.lcm.server.data.MetaData;
+import nl.kpmg.lcm.server.data.meatadata.MetaData;
+import nl.kpmg.lcm.server.data.meatadata.MetaDataWrapper;
 import nl.kpmg.lcm.server.exception.LcmException;
 
 import org.apache.metamodel.schema.Column;
@@ -28,18 +28,36 @@ import java.util.HashMap;
 import java.util.Map;
 
 /**
- * This is Decorator around MeataData that parse its fields for Relational Data sources like Hive
- * and SQL
  *
- * @author Stoyan Hristov<shristov@intracol.com>
+ * @author shristov
  */
-public class RelationalDbMetaData {
-  private final MetaData metaData;
-  private static final Logger LOGGER = LoggerFactory.getLogger(RelationalDbMetaData.class.getName());
+// TODO Refactor this class. Add all needed sub objects
+// like table description, columns etc.
+public class TabularMetaData extends MetaDataWrapper {
 
-  public RelationalDbMetaData(MetaData metaData) {
-    this.metaData = metaData;
+  private static final Logger LOGGER = LoggerFactory.getLogger(TabularMetaData.class.getName());
+
+  public TabularMetaData(MetaData metaData) {
+    super(metaData);
   }
+
+  public void addColumnsDescription(Column[] columnNames) {
+
+    for (Column column : columnNames) {
+      String name = "data.options.table-description.columns." + column.getName();
+      Map columnDescription = new HashMap<>();
+      columnDescription.put("type", column.getType().getName());
+      if (column.getColumnSize() != null && column.getColumnSize() != 0) {
+        columnDescription.put("size", column.getColumnSize());
+        // TODO currently metamodel doesn't support precision for DECIMAL datatype
+        // if it is important for you implement a workaround for example:
+        // int precision = 10; // or laod it like a setting
+        // columnDescription.put("precision", precision);
+      }
+      metaData.set(name, columnDescription);
+    }
+  }
+
 
   public Map<String, ColumnDescription> getColumns() {
 
@@ -50,7 +68,7 @@ public class RelationalDbMetaData {
       Map<String, Object> columnDescription = entry.getValue();
       String type = (String) columnDescription.get("type");
       if (type == null) {
-        LOGGER.warn( "Type of column {0} is null", entry.getKey());
+        LOGGER.warn("Type of column {0} is null", entry.getKey());
       }
       ColumnType columnType = matchColumnType(type);
       ColumnDescription column = new ColumnDescription(entry.getKey(), columnType);
@@ -78,7 +96,7 @@ public class RelationalDbMetaData {
     if (value instanceof Integer) {
       return (Integer) value;
     } else {
-      LOGGER.warn( "Unable to convert metadata value: {0}.", value);
+      LOGGER.warn("Unable to convert metadata value: {0}.", value);
       return null;
     }
   }
@@ -105,41 +123,20 @@ public class RelationalDbMetaData {
   }
 
   private Map<String, Map> getColumnsMap() {
+    Map dataOptions = getDataOptions();
+    if (dataOptions == null) {
+      LOGGER.warn("Can not construct columns as \"data.option\" field is null");
+      return null;
+    }
+
     Map<String, Map> metaDataColumns = null;
-    Map dataOptions = getMetaData().getDataOptions();
-    if (dataOptions != null) {
-      if (dataOptions.containsKey("table-description")) {
-        metaDataColumns = getMetaData().get("data.options.table-description.columns");
-      } else {
-        throw new LcmException(
-            "There is no \"table-description\" section in the metadata! At least column names are required.");
-      }
+    if (dataOptions.containsKey("table-description")) {
+      metaDataColumns = getMetaData().get("data.options.table-description.columns");
+    } else {
+      throw new LcmException(
+          "There is no \"table-description\" section in the metadata! At least column names are required.");
     }
 
     return metaDataColumns;
-  }
-
-  /**
-   * @return the metaData
-   */
-  public MetaData getMetaData() {
-    return metaData;
-  }
-
-  public void addColumnsDescription(Column[] columnNames) {
-
-    for (Column column : columnNames) {
-      String name = "data.options.table-description.columns." + column.getName();
-      Map columnDescription = new HashMap<>();
-      columnDescription.put("type", column.getType().getName());
-      if (column.getColumnSize() != null && column.getColumnSize() != 0) {
-        columnDescription.put("size", column.getColumnSize());
-        // TODO currently metamodel doesn't support precision for DECIMAL datatype
-        // if it is important for you implement a workaround for example:
-        // int precision = 10; // or laod it like a setting
-        // columnDescription.put("precision", precision);
-      }
-      metaData.set(name, columnDescription);
-    }
   }
 }

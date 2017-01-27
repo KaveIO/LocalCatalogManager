@@ -24,8 +24,8 @@ import nl.kpmg.lcm.server.backend.BackendCsvImpl;
 import nl.kpmg.lcm.server.backend.DataTransformationSettings;
 import nl.kpmg.lcm.server.data.ContentIterator;
 import nl.kpmg.lcm.server.data.JsonReaderContentIterator;
-import nl.kpmg.lcm.server.data.MetaData;
 import nl.kpmg.lcm.server.data.RemoteLcm;
+import nl.kpmg.lcm.server.data.meatadata.MetaDataWrapper;
 import nl.kpmg.lcm.server.data.service.RemoteLcmService;
 import nl.kpmg.lcm.server.data.service.StorageService;
 import nl.kpmg.lcm.server.task.EnrichmentTask;
@@ -79,7 +79,7 @@ public class DataFetchTask extends EnrichmentTask {
   }
 
   @Override
-  protected TaskResult execute(MetaData metadata, Map options) throws TaskException {
+  protected TaskResult execute(MetaDataWrapper metadata, Map options) throws TaskException {
 
     Notification validationNotification = new Notification();
     validation(options, metadata, validationNotification);
@@ -122,15 +122,15 @@ public class DataFetchTask extends EnrichmentTask {
     return response.readEntity(InputStream.class);
   }
 
-  private boolean writeData(InputStream in, MetaData metadata) {
+  private boolean writeData(InputStream in, MetaDataWrapper metaDataWrapper) {
     try {
       JsonReader reader = new JsonReader(new InputStreamReader(in, "UTF-8"));
       ContentIterator iterator = new JsonReaderContentIterator(reader);
-      Backend backend = storageService.getBackend(metadata);
+      Backend backend = storageService.getBackend(metaDataWrapper);
       backend.store(iterator, new DataTransformationSettings(), true);
 
-      metadata.set("dynamic.data.state", "ATTACHED");
-      metaDataService.update(metadata.getId(), metadata);
+      metaDataWrapper.setDataState("ATTACHED");
+      metaDataService.update(metaDataWrapper.getId(), metaDataWrapper.getMetaData());
     } catch (Exception ex) {
       LOGGER.error(ex.getMessage());
 
@@ -139,8 +139,8 @@ public class DataFetchTask extends EnrichmentTask {
     return true;
   }
 
-  private void validation(Map options, MetaData metadata, Notification validationNotification) {
-    if (metadata == null) {
+  private void validation(Map options, MetaDataWrapper metaDataWrapper, Notification validationNotification) {
+    if (metaDataWrapper.isEmpty()) {
       validationNotification.addError("Error! MetaData parameter could not be null.", null);
     }
 

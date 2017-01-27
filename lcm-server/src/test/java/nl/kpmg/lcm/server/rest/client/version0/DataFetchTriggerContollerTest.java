@@ -25,10 +25,11 @@ import nl.kpmg.lcm.server.LcmBaseServerTest;
 import nl.kpmg.lcm.server.ServerException;
 import nl.kpmg.lcm.server.backend.Backend;
 import nl.kpmg.lcm.server.data.Data;
-import nl.kpmg.lcm.server.data.MetaData;
 import nl.kpmg.lcm.server.data.RemoteLcm;
 import nl.kpmg.lcm.server.data.Storage;
 import nl.kpmg.lcm.server.data.TaskDescription;
+import nl.kpmg.lcm.server.data.meatadata.MetaData;
+import nl.kpmg.lcm.server.data.meatadata.MetaDataWrapper;
 import nl.kpmg.lcm.server.data.service.StorageService;
 import nl.kpmg.lcm.server.data.service.TaskDescriptionService;
 import nl.kpmg.lcm.server.rest.authentication.BasicAuthenticationManager;
@@ -119,7 +120,7 @@ public class DataFetchTriggerContollerTest extends LcmBaseServerTest {
     RemoteLcm lcm = getLCMId();
     // Client disovers after metadata id from the remote lcm
     Storage csvStorage = createStorage();
-    MetaData md = createStorageAndPostMetadata(csvStorage);
+    MetaDataWrapper md = createStorageAndPostMetadata(csvStorage);
 
     // Sends a request to local lcm to fetch the data and metadata
     postTrigger(lcm.getId(), md.getId(), csvStorage.getId(), 200);
@@ -135,7 +136,7 @@ public class DataFetchTriggerContollerTest extends LcmBaseServerTest {
   public void testNonExistingLcm() throws ServerException, IOException {
     // Client disovers after metadata id from the remote lcm
     Storage csvStorage = createStorage();
-    MetaData md = createStorageAndPostMetadata(csvStorage);
+    MetaDataWrapper md = createStorageAndPostMetadata(csvStorage);
     // Sends a request to local lcm to fetch the data and metadata
     postTrigger("non-existing-lcm", md.getId(), csvStorage.getId(), 404);
   }
@@ -152,26 +153,26 @@ public class DataFetchTriggerContollerTest extends LcmBaseServerTest {
   public void testNonExistingStorage() throws ServerException, IOException {
     RemoteLcm lcm = getLCMId();
     Storage csvStorage = createStorage();
-    MetaData md = createStorageAndPostMetadata(csvStorage);
+    MetaDataWrapper md = createStorageAndPostMetadata(csvStorage);
     // Sends a request to local lcm to fetch the data and metadata
     postTrigger(lcm.getId(), md.getId(), "non-existing-storage", 404);
   }
 
-  private MetaData createStorageAndPostMetadata(Storage csvStorage)
+  private MetaDataWrapper createStorageAndPostMetadata(Storage csvStorage)
       throws IOException, ServerException {
 
-    MetaData metadata = new MetaData();
-    metadata.setDataUri(CSV_STORAGE_URI);
+    MetaDataWrapper metadataWrapper = new MetaDataWrapper();
+    metadataWrapper.setDataUri(CSV_STORAGE_URI);
 
     storageService.getStorageDao().save(csvStorage);
-    Backend backend = storageService.getBackend(metadata);
+    Backend backend = storageService.getBackend(metadataWrapper);
 
     generateCsvTestFile(CSV_FILE);
     Data data = backend.read();
     assertNotNull(data);
-    postMeadata(metadata, 200);
-    metadata = getMetadata(200).get(0).getItem();
-    return metadata;
+    postMeadata(metadataWrapper, 200);
+    metadataWrapper = new MetaDataWrapper(getMetadata(200).get(0).getItem());
+    return metadataWrapper;
   }
 
     private Storage createStorage() {
@@ -183,8 +184,8 @@ public class DataFetchTriggerContollerTest extends LcmBaseServerTest {
         return csvStorage;
     }
 
-  private void postMeadata(MetaData metadata, int expected) throws ServerException {
-    Entity<MetaData> entity = Entity.entity(metadata, METADATA_CONTENT_TYPE);
+  private void postMeadata(MetaDataWrapper metadataWrapper, int expected) throws ServerException {
+    Entity<MetaData> entity = Entity.entity(metadataWrapper.getMetaData(), METADATA_CONTENT_TYPE);
 
     Response resp = getWebTarget().path(METADATA_PATH).request().header(AUTH_USER_HEADER, "admin")
         .header(BasicAuthenticationManager.BASIC_AUTHENTICATION_HEADER, basicAuthTokenAdmin)
