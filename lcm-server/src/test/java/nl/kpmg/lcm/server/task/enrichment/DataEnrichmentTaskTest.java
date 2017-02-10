@@ -73,7 +73,7 @@ public class DataEnrichmentTaskTest extends LcmBaseTest implements ApplicationCo
 
 
     MetaDataWrapper metaDataWrapper = new MetaDataWrapper();
-    metaDataWrapper.setDataUri("file://test/test");
+    metaDataWrapper.getData().setUri("file://test/test");
     metaDataDao.save(metaDataWrapper.getMetaData());
 
     DataEnrichmentTask dataEnrichmentTask = new DataEnrichmentTask();
@@ -81,6 +81,6 @@ public class DataEnrichmentTaskTest extends LcmBaseTest implements ApplicationCo
     TaskDescription td = new TaskDescription();
     dataEnrichmentTask.execute(metaDataWrapper, td.getOptions());
 
-    assertEquals("DETACHED", metaDataWrapper.getDataState());
+    assertEquals("DETACHED", metaDataWrapper.getDynamicData().getState());
   }
 }

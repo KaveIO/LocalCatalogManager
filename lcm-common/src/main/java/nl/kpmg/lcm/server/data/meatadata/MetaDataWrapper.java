@@ -13,24 +13,40 @@
  */
 package nl.kpmg.lcm.server.data.meatadata;
 
-import java.util.Map;
+import nl.kpmg.lcm.server.exception.LcmValidationException;
+import nl.kpmg.lcm.validation.Notification;
 
 /**
  *
  * @author shristov
  */
-// TODO Refactor this class. Add all needed sub objects
-// like general Information,  data  etc.
 public class MetaDataWrapper implements MetaDataIdentificator {
 
   protected final MetaData metaData;
+  protected final DataDescriptor dataDescriptor;
+  protected final GeneralInfoDescriptor generalInfoDescriptor;
+  protected final DynamicDataDescriptor dynamicDataDescriptor;
 
   public MetaDataWrapper(MetaData metaData) {
     this.metaData = metaData;
+    this.dataDescriptor = new DataDescriptor(metaData);
+    this.generalInfoDescriptor = new GeneralInfoDescriptor(metaData);
+    this.dynamicDataDescriptor = new DynamicDataDescriptor(metaData);
+
+    Notification notification = new Notification();
+    this.dataDescriptor.validate(notification);
+    this.generalInfoDescriptor.validate(notification);
+
+    if (notification.hasErrors()) {
+      throw new LcmValidationException(notification);
+    }
   }
 
   public MetaDataWrapper() {
     this.metaData = new MetaData();
+    this.dataDescriptor = new DataDescriptor(metaData);
+    this.generalInfoDescriptor = new GeneralInfoDescriptor(metaData);
+    this.dynamicDataDescriptor = new DynamicDataDescriptor(metaData);
   }
 
   /**
@@ -67,51 +83,29 @@ public class MetaDataWrapper implements MetaDataIdentificator {
     metaData.setName(name);
   }
 
-  public final String getDataUri() {
-    return metaData.get("data.uri");
+  public final void setData(final DataDescriptor value) {
+    metaData.set(value.getSectionName(), value.getMap());
   }
 
-  public final void setDataUri(final String dataUri) {
-    metaData.set("data.uri", dataUri);
+  public final DataDescriptor getData() {
+    return dataDescriptor;
   }
 
-  public final Map getDataOptions() {
-    return metaData.get("data.options");
+  public final void setDynamicData(final DynamicDataDescriptor value) {
+    metaData.set(value.getSectionName(), value.getMap());
   }
 
-
-  public final void setDataOptions(final Map dataOptions) {
-    metaData.set("data.options", dataOptions);
+  public final DynamicDataDescriptor getDynamicData() {
+    return dynamicDataDescriptor;
   }
 
-  public final void setDataState(final String value) {
-    metaData.set("dynamic.data.state", value);
+  public final GeneralInfoDescriptor getGeneralInfo() {
+    return generalInfoDescriptor;
   }
 
-  public final String getDataState() {
-    return metaData.get("dynamic.data.state");
+  public final void setGeneralInfo(GeneralInfoDescriptor value) {
+    metaData.set(value.getSectionName(), value.getMap());
   }
-
-  public final void setDataReadable(final String value) {
-    metaData.set("dynamic.data.readable", value);
-  }
-
-  public final void setDataSize(final Long value) {
-    metaData.set("dynamic.data.size", value);
-  }
-
-  public final void setDataUpdateTimestamp(final String value) {
-    metaData.set("dynamic.data.update-timestamp", value);
-  }
-
-  public final String getOwner() {
-    return metaData.get("general.owner");
-  }
-
-  public final String getDescription() {
-    return metaData.get("general.description");
-  }
-
 
   /**
    * @return the metaData
@@ -119,7 +113,6 @@ public class MetaDataWrapper implements MetaDataIdentificator {
   public MetaData getMetaData() {
     return metaData;
   }
-
 
   public boolean isEmpty() {
     return metaData == null;

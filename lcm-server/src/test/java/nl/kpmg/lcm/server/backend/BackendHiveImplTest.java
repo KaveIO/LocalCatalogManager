@@ -18,6 +18,7 @@ import static org.junit.Assert.assertEquals;
 
 import nl.kpmg.lcm.server.data.Storage;
 import nl.kpmg.lcm.server.data.meatadata.MetaDataWrapper;
+import nl.kpmg.lcm.server.test.mock.MetaDataMocker;
 
 import org.junit.Test;
 
@@ -61,10 +62,11 @@ public class BackendHiveImplTest {
    */
   @Test
   public final void testGetSupportedUriSchema() {
+    MetaDataWrapper metaDataWrapper = MetaDataMocker.getHiveMetaData();
+
     String uri = "hive://remote-hive-foodmart/product";
-    MetaDataWrapper metaDataWrapper = new MetaDataWrapper();
-    metaDataWrapper.setDataUri(uri);
-    
+    metaDataWrapper.getData().setUri(uri);
+
     BackendHiveImpl testBackend = new BackendHiveImpl(backendStorage, metaDataWrapper.getMetaData());
     String testSchema = testBackend.getSupportedUriSchema();
     assertEquals("hive", testSchema);
@@ -77,11 +79,14 @@ public class BackendHiveImplTest {
    */
   @Test
   public final void testParseUri() {
-   String uri = "hive://remote-hive-foodmart/product";
-    MetaDataWrapper metaDataWrapper = new MetaDataWrapper();
-    metaDataWrapper.setDataUri(uri);
-    
-    BackendHiveImpl testBackend = new BackendHiveImpl(backendStorage, metaDataWrapper.getMetaData());
+
+    MetaDataWrapper metaDataWrapper = MetaDataMocker.getHiveMetaData();
+
+    String uri = "hive://remote-hive-foodmart/product";
+    metaDataWrapper.getData().setUri(uri);
+
+    BackendHiveImpl testBackend =
+        new BackendHiveImpl(backendStorage, metaDataWrapper.getMetaData());
     URI dataUri = testBackend.getDataUri();
 
     assertEquals("hive", dataUri.getScheme());

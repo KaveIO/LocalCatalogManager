@@ -152,8 +152,8 @@ public class MetadataOverviewViewImpl extends VerticalLayout
         viewButton.addStyleName("link");
 
         MetaDataWrapper metaDataWrapper = new MetaDataWrapper(item.getItem());
-        table.addItem(new Object[] {metaDataWrapper.getName(), metaDataWrapper.getDataUri(), viewButton},
-            metaDataWrapper.getName());
+        table.addItem(new Object[] {metaDataWrapper.getName(), metaDataWrapper.getData().getUri(),
+            viewButton}, metaDataWrapper.getName());
       }
     } catch (AuthenticationException ex) {
       getUI().getNavigator().navigateTo("");

@@ -16,9 +16,9 @@ package nl.kpmg.lcm.server.backend;
 import static org.junit.Assert.*;
 
 import nl.kpmg.lcm.server.data.Storage;
-import nl.kpmg.lcm.server.data.meatadata.MetaData;
 import nl.kpmg.lcm.server.data.meatadata.MetaDataWrapper;
 import nl.kpmg.lcm.server.exception.LcmException;
+import nl.kpmg.lcm.server.test.mock.MetaDataMocker;
 
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -42,7 +42,7 @@ public class BackendFactoryTest {
     private String csvStoragePath = "/tmp";
     private String csvStorageName = "csv-storage";
     private String csvStorageURI = csvSchame + "://" + csvStorageName + "/test.csv";
-    private MetaDataWrapper validMetaData = new MetaDataWrapper(new MetaData());
+    private MetaDataWrapper validMetaData = MetaDataMocker.getCsvMetaData();
     
 
     @Autowired
@@ -55,7 +55,7 @@ public class BackendFactoryTest {
         options.put("storagePath", csvStoragePath);
         csvStorage.setOptions(options);
         
-        validMetaData.setDataUri(csvStorageURI);
+        validMetaData.getData().setUri(csvStorageURI);
     }
 
     @Test

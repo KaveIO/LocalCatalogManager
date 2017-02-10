@@ -123,10 +123,10 @@ public class DataFetchTriggerService {
   private void updateMetaData(MetaDataWrapper metaDataWrapper, Storage localStorage)
       throws ServerException, NotFoundException, ClientErrorException {
 
-    String path = parseDataUri(metaDataWrapper.getDataUri()).getPath();
+    String path = parseDataUri(metaDataWrapper.getData().getUri()).getPath();
     String metaDataURI = localStorage.getType() + "://" + localStorage.getName() + path;
-    metaDataWrapper.setDataUri(metaDataURI);
-    metaDataWrapper.setDataState("DETACHED");
+    metaDataWrapper.getData().setUri(metaDataURI);
+    metaDataWrapper.getDynamicData().setState("DETACHED");
     metaDataService.getMetaDataDao().save(metaDataWrapper.getMetaData());
   }
 

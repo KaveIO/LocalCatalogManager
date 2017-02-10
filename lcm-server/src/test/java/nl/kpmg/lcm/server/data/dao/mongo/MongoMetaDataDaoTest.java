@@ -21,6 +21,7 @@ import nl.kpmg.lcm.server.LcmBaseTest;
 import nl.kpmg.lcm.server.data.dao.MetaDataDao;
 import nl.kpmg.lcm.server.data.meatadata.MetaData;
 import nl.kpmg.lcm.server.data.meatadata.MetaDataWrapper;
+import nl.kpmg.lcm.server.test.mock.MetaDataMocker;
 
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -35,9 +36,10 @@ public class MongoMetaDataDaoTest extends LcmBaseTest {
     String expectedName = "test";
     String expectedUri = "file://test/test";
 
-    MetaDataWrapper metaDataWrapper = new MetaDataWrapper(new MetaData());
+    MetaDataWrapper metaDataWrapper = MetaDataMocker.getCsvMetaData();
+    metaDataWrapper.setSourceType("file");
     metaDataWrapper.setName(expectedName);
-    metaDataWrapper.setDataUri(expectedUri);
+    metaDataWrapper.getData().setUri(expectedUri);
 
     MetaData saved = metaDataDao.save(metaDataWrapper.getMetaData());
 
@@ -45,6 +47,6 @@ public class MongoMetaDataDaoTest extends LcmBaseTest {
     MetaDataWrapper actualMetaDataWrapper = new MetaDataWrapper(actual);
     assertFalse(actual == metaDataWrapper.getMetaData());
     assertEquals(expectedName, actualMetaDataWrapper.getName());
-    assertEquals(expectedUri, actualMetaDataWrapper.getDataUri());
+    assertEquals(expectedUri, actualMetaDataWrapper.getData().getUri());
   }
 }

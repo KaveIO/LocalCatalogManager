@@ -18,6 +18,7 @@ import static org.junit.Assert.assertEquals;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
+import nl.kpmg.lcm.server.data.meatadata.DataDescriptor;
 import nl.kpmg.lcm.server.data.meatadata.MetaDataWrapper;
 
 import org.junit.Test;
@@ -35,7 +36,8 @@ public class MetaDataWrapperTest {
 
     metaDataWrapper.setName("test");
     metaDataWrapper.setSourceType("csv");
-    metaDataWrapper.setDataUri("file://local/bla.csv");
+    DataDescriptor dataDescription = metaDataWrapper.getData();
+    dataDescription.setUri("file://local/bla.csv");
 
     String expected = "{\"id\":null,\"name\":\"test\",\"sourceType\":\"csv\",\"data\":{\"uri\":\"file://local/bla.csv\"}}";
     String actual = objectMapper.writeValueAsString(metaDataWrapper.getMetaData());

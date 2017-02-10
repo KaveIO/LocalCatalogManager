@@ -64,8 +64,9 @@ public class StorageService {
    * @return the requested backend
    */
   public final Backend getBackend(final MetaDataWrapper metadataWrapper) {
-    if (metadataWrapper == null || metadataWrapper.isEmpty() || metadataWrapper.getDataUri() == null
-        || metadataWrapper.getDataUri().isEmpty()) {
+    if (metadataWrapper == null || metadataWrapper.isEmpty()
+        || metadataWrapper.getData().getUri() == null
+        || metadataWrapper.getData().getUri().isEmpty()) {
       String errorMessage =
           "Invalid input data! Metata data could not be null nither the data URI!";
       LOGGER.warn(errorMessage);
@@ -74,7 +75,7 @@ public class StorageService {
     }
 
     try {
-      URI parsedUri = new URI(metadataWrapper.getDataUri());
+      URI parsedUri = new URI(metadataWrapper.getData().getUri());
       String scheme = parsedUri.getScheme();
 
       String storageName =
@@ -91,7 +92,7 @@ public class StorageService {
       return backend;
 
     } catch (URISyntaxException ex) {
-      LOGGER.error( null, ex);
+      LOGGER.error(null, ex);
       throw new LcmException("Error! Unable to parse medata data URI!");
     }
   }

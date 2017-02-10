@@ -22,9 +22,9 @@ import nl.kpmg.lcm.server.backend.BackendCsvImpl;
 import nl.kpmg.lcm.server.backend.BackendFactory;
 import nl.kpmg.lcm.server.data.Storage;
 import nl.kpmg.lcm.server.data.dao.StorageDao;
-import nl.kpmg.lcm.server.data.meatadata.MetaData;
 import nl.kpmg.lcm.server.data.meatadata.MetaDataWrapper;
 import nl.kpmg.lcm.server.exception.LcmException;
+import nl.kpmg.lcm.server.test.mock.MetaDataMocker;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -62,8 +62,7 @@ public class StorageServiceTest {
     private String csvStorageName = "csv-storage";
     private String csvStorageURI = csvSchame + "://" + csvStorageName + "/test.csv";
     
-    private MetaData validMetaData = new MetaData();
-    private MetaDataWrapper validMetaDataWrapper = new MetaDataWrapper(validMetaData);
+    private MetaDataWrapper validMetaDataWrapper = MetaDataMocker.getCsvMetaData();
 
     @Before
     public void setUp() {
@@ -74,14 +73,14 @@ public class StorageServiceTest {
         options.put("storagePath", csvStoragePath);
         csvStorage.setOptions(options);
 
-        validMetaDataWrapper.setDataUri(csvStorageURI);
+        validMetaDataWrapper.getData().setUri(csvStorageURI);
     }
 
     @Test
     public void testGetBackendCSV() throws Exception {
         given(storageDao.findOneByName(csvStorageName)).willReturn(csvStorage);        
         MetaDataWrapper metadataWapper = new MetaDataWrapper();
-        metadataWapper.setDataUri(csvStorageURI);
+        metadataWapper.getData().setUri(csvStorageURI);
         given(backendFactory.createBackend(eq(csvSchame), eq(csvStorage), eq(metadataWapper))).willReturn(backendCsvImp);
         Backend result = storageService.getBackend(metadataWapper);
 
@@ -93,7 +92,7 @@ public class StorageServiceTest {
         given(storageDao.findOneByName(csvStorageName)).willReturn(csvStorage);
         given(backendFactory.createBackend(csvSchame, csvStorage, validMetaDataWrapper)).willReturn(backendCsvImp);
         MetaDataWrapper metadataWapper = new MetaDataWrapper();
-        metadataWapper.setDataUri("invalid URI");
+        metadataWapper.getData().setUri("invalid URI");
         storageService.getBackend(metadataWapper);
     }
 
@@ -109,7 +108,7 @@ public class StorageServiceTest {
         String nonExistingStorageName = "nonExistingStorageName";
         given(storageDao.findOneByName(nonExistingStorageName)).willReturn(null);
         MetaDataWrapper metadataWapper = new MetaDataWrapper();
-        metadataWapper.setDataUri("csv://" + nonExistingStorageName + "/test.csv");
+        metadataWapper.getData().setUri("csv://" + nonExistingStorageName + "/test.csv");
         Backend result = storageService.getBackend(metadataWapper);
 
         assertNotNull(result);

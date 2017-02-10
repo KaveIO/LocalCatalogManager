@@ -99,7 +99,7 @@ public class FetchEndpointController {
     Backend backend = storageService.getBackend(metaDataWrapper);
 
     Data data = backend.read();
-    URI uri = new URI(metaDataWrapper.getDataUri());
+    URI uri = new URI(metaDataWrapper.getData().getUri());
     String type = "json";// uri.getScheme();
     String name = FilenameUtils.getBaseName(uri.toString());
     StreamingOutput result = new StreamingOutput() {

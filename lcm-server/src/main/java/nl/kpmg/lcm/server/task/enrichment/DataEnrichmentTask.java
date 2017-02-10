@@ -77,18 +77,18 @@ public class DataEnrichmentTask extends EnrichmentTask {
       DataSetInformation gatherDataSetInformation = backend.gatherDataSetInformation();
 
       if (!gatherDataSetInformation.isAttached()) {
-        metadataWrapper.setDataState("DETACHED");
+        metadataWrapper.getDynamicData().setState("DETACHED");
         return TaskResult.SUCCESS;
       }
-      metadataWrapper.setDataState("ATTACHED");
+      metadataWrapper.getDynamicData().setState("ATTACHED");
 
       if (!gatherDataSetInformation.isReadable()) {
-        metadataWrapper.setDataReadable("UNREADABLE");
+        metadataWrapper.getDynamicData().setReadable("UNREADABLE");
         return TaskResult.SUCCESS;
       }
-      metadataWrapper.setDataReadable("READABLE");
-      metadataWrapper.setDataSize(gatherDataSetInformation.getByteSize());
-      metadataWrapper.setDataUpdateTimestamp(gatherDataSetInformation.getModificationTime().toString());
+      metadataWrapper.getDynamicData().setReadable("READABLE");
+      metadataWrapper.getDynamicData().setSize(gatherDataSetInformation.getByteSize());
+      metadataWrapper.getDynamicData().setUpdateTimestamp(gatherDataSetInformation.getModificationTime().toString());
 
       metaDataService.update(metadataWrapper.getMetaData().getId(), metadataWrapper.getMetaData());
 

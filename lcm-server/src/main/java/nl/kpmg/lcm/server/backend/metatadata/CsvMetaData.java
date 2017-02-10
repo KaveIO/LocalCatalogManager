@@ -46,7 +46,7 @@ public class CsvMetaData extends TabularMetaData {
     // keep in mind that validation must be done to all imput data
     // for example this is valid scenario
     // "column-name-line": "kdlfjhsadjkfh"
-    Map dataOptions = getDataOptions();
+    Map dataOptions = getData().getOptions();
     if (dataOptions != null) {
       if (dataOptions.containsKey("column-name-line")) {
         columnNameLine = (int) dataOptions.get("column-name-line");

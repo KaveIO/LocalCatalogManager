@@ -39,7 +39,7 @@ abstract class AbstractBackend implements Backend {
     if (validationNotification.hasErrors()) {
       throw new LcmValidationException(validationNotification);
     }
-    this.dataURI = parseDataUri(metaDataWrapper.getDataUri());
+    this.dataURI = parseDataUri(metaDataWrapper.getData().getUri());
 
   }
 
@@ -60,20 +60,20 @@ abstract class AbstractBackend implements Backend {
       return;
     }
 
-    if (metaDataWrapper.getDataUri() == null) {
+    if (metaDataWrapper.getData().getUri() == null || metaDataWrapper.getData().getUri().isEmpty()) {
       notification.addError("The metaDataWrapper data uri could not be null!", null);
       return;
     }
 
     try {
-      URI parsedUri = new URI(metaDataWrapper.getDataUri());
+      URI parsedUri = new URI(metaDataWrapper.getData().getUri());
       if (!getSupportedUriSchema().equals(parsedUri.getScheme())) {
         notification.addError(String.format(
             "Detected uri schema (%s) doesn't match with this backends supported uri schema (%s)",
             parsedUri.getScheme(), getSupportedUriSchema()), null);
       }
     } catch (URISyntaxException ex) {
-      notification.addError(String.format("Unable to parse URI (%s) ", metaDataWrapper.getDataUri()), ex);
+      notification.addError(String.format("Unable to parse URI (%s) ", metaDataWrapper.getData().getUri()), ex);
     }
 
   }

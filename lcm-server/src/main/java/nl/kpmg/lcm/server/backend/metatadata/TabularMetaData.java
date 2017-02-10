@@ -123,7 +123,7 @@ public class TabularMetaData extends MetaDataWrapper {
   }
 
   private Map<String, Map> getColumnsMap() {
-    Map dataOptions = getDataOptions();
+    Map dataOptions = getData().getOptions();
     if (dataOptions == null) {
       LOGGER.warn("Can not construct columns as \"data.option\" field is null");
       return null;

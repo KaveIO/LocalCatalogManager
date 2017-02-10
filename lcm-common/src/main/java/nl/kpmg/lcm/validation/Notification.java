@@ -26,6 +26,10 @@ public class Notification {
 
   private final List<Error> errors = new ArrayList<>();
 
+  public void addError(String message) {
+    errors.add(new Error(message, null));
+  }
+
   public void addError(String message, Exception e) {
     errors.add(new Error(message, e));
   }
