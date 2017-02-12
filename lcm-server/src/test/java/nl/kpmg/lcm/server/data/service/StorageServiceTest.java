@@ -22,7 +22,7 @@ import nl.kpmg.lcm.server.backend.BackendCsvImpl;
 import nl.kpmg.lcm.server.backend.BackendFactory;
 import nl.kpmg.lcm.server.data.Storage;
 import nl.kpmg.lcm.server.data.dao.StorageDao;
-import nl.kpmg.lcm.server.data.meatadata.MetaDataWrapper;
+import nl.kpmg.lcm.server.data.metadata.MetaDataWrapper;
 import nl.kpmg.lcm.server.exception.LcmException;
 import nl.kpmg.lcm.server.test.mock.MetaDataMocker;
 
@@ -62,7 +62,7 @@ public class StorageServiceTest {
     private String csvStorageName = "csv-storage";
     private String csvStorageURI = csvSchame + "://" + csvStorageName + "/test.csv";
     
-    private MetaDataWrapper validMetaDataWrapper = MetaDataMocker.getCsvMetaData();
+    private MetaDataWrapper validMetaDataWrapper = MetaDataMocker.getCsvMetaDataWrapper();
 
     @Before
     public void setUp() {

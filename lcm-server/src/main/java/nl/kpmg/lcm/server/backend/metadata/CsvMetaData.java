@@ -12,57 +12,51 @@
  * the License.
  */
 
-package nl.kpmg.lcm.server.backend.metatadata;
+package nl.kpmg.lcm.server.backend.metadata;
 
-import nl.kpmg.lcm.server.data.meatadata.MetaData;
+import nl.kpmg.lcm.server.data.metadata.MetaData;
+import nl.kpmg.lcm.server.data.metadata.Wrapper;
 
 import org.apache.metamodel.csv.CsvConfiguration;
 import org.apache.metamodel.util.FileHelper;
-
-import java.util.Map;
 
 /**
  *
  * @author Stoyan Hristov<shristov@intracol.com>
  */
+@Wrapper
 public class CsvMetaData extends TabularMetaData {
 
   public CsvMetaData(MetaData metaData) {
     super(metaData);
   }
 
+  public CsvMetaData() {
+    super();
+  }
 
   public CsvConfiguration getConfiguration() {
-    // TODO these options must be dynamically loaded from metada opject
-    // However, until the metadata is not refactored they will be in this way.
     int columnNameLine = CsvConfiguration.DEFAULT_COLUMN_NAME_LINE;
     String encoding = FileHelper.DEFAULT_ENCODING;
     char separatorChar = CsvConfiguration.DEFAULT_SEPARATOR_CHAR;
     char quoteChar = CsvConfiguration.DEFAULT_QUOTE_CHAR;
     char escapeChar = CsvConfiguration.DEFAULT_ESCAPE_CHAR;
 
-    // !TODO
-    // When you refactoring MetaData and objects around it
-    // keep in mind that validation must be done to all imput data
-    // for example this is valid scenario
-    // "column-name-line": "kdlfjhsadjkfh"
-    Map dataOptions = getData().getOptions();
-    if (dataOptions != null) {
-      if (dataOptions.containsKey("column-name-line")) {
-        columnNameLine = (int) dataOptions.get("column-name-line");
-      }
-      if (dataOptions.containsKey("encoding")) {
-        encoding = (String) dataOptions.get("encoding");
-      }
-      if (dataOptions.containsKey("separator-char")) {
-        separatorChar = (char) dataOptions.get("separator-char");
-      }
-      if (dataOptions.containsKey("quote-char")) {
-        quoteChar = (char) dataOptions.get("quote-char");
-      }
-      if (dataOptions.containsKey("escape-char")) {
-        escapeChar = (char) dataOptions.get("escape-char");
-      }
+    CsvConfigurationDescriptor csvDescriptor = new CsvConfigurationDescriptor(getMetaData());
+    if (csvDescriptor.getColumnNameLine() != null) {
+      columnNameLine = csvDescriptor.getColumnNameLine();
+    }
+    if (csvDescriptor.getEncoding() != null) {
+      encoding = csvDescriptor.getEncoding();
+    }
+    if (csvDescriptor.getSeparatorChar() != null) {
+      separatorChar = csvDescriptor.getSeparatorChar();
+    }
+    if (csvDescriptor.getQuoteChar() != null) {
+      quoteChar = csvDescriptor.getQuoteChar();
+    }
+    if (csvDescriptor.getEscapeChar() != null) {
+      escapeChar = csvDescriptor.getEscapeChar();
     }
 
     CsvConfiguration csvConfiguration =

@@ -27,7 +27,7 @@ import nl.kpmg.lcm.client.ClientException;
 import nl.kpmg.lcm.rest.types.MetaDataRepresentation;
 import nl.kpmg.lcm.rest.types.MetaDatasRepresentation;
 import nl.kpmg.lcm.server.ServerException;
-import nl.kpmg.lcm.server.data.meatadata.MetaDataWrapper;
+import nl.kpmg.lcm.server.data.metadata.MetaDataWrapper;
 import nl.kpmg.lcm.ui.rest.AuthenticationException;
 import nl.kpmg.lcm.ui.rest.RestClientService;
 import nl.kpmg.lcm.ui.view.metadata.MetadataCreateWindow;

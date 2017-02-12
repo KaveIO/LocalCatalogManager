@@ -16,8 +16,8 @@ package nl.kpmg.lcm.server.task;
 
 import nl.kpmg.lcm.server.data.TaskDescription;
 import nl.kpmg.lcm.server.data.dao.TaskDescriptionDao;
-import nl.kpmg.lcm.server.data.meatadata.MetaData;
-import nl.kpmg.lcm.server.data.meatadata.MetaDataWrapper;
+import nl.kpmg.lcm.server.data.metadata.MetaData;
+import nl.kpmg.lcm.server.data.metadata.MetaDataWrapper;
 import nl.kpmg.lcm.server.data.service.MetaDataService;
 
 import org.quartz.Job;

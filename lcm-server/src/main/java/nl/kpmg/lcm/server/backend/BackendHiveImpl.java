@@ -14,13 +14,13 @@
 
 package nl.kpmg.lcm.server.backend;
 
-import nl.kpmg.lcm.server.backend.metatadata.TabularMetaData;
+import nl.kpmg.lcm.server.backend.metadata.TabularMetaData;
 import nl.kpmg.lcm.server.backend.storage.HiveStorage;
 import nl.kpmg.lcm.server.data.ContentIterator;
 import nl.kpmg.lcm.server.data.Data;
 import nl.kpmg.lcm.server.data.Storage;
-import nl.kpmg.lcm.server.data.meatadata.MetaData;
-import nl.kpmg.lcm.server.data.meatadata.MetaDataWrapper;
+import nl.kpmg.lcm.server.data.metadata.MetaData;
+import nl.kpmg.lcm.server.data.metadata.MetaDataWrapper;
 import nl.kpmg.lcm.server.exception.LcmException;
 import nl.kpmg.lcm.validation.Notification;
 
@@ -133,12 +133,12 @@ public class BackendHiveImpl extends AbstractBackend {
 
     if (table == null) {
       TableCreator crator = new TableCreator(dataContext, transformationSettings);
-      crator.createTable(database, tableName, hiveMetaData.getColumns());
+      crator.createTable(database, tableName, hiveMetaData.getTableDescription().getColumns());
     }
 
     try {
       JdbcMultipleRowsWriter hiveWriter = new JdbcMultipleRowsWriter(connection, tableName,
-          hiveStorage.getDatabase(), hiveMetaData.getColumns());
+          hiveStorage.getDatabase(), hiveMetaData.getTableDescription().getColumns());
 
       hiveWriter.write(content, transformationSettings.getMaximumInsertedRecordsPerQuery());
 
@@ -176,7 +176,7 @@ public class BackendHiveImpl extends AbstractBackend {
           "Error: specified table \"" + tableName + "\" in the metadata is not found!");
     }
 
-    hiveMetaData.addColumnsDescription(table.getColumns());
+    hiveMetaData.getTableDescription().setColumns(table.getColumns());
 
     DataSet dataSet = dataContext.query().from(table).selectAll().execute();
     LOGGER.info( "Read from table: {0} sucessfully", tableName);

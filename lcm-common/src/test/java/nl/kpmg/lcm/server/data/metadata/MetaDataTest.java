@@ -11,13 +11,11 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-package nl.kpmg.lcm.server.data;
+package nl.kpmg.lcm.server.data.metadata;
 
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
-
-import nl.kpmg.lcm.server.data.meatadata.MetaData;
 
 import org.junit.Test;
 

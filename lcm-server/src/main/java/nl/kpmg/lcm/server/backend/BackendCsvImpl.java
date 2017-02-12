@@ -14,13 +14,13 @@
 
 package nl.kpmg.lcm.server.backend;
 
-import nl.kpmg.lcm.server.backend.metatadata.CsvMetaData;
+import nl.kpmg.lcm.server.backend.metadata.CsvMetaData;
 import nl.kpmg.lcm.server.backend.storage.CsvStorage;
 import nl.kpmg.lcm.server.data.ContentIterator;
 import nl.kpmg.lcm.server.data.Data;
 import nl.kpmg.lcm.server.data.Storage;
-import nl.kpmg.lcm.server.data.meatadata.MetaData;
-import nl.kpmg.lcm.server.data.meatadata.MetaDataWrapper;
+import nl.kpmg.lcm.server.data.metadata.MetaData;
+import nl.kpmg.lcm.server.data.metadata.MetaDataWrapper;
 import nl.kpmg.lcm.server.exception.LcmException;
 import nl.kpmg.lcm.server.exception.LcmValidationException;
 import nl.kpmg.lcm.validation.Notification;
@@ -198,7 +198,7 @@ public class BackendCsvImpl extends AbstractBackend {
     }
     Table table = schema.getTables()[0];
     DataSet result = dataContext.query().from(table).selectAll().execute();
-    csvMetaData.addColumnsDescription(table.getColumns());
+    csvMetaData.getTableDescription().setColumns(table.getColumns());
     return new Data(csvMetaData.getMetaData(), new DataSetContentIterator(result));
   }
 

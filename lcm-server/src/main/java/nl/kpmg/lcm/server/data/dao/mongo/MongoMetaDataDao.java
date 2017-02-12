@@ -14,7 +14,7 @@
 
 package nl.kpmg.lcm.server.data.dao.mongo;
 
-import nl.kpmg.lcm.server.data.meatadata.MetaData;
+import nl.kpmg.lcm.server.data.metadata.MetaData;
 import nl.kpmg.lcm.server.data.dao.MetaDataDao;
 
 import org.springframework.data.mongodb.repository.MongoRepository;

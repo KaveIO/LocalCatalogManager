@@ -17,7 +17,7 @@ package nl.kpmg.lcm.server.backend;
 import static org.junit.Assert.assertEquals;
 
 import nl.kpmg.lcm.server.data.Storage;
-import nl.kpmg.lcm.server.data.meatadata.MetaDataWrapper;
+import nl.kpmg.lcm.server.data.metadata.MetaDataWrapper;
 import nl.kpmg.lcm.server.test.mock.MetaDataMocker;
 
 import org.junit.Test;
@@ -62,7 +62,7 @@ public class BackendHiveImplTest {
    */
   @Test
   public final void testGetSupportedUriSchema() {
-    MetaDataWrapper metaDataWrapper = MetaDataMocker.getHiveMetaData();
+    MetaDataWrapper metaDataWrapper = MetaDataMocker.getHiveMetaDataWrapper();
 
     String uri = "hive://remote-hive-foodmart/product";
     metaDataWrapper.getData().setUri(uri);
@@ -80,7 +80,7 @@ public class BackendHiveImplTest {
   @Test
   public final void testParseUri() {
 
-    MetaDataWrapper metaDataWrapper = MetaDataMocker.getHiveMetaData();
+    MetaDataWrapper metaDataWrapper = MetaDataMocker.getHiveMetaDataWrapper();
 
     String uri = "hive://remote-hive-foodmart/product";
     metaDataWrapper.getData().setUri(uri);

@@ -16,7 +16,7 @@ package nl.kpmg.lcm.server.task.enrichment;
 
 import nl.kpmg.lcm.server.backend.Backend;
 import nl.kpmg.lcm.server.backend.DataSetInformation;
-import nl.kpmg.lcm.server.data.meatadata.MetaDataWrapper;
+import nl.kpmg.lcm.server.data.metadata.MetaDataWrapper;
 import nl.kpmg.lcm.server.data.service.StorageService;
 import nl.kpmg.lcm.server.exception.LcmException;
 import nl.kpmg.lcm.server.exception.LcmValidationException;

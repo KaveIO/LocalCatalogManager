@@ -28,8 +28,8 @@ import nl.kpmg.lcm.server.data.Data;
 import nl.kpmg.lcm.server.data.RemoteLcm;
 import nl.kpmg.lcm.server.data.Storage;
 import nl.kpmg.lcm.server.data.TaskDescription;
-import nl.kpmg.lcm.server.data.meatadata.MetaData;
-import nl.kpmg.lcm.server.data.meatadata.MetaDataWrapper;
+import nl.kpmg.lcm.server.data.metadata.MetaData;
+import nl.kpmg.lcm.server.data.metadata.MetaDataWrapper;
 import nl.kpmg.lcm.server.data.service.StorageService;
 import nl.kpmg.lcm.server.data.service.TaskDescriptionService;
 import nl.kpmg.lcm.server.rest.authentication.BasicAuthenticationManager;
@@ -162,7 +162,7 @@ public class DataFetchTriggerContollerTest extends LcmBaseServerTest {
   private MetaDataWrapper createStorageAndPostMetadata(Storage csvStorage)
       throws IOException, ServerException {
 
-    MetaDataWrapper metadataWrapper = MetaDataMocker.getCsvMetaData();
+    MetaDataWrapper metadataWrapper = MetaDataMocker.getCsvMetaDataWrapper();
     metadataWrapper.getData().setUri(CSV_STORAGE_URI);
 
     storageService.getStorageDao().save(csvStorage);

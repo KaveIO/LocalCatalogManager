@@ -24,8 +24,8 @@ import nl.kpmg.lcm.server.data.RemoteLcm;
 import nl.kpmg.lcm.server.data.Storage;
 import nl.kpmg.lcm.server.data.TaskDescription;
 import nl.kpmg.lcm.server.data.dao.RemoteLcmDao;
-import nl.kpmg.lcm.server.data.meatadata.MetaData;
-import nl.kpmg.lcm.server.data.meatadata.MetaDataWrapper;
+import nl.kpmg.lcm.server.data.metadata.MetaData;
+import nl.kpmg.lcm.server.data.metadata.MetaDataWrapper;
 import nl.kpmg.lcm.server.rest.client.version0.HttpResponseHandler;
 import nl.kpmg.lcm.server.task.enrichment.DataFetchTask;
 

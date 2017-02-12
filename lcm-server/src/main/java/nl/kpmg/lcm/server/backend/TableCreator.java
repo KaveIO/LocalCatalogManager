@@ -14,6 +14,7 @@
 
 package nl.kpmg.lcm.server.backend;
 
+import nl.kpmg.lcm.server.backend.metadata.ColumnDescription;
 import nl.kpmg.lcm.server.exception.LcmException;
 
 import org.apache.metamodel.create.CreateTable;

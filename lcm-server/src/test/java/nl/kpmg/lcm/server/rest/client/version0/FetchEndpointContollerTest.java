@@ -31,8 +31,8 @@ import nl.kpmg.lcm.server.data.Data;
 import nl.kpmg.lcm.server.data.FetchEndpoint;
 import nl.kpmg.lcm.server.data.JsonReaderContentIterator;
 import nl.kpmg.lcm.server.data.Storage;
-import nl.kpmg.lcm.server.data.meatadata.MetaData;
-import nl.kpmg.lcm.server.data.meatadata.MetaDataWrapper;
+import nl.kpmg.lcm.server.data.metadata.MetaData;
+import nl.kpmg.lcm.server.data.metadata.MetaDataWrapper;
 import nl.kpmg.lcm.server.data.service.FetchEndpointService;
 import nl.kpmg.lcm.server.data.service.StorageService;
 import nl.kpmg.lcm.server.rest.authentication.BasicAuthenticationManager;
@@ -197,7 +197,7 @@ public class FetchEndpointContollerTest extends LcmBaseServerTest {
     options.put("storagePath", CSV_STORAGE_PATH);
     csvStorage.setOptions(options);
 
-    MetaDataWrapper metadata = MetaDataMocker.getCsvMetaData();
+    MetaDataWrapper metadata = MetaDataMocker.getCsvMetaDataWrapper();
     metadata.getData().setUri(CSV_STORAGE_URI);
 
     storageService.getStorageDao().save(csvStorage);

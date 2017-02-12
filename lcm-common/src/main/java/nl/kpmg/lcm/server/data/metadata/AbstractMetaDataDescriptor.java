@@ -11,7 +11,7 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-package nl.kpmg.lcm.server.data.meatadata;
+package nl.kpmg.lcm.server.data.metadata;
 
 import nl.kpmg.lcm.validation.Notification;
 
@@ -25,7 +25,7 @@ import java.util.Map;
 public abstract class AbstractMetaDataDescriptor {
   private final MetaData metaData;
 
-  AbstractMetaDataDescriptor(MetaData metaData) {
+  public AbstractMetaDataDescriptor(MetaData metaData) {
     this.metaData = metaData;
   }
 
@@ -56,7 +56,13 @@ public abstract class AbstractMetaDataDescriptor {
   protected final void validateField(String fieldName, Notification notification) {
     if (getMap().get(fieldName) == null) {
       notification.addError("Error: Section \"" + fieldName + "\" is not found");
-      return;
+    }
+  }
+
+  protected final void validateMap(Notification notification) {
+    if (getMap() == null) {
+      notification.addError("Error: Section \"" + getSectionName()
+          + "\" is not found in the metadata!");
     }
   }
 

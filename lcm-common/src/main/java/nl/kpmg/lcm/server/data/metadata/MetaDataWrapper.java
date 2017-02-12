@@ -11,7 +11,7 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-package nl.kpmg.lcm.server.data.meatadata;
+package nl.kpmg.lcm.server.data.metadata;
 
 import nl.kpmg.lcm.server.exception.LcmValidationException;
 import nl.kpmg.lcm.validation.Notification;
@@ -20,6 +20,7 @@ import nl.kpmg.lcm.validation.Notification;
  *
  * @author shristov
  */
+@Wrapper
 public class MetaDataWrapper implements MetaDataIdentificator {
 
   protected final MetaData metaData;
@@ -36,7 +37,6 @@ public class MetaDataWrapper implements MetaDataIdentificator {
     Notification notification = new Notification();
     this.dataDescriptor.validate(notification);
     this.generalInfoDescriptor.validate(notification);
-
     if (notification.hasErrors()) {
       throw new LcmValidationException(notification);
     }

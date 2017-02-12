@@ -25,7 +25,7 @@ import nl.kpmg.lcm.server.backend.DataTransformationSettings;
 import nl.kpmg.lcm.server.data.ContentIterator;
 import nl.kpmg.lcm.server.data.JsonReaderContentIterator;
 import nl.kpmg.lcm.server.data.RemoteLcm;
-import nl.kpmg.lcm.server.data.meatadata.MetaDataWrapper;
+import nl.kpmg.lcm.server.data.metadata.MetaDataWrapper;
 import nl.kpmg.lcm.server.data.service.RemoteLcmService;
 import nl.kpmg.lcm.server.data.service.StorageService;
 import nl.kpmg.lcm.server.task.EnrichmentTask;

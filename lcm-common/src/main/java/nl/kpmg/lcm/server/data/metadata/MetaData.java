@@ -12,7 +12,7 @@
  * the License.
  */
 
-package nl.kpmg.lcm.server.data.meatadata;
+package nl.kpmg.lcm.server.data.metadata;
 
 import com.fasterxml.jackson.annotation.JsonAnyGetter;
 import com.fasterxml.jackson.annotation.JsonAnySetter;
@@ -54,7 +54,7 @@ public class MetaData extends AbstractModel implements MetaDataIdentificator {
   private String name;
 
   /**
-   * The type of described  data, i.e csv, hive, etc.
+   * The type of described data, i.e csv, hive, etc.
    */
   private String sourceType;
 
@@ -171,57 +171,13 @@ public class MetaData extends AbstractModel implements MetaDataIdentificator {
     this.name = name;
   }
 
-//
-//  @JsonIgnore
-//  public void setDuplicates(List<MetaData> duplicates) {
-//    this.set("duplicates", duplicates);
-//  }
-//
-//
-//
-//  public void addDuplicate(MetaData duplicate) {
-//    List<MetaData> lmdata = new LinkedList();
-//    if (getDuplicates() != null) {
-//      lmdata = this.getDuplicates();
-//      lmdata.add(duplicate);
-//      this.setDuplicates(lmdata);
-//    } else {
-//      lmdata.add(duplicate);
-//      this.setDuplicates(lmdata);
-//
-//    }
-//  }
-//
-//  @JsonIgnore
-//  public List<MetaData> getDuplicates() {
-//    List<MetaData> lmdata = new LinkedList();
-//    if (innerMap.containsKey("duplicates") && innerMap.get("duplicates") != null) {
-//      List nestedMetaData = this.get("duplicates");
-//
-//      for (Object duplicate : nestedMetaData) {
-//
-//        if (MetaData.class.isAssignableFrom(duplicate.getClass())) {
-//          lmdata.add((MetaData) duplicate);
-//        } else if (Map.class.isAssignableFrom(duplicate.getClass())) {
-//          lmdata.add(new MetaData((Map) duplicate));
-//        } else {
-//          LOGGER.warn( "Error while constructing duplicates list for MetaData: {0}",
-//              this.getName());
-//        }
-//      }
-//      return lmdata;
-//    } else {
-//      return null;
-//    }
-//  }
+  @Override
+  public String getSourceType() {
+    return sourceType;
+  }
 
-    @Override
-    public String getSourceType() {
-        return sourceType;
-    }
-
-    @Override
-    public void setSourceType(String sourceType) {
-        this.sourceType =  sourceType;
-    }
+  @Override
+  public void setSourceType(String sourceType) {
+    this.sourceType = sourceType;
+  }
 }

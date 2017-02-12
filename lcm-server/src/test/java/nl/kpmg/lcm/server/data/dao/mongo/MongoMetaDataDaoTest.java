@@ -19,8 +19,8 @@ import static org.junit.Assert.assertFalse;
 
 import nl.kpmg.lcm.server.LcmBaseTest;
 import nl.kpmg.lcm.server.data.dao.MetaDataDao;
-import nl.kpmg.lcm.server.data.meatadata.MetaData;
-import nl.kpmg.lcm.server.data.meatadata.MetaDataWrapper;
+import nl.kpmg.lcm.server.data.metadata.MetaData;
+import nl.kpmg.lcm.server.data.metadata.MetaDataWrapper;
 import nl.kpmg.lcm.server.test.mock.MetaDataMocker;
 
 import org.junit.Test;
@@ -36,7 +36,7 @@ public class MongoMetaDataDaoTest extends LcmBaseTest {
     String expectedName = "test";
     String expectedUri = "file://test/test";
 
-    MetaDataWrapper metaDataWrapper = MetaDataMocker.getCsvMetaData();
+    MetaDataWrapper metaDataWrapper = MetaDataMocker.getCsvMetaDataWrapper();
     metaDataWrapper.setSourceType("file");
     metaDataWrapper.setName(expectedName);
     metaDataWrapper.getData().setUri(expectedUri);

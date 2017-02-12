@@ -11,7 +11,7 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-package nl.kpmg.lcm.server.data.meatadata;
+package nl.kpmg.lcm.server.data.metadata;
 
 import nl.kpmg.lcm.validation.Notification;
 
@@ -23,7 +23,7 @@ public class GeneralInfoDescriptor extends AbstractMetaDataDescriptor {
   private String owner;
   private String description;
 
-  GeneralInfoDescriptor(MetaData metaData) {
+  public GeneralInfoDescriptor(MetaData metaData) {
     super(metaData);
   }
 

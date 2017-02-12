@@ -11,7 +11,7 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-package nl.kpmg.lcm.server.data.meatadata;
+package nl.kpmg.lcm.server.data.metadata;
 
 import nl.kpmg.lcm.validation.Notification;
 
@@ -19,9 +19,9 @@ import nl.kpmg.lcm.validation.Notification;
  *
  * @author shristov
  */
-public class DynamicDataDescriptor extends AbstractMetaDataDescriptor{
+public class DynamicDataDescriptor extends AbstractMetaDataDescriptor {
 
-  DynamicDataDescriptor(MetaData metaData) {
+  public DynamicDataDescriptor(MetaData metaData) {
     super(metaData);
   }
 
@@ -32,17 +32,17 @@ public class DynamicDataDescriptor extends AbstractMetaDataDescriptor{
 
   public final void setUpdateTimestamp(final String timestamp) {
 
-      set("update-timestamp", timestamp);
+    set("update-timestamp", timestamp);
   }
 
-  public final String getSize() {
+  public final Long getSize() {
 
     return get("size");
   }
 
   public final void setSize(final Long size) {
 
-      set("size", size);
+    set("size", size);
   }
 
   public final String getState() {
@@ -52,7 +52,7 @@ public class DynamicDataDescriptor extends AbstractMetaDataDescriptor{
 
   public final void setState(final String state) {
 
-      set("state", state);
+    set("state", state);
   }
 
   public final String getReadable() {
@@ -65,20 +65,21 @@ public class DynamicDataDescriptor extends AbstractMetaDataDescriptor{
     set("readable", readable);
   }
 
-    @Override
-    public String getSectionName() {
-        return "dynamic.data";
-    }
+  @Override
+  public String getSectionName() {
+    return "dynamic.data";
+  }
 
-    @Override
-    public void validate(Notification notification) {
-        if(getMap() == null) {
-            notification.addError("Error: Section \"" + getSectionName() + "\" is not found in the metadata!");
-            return;
-        }
-        validateField("readable", notification);
-        validateField("state", notification);
-        validateField("size", notification);
-        validateField("update-timestamp", notification);
+  @Override
+  public void validate(Notification notification) {
+    if (getMap() == null) {
+      notification.addError("Error: Section \"" + getSectionName()
+          + "\" is not found in the metadata!");
+      return;
     }
+    validateField("readable", notification);
+    validateField("state", notification);
+    validateField("size", notification);
+    validateField("update-timestamp", notification);
+  }
 }
