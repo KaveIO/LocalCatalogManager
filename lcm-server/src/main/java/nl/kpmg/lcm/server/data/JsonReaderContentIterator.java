@@ -42,7 +42,7 @@ public class JsonReaderContentIterator implements ContentIterator {
     try {
       return reader.hasNext();
     } catch (IOException ex) {
-      logger.warn( "reader.hasNext() threw and exception. {0}", ex.getMessage());
+      logger.warn(String.format("reader.hasNext() threw and exception. %s", ex.getMessage()));
       return false;
     }
   }
@@ -57,8 +57,8 @@ public class JsonReaderContentIterator implements ContentIterator {
       }
       return next;
     } catch (IOException ex) {
-      logger.warn(
-          "reader.hasNext() threw and exception while reading next element. {0}", ex.getMessage());
+      logger.warn(String.format(
+          "reader.hasNext() threw and exception while reading next element. %s", ex.getMessage()));
       return null;
     }
   }

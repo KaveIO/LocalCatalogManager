@@ -16,6 +16,9 @@ package nl.kpmg.lcm.server.data.metadata;
 import nl.kpmg.lcm.server.exception.LcmValidationException;
 import nl.kpmg.lcm.validation.Notification;
 
+import java.net.URI;
+import java.net.URISyntaxException;
+
 /**
  *
  * @author shristov
@@ -63,14 +66,19 @@ public class MetaDataWrapper implements MetaDataIdentificator {
     metaData.setId(id);
   }
 
-  @Override
   public String getSourceType() {
-    return metaData.getSourceType();
-  }
+    String sourceType = null;
+    URI parsedUri;
+      try {
+          if(getData() !=  null && getData().getUri() != null) {
+            parsedUri = new URI(getData().getUri());
+            sourceType = parsedUri.getScheme();
+          }
+      } catch (URISyntaxException ex) {
+          sourceType = null;
+      }
 
-  @Override
-  public void setSourceType(String sourceType) {
-    metaData.setSourceType(sourceType);
+    return sourceType;
   }
 
   @Override

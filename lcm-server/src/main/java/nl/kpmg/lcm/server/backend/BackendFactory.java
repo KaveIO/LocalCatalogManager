@@ -95,22 +95,22 @@ public class BackendFactory {
         nl.kpmg.lcm.server.backend.BackendSource.class));
     backendClassMap = new ConcurrentHashMap();
     for (BeanDefinition bd : scanner.findCandidateComponents(backendSourcePackage)) {
-      LOGGER.trace("Found class: {0}", bd.getBeanClassName());
+      LOGGER.trace(String.format("Found class: %s", bd.getBeanClassName()));
       Class backendClass = getClassForName(bd.getBeanClassName());
       if (backendClass == null) {
-        LOGGER.warn("Found class with scanner: {0} but was not able to laod it",
-            new Object[] {bd.getBeanClassName()});
+        LOGGER.warn(String.format("Found class with scanner: %s but was not able to laod it",
+            bd.getBeanClassName()));
         continue;
       }
 
       String sourceType = getSupportedSourceType(backendClass);
 
       if (sourceType != null) {
-        LOGGER.trace("Put to backendClassMap entity with  key: {0} and object of type: {1}",
-            new Object[] {sourceType, bd.getBeanClassName()});
+        LOGGER.trace(String.format("Put to backendClassMap entity with  key: %s and object of type: %s",
+            sourceType, bd.getBeanClassName()));
         if (backendClassMap.get(sourceType) != null) {
-          LOGGER.error("There are more then one Class that implements \"{0}\" source Type!",
-              new Object[] {sourceType});
+          LOGGER.error(String.format("There are more then one Class that implements \"%s\" source Type!",
+              sourceType));
         }
         backendClassMap.put(sourceType, backendClass);
       }

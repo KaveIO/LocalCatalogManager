@@ -47,8 +47,8 @@ public class ResponseFilter implements ContainerResponseFilter {
   @Override
   public final void filter(final ContainerRequestContext requestContext,
       final ContainerResponseContext responseContext) {
-    LOGGER.trace( "LCMRESTResponseFilter called with Entity {0}",
-        responseContext.getEntity());
+    LOGGER.trace(String.format("LCMRESTResponseFilter called with Entity %s",
+        responseContext.getEntity()));
 
     MultivaluedMap<String, Object> headers = responseContext.getHeaders();
     headers.add("Acces-Control-Allow-Headers",

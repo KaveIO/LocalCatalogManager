@@ -35,7 +35,6 @@ public class MetaDataMocker {
     CsvMetaData csvMetaData = new CsvMetaData();
     csvMetaData.setName("CSV-metadata");
     csvMetaData.setId("585a57136d31212d0ad5fca6");
-    csvMetaData.setSourceType("csv");
     csvMetaData.getData().setUri("csv://test/temp.csv");
     csvMetaData.getGeneralInfo().setOwner("KPMG");
     csvMetaData.getGeneralInfo().setDescription("Sample description");
@@ -50,7 +49,6 @@ public class MetaDataMocker {
   public static MetaData getMetaData() {
     MetaData metaData = new MetaData();
     metaData.setName("metadata");
-    metaData.setSourceType("csv");
     metaData.setId("585a57136d31212d0ad5fca6");
     DataDescriptor data = new DataDescriptor(metaData);
     data.setUri("csv://test/temp.csv");
@@ -68,7 +66,6 @@ public class MetaDataMocker {
     TabularMetaData tabularMetaData = new TabularMetaData();
     tabularMetaData.setName("Hive-metadata");
     tabularMetaData.setId("585a57236d31212d0ad5fca6");
-    tabularMetaData.setSourceType("hive");
     tabularMetaData.getData().setUri("hive://remote-hive-foodmart/product");
     tabularMetaData.getGeneralInfo().setOwner("KPMG");
     tabularMetaData.getGeneralInfo().setDescription("Sample description");

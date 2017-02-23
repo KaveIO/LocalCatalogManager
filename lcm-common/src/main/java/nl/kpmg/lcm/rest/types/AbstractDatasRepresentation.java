@@ -65,12 +65,12 @@ public abstract class AbstractDatasRepresentation<T extends AbstractDataRepresen
           this.items.add(newDataRepresentation);
         }
       } else {
-        logger.warn( "Couldn't instantiate represented item. Of type: {0}",
-            type.getTypeName());
+        logger.warn(String.format("Couldn't instantiate represented item. Of type: %s",
+            type.getTypeName()));
       }
     } catch (InstantiationException | IllegalAccessException ex) {
-      logger.warn( "Couldn't instantiate represented item. Of type: {0}",
-          type.getTypeName());
+      logger.warn(String.format("Couldn't instantiate represented item. Of type: %s",
+          type.getTypeName()));
     }
   }
 

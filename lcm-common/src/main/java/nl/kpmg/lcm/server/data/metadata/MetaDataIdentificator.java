@@ -18,10 +18,6 @@ package nl.kpmg.lcm.server.data.metadata;
  * @author shristov
  */
 public interface MetaDataIdentificator {
-  public String getSourceType();
-
-  public void setSourceType(String sourceType);
-
   public String getName();
 
   public void setName(String name);

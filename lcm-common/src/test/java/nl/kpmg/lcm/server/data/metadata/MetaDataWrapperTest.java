@@ -33,9 +33,8 @@ public class MetaDataWrapperTest {
     MetaDataWrapper metaDataWrapper = new MetaDataWrapper();
 
     metaDataWrapper.setName("test");
-    metaDataWrapper.setSourceType("csv");
 
-    String expected = "{\"id\":null,\"name\":\"test\",\"sourceType\":\"csv\"}";
+    String expected = "{\"id\":null,\"name\":\"test\"}";
     String actual = objectMapper.writeValueAsString(metaDataWrapper.getMetaData());
     assertEquals(expected, actual);
   }
@@ -46,7 +45,6 @@ public class MetaDataWrapperTest {
 
     metaData.setId("4738596435");
     metaData.setName("Test");
-    metaData.setSourceType("csv");
     DynamicDataDescriptor dynamicData = new DynamicDataDescriptor(metaData);
     dynamicData.setReadable("READABLE");
     dynamicData.setSize(123L);
@@ -72,7 +70,6 @@ public class MetaDataWrapperTest {
     assertNotNull(wrapper.getData());
     assertEquals(wrapper.getId(), wrapper.getId());
     assertEquals(wrapper.getName(), metaData.getName());
-    assertEquals(wrapper.getSourceType(), metaData.getSourceType());
     assertEquals(wrapper.getData().getMap(), data.getMap());
     assertEquals(wrapper.getDynamicData().getMap(), dynamicData.getMap());
     assertEquals(wrapper.getGeneralInfo().getMap(), generalInfo.getMap());

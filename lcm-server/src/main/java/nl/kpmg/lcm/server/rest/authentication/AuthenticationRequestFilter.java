@@ -68,7 +68,7 @@ public class AuthenticationRequestFilter implements ContainerRequestFilter {
   public final void filter(final ContainerRequestContext requestContext) {
     String path = requestContext.getUriInfo().getPath();
     String ip = request != null ? request.get().getRemoteAddr() : "unknown";
-    LOGGER.info("LCMRESTRequestFilter called with request path {0}", path);
+    LOGGER.info(String.format("LCMRESTRequestFilter called with request path %s", path));
     if (requestContext.getRequest().getMethod().equals("OPTIONS")) {
       requestContext.abortWith(Response.status(Response.Status.OK).build());
       return;

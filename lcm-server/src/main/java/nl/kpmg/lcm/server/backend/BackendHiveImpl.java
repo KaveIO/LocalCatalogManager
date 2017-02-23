@@ -179,7 +179,7 @@ public class BackendHiveImpl extends AbstractBackend {
     hiveMetaData.getTableDescription().setColumns(table.getColumns());
 
     DataSet dataSet = dataContext.query().from(table).selectAll().execute();
-    LOGGER.info( "Read from table: {0} sucessfully", tableName);
+    LOGGER.info(String.format("Read from table: %s sucessfully", tableName));
     ContentIterator iterator = new DataSetContentIterator(dataSet);
 
     return new Data(hiveMetaData.getMetaData(), iterator);

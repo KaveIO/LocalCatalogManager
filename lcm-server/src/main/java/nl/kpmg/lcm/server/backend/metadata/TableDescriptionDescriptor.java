@@ -92,7 +92,7 @@ public class TableDescriptionDescriptor extends AbstractMetaDataDescriptor {
       ColumnMapDescriptor columnDescriptor = new ColumnMapDescriptor(entry.getValue());
 
       if (columnDescriptor.getType() == null) {
-        LOGGER.warn("Type of column {0} is null", entry.getKey());
+        LOGGER.warn(String.format("Type of column %s is null", entry.getKey()));
       }
 
       ColumnType columnType = matchColumnType(columnDescriptor.getType());

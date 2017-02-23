@@ -170,14 +170,4 @@ public class MetaData extends AbstractModel implements MetaDataIdentificator {
   public final void setName(final String name) {
     this.name = name;
   }
-
-  @Override
-  public String getSourceType() {
-    return sourceType;
-  }
-
-  @Override
-  public void setSourceType(String sourceType) {
-    this.sourceType = sourceType;
-  }
 }

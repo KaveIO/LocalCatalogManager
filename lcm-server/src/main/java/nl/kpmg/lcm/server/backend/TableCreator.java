@@ -75,8 +75,8 @@ public class TableCreator {
       // In case that there is no type we adopt varchar
       // this could happen when the original data source doesn't support types i.e. CSV
       if (columnType == null) {
-        logger.warn( "Missing type for column {0}. Varchar will be used further.",
-            entry.getKey());
+        logger.warn(String.format("Missing type for column %s. Varchar will be used further.",
+            entry.getKey()));
         columnType = ColumnType.VARCHAR;
       }
 
@@ -101,6 +101,9 @@ public class TableCreator {
           // In case there is no precision specified convert the column to string
           // reserve for precision transformationSettings.getDecimalPrecision() size.
           // Caution! It is possible to lose presion here!
+          logger.warn(String.format("Column \"%s\" has tpye \"DECIMAL\" but no precision. "
+                  + "The fields will be converted to varchar and default precision will be used.",
+                  entry.getKey()));
           columnType = ColumnType.VARCHAR;
           size = size + transformationSettings.getDecimalPrecision() + 1;
         }

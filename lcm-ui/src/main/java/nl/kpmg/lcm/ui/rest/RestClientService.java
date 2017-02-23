@@ -152,14 +152,14 @@ public class RestClientService {
   public <T extends AbstractRepresentation> T getDatasRepresentation(String path, Class<T> type)
       throws AuthenticationException, ServerException, ClientException {
 
-    LOGGER.info( "Executing get on LCM-Server on path: {0}", path);
+    LOGGER.info(String.format("Executing get on LCM-Server on path: %s", path));
     Response response = getClient(path).get();
     if (response.getStatusInfo().getFamily() == Response.Status.Family.SUCCESSFUL) {
       T datasRepresentation = response.readEntity(type);
       return datasRepresentation;
     } else {
-      LOGGER.warn( "Call to LCM-Server failed with: {0} - {1}",
-          new Object[] {response.getStatus(), response.getStatusInfo().getReasonPhrase()});
+      LOGGER.warn(String.format("Call to LCM-Server failed with: %d - %s",
+          response.getStatus(), response.getStatusInfo().getReasonPhrase()));
       throw new ClientException("Call to LCM-Server failed", response);
     }
   }

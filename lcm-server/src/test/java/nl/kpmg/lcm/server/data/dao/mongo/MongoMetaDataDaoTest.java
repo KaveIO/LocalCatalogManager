@@ -37,7 +37,6 @@ public class MongoMetaDataDaoTest extends LcmBaseTest {
     String expectedUri = "file://test/test";
 
     MetaDataWrapper metaDataWrapper = MetaDataMocker.getCsvMetaDataWrapper();
-    metaDataWrapper.setSourceType("file");
     metaDataWrapper.setName(expectedName);
     metaDataWrapper.getData().setUri(expectedUri);
 

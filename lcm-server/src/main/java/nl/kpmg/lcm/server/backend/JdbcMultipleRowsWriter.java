@@ -81,15 +81,15 @@ class JdbcMultipleRowsWriter {
         pst = createPrepareStatement(query, rows);
         pst.executeUpdate();
         totalCount += rows.size();
-        LOGGER.info( "Written sucessfully {0} rows in table: {1}",
-            new Object[] {rows.size(), tableName});
+        LOGGER.info(String.format("Written sucessfully %d rows in table: %s",
+            rows.size(), tableName));
       } catch (SQLException ex) {
         if (totalCount > 0) {
-          LOGGER.info( "The content is inserted partially, only {0} rows in table: {1}",
-              new Object[] {totalCount, tableName});
+          LOGGER.info(String.format("The content is inserted partially, only %d rows in table: %s",
+              totalCount, tableName));
         }
-        LOGGER.warn( "Unable to execute query starting with : {0}",
-            query.substring(0, 300));
+        LOGGER.warn(String.format("Unable to execute query starting with : %s",
+            query.substring(0, 300)));
         throw ex;
       } finally {
           if(pst !=  null) {
@@ -97,8 +97,8 @@ class JdbcMultipleRowsWriter {
           }
       }
     }
-    LOGGER.info( "All the content inserted sucessfully {0} rows in table: {1}",
-        new Object[] {totalCount, tableName});
+    LOGGER.info(String.format("All the content inserted sucessfully %d rows in table: %s",
+        totalCount, tableName));
   }
 
   private List<Map> getRowsToInsert(ContentIterator content, int maximumInsertedRowsPerQuery) {
