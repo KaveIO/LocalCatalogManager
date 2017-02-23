@@ -18,6 +18,7 @@ import nl.kpmg.lcm.server.backend.metadata.TabularMetaData;
 import nl.kpmg.lcm.server.backend.storage.HiveStorage;
 import nl.kpmg.lcm.server.data.ContentIterator;
 import nl.kpmg.lcm.server.data.Data;
+import nl.kpmg.lcm.server.data.ProgressIndicationFactory;
 import nl.kpmg.lcm.server.data.Storage;
 import nl.kpmg.lcm.server.data.metadata.MetaData;
 import nl.kpmg.lcm.server.data.metadata.MetaDataWrapper;
@@ -65,8 +66,9 @@ public class BackendHiveImpl extends AbstractBackend {
 
     try {
       Class.forName(hiveStorage.getDriver());
-      connection = DriverManager.getConnection(hiveStorage.getUrl(), hiveStorage.getUsername(),
-          hiveStorage.getPassword());
+      connection =
+          DriverManager.getConnection(hiveStorage.getUrl(), hiveStorage.getUsername(),
+              hiveStorage.getPassword());
     } catch (Exception e) {
       throw new LcmException("Failed to create JDBC connection for " + className, e);
     }
@@ -137,8 +139,10 @@ public class BackendHiveImpl extends AbstractBackend {
     }
 
     try {
-      JdbcMultipleRowsWriter hiveWriter = new JdbcMultipleRowsWriter(connection, tableName,
-          hiveStorage.getDatabase(), hiveMetaData.getTableDescription().getColumns());
+      JdbcMultipleRowsWriter hiveWriter =
+          new JdbcMultipleRowsWriter(connection, tableName, hiveStorage.getDatabase(), hiveMetaData
+              .getTableDescription().getColumns());
+      hiveWriter.setProgressIndicationFactory(progressIndicationFactory);
 
       hiveWriter.write(content, transformationSettings.getMaximumInsertedRecordsPerQuery());
 
@@ -158,13 +162,12 @@ public class BackendHiveImpl extends AbstractBackend {
   }
 
   @Override
-  public Data read()  {
+  public Data read() {
     JdbcDataContext dataContext = getDataContext();
 
     Schema schema = dataContext.getSchemaByName(hiveStorage.getDatabase());
     if (schema == null) {
-      throw new LcmException(
-          "Error: database \"" + hiveStorage.getDatabase() + "\" is not found!");
+      throw new LcmException("Error: database \"" + hiveStorage.getDatabase() + "\" is not found!");
     }
     // remove the first symbol as uri Path is something like "/tablex"
     String tableName = getDataUri().getPath().substring(1);
@@ -172,14 +175,14 @@ public class BackendHiveImpl extends AbstractBackend {
     Table table = schema.getTableByName(tableName);
 
     if (table == null) {
-      throw new LcmException(
-          "Error: specified table \"" + tableName + "\" in the metadata is not found!");
+      throw new LcmException("Error: specified table \"" + tableName
+          + "\" in the metadata is not found!");
     }
 
     hiveMetaData.getTableDescription().setColumns(table.getColumns());
 
     DataSet dataSet = dataContext.query().from(table).selectAll().execute();
-    LOGGER.info(String.format("Read from table: %s sucessfully", tableName));
+    LOGGER.info(String.format("Read from table: %s successfully", tableName));
     ContentIterator iterator = new DataSetContentIterator(dataSet);
 
     return new Data(hiveMetaData.getMetaData(), iterator);
@@ -191,9 +194,15 @@ public class BackendHiveImpl extends AbstractBackend {
       try {
         connection.close();
       } catch (SQLException ex) {
-        LOGGER.error( "Unsble to close connection.", ex);
+        LOGGER.error("Unsble to close connection.", ex);
       }
       connection = null;
     }
+  }
+
+  @Override
+  public void setProgressIndicationFactory(ProgressIndicationFactory progressIndicationFactory) {
+    this.progressIndicationFactory = progressIndicationFactory;
+
   }
 }

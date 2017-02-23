@@ -145,11 +145,16 @@ public class BackendCsvImpl extends AbstractBackend {
       throw new LcmException("Data set is already attached, won't overwrite.");
     }
 
+    int rowNumber = 1;
     try (Writer writer = FileHelper.getBufferedWriter(dataSourceFile);) {
 
       CsvConfiguration configuration = csvMetaData.getConfiguration();
       CsvWriter csvWriter = new CsvWriter(configuration);
-      int rowNumber = 1;
+
+      if (progressIndicationFactory != null) {
+        String message = "Start transfer.";
+        progressIndicationFactory.writeIndication(message);
+      }
       while (content.hasNext()) {
 
         Map row = content.next();
@@ -167,11 +172,25 @@ public class BackendCsvImpl extends AbstractBackend {
         String line = csvWriter.buildLine(lineAsStringValues);
         writer.write(line);
         rowNumber++;
+        if(progressIndicationFactory != null
+                && rowNumber % progressIndicationFactory.getIndicationChunkSize() == 0) {
+            String message =  "Written " + (rowNumber -1) +  " records!";
+            progressIndicationFactory.writeIndication(message);
+        }
       }
-
       writer.flush();
+      String message = "Written successfully all the records: " + (rowNumber -1);
+      if(progressIndicationFactory != null) {
+        progressIndicationFactory.writeIndication(message);
+      }
     } catch (IOException ex) {
       LOGGER.error("Error occured during saving information!", ex);
+      if (progressIndicationFactory != null) {
+        String message =
+            String.format("The content is inserted partially, only %d rows in file: %s",
+                (rowNumber -1), dataSourceFile.getName());
+        progressIndicationFactory.writeIndication(message);
+      }
     }
   }
 

@@ -16,13 +16,16 @@ package nl.kpmg.lcm.server.data.service;
 
 import jersey.repackaged.com.google.common.collect.Lists;
 
+import nl.kpmg.lcm.server.data.ProgressIndication;
 import nl.kpmg.lcm.server.data.TaskDescription;
 import nl.kpmg.lcm.server.data.dao.TaskDescriptionDao;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.util.Date;
 import java.util.List;
+import java.util.Map;
 
 /**
  *
@@ -38,7 +41,60 @@ public class TaskDescriptionService {
     return Lists.newLinkedList(taskDescriptionDao.findAll());
   }
 
-  public TaskDescriptionDao getTaskDescriptionDao() {
-    return taskDescriptionDao;
+  public TaskDescription findOne(String taskId) {
+    return taskDescriptionDao.findOne(taskId);
+  }
+
+  public void updateProgress(String taskId, ProgressIndication indication) {
+    TaskDescription description = taskDescriptionDao.findOne(taskId);
+    description.getProgress().add(indication);
+    taskDescriptionDao.save(description);
+  }
+
+  public List<TaskDescription> findByStatus(TaskDescription.TaskStatus status) {
+    return taskDescriptionDao.findByStatus(status);
+  }
+
+  public TaskDescription markTaskAsRunning(String taskId) {
+    TaskDescription description = taskDescriptionDao.findOne(taskId);
+    description.setStatus(TaskDescription.TaskStatus.RUNNING);
+    description.setStartTime(new Date());
+    TaskDescription saved = taskDescriptionDao.save(description);
+
+    return saved;
+  }
+
+  public TaskDescription markTaskAsFinished(String taskId, TaskDescription.TaskStatus status) {
+    TaskDescription description = taskDescriptionDao.findOne(taskId);
+    description.setStatus(status);
+    description.setEndTime(new Date());
+    TaskDescription saved = taskDescriptionDao.save(description);
+
+    return saved;
+  }
+
+  public TaskDescription updateStatus(String taskId, TaskDescription.TaskStatus status) {
+    TaskDescription description = taskDescriptionDao.findOne(taskId);
+    description.setStatus(status);
+    TaskDescription saved = taskDescriptionDao.save(description);
+
+    return saved;
+  }
+
+  public TaskDescription updateOptions(String taskId, Map<String, String> options) {
+    TaskDescription description = taskDescriptionDao.findOne(taskId);
+    description.setOptions(options);
+    TaskDescription saved = taskDescriptionDao.save(description);
+
+    return saved;
+  }
+
+  public TaskDescription createNew(TaskDescription description) {
+    TaskDescription inserted = taskDescriptionDao.save(description);
+    return inserted;
+  }
+
+  public void delete(String taskId) {
+    taskDescriptionDao.delete(taskId);
   }
 }

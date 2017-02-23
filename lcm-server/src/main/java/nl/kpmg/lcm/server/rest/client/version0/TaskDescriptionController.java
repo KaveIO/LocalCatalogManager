@@ -68,23 +68,23 @@ public class TaskDescriptionController {
     List taskDescriptions;
     switch (status) {
       case PENDING:
-        taskDescriptions = taskDescriptionService.getTaskDescriptionDao()
+        taskDescriptions = taskDescriptionService
             .findByStatus(TaskDescription.TaskStatus.PENDING);
         break;
       case RUNNING:
-        taskDescriptions = taskDescriptionService.getTaskDescriptionDao()
+        taskDescriptions = taskDescriptionService
             .findByStatus(TaskDescription.TaskStatus.RUNNING);
         break;
       case SCHEDULED:
-        taskDescriptions = taskDescriptionService.getTaskDescriptionDao()
+        taskDescriptions = taskDescriptionService
             .findByStatus(TaskDescription.TaskStatus.SCHEDULED);
         break;
       case SUCCESS:
-        taskDescriptions = taskDescriptionService.getTaskDescriptionDao()
+        taskDescriptions = taskDescriptionService
             .findByStatus(TaskDescription.TaskStatus.SUCCESS);
         break;
       case FAILED:
-        taskDescriptions = taskDescriptionService.getTaskDescriptionDao()
+        taskDescriptions = taskDescriptionService
             .findByStatus(TaskDescription.TaskStatus.FAILED);
         break;
       case ALL:
@@ -119,7 +119,7 @@ public class TaskDescriptionController {
     taskDescription.setStartTime(null);
     taskDescription.setEndTime(null);
 
-    taskDescriptionService.getTaskDescriptionDao().save(taskDescription);
+    taskDescriptionService.createNew(taskDescription);
 
     return Response.ok().build();
   }
@@ -136,7 +136,7 @@ public class TaskDescriptionController {
   @RolesAllowed({Roles.ADMINISTRATOR, Roles.API_USER})
   public final Response getTask(@PathParam("tasks_id") final String taskDescriptionId) {
     TaskDescription taskDescriptions =
-        taskDescriptionService.getTaskDescriptionDao().findOne(taskDescriptionId);
+        taskDescriptionService.findOne(taskDescriptionId);
 
     if (taskDescriptions != null) {
       return Response.ok(new ConcreteTaskDescriptionRepresentation(taskDescriptions)).build();
@@ -156,10 +156,10 @@ public class TaskDescriptionController {
   @RolesAllowed({Roles.ADMINISTRATOR, Roles.API_USER})
   public final Response deleteCommand(@PathParam("tasks_id") final String taskDescriptionId) {
     TaskDescription taskDescriptions =
-        taskDescriptionService.getTaskDescriptionDao().findOne(taskDescriptionId);
+        taskDescriptionService.findOne(taskDescriptionId);
 
     if (taskDescriptions != null) {
-      taskDescriptionService.getTaskDescriptionDao().delete(taskDescriptions);
+      taskDescriptionService.delete(taskDescriptionId);
       return Response.ok().build();
     } else {
       return Response.status(Status.NOT_FOUND).build();

@@ -11,7 +11,7 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-package nl.kpmg.lcm.ui.view.discovery;
+package nl.kpmg.lcm.ui.view.transfer;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -38,7 +38,7 @@ import nl.kpmg.lcm.server.data.RemoteLcm;
 import nl.kpmg.lcm.server.data.metadata.MetaDataWrapper;
 import nl.kpmg.lcm.ui.rest.AuthenticationException;
 import nl.kpmg.lcm.ui.rest.RestClientService;
-import nl.kpmg.lcm.ui.view.discovery.components.StartTransferWindow;
+import nl.kpmg.lcm.ui.view.transfer.components.StartTransferWindow;
 
 import org.slf4j.LoggerFactory;
 
@@ -49,10 +49,10 @@ import java.util.Map;
  *
  * @author shristov
  */
-public class DiscoveryPanel extends CustomComponent {
+public class SchedulePanel extends CustomComponent {
   private RestClientService restClientService;
 
-  private static final org.slf4j.Logger LOGGER = LoggerFactory.getLogger(DiscoveryPanel.class
+  private static final org.slf4j.Logger LOGGER = LoggerFactory.getLogger(SchedulePanel.class
       .getName());
 
   private Table remoteMetadataTable;
@@ -61,7 +61,7 @@ public class DiscoveryPanel extends CustomComponent {
   private TextField searchField;
   private Map<String, String> remoteLcmUrlMap = new HashMap();
 
-  public DiscoveryPanel(RestClientService restClientService) {
+  public SchedulePanel(RestClientService restClientService) {
     this.restClientService = restClientService;
 
     HorizontalLayout searchlayout = initSearchLayout(restClientService);
@@ -119,15 +119,16 @@ public class DiscoveryPanel extends CustomComponent {
             String.format(template, remoteLcm.getProtocol(), remoteLcm.getDomain(), remoteLcm
                 .getPort().toString());
 
-        remoteLcmUrlMap.put(remoteLcm.getId(), url);
+        remoteLcmUrlMap.put(remoteLcm.getId(), remoteLcm.getName() + " : " + url);
         remoteLcmListComboBox.addItem(remoteLcm.getId());
-        remoteLcmListComboBox.setItemCaption(remoteLcm.getId(), url);
+        remoteLcmListComboBox.setItemCaption(remoteLcm.getId(), remoteLcm.getName() + " : " + url);
+        remoteLcmListComboBox.setTextInputAllowed(false);
       }
     } catch (AuthenticationException | ServerException | ClientException ex) {
       LOGGER.error("Unable to load remote LCMs! Message:" + ex.getMessage());
     }
     remoteLcmListComboBox.addStyleName("margin-right-20");
-    remoteLcmListComboBox.addStyleName("width-search-field");
+    remoteLcmListComboBox.addStyleName("width-wide-search-field");
     remoteLcmListComboBox.setRequired(true);
     remoteLcmListComboBox.setInputPrompt("Please select one");
 

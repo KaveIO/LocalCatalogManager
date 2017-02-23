@@ -99,7 +99,7 @@ public class DataFetchTriggerContollerTest extends LcmBaseServerTest {
     List<TaskDescription> tdList = taskDescriptionService.findAll();
     for (TaskDescription td : tdList) {
       if (td != null) {
-        taskDescriptionService.getTaskDescriptionDao().delete(td);
+        taskDescriptionService.delete(td.getId());
       }
     }
   }

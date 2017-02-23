@@ -117,7 +117,8 @@ public class DataFetchTriggerService {
     options.put("path", FETCH_DATA_PATH + "/" + fetchURL.getId());
 
     dataFetchTaskDescription.setOptions(options);
-    taskDescriptionService.getTaskDescriptionDao().save(dataFetchTaskDescription);
+
+    taskDescriptionService.createNew(dataFetchTaskDescription);
   }
 
   private void updateMetaData(MetaDataWrapper metaDataWrapper, Storage localStorage)

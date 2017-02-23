@@ -152,6 +152,10 @@ public class StorageCreateWindow extends Window implements Button.ClickListener 
       notification.addError(field.getCaption() + " can not be empty");
     }
 
+    if (field.getValue().indexOf(' ') !=  -1) {
+      notification.addError(field.getCaption() + " can not contain spaces!");
+    }
+
     if (field.getValue().length() > MAX_LENGTH) {
       notification.addError(field.getCaption() + " is too long! Max length : " + MAX_LENGTH);
     }

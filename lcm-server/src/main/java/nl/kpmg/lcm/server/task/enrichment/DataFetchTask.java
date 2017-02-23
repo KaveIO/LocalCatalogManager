@@ -20,14 +20,16 @@ import nl.kpmg.lcm.client.HttpsClientFactory;
 import nl.kpmg.lcm.configuration.ClientConfiguration;
 import nl.kpmg.lcm.server.ServerException;
 import nl.kpmg.lcm.server.backend.Backend;
-import nl.kpmg.lcm.server.backend.BackendCsvImpl;
 import nl.kpmg.lcm.server.backend.DataTransformationSettings;
 import nl.kpmg.lcm.server.data.ContentIterator;
 import nl.kpmg.lcm.server.data.JsonReaderContentIterator;
+import nl.kpmg.lcm.server.data.ProgressIndication;
+import nl.kpmg.lcm.server.data.ProgressIndicationFactory;
 import nl.kpmg.lcm.server.data.RemoteLcm;
 import nl.kpmg.lcm.server.data.metadata.MetaDataWrapper;
 import nl.kpmg.lcm.server.data.service.RemoteLcmService;
 import nl.kpmg.lcm.server.data.service.StorageService;
+import nl.kpmg.lcm.server.data.service.TaskDescriptionService;
 import nl.kpmg.lcm.server.task.EnrichmentTask;
 import nl.kpmg.lcm.server.task.TaskException;
 import nl.kpmg.lcm.server.task.TaskResult;
@@ -51,7 +53,7 @@ import javax.ws.rs.core.Response;
  */
 public class DataFetchTask extends EnrichmentTask {
 
-  private static final Logger LOGGER = LoggerFactory.getLogger(BackendCsvImpl.class.getName());
+  private static final Logger LOGGER = LoggerFactory.getLogger(DataFetchTask.class.getName());
 
   @Autowired
   private StorageService storageService;
@@ -61,6 +63,9 @@ public class DataFetchTask extends EnrichmentTask {
 
   @Autowired
   private ClientConfiguration configuration;
+
+  @Autowired
+  private TaskDescriptionService taskService;
 
   // TODO once the Authorization model is implemented this part may be refactored
   // Now directly is used admin user and its password. After the refactoring there
@@ -93,6 +98,7 @@ public class DataFetchTask extends EnrichmentTask {
     InputStream in = openInputStream(fetchUrl);
 
     if (!writeData(in, metadata)) {
+      taskService.updateProgress(taskId, new ProgressIndication("Task excecution failed!"));
       return TaskResult.FAILURE;
     }
 
@@ -127,6 +133,7 @@ public class DataFetchTask extends EnrichmentTask {
       JsonReader reader = new JsonReader(new InputStreamReader(in, "UTF-8"));
       ContentIterator iterator = new JsonReaderContentIterator(reader);
       Backend backend = storageService.getBackend(metaDataWrapper);
+      backend.setProgressIndicationFactory(new ProgressIndicationFactory(taskService, taskId, 10000));
       backend.store(iterator, new DataTransformationSettings(), true);
 
       metaDataWrapper.getDynamicData().setState("ATTACHED");

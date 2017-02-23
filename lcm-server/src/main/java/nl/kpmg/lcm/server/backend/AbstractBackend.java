@@ -14,6 +14,7 @@
 
 package nl.kpmg.lcm.server.backend;
 
+import nl.kpmg.lcm.server.data.ProgressIndicationFactory;
 import nl.kpmg.lcm.server.data.metadata.MetaData;
 import nl.kpmg.lcm.server.data.metadata.MetaDataWrapper;
 import nl.kpmg.lcm.server.exception.LcmException;
@@ -29,6 +30,7 @@ import java.net.URISyntaxException;
  */
 abstract class AbstractBackend implements Backend {
   protected final MetaDataWrapper metaDataWrapper;
+  protected ProgressIndicationFactory progressIndicationFactory;
   protected final URI dataURI;
 
 
@@ -100,6 +102,11 @@ abstract class AbstractBackend implements Backend {
     } catch (URISyntaxException ex) {
       throw new LcmException(String.format("Failure while trying to parse URI '%s'", uri), ex);
     }
+  }
+
+  @Override
+  public void setProgressIndicationFactory(ProgressIndicationFactory progressIndicationFactory){
+      this.progressIndicationFactory = progressIndicationFactory;
   }
 
 }

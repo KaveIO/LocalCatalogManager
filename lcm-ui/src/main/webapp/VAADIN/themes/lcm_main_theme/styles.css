@@ -13008,14 +13008,14 @@ div.v-layout.v-horizontal.v-widget {
 	margin-bottom: 20px;
 }
 
-.lcm_main_theme .align-left {
-	aling: left;
-}
-
 .lcm_main_theme .padding-right-20 {
 	padding-right: 20px;
 }
 
 .lcm_main_theme .width-search-field {
 	width: 300px;
+}
+
+.lcm_main_theme .width-wide-search-field {
+	width: 400px;
 }

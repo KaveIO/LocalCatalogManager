@@ -18,11 +18,13 @@ import com.vaadin.navigator.View;
 import com.vaadin.navigator.ViewChangeListener;
 import com.vaadin.spring.annotation.SpringView;
 import com.vaadin.ui.HorizontalLayout;
+import com.vaadin.ui.TabSheet;
 import com.vaadin.ui.VerticalLayout;
 
 import nl.kpmg.lcm.rest.types.RemoteLcmsRepresentation;
 import nl.kpmg.lcm.ui.rest.RestClientService;
-import nl.kpmg.lcm.ui.view.discovery.DiscoveryPanel;
+import nl.kpmg.lcm.ui.view.transfer.MonitorPanel;
+import nl.kpmg.lcm.ui.view.transfer.SchedulePanel;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
@@ -51,7 +53,11 @@ public class TransferViewImpl extends VerticalLayout implements View {
 
   private RemoteLcmsRepresentation remoteLcms;
 
-  private DiscoveryPanel discoveryPanel;
+  private SchedulePanel schedulePanel;
+
+  private MonitorPanel monitorPanel;
+
+  private final TabSheet tabsheet = new TabSheet();
 
   /**
    * Builds the interface.
@@ -63,9 +69,14 @@ public class TransferViewImpl extends VerticalLayout implements View {
     root.setMargin(true);
     root.setSpacing(true);
 
-    discoveryPanel = new DiscoveryPanel(restClientService);
+    schedulePanel = new SchedulePanel(restClientService);
+    tabsheet.addTab(schedulePanel, "Schedule");
 
-    root.addComponent(discoveryPanel);
+    monitorPanel = new MonitorPanel(restClientService);
+    tabsheet.addTab(monitorPanel, "Monitor");
+
+    tabsheet.setHeight("100%");
+    root.addComponent(tabsheet);
 
     addComponent(root);
   }

@@ -39,7 +39,7 @@ public class CsvMetaData extends TabularMetaData {
     int columnNameLine = CsvConfiguration.DEFAULT_COLUMN_NAME_LINE;
     String encoding = FileHelper.DEFAULT_ENCODING;
     char separatorChar = CsvConfiguration.DEFAULT_SEPARATOR_CHAR;
-    char quoteChar = CsvConfiguration.DEFAULT_QUOTE_CHAR;
+    char quoteChar = CsvConfiguration.NOT_A_CHAR;
     char escapeChar = CsvConfiguration.DEFAULT_ESCAPE_CHAR;
 
     CsvConfigurationDescriptor csvDescriptor = new CsvConfigurationDescriptor(getMetaData());

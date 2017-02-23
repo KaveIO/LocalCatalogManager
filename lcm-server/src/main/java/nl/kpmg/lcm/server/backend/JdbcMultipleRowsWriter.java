@@ -16,6 +16,7 @@ package nl.kpmg.lcm.server.backend;
 
 import nl.kpmg.lcm.server.backend.metadata.ColumnDescription;
 import nl.kpmg.lcm.server.data.ContentIterator;
+import nl.kpmg.lcm.server.data.ProgressIndicationFactory;
 
 import org.apache.metamodel.schema.ColumnType;
 import org.apache.metamodel.util.FileHelper;
@@ -46,6 +47,7 @@ import java.util.Map;
 class JdbcMultipleRowsWriter {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(JdbcMultipleRowsWriter.class.getName());
+  private ProgressIndicationFactory progressIndicationFactory;
 
   private final String tableName;
   private final String dbName;
@@ -65,6 +67,10 @@ class JdbcMultipleRowsWriter {
     String[] columnNames = (String[]) columns.keySet().toArray(new String[] {});
     String maximumQuery = constructQuery(maximumInsertedRowsPerQuery, columnNames);
     int totalCount = 0;
+    if (progressIndicationFactory != null) {
+      String message = "Start transfer.";
+      progressIndicationFactory.writeIndication(message);
+    }
     while (content.hasNext()) {
 
       List<Map> rows = getRowsToInsert(content, maximumInsertedRowsPerQuery);
@@ -76,17 +82,25 @@ class JdbcMultipleRowsWriter {
         query = constructQuery(rows.size(), columnNames);
       }
 
+
       PreparedStatement pst = null;
       try {
         pst = createPrepareStatement(query, rows);
         pst.executeUpdate();
         totalCount += rows.size();
-        LOGGER.info(String.format("Written sucessfully %d rows in table: %s",
-            rows.size(), tableName));
+        if(progressIndicationFactory != null ) {
+            String message = String.format("Written successfully %d rows in table: %s",
+            totalCount, tableName);
+            progressIndicationFactory.writeIndication(message);
+        }
       } catch (SQLException ex) {
         if (totalCount > 0) {
-          LOGGER.info(String.format("The content is inserted partially, only %d rows in table: %s",
-              totalCount, tableName));
+          if (progressIndicationFactory != null) {
+            String message =
+                String.format("The content is inserted partially, only %d rows in table: %s",
+                    totalCount, tableName);
+            progressIndicationFactory.writeIndication(message);
+          }
         }
         LOGGER.warn(String.format("Unable to execute query starting with : %s",
             query.substring(0, 300)));
@@ -97,8 +111,13 @@ class JdbcMultipleRowsWriter {
           }
       }
     }
-    LOGGER.info(String.format("All the content inserted sucessfully %d rows in table: %s",
-        totalCount, tableName));
+
+    if (progressIndicationFactory != null) {
+      String message =
+          String.format("All the content inserted successfully %d rows in table: %s", totalCount,
+              tableName);
+      progressIndicationFactory.writeIndication(message);
+    }
   }
 
   private List<Map> getRowsToInsert(ContentIterator content, int maximumInsertedRowsPerQuery) {
@@ -252,5 +271,9 @@ class JdbcMultipleRowsWriter {
     final Calendar cal = Calendar.getInstance();
     cal.setTime((Date) value);
     return new Timestamp(cal.getTimeInMillis());
+  }
+
+  public void setProgressIndicationFactory(ProgressIndicationFactory progressIndicationFactory){
+      this.progressIndicationFactory = progressIndicationFactory;
   }
 }

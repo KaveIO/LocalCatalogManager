@@ -27,6 +27,7 @@ import nl.kpmg.lcm.server.data.TaskDescription;
 import nl.kpmg.lcm.server.data.TaskSchedule;
 
 import java.util.Date;
+import java.util.ListIterator;
 
 /**
  *
@@ -110,9 +111,11 @@ public class TasksPanel extends CustomComponent {
   private void updateTasks() {
     tasksTable.removeAllItems();
     if (tasks != null) {
-      for (TaskDescriptionRepresentation item : tasks.getItems()) {
-        TaskDescription taskDescription = item.getItem();
-        tasksTable.addItem(new Object[] {taskDescription.getJob(), taskDescription.getTarget(),
+      ListIterator li = tasks.getItems().listIterator(tasks.getItems().size());
+      //Put the resent tasks on the top.
+      while(li.hasPrevious()) {
+      TaskDescription taskDescription = ((TaskDescriptionRepresentation)li.previous()).getItem();
+       tasksTable.addItem(new Object[] {taskDescription.getJob(), taskDescription.getTarget(),
             taskDescription.getStartTime(), taskDescription.getEndTime(),
             taskDescription.getStatus().toString()}, taskDescription.getId());
       }

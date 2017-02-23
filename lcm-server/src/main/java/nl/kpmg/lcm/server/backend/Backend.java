@@ -16,6 +16,7 @@ package nl.kpmg.lcm.server.backend;
 
 import nl.kpmg.lcm.server.data.ContentIterator;
 import nl.kpmg.lcm.server.data.Data;
+import nl.kpmg.lcm.server.data.ProgressIndicationFactory;
 
 import org.apache.metamodel.data.DataSet;
 
@@ -62,4 +63,10 @@ public interface Backend {
    * backend.
    */
   public void free();
+
+  /*
+   * ProgressIndicationFactory is used to produce indication messages about the progress of the
+   * transfer.
+   */
+  public void setProgressIndicationFactory(ProgressIndicationFactory progressIndicationFactory);
 }

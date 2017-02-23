@@ -15,10 +15,10 @@
 package nl.kpmg.lcm.server.task;
 
 import nl.kpmg.lcm.server.data.TaskDescription;
-import nl.kpmg.lcm.server.data.dao.TaskDescriptionDao;
 import nl.kpmg.lcm.server.data.metadata.MetaData;
 import nl.kpmg.lcm.server.data.metadata.MetaDataWrapper;
 import nl.kpmg.lcm.server.data.service.MetaDataService;
+import nl.kpmg.lcm.server.data.service.TaskDescriptionService;
 
 import org.quartz.Job;
 import org.quartz.JobDataMap;
@@ -28,7 +28,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 
-import java.util.Date;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -39,7 +38,7 @@ import java.util.Map;
  * @author mhoekstra
  */
 public abstract class EnrichmentTask implements Job {
-
+  protected String taskId;
 
   private final Logger LOGGER = LoggerFactory.getLogger(EnrichmentTask.class.getName());
 
@@ -60,10 +59,10 @@ public abstract class EnrichmentTask implements Job {
   protected MetaDataService metaDataService;
 
   /**
-   * The TaskDescriptionDao.
+   * The TaskDescriptionService.
    */
   @Autowired
-  private TaskDescriptionDao taskDescriptionDao;
+  private TaskDescriptionService taskDescriptionService;
 
   /**
    * Method called to process the actual code of this task.
@@ -73,7 +72,8 @@ public abstract class EnrichmentTask implements Job {
    * @return The result of the task
    * @throws TaskException if the task can't be executed properly
    */
-  protected abstract TaskResult execute(MetaDataWrapper metadataWrapper, Map options) throws TaskException;
+  protected abstract TaskResult execute(MetaDataWrapper metadataWrapper, Map options)
+      throws TaskException;
 
   /**
    * Execute method invoked by the quartz scheduler.
@@ -90,20 +90,18 @@ public abstract class EnrichmentTask implements Job {
     // Fetch information from the job context.
     JobDataMap jobDataMap = context.getJobDetail().getJobDataMap();
     String target = jobDataMap.getString(TARGET_KEY);
-    String taskId = jobDataMap.getString(TASK_ID_KEY);
+    taskId = jobDataMap.getString(TASK_ID_KEY);
 
     // Update or create the task description
-    TaskDescription taskDescription;
-    if (taskId != null) {
-      taskDescription = taskDescriptionDao.findOne(taskId);
-    } else {
-      taskDescription = new TaskDescription();
-      taskDescription.setJob(this.getClass().getName());
-      taskDescription.setTarget(target);
+    if (taskId == null) {
+      TaskDescription newTaskDescription = new TaskDescription();
+      newTaskDescription.setJob(this.getClass().getName());
+      newTaskDescription.setTarget(target);
+      taskId = taskDescriptionService.createNew(newTaskDescription).getId();
     }
-    taskDescription.setStatus(TaskDescription.TaskStatus.RUNNING);
-    taskDescription.setStartTime(new Date());
-    taskDescriptionDao.save(taskDescription);
+
+    TaskDescription taskDescription;
+    taskDescription = taskDescriptionService.markTaskAsRunning(taskId);
 
     // Find the MetaData target on which this job needs to be executed
     List<MetaData> targets;
@@ -118,24 +116,27 @@ public abstract class EnrichmentTask implements Job {
     }
 
     // Execute the actuall code for each target
+    TaskDescription.TaskStatus status = TaskDescription.TaskStatus.SUCCESS;
     if (targets != null) {
       for (MetaData metadata : targets) {
         try {
           LOGGER.info(String.format("Executing EnrichmentTask %s (%s)", taskDescription.getId(),
               taskDescription.getJob()));
 
-          TaskResult taskResult = execute(new MetaDataWrapper(metadata), taskDescription.getOptions());
+          TaskResult taskResult =
+              execute(new MetaDataWrapper(metadata), taskDescription.getOptions());
 
           LOGGER.info(String.format("Done with EnrichmentTask %s (%s) with status : %s",
               taskDescription.getId(), taskDescription.getJob(), taskResult));
+          if (taskResult ==  TaskResult.FAILURE) {
+              status = TaskDescription.TaskStatus.FAILED;
+          }
         } catch (TaskException ex) {
           LOGGER.error("Failed executing task", ex);
         }
       }
     }
 
-    taskDescription.setStatus(TaskDescription.TaskStatus.SUCCESS);
-    taskDescription.setEndTime(new Date());
-    taskDescriptionDao.save(taskDescription);
+    taskDescriptionService.markTaskAsFinished(taskId, status);
   }
 }

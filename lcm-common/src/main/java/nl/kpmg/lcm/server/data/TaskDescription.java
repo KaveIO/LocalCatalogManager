@@ -16,7 +16,9 @@ package nl.kpmg.lcm.server.data;
 
 import org.springframework.data.mongodb.core.mapping.Document;
 
+import java.util.ArrayList;
 import java.util.Date;
+import java.util.List;
 import java.util.Map;
 
 import javax.annotation.security.PermitAll;
@@ -69,6 +71,8 @@ public class TaskDescription extends AbstractModel {
    */
   private TaskStatus status;
 
+  private List<ProgressIndication> progress;
+
   /**
    * An inner enumeration describing the states the task can be in.
    */
@@ -100,6 +104,10 @@ public class TaskDescription extends AbstractModel {
   }
 
   private Map options;
+
+  public TaskDescription() {
+    progress = new ArrayList<ProgressIndication>();
+  }
 
   /**
    * @return the options
@@ -161,5 +169,19 @@ public class TaskDescription extends AbstractModel {
 
   public void setStatus(TaskStatus status) {
     this.status = status;
+  }
+
+  /**
+   * @return the progress
+   */
+  public List<ProgressIndication> getProgress() {
+    return progress;
+  }
+
+  /**
+   * @param progress the progress to set
+   */
+  public void setProgress(List<ProgressIndication> progress) {
+    this.progress = progress;
   }
 }

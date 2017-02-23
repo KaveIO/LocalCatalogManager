@@ -68,12 +68,12 @@ public class ExecuteTasksCoreTask extends CoreTask {
         try {
           scheduleEnrichmentTask(taskDescription.getId(), taskDescription.getJob(),
               taskDescription.getTarget());
-          taskDescription.setStatus(TaskDescription.TaskStatus.SCHEDULED);
-          taskDescriptionService.getTaskDescriptionDao().save(taskDescription);
+          taskDescriptionService.updateStatus(taskDescription.getId(),
+                  TaskDescription.TaskStatus.SCHEDULED);
         } catch (TaskScheduleException ex) {
           LOGGER.warn("Failed scheduling task.");
-          taskDescription.setStatus(TaskDescription.TaskStatus.FAILED);
-          taskDescriptionService.getTaskDescriptionDao().save(taskDescription);
+          taskDescriptionService.updateStatus(taskDescription.getId(),
+                  TaskDescription.TaskStatus.FAILED);
         }
       }
     }
