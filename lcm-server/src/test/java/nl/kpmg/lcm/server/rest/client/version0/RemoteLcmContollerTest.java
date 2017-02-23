@@ -121,11 +121,12 @@ public class RemoteLcmContollerTest extends LcmBaseServerTest {
     }
 
     RemoteLcm lcm = new RemoteLcm();
-    lcm.setId("uid" + 0);
+
     lcm.setProtocol("http");
     lcm.setDomain("lcm" + 0);
-    putLcm(lcm, 404);
+    putLcm(lcm, 400);
 
+    lcm.setId("uid" + 0);
     postLcm(lcm, 200);
     //Just cheking if it's there 
     getLcm(lcm.getId(), 200);
@@ -166,7 +167,6 @@ public class RemoteLcmContollerTest extends LcmBaseServerTest {
     Entity<RemoteLcm> entity = Entity.entity(lcm, LCM_CONTENT_TYPE);
     Response resp = getWebTarget()
             .path(PATH)
-            .path(lcm.getId())
             .request().header(AUTH_USER_HEADER, "admin")
             .header(BasicAuthenticationManager.BASIC_AUTHENTICATION_HEADER, basicAuthTokenAdmin).put(entity);
     assertEquals(expected, resp.getStatus());

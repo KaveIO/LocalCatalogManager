@@ -30,6 +30,7 @@ import nl.kpmg.lcm.rest.types.UsersRepresentation;
 import nl.kpmg.lcm.server.ServerException;
 import nl.kpmg.lcm.ui.rest.AuthenticationException;
 import nl.kpmg.lcm.ui.rest.RestClientService;
+import nl.kpmg.lcm.ui.view.administration.RemoteLcmPanel;
 import nl.kpmg.lcm.ui.view.administration.StoragePanel;
 import nl.kpmg.lcm.ui.view.administration.TasksPanel;
 import nl.kpmg.lcm.ui.view.administration.UsersPanel;
@@ -74,6 +75,7 @@ public class AdministrationViewImpl extends VerticalLayout implements Administra
 
   private TasksPanel tasksPanel;
   private StoragePanel storagePanel;
+  private RemoteLcmPanel remoteLcmPanel;
   private UsersPanel usersPanel;
 
   /**
@@ -89,6 +91,9 @@ public class AdministrationViewImpl extends VerticalLayout implements Administra
     storagePanel = new StoragePanel(restClientService);
     storagePanel.setHeight("100%");
     tabsheet.addTab(storagePanel, "Storage");
+
+    remoteLcmPanel = new RemoteLcmPanel(restClientService);
+    tabsheet.addTab(remoteLcmPanel, "Remote LCM");
 
     tasksPanel = new TasksPanel();
     tabsheet.addTab(tasksPanel, "Tasks");

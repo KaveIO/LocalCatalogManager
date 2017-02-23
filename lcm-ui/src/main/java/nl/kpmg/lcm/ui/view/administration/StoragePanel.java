@@ -14,7 +14,6 @@
 
 package nl.kpmg.lcm.ui.view.administration;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.vaadin.ui.Button;
 import com.vaadin.ui.CustomComponent;
 import com.vaadin.ui.HorizontalLayout;
@@ -34,9 +33,10 @@ import nl.kpmg.lcm.ui.component.DefinedLabel;
 import nl.kpmg.lcm.ui.rest.AuthenticationException;
 import nl.kpmg.lcm.ui.rest.RestClientService;
 import nl.kpmg.lcm.ui.view.administration.components.StorageCreateWindow;
+import nl.kpmg.lcm.ui.view.administration.listeners.DeleteStorageListener;
+import nl.kpmg.lcm.ui.view.administration.listeners.EditStorageListener;
 
 import org.slf4j.LoggerFactory;
-import org.vaadin.dialogs.ConfirmDialog;
 
 import java.util.List;
 import java.util.Map;
@@ -48,7 +48,7 @@ import javax.ws.rs.core.Link;
  * @author mhoekstra
  */
 
-public class StoragePanel extends CustomComponent {
+public class StoragePanel extends CustomComponent implements DynamicDataContainer {
   private static final org.slf4j.Logger LOGGER = LoggerFactory.getLogger(StoragePanel.class
       .getName());
   /**
@@ -57,8 +57,8 @@ public class StoragePanel extends CustomComponent {
   private static final String DETAILS_PANEL_WIDTH = "400px";
 
   private StoragesRepresentation storages;
-  private final Table storageTable;
-  private final Panel storageDetailsPanel = new Panel("Storage details");
+  private Table storageTable;
+  private Panel storageDetailsPanel;
   private StorageRepresentation selectedStorage;
 
   private final RestClientService restClientService;
@@ -66,43 +66,58 @@ public class StoragePanel extends CustomComponent {
   public StoragePanel(RestClientService restClientService) {
     this.restClientService = restClientService;
 
-    HorizontalLayout menubar = new HorizontalLayout();
-    menubar.setStyleName("v-panel-borderless");
+    HorizontalLayout menubar = initMenubar(restClientService);
 
-    Button createButton = initCreateButton(restClientService);
-    Button refreshButton = initRefreshButton();
-    menubar.addComponent(createButton);
-    menubar.addComponent(refreshButton);
+    HorizontalLayout dataLayout = initDataLayout();
 
-    VerticalLayout storageTablePanelLayout = new VerticalLayout();
-    storageTable = createStorageTable();
-    storageTablePanelLayout.addComponent(storageTable);
-    storageTablePanelLayout.addStyleName("padding-right-20");
-
-    HorizontalLayout storageHorizontalLayout = new HorizontalLayout();
-    storageHorizontalLayout.addComponent(storageTablePanelLayout);
-    storageHorizontalLayout.addComponent(storageDetailsPanel);
-    storageHorizontalLayout.setWidth("100%");
-    storageHorizontalLayout.setExpandRatio(storageTablePanelLayout, 1f);
-
-    VerticalLayout storagePanelLayout = new VerticalLayout();
-    storagePanelLayout.addComponent(menubar);
-    storagePanelLayout.addComponent(storageHorizontalLayout);
-    storagePanelLayout.setHeight("100%");
-
-    storageDetailsPanel.setWidth(DETAILS_PANEL_WIDTH);
-    storageDetailsPanel.setHeight("100%");
+    VerticalLayout rootVerticalLayout = new VerticalLayout();
+    rootVerticalLayout.addComponent(menubar);
+    rootVerticalLayout.addComponent(dataLayout);
+    rootVerticalLayout.setHeight("100%");
 
     HorizontalLayout root = new HorizontalLayout();
-    root.addComponent(storagePanelLayout);
+    root.addComponent(rootVerticalLayout);
     root.setSpacing(true);
     root.setMargin(true);
     root.setWidth("100%");
     root.setHeight("100%");
-    root.setExpandRatio(storagePanelLayout, 1f);
+    root.setExpandRatio(rootVerticalLayout, 1f);
 
     setCompositionRoot(root);
     updateStorageTable();
+  }
+
+  private HorizontalLayout initDataLayout() throws UnsupportedOperationException {
+    VerticalLayout tableLayout = new VerticalLayout();
+
+    storageTable = createStorageTable();
+    tableLayout.addComponent(storageTable);
+    tableLayout.addStyleName("padding-right-20");
+
+    storageDetailsPanel = new Panel("Storage details");
+    storageDetailsPanel.setWidth(DETAILS_PANEL_WIDTH);
+    storageDetailsPanel.setHeight("100%");
+
+    HorizontalLayout dataLayout = new HorizontalLayout();
+    dataLayout.addComponent(tableLayout);
+    dataLayout.addComponent(storageDetailsPanel);
+    dataLayout.setWidth("100%");
+    dataLayout.setExpandRatio(tableLayout, 1f);
+
+    return dataLayout;
+  }
+
+  private HorizontalLayout initMenubar(RestClientService restClientService1) {
+
+    Button createButton = initCreateButton(restClientService1);
+    Button refreshButton = initRefreshButton();
+
+    HorizontalLayout menubar = new HorizontalLayout();
+    menubar.setStyleName("v-panel-borderless");
+    menubar.addComponent(createButton);
+    menubar.addComponent(refreshButton);
+
+    return menubar;
   }
 
   private Button initRefreshButton() {
@@ -172,17 +187,20 @@ public class StoragePanel extends CustomComponent {
 
     Button viewButton = new Button("view");
     viewButton.setData(item);
-    viewButton.addClickListener(new ViewStorageListenerImpl(this));
+    viewButton.addClickListener((event) -> {
+      StorageRepresentation data = (StorageRepresentation) event.getButton().getData();
+      setSelectedStorage(data);
+    });
     viewButton.addStyleName("link");
 
     Button editButton = new Button("edit");
     editButton.setData(item);
-    editButton.addClickListener(new EditStorageListenerImpl(this));
+    editButton.addClickListener(new EditStorageListener(this, restClientService));
     editButton.addStyleName("link");
 
     Button deleteButton = new Button("delete");
     deleteButton.setData(item);
-    deleteButton.addClickListener(new DeleteStorageListenerImpl(this));
+    deleteButton.addClickListener(new DeleteStorageListener(this, restClientService));
     deleteButton.addStyleName("link");
 
     actionsLayout.addComponent(viewButton);
@@ -197,9 +215,6 @@ public class StoragePanel extends CustomComponent {
     refreshDetailsPanel();
   }
 
-  /**
-   * Updates the metadata panel with new content.
-   */
   private void refreshDetailsPanel() {
     VerticalLayout panelContent = new VerticalLayout();
 
@@ -217,109 +232,8 @@ public class StoragePanel extends CustomComponent {
     storageDetailsPanel.setContent(panelContent);
   }
 
-
-  /**
-   * Selection listener for changing the storage selection.
-   */
-  private final class ViewStorageListenerImpl implements Button.ClickListener {
-
-    /**
-     * Parent view to which the event is cascaded.
-     */
-    private final StoragePanel storagePanel;
-
-    /**
-     * @param storagePanel parent view.
-     */
-    private ViewStorageListenerImpl(final StoragePanel storagePanel) {
-      this.storagePanel = storagePanel;
-    }
-
-    @Override
-    public void buttonClick(final Button.ClickEvent event) {
-      StorageRepresentation data = (StorageRepresentation) event.getButton().getData();
-      storagePanel.setSelectedStorage(data);
-    }
-  }
-
-  /**
-   * Edit listener for changing the storage object.
-   */
-  private final class EditStorageListenerImpl implements Button.ClickListener {
-
-    /**
-     * Parent view to which the event is cascaded.
-     */
-    private final StoragePanel storagePanel;
-
-    /**
-     * @param storagePanel parent view.
-     */
-    private EditStorageListenerImpl(final StoragePanel storagePanel) {
-      this.storagePanel = storagePanel;
-    }
-
-    @Override
-    public void buttonClick(final Button.ClickEvent event) {
-
-      StorageRepresentation data = (StorageRepresentation) event.getButton().getData();
-      Storage storage = data.getItem();
-      try {
-        StorageCreateWindow storageCreateWindow =
-            new StorageCreateWindow(restClientService, storage);
-        storageCreateWindow.addCloseListener(new Window.CloseListener() {
-          @Override
-          public void windowClose(Window.CloseEvent e) {
-            storagePanel.updateStorageTable();
-          }
-        });
-        UI.getCurrent().addWindow(storageCreateWindow);
-
-      } catch (JsonProcessingException ex) {
-        LOGGER.error("Unable to parse storage. Error message: " + ex.getMessage());
-        com.vaadin.ui.Notification.show("Update failed: " + ex.getMessage());
-      }
-    }
-  }
-
-
-  private final class DeleteStorageListenerImpl implements Button.ClickListener {
-
-    /**
-     * Parent view to which the event is cascaded.
-     */
-    private final StoragePanel storagePanel;
-
-    /**
-     * @param storagePanel parent view.
-     */
-    private DeleteStorageListenerImpl(final StoragePanel storagePanel) {
-      this.storagePanel = storagePanel;
-    }
-
-    @Override
-    public void buttonClick(final Button.ClickEvent event) {
-      StorageRepresentation data = (StorageRepresentation) event.getButton().getData();
-      Storage storage = data.getItem();
-
-      ConfirmDialog.show(UI.getCurrent(), "Warning",
-          "Are you sure that you want to delete storage \"" + storage.getName() + "\"?", "Yes",
-          "No", new ConfirmDialog.Listener() {
-            public void onClose(ConfirmDialog dialog) {
-              if (dialog.isConfirmed()) {
-                try {
-                  restClientService.deleteStorage(storage.getId());
-                  storagePanel.updateStorageTable();
-                } catch (Exception e) {
-                  LOGGER.error(String.format(
-                      "Unable to delete storage with id:  %s. Error message: %s", storage.getId(),
-                      e.getMessage()));
-                  com.vaadin.ui.Notification.show("Unable to delete: " + e.getMessage());
-                }
-
-              }
-            }
-          });
-    }
+  @Override
+  public void updateContent() {
+    updateStorageTable();
   }
 }

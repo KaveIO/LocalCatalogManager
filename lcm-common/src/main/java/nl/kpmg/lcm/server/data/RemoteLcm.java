@@ -25,6 +25,11 @@ public class RemoteLcm extends AbstractModel {
   /**
    * The domain to contact the lcm described here .
    */
+  private String name;
+
+  /**
+   * The domain to contact the lcm described here .
+   */
   private String domain;
 
   /**
@@ -78,4 +83,18 @@ public class RemoteLcm extends AbstractModel {
   public void setPort(Integer port) {
     this.port = port;
   }
+
+    /**
+     * @return the name
+     */
+    public String getName() {
+        return name;
+    }
+
+    /**
+     * @param name the name to set
+     */
+    public void setName(String name) {
+        this.name = name;
+    }
 }

@@ -20,9 +20,11 @@ import nl.kpmg.lcm.rest.types.RemoteLcmsRepresentation;
 import nl.kpmg.lcm.server.data.RemoteLcm;
 import nl.kpmg.lcm.server.data.dao.RemoteLcmDao;
 import nl.kpmg.lcm.server.data.service.RemoteLcmService;
+import nl.kpmg.lcm.server.exception.LcmValidationException;
 import nl.kpmg.lcm.server.rest.authentication.Roles;
 import nl.kpmg.lcm.server.rest.client.version0.types.ConcreteRemoteLcmRepresentation;
 import nl.kpmg.lcm.server.rest.client.version0.types.ConcreteRemoteLcmsRepresentation;
+import nl.kpmg.lcm.validation.Notification;
 
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -100,11 +102,15 @@ public class RemoteLcmController {
   }
 
   @PUT
-  @Path("{id}")
   @Consumes({"application/nl.kpmg.lcm.server.data.RemoteLcm+json"})
   @RolesAllowed({Roles.ADMINISTRATOR})
-  public final Response add(@PathParam("id") final String id, RemoteLcm lcm) {
-    getOne(id);
+  public final Response update(RemoteLcm lcm) {
+    if(lcm.getId() == null){
+       Notification notification =new Notification();
+       notification.addError("Id is null!");
+       throw new LcmValidationException(notification);
+    }
+
     service.getDao().save(lcm);
     return Response.ok().build();
   }

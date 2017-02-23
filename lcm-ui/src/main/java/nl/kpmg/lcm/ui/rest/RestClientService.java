@@ -23,6 +23,7 @@ import nl.kpmg.lcm.client.HttpsClientFactory;
 import nl.kpmg.lcm.configuration.ClientConfiguration;
 import nl.kpmg.lcm.rest.types.AbstractRepresentation;
 import nl.kpmg.lcm.rest.types.MetaDatasRepresentation;
+import nl.kpmg.lcm.rest.types.RemoteLcmsRepresentation;
 import nl.kpmg.lcm.rest.types.StoragesRepresentation;
 import nl.kpmg.lcm.rest.types.TaskDescriptionsRepresentation;
 import nl.kpmg.lcm.rest.types.TaskScheduleRepresentation;
@@ -176,6 +177,11 @@ public class RestClientService {
   }
 
 
+  public RemoteLcmsRepresentation getRemoteLcm()
+      throws AuthenticationException, ServerException, ClientException {
+    return getDatasRepresentation("client/v0/remoteLcm", RemoteLcmsRepresentation.class);
+  }
+
   public TaskDescriptionsRepresentation getTasks()
       throws AuthenticationException, ServerException, ClientException {
     return getDatasRepresentation("client/v0/tasks", TaskDescriptionsRepresentation.class);
@@ -196,9 +202,52 @@ public class RestClientService {
     return getDatasRepresentation("client/v0/userGroups", UserGroupsRepresentation.class);
   }
 
-  public void createStorage(String storage)
-      throws ServerException, DataCreationException, AuthenticationException, JsonProcessingException {
-      Entity<String> payload =
+  public void createRemoteLcm(String storage) throws ServerException, DataCreationException,
+      AuthenticationException, JsonProcessingException {
+    Entity<String> payload =
+        Entity.entity(storage, "application/nl.kpmg.lcm.server.data.RemoteLcm+json");
+
+    Invocation.Builder client = getClient("client/v0/remoteLcm");
+    Response post = client.post(payload);
+
+    Response.StatusType statusInfo = post.getStatusInfo();
+    if (statusInfo.getFamily() != Response.Status.Family.SUCCESSFUL) {
+      throw new DataCreationException(String.format("%s - %s", statusInfo.getStatusCode(),
+          statusInfo.getReasonPhrase()));
+    }
+  }
+
+  public void updateRemoteLcm(String storage) throws ServerException, DataCreationException,
+      AuthenticationException, JsonProcessingException {
+    Entity<String> payload =
+        Entity.entity(storage, "application/nl.kpmg.lcm.server.data.RemoteLcm+json");
+
+    Invocation.Builder client = getClient("client/v0/remoteLcm");
+    Response put = client.put(payload);
+
+    Response.StatusType statusInfo = put.getStatusInfo();
+    if (statusInfo.getFamily() != Response.Status.Family.SUCCESSFUL) {
+      throw new DataCreationException(String.format("%s - %s", statusInfo.getStatusCode(),
+          statusInfo.getReasonPhrase()));
+    }
+  }
+
+  public void deleteRemoteLcm(String lcmId) throws AuthenticationException, ServerException,
+      ClientException, DataCreationException {
+
+    Invocation.Builder client = getClient(String.format("client/v0/remoteLcm/%s", lcmId));
+    Response delete = client.delete();
+
+    Response.StatusType statusInfo = delete.getStatusInfo();
+    if (statusInfo.getFamily() != Response.Status.Family.SUCCESSFUL) {
+      throw new DataCreationException(String.format("%s - %s", statusInfo.getStatusCode(),
+          statusInfo.getReasonPhrase()));
+    }
+  }
+
+  public void createStorage(String storage) throws ServerException, DataCreationException,
+      AuthenticationException, JsonProcessingException {
+    Entity<String> payload =
         Entity.entity(storage, "application/nl.kpmg.lcm.server.data.Storage+json");
 
     Invocation.Builder client = getClient("client/v0/storage");
@@ -206,14 +255,14 @@ public class RestClientService {
 
     Response.StatusType statusInfo = post.getStatusInfo();
     if (statusInfo.getFamily() != Response.Status.Family.SUCCESSFUL) {
-      throw new DataCreationException(
-          String.format("%s - %s", statusInfo.getStatusCode(), statusInfo.getReasonPhrase()));
+      throw new DataCreationException(String.format("%s - %s", statusInfo.getStatusCode(),
+          statusInfo.getReasonPhrase()));
     }
   }
 
-  public void updateStorage(String storage)
-      throws ServerException, DataCreationException, AuthenticationException, JsonProcessingException {
-      Entity<String> payload =
+  public void updateStorage(String storage) throws ServerException, DataCreationException,
+      AuthenticationException, JsonProcessingException {
+    Entity<String> payload =
         Entity.entity(storage, "application/nl.kpmg.lcm.server.data.Storage+json");
 
     Invocation.Builder client = getClient("client/v0/storage");
@@ -221,8 +270,8 @@ public class RestClientService {
 
     Response.StatusType statusInfo = put.getStatusInfo();
     if (statusInfo.getFamily() != Response.Status.Family.SUCCESSFUL) {
-      throw new DataCreationException(
-          String.format("%s - %s", statusInfo.getStatusCode(), statusInfo.getReasonPhrase()));
+      throw new DataCreationException(String.format("%s - %s", statusInfo.getStatusCode(),
+          statusInfo.getReasonPhrase()));
     }
   }
 

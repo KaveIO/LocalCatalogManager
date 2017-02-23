@@ -60,6 +60,7 @@ public class StorageCreateWindow extends Window implements Button.ClickListener 
   private final TextField typeField = new TextField("Type");
   private final Button saveButton = new Button("Save");
   private Storage storage;
+  private final static int MAX_LENGTH = 128;
 
   public StorageCreateWindow(RestClientService restClientService) {
     super(CREATE_TITLE);
@@ -149,6 +150,10 @@ public class StorageCreateWindow extends Window implements Button.ClickListener 
   private void validateText(TextField field, nl.kpmg.lcm.validation.Notification notification) {
     if (field.getValue().isEmpty()) {
       notification.addError(field.getCaption() + " can not be empty");
+    }
+
+    if (field.getValue().length() > MAX_LENGTH) {
+      notification.addError(field.getCaption() + " is too long! Max length : " + MAX_LENGTH);
     }
   }
 }
