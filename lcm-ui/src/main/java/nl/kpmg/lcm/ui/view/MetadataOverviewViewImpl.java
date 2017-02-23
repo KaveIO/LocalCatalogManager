@@ -97,6 +97,8 @@ public class MetadataOverviewViewImpl extends VerticalLayout
     refreshButton.addClickListener(this);
 
     HorizontalLayout menubar = new HorizontalLayout();
+    createButton.addStyleName("margin-10");
+    refreshButton.addStyleName("margin-10");
     menubar.addComponent(createButton);
     menubar.addComponent(refreshButton);
 

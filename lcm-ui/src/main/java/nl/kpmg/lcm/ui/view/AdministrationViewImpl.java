@@ -23,7 +23,6 @@ import com.vaadin.ui.UI;
 import com.vaadin.ui.VerticalLayout;
 
 import nl.kpmg.lcm.client.ClientException;
-import nl.kpmg.lcm.rest.types.StoragesRepresentation;
 import nl.kpmg.lcm.rest.types.TaskDescriptionsRepresentation;
 import nl.kpmg.lcm.rest.types.TaskScheduleRepresentation;
 import nl.kpmg.lcm.rest.types.UserGroupsRepresentation;
@@ -72,7 +71,6 @@ public class AdministrationViewImpl extends VerticalLayout implements Administra
   private UsersRepresentation users;
   private TaskScheduleRepresentation taskSchedule;
   private TaskDescriptionsRepresentation tasks;
-  private StoragesRepresentation storage;
 
   private TasksPanel tasksPanel;
   private StoragePanel storagePanel;
@@ -88,7 +86,8 @@ public class AdministrationViewImpl extends VerticalLayout implements Administra
     root.setMargin(true);
     root.setSpacing(true);
 
-    storagePanel = new StoragePanel();
+    storagePanel = new StoragePanel(restClientService);
+    storagePanel.setHeight("100%");
     tabsheet.addTab(storagePanel, "Storage");
 
     tasksPanel = new TasksPanel();
@@ -97,6 +96,7 @@ public class AdministrationViewImpl extends VerticalLayout implements Administra
     usersPanel = new UsersPanel();
     tabsheet.addTab(usersPanel, "Users");
 
+    tabsheet.setHeight("100%");
     root.addComponent(tabsheet);
 
     addComponent(root);
@@ -110,13 +110,10 @@ public class AdministrationViewImpl extends VerticalLayout implements Administra
   @Override
   public final void enter(final ViewChangeListener.ViewChangeEvent event) {
     try {
-      storage = restClientService.getStorage();
       tasks = restClientService.getTasks();
       taskSchedule = restClientService.getTaskSchedule();
       users = restClientService.getUsers();
       userGroups = restClientService.getUserGroups();
-
-      storagePanel.setStorages(storage);
 
       tasksPanel.setTasks(tasks);
       tasksPanel.setTaskSchedule(taskSchedule);

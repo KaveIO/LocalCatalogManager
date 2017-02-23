@@ -14,6 +14,7 @@
 
 package nl.kpmg.lcm.ui.rest;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.vaadin.server.VaadinService;
 import com.vaadin.server.WrappedSession;
 
@@ -174,6 +175,7 @@ public class RestClientService {
     return getDatasRepresentation("client/v0/storage", StoragesRepresentation.class);
   }
 
+
   public TaskDescriptionsRepresentation getTasks()
       throws AuthenticationException, ServerException, ClientException {
     return getDatasRepresentation("client/v0/tasks", TaskDescriptionsRepresentation.class);
@@ -192,6 +194,49 @@ public class RestClientService {
   public UserGroupsRepresentation getUserGroups()
       throws AuthenticationException, ServerException, ClientException {
     return getDatasRepresentation("client/v0/userGroups", UserGroupsRepresentation.class);
+  }
+
+  public void createStorage(String storage)
+      throws ServerException, DataCreationException, AuthenticationException, JsonProcessingException {
+      Entity<String> payload =
+        Entity.entity(storage, "application/nl.kpmg.lcm.server.data.Storage+json");
+
+    Invocation.Builder client = getClient("client/v0/storage");
+    Response post = client.post(payload);
+
+    Response.StatusType statusInfo = post.getStatusInfo();
+    if (statusInfo.getFamily() != Response.Status.Family.SUCCESSFUL) {
+      throw new DataCreationException(
+          String.format("%s - %s", statusInfo.getStatusCode(), statusInfo.getReasonPhrase()));
+    }
+  }
+
+  public void updateStorage(String storage)
+      throws ServerException, DataCreationException, AuthenticationException, JsonProcessingException {
+      Entity<String> payload =
+        Entity.entity(storage, "application/nl.kpmg.lcm.server.data.Storage+json");
+
+    Invocation.Builder client = getClient("client/v0/storage");
+    Response put = client.put(payload);
+
+    Response.StatusType statusInfo = put.getStatusInfo();
+    if (statusInfo.getFamily() != Response.Status.Family.SUCCESSFUL) {
+      throw new DataCreationException(
+          String.format("%s - %s", statusInfo.getStatusCode(), statusInfo.getReasonPhrase()));
+    }
+  }
+
+  public void deleteStorage(String storageId) throws AuthenticationException, ServerException,
+      ClientException, DataCreationException {
+
+    Invocation.Builder client = getClient(String.format("client/v0/storage/%s", storageId));
+    Response delete = client.delete();
+
+    Response.StatusType statusInfo = delete.getStatusInfo();
+    if (statusInfo.getFamily() != Response.Status.Family.SUCCESSFUL) {
+      throw new DataCreationException(String.format("%s - %s", statusInfo.getStatusCode(),
+          statusInfo.getReasonPhrase()));
+    }
   }
 
   public void postMetadata(String metadata)
