@@ -34,6 +34,7 @@ import com.vaadin.ui.themes.ValoTheme;
 
 import nl.kpmg.lcm.ui.view.AdministrationViewImpl;
 import nl.kpmg.lcm.ui.view.MetadataOverviewViewImpl;
+import nl.kpmg.lcm.ui.view.TransferViewImpl;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Configuration;
@@ -76,7 +77,7 @@ public class Application extends UI {
     navigationBar
         .addComponent(createNavigationButton("Metadata", MetadataOverviewViewImpl.VIEW_NAME));
     navigationBar.addComponent(createNotImplementedButton("Analytics"));
-    navigationBar.addComponent(createNotImplementedButton("Discover"));
+    navigationBar.addComponent(createNavigationButton("Transfer", TransferViewImpl.VIEW_NAME));
     navigationBar
         .addComponent(createNavigationButton("Administration", AdministrationViewImpl.VIEW_NAME));
     root.addComponent(navigationBar);

@@ -13000,10 +13000,22 @@ div.v-layout.v-horizontal.v-widget {
 	margin-right: 10px;
 }
 
+.lcm_main_theme .margin-right-20 {
+	margin-right: 20px;
+}
+
+.lcm_main_theme .margin-bottom-20 {
+	margin-bottom: 20px;
+}
+
 .lcm_main_theme .align-left {
 	aling: left;
 }
 
 .lcm_main_theme .padding-right-20 {
 	padding-right: 20px;
+}
+
+.lcm_main_theme .width-search-field {
+	width: 300px;
 }

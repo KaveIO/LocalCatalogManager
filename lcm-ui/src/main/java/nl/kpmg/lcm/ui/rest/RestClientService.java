@@ -171,6 +171,11 @@ public class RestClientService {
     return getDatasRepresentation("client/v0/local", MetaDatasRepresentation.class);
   }
 
+   public MetaDatasRepresentation getRemoteMetadata(String remoteLcmId)
+      throws AuthenticationException, ServerException, ClientException {
+    return getDatasRepresentation("client/v0/remote/"+remoteLcmId+"/search" , MetaDatasRepresentation.class);
+  }
+
   public StoragesRepresentation getStorage()
       throws AuthenticationException, ServerException, ClientException {
     return getDatasRepresentation("client/v0/storage", StoragesRepresentation.class);
