@@ -17,6 +17,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.vaadin.ui.Alignment;
 import com.vaadin.ui.Button;
+import com.vaadin.ui.Button.ClickListener;
 import com.vaadin.ui.ComboBox;
 import com.vaadin.ui.CustomComponent;
 import com.vaadin.ui.HorizontalLayout;
@@ -24,6 +25,7 @@ import com.vaadin.ui.Notification;
 import com.vaadin.ui.Table;
 import com.vaadin.ui.TextArea;
 import com.vaadin.ui.TextField;
+import com.vaadin.ui.UI;
 import com.vaadin.ui.VerticalLayout;
 
 import nl.kpmg.lcm.client.ClientException;
@@ -36,8 +38,12 @@ import nl.kpmg.lcm.server.data.RemoteLcm;
 import nl.kpmg.lcm.server.data.metadata.MetaDataWrapper;
 import nl.kpmg.lcm.ui.rest.AuthenticationException;
 import nl.kpmg.lcm.ui.rest.RestClientService;
+import nl.kpmg.lcm.ui.view.discovery.components.StartTransferWindow;
 
 import org.slf4j.LoggerFactory;
+
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  *
@@ -53,6 +59,7 @@ public class DiscoveryPanel extends CustomComponent {
   private TextArea metadataDetails;
   private ComboBox remoteLcmListComboBox;
   private TextField searchField;
+  private Map<String, String> remoteLcmUrlMap = new HashMap();
 
   public DiscoveryPanel(RestClientService restClientService) {
     this.restClientService = restClientService;
@@ -111,6 +118,8 @@ public class DiscoveryPanel extends CustomComponent {
         String url =
             String.format(template, remoteLcm.getProtocol(), remoteLcm.getDomain(), remoteLcm
                 .getPort().toString());
+
+        remoteLcmUrlMap.put(remoteLcm.getId(), url);
         remoteLcmListComboBox.addItem(remoteLcm.getId());
         remoteLcmListComboBox.setItemCaption(remoteLcm.getId(), url);
       }
@@ -177,13 +186,25 @@ public class DiscoveryPanel extends CustomComponent {
     });
     viewButton.addStyleName("link");
 
-    Button editButton = new Button("transfer");
-    editButton.setData(item);
-    // TODO editButton.addClickListener(new EditStorageListener(this, restClientService));
-    editButton.addStyleName("link");
+    Button transferButton = new Button("transfer");
+    transferButton.setData(item);
+    transferButton.addClickListener(new ClickListener() {
+
+      @Override
+      public void buttonClick(Button.ClickEvent event) {
+        MetaDataRepresentation data = (MetaDataRepresentation) event.getButton().getData();
+        String id = (String) remoteLcmListComboBox.getValue();
+        String url = remoteLcmUrlMap.get(id);
+        StartTransferWindow storageCreateWindow =
+            new StartTransferWindow(restClientService, id, url, data.getItem().getId(), data
+                .getItem().getName());
+        UI.getCurrent().addWindow(storageCreateWindow);
+      }
+    });
+    transferButton.addStyleName("link");
 
     actionsLayout.addComponent(viewButton);
-    actionsLayout.addComponent(editButton);
+    actionsLayout.addComponent(transferButton);
 
     return actionsLayout;
   }

@@ -293,6 +293,22 @@ public class RestClientService {
     }
   }
 
+  public void triggerTransfer(String remoLcmId, String remoteMetadataId, String jsonPayload)
+      throws ServerException, DataCreationException, AuthenticationException,
+      JsonProcessingException {
+    Entity<String> payload = Entity.entity(jsonPayload, "application/json");
+
+    Invocation.Builder client =
+        getClient("client/v0/remote/" + remoLcmId + "/metadata/" + remoteMetadataId);
+    Response post = client.post(payload);
+
+    Response.StatusType statusInfo = post.getStatusInfo();
+    if (statusInfo.getFamily() != Response.Status.Family.SUCCESSFUL) {
+      throw new DataCreationException(String.format("%s - %s", statusInfo.getStatusCode(),
+          statusInfo.getReasonPhrase()));
+    }
+  }
+
   public void postMetadata(String metadata)
       throws ServerException, DataCreationException, AuthenticationException {
     Entity<String> payload =
