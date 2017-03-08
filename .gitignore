@@ -7,3 +7,4 @@
 /lcm-server/target/
 /lcm-packaging/target/
 /lcm-ui/src/main/webapp/VAADIN/themes/lcm_main_theme/styles.css
+/integration/__pycache__/

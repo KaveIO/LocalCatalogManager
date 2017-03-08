@@ -7,6 +7,57 @@ Pretty straight forward. The LocalCatalogManager: Manages, Interprets, and Distr
 
 The LCM works by setting up explicit two-way SSL trust relationships and communicating data sets over these lines. Behind each LCM there can be a multiple storage backends that provide the actual data described. In this way LCM can share metadata and the associated data with each other. 
 
+## Getting Started 
+
+### Docker
+In order to help with exploring this tool we offer docker images. Be aware though, the docker images are not build to be a production setup. Data is not persisted outside. 
+
+In order to run this docker environment do the following: 
+
+```bash 
+docker pull kave/lcm
+
+docker run -h mongo --name lcm-mongo -p 27017:27017 -d mongo:3
+docker run -itd -h server --name lcm-server --link lcm-mongo:mongo -p 8081:8081 kave/lcm server
+docker run -itd -h ui --name lcm-ui --link lcm-server:server -p 8080:8080 kave/lcm ui
+```
+
+This will start a mongo database, the LCM server and the LCM ui. You can use your browser to reach
+
+    http://localhost:8080/ 
+
+To access the UI. The default username and password are: admin, admin. 
+
+
+### Stand alone deployment
+Download the latest [release](https://github.com/KaveIO/LocalCatalogManager/releases). 
+
+Untar the release. 
+```bash 
+  tar -xvzf lcm-complete-0.2.2-bin.tar.gz
+```
+
+After this you can get started. The quickest way to get this running is a unconfigured setup. The commands you have to run for this are the following:
+
+```bash 
+  bin/setup-ssl.sh
+  bin/start-dockerized-mongo.sh
+  bin/populate-dockerized-mongo.sh
+  bin/start-server.sh
+  bin/start-ui.sh
+```
+
+A couple of notes with this procedure: 
+ - This setup does depend on docker for running a MongoDB. 
+ - The last two commands currently have to run in foreground. 
+ - The ssl setup uses unsigned certificates, this will generate a warning in your browser. 
+
+You can use your browser to reach
+
+    https://localhost:4443/
+
+To access the UI. The default username and password are: admin, admin
+
 ## Goals  
 
 ### GlobalCatalogManager
