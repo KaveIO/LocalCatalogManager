@@ -15,7 +15,7 @@
 package nl.kpmg.lcm.server.backend;
 
 import nl.kpmg.lcm.server.backend.metadata.CsvMetaData;
-import nl.kpmg.lcm.server.backend.storage.CsvStorage;
+import nl.kpmg.lcm.server.backend.storage.FileStorage;
 import nl.kpmg.lcm.server.data.ContentIterator;
 import nl.kpmg.lcm.server.data.Data;
 import nl.kpmg.lcm.server.data.EnrichmentProperties;
@@ -64,7 +64,7 @@ public class BackendCsvImpl extends AbstractBackend {
    */
   public BackendCsvImpl(Storage backendStorage, MetaData metaData) {
     super(metaData);
-    String storagePath = new CsvStorage(backendStorage).getStoragePath();
+    String storagePath = new FileStorage(backendStorage).getStoragePath();
     dataSourceFile = createDataSourceFile(storagePath);
     this.csvMetaData = new CsvMetaData(metaData);
   }

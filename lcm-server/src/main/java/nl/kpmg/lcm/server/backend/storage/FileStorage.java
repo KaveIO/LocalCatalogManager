@@ -21,9 +21,9 @@ import nl.kpmg.lcm.validation.Notification;
  *
  * @author Stoyan Hristov<shristov@intracol.com>
  */
-public class CsvStorage extends AbstractStorageContainer {
+public class FileStorage extends AbstractStorageContainer {
 
-  public CsvStorage(Storage storage) {
+  public FileStorage(Storage storage) {
     super(storage);
   }
 
