@@ -51,6 +51,10 @@ public class StorageService {
     return Lists.newLinkedList(storageDao.findAll());
   }
 
+  public Storage findById(String id) {
+    return storageDao.findOne(id);
+  }
+
   public StorageDao getStorageDao() {
     return storageDao;
   }

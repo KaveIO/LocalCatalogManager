@@ -16,7 +16,7 @@ package nl.kpmg.lcm.server.rest.client.version0;
 
 import nl.kpmg.lcm.rest.types.TaskScheduleRepresentation;
 import nl.kpmg.lcm.server.data.TaskSchedule;
-import nl.kpmg.lcm.server.data.dao.TaskScheduleDao;
+import nl.kpmg.lcm.server.data.service.TaskScheduleService;
 import nl.kpmg.lcm.server.rest.authentication.Roles;
 import nl.kpmg.lcm.server.rest.client.version0.types.ConcreteTaskScheduleRepresentation;
 
@@ -41,7 +41,7 @@ public class TaskScheduleController {
    * The TaskDescription DAO.
    */
   @Autowired
-  private TaskScheduleDao taskScheduleDao;
+  private TaskScheduleService taskScheduleService;
 
   /**
    * @return a list of all tasks
@@ -50,7 +50,7 @@ public class TaskScheduleController {
   @Produces({"application/json"})
   @RolesAllowed({Roles.ADMINISTRATOR, Roles.API_USER})
   public final TaskScheduleRepresentation getCurrent() {
-    TaskSchedule taskSchedule = taskScheduleDao.findFirstByOrderByIdDesc();
+    TaskSchedule taskSchedule = taskScheduleService.findFirstByOrderByIdDesc();
 
     ConcreteTaskScheduleRepresentation concreteTaskScheduleRepresentation =
         new ConcreteTaskScheduleRepresentation(taskSchedule);
@@ -68,7 +68,7 @@ public class TaskScheduleController {
   @RolesAllowed({Roles.ADMINISTRATOR})
   public final Response createTaskSchedule(final TaskSchedule taskSchedule) {
     taskSchedule.setId(null);
-    taskScheduleDao.save(taskSchedule);
+    taskScheduleService.save(taskSchedule);
     return Response.ok().build();
   }
 }

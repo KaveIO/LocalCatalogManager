@@ -20,6 +20,8 @@ import nl.kpmg.lcm.server.data.ProgressIndication;
 import nl.kpmg.lcm.server.data.TaskDescription;
 import nl.kpmg.lcm.server.data.dao.TaskDescriptionDao;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -33,6 +35,7 @@ import java.util.Map;
  */
 @Service
 public class TaskDescriptionService {
+  private final Logger LOGGER = LoggerFactory.getLogger(TaskDescriptionService.class.getName());
 
   @Autowired
   private TaskDescriptionDao taskDescriptionDao;
@@ -55,13 +58,13 @@ public class TaskDescriptionService {
     return taskDescriptionDao.findByStatus(status);
   }
 
-  public TaskDescription markTaskAsRunning(String taskId) {
-    TaskDescription description = taskDescriptionDao.findOne(taskId);
+  public void markTaskAsRunning(TaskDescription description) {
+    if (description == null) {
+      return;
+    }
     description.setStatus(TaskDescription.TaskStatus.RUNNING);
     description.setStartTime(new Date());
-    TaskDescription saved = taskDescriptionDao.save(description);
-
-    return saved;
+    taskDescriptionDao.save(description);
   }
 
   public TaskDescription markTaskAsFinished(String taskId, TaskDescription.TaskStatus status) {

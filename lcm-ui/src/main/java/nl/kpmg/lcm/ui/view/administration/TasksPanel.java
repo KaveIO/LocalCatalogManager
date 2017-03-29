@@ -100,7 +100,12 @@ public class TasksPanel extends CustomComponent {
   private void updateTaskSchedule() {
     scheduleTable.removeAllItems();
     if (taskSchedule != null && taskSchedule.getItem() != null) {
-      for (TaskSchedule.TaskScheduleItem item : taskSchedule.getItem().getItems()) {
+      for (TaskSchedule.TaskScheduleItem item : taskSchedule.getItem().getEnrichmentItems()) {
+        scheduleTable.addItem(
+            new Object[] {item.getName(), item.getCron(), item.getJob(), item.getTarget()},
+            item.getName());
+      }
+       for (TaskSchedule.TaskScheduleItem item : taskSchedule.getItem().getManagerItems()) {
         scheduleTable.addItem(
             new Object[] {item.getName(), item.getCron(), item.getJob(), item.getTarget()},
             item.getName());
@@ -115,9 +120,11 @@ public class TasksPanel extends CustomComponent {
       //Put the resent tasks on the top.
       while(li.hasPrevious()) {
       TaskDescription taskDescription = ((TaskDescriptionRepresentation)li.previous()).getItem();
+
+      String status = taskDescription.getStatus() != null? taskDescription.getStatus().toString(): "";
        tasksTable.addItem(new Object[] {taskDescription.getJob(), taskDescription.getTarget(),
             taskDescription.getStartTime(), taskDescription.getEndTime(),
-            taskDescription.getStatus().toString()}, taskDescription.getId());
+            status}, taskDescription.getId());
       }
     }
   }

@@ -14,12 +14,9 @@
 
 package nl.kpmg.lcm.server.task.enrichment;
 
-import nl.kpmg.lcm.server.backend.Backend;
-import nl.kpmg.lcm.server.backend.DataSetInformation;
+import nl.kpmg.lcm.server.data.EnrichmentProperties;
 import nl.kpmg.lcm.server.data.metadata.MetaDataWrapper;
-import nl.kpmg.lcm.server.data.service.StorageService;
-import nl.kpmg.lcm.server.exception.LcmException;
-import nl.kpmg.lcm.server.exception.LcmValidationException;
+import nl.kpmg.lcm.server.data.service.MetaDataService;
 import nl.kpmg.lcm.server.task.EnrichmentTask;
 import nl.kpmg.lcm.server.task.TaskException;
 import nl.kpmg.lcm.server.task.TaskResult;
@@ -28,6 +25,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 
+import java.util.HashMap;
 import java.util.Map;
 
 /**
@@ -55,7 +53,7 @@ public class DataEnrichmentTask extends EnrichmentTask {
    * The BackendService.
    */
   @Autowired
-  private StorageService storageService;
+  private MetaDataService metaDataService;
 
   /**
    * Will store information on the data associated with a piece of MetaData.
@@ -68,37 +66,28 @@ public class DataEnrichmentTask extends EnrichmentTask {
   @Override
   protected final TaskResult execute(final MetaDataWrapper metadataWrapper, final Map options)
       throws TaskException {
-    try {
-      Backend backend = storageService.getBackend(metadataWrapper);
-      if (backend == null) {
-        return TaskResult.FAILURE;
-      }
+    EnrichmentProperties enrichment;
 
-      DataSetInformation gatherDataSetInformation = backend.gatherDataSetInformation();
+    enrichment = metadataWrapper.getEnrichmentPropertiesDescriptor().getEnrichmentProperties();
 
-      if (!gatherDataSetInformation.isAttached()) {
-        metadataWrapper.getDynamicData().setState("DETACHED");
-        return TaskResult.SUCCESS;
-      }
-      metadataWrapper.getDynamicData().setState("ATTACHED");
-
-      if (!gatherDataSetInformation.isReadable()) {
-        metadataWrapper.getDynamicData().setReadable("UNREADABLE");
-        return TaskResult.SUCCESS;
-      }
-      metadataWrapper.getDynamicData().setReadable("READABLE");
-      metadataWrapper.getDynamicData().setSize(gatherDataSetInformation.getByteSize());
-      metadataWrapper.getDynamicData().setUpdateTimestamp(gatherDataSetInformation.getModificationTime().toString());
-
-      metaDataService.update(metadataWrapper.getMetaData().getId(), metadataWrapper.getMetaData());
-
-      return TaskResult.SUCCESS;
-    } catch (LcmValidationException ex) {
-      LOGGER.warn( ex.getNotification().errorMessage());
-      return TaskResult.FAILURE;
-    } catch ( LcmException ex) {
-      LOGGER.warn( ex.getMessage(), ex);
-      return TaskResult.FAILURE;
+    // metadata enrichment is empty and there is storage enrichment section
+    if (enrichment == null && options != null) {
+      enrichment = new EnrichmentProperties(options);
+    } else { // default enrichment properties.
+      enrichment = new EnrichmentProperties(new HashMap());
+      enrichment.setItemCount(true);
+      enrichment.setSize(true);
+      enrichment.setStructure(true);
+      enrichment.setAccessibility(true);
     }
+
+    boolean result = false;
+    try {
+      result = metaDataService.enrichMetadata(metadataWrapper, enrichment);
+    } catch (Exception e) {
+      LOGGER.error("Unableto enrich metadata. Metadata id: " + metadataWrapper.getId());
+    }
+
+    return result ? TaskResult.SUCCESS : TaskResult.FAILURE;
   }
 }

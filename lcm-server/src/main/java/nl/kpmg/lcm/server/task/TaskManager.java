@@ -48,7 +48,8 @@ public final class TaskManager {
    * on every hour every day of month...
    */
   private static final String EXECUTE_CORE_TASK_CRON_SCHEDULE = "0 * * * * ?";
-  private static final String LOAD_CORE_TASK_CRON_SCHEDULE = "0 * * * * ?";
+  /*How often task schedule collection is processed(only if it is changed) */
+  private static final String LOAD_CORE_TASK_CRON_SCHEDULE = "0 0 * * * ?";
   /**
    * The group key which is used to register the task which drive the core of the TaskManager logic.
    */

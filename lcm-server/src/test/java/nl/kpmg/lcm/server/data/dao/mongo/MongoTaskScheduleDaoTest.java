@@ -47,7 +47,7 @@ public class MongoTaskScheduleDaoTest extends LcmBaseTest {
     LinkedList items = new LinkedList();
     TaskSchedule.TaskScheduleItem taskScheduleItem = new TaskSchedule.TaskScheduleItem();
     items.add(taskScheduleItem);
-    taskSchedule.setItems(items);
+    taskSchedule.setEnrichmentItems(items);
 
     TaskSchedule saved = taskScheduleDao.save(taskSchedule);
     return saved.getId();

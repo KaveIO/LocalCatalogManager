@@ -23,6 +23,7 @@ import nl.kpmg.lcm.server.data.FetchEndpoint;
 import nl.kpmg.lcm.server.data.RemoteLcm;
 import nl.kpmg.lcm.server.data.Storage;
 import nl.kpmg.lcm.server.data.TaskDescription;
+import nl.kpmg.lcm.server.data.TaskType;
 import nl.kpmg.lcm.server.data.dao.RemoteLcmDao;
 import nl.kpmg.lcm.server.data.metadata.MetaData;
 import nl.kpmg.lcm.server.data.metadata.MetaDataWrapper;
@@ -103,6 +104,7 @@ public class DataFetchTriggerService {
       throws ServerException, ClientErrorException {
     TaskDescription dataFetchTaskDescription = new TaskDescription();
     dataFetchTaskDescription.setJob(DataFetchTask.class.getName());
+    dataFetchTaskDescription.setType(TaskType.FETCH);
     dataFetchTaskDescription.setStatus(TaskDescription.TaskStatus.PENDING);
     dataFetchTaskDescription.setTarget(metadataId);
 

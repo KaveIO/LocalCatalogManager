@@ -1,11 +1,11 @@
 /*
  * Copyright 2016 KPMG N.V. (unless otherwise stated).
- *
+ * 
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except
  * in compliance with the License. You may obtain a copy of the License at
- *
+ * 
  * http://www.apache.org/licenses/LICENSE-2.0
- *
+ * 
  * Unless required by applicable law or agreed to in writing, software distributed under the License
  * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
  * or implied. See the License for the specific language governing permissions and limitations under
@@ -18,6 +18,7 @@ import nl.kpmg.lcm.server.backend.metadata.TabularMetaData;
 import nl.kpmg.lcm.server.backend.storage.HiveStorage;
 import nl.kpmg.lcm.server.data.ContentIterator;
 import nl.kpmg.lcm.server.data.Data;
+import nl.kpmg.lcm.server.data.EnrichmentProperties;
 import nl.kpmg.lcm.server.data.ProgressIndicationFactory;
 import nl.kpmg.lcm.server.data.Storage;
 import nl.kpmg.lcm.server.data.metadata.MetaData;
@@ -25,9 +26,12 @@ import nl.kpmg.lcm.server.data.metadata.MetaDataWrapper;
 import nl.kpmg.lcm.server.exception.LcmException;
 import nl.kpmg.lcm.validation.Notification;
 
+import org.apache.metamodel.MetaModelHelper;
 import org.apache.metamodel.data.DataSet;
+import org.apache.metamodel.data.Row;
 import org.apache.metamodel.drop.DropTable;
 import org.apache.metamodel.jdbc.JdbcDataContext;
+import org.apache.metamodel.query.Query;
 import org.apache.metamodel.schema.Schema;
 import org.apache.metamodel.schema.Table;
 import org.slf4j.Logger;
@@ -36,6 +40,7 @@ import org.slf4j.LoggerFactory;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
+import java.util.Date;
 
 /**
  *
@@ -86,24 +91,55 @@ public class BackendHiveImpl extends AbstractBackend {
   }
 
   @Override
-  public DataSetInformation gatherDataSetInformation() {
+  public MetaData enrichMetadata(EnrichmentProperties enrichment) {
+    long start = System.currentTimeMillis();
+    try {
+      hiveMetaData.clearDynamicData();
+      if (enrichment.getItemsCount() || enrichment.getStructure() || enrichment.getAccessibility()) {
+        JdbcDataContext dataContext = getDataContext();
 
-    JdbcDataContext dataContext = getDataContext();
+        Schema database = dataContext.getSchemaByName(hiveStorage.getDatabase());
+        if (database == null) {
+          if (enrichment.getAccessibility()) {
+            hiveMetaData.getDynamicData().setState("DETACHED");
+          }
+          return hiveMetaData.getMetaData();
+        }
+        Table table = database.getTableByName(getTableName());
+        if (table == null) {
+          if (enrichment.getAccessibility()) {
+            hiveMetaData.getDynamicData().setState("DETACHED");
+          }
+          return hiveMetaData.getMetaData();
+        }
 
-    DataSetInformation info = new DataSetInformation();
+        if (enrichment.getAccessibility()) {
+          hiveMetaData.getDynamicData().setState("ATTACHED");
+        }
 
-    String tableName = getDataUri().getPath();
-    info.setUri(tableName);
+        if (enrichment.getItemsCount()) {
+          Query query = dataContext.query().from(table).selectCount().toQuery();
+          DataSet dataSet = dataContext.query().from(table).selectCount().execute();
+          Row result = MetaModelHelper.executeSingleRowQuery(dataContext, query);
+          Long count = (Long) result.getValue(0);
+          hiveMetaData.getDynamicData().setItemsCount(count);
+        }
 
-    Schema database = dataContext.getSchemaByName(hiveStorage.getDatabase());
-    Table table = database.getTableByName(tableName);
-    if (table == null) {
-      info.setAttached(false);
-    } else {
-      info.setAttached(true);
+        if (enrichment.getStructure()) {
+          hiveMetaData.getTableDescription().setColumns(table.getColumns());
+        }
+
+      }
+    } catch (Exception ex) {
+      LOGGER.error("Unable to enrich medatadata : " + hiveMetaData.getId() + ". Error Message: "
+          + ex.getMessage());
+      throw new LcmException("Unable to enrich medatadata : " + hiveMetaData.getId(), ex);
+    } finally {
+      hiveMetaData.getDynamicData().setUpdateTimestamp(new Date().getTime());
+      long end = System.currentTimeMillis();
+      hiveMetaData.getDynamicData().setUpdateDurationInMillis(end - start);
     }
-
-    return info;
+    return hiveMetaData.getMetaData();
   }
 
   @Override
@@ -113,11 +149,7 @@ public class BackendHiveImpl extends AbstractBackend {
     if (transformationSettings == null) {
       transformationSettings = new DataTransformationSettings();
     }
-    // remove the first symbol as uri Path is something like "/tablex"
-    String tableName = getDataUri().getPath().substring(1);
-    if (tableName.contains(".")) {
-      tableName = tableName.replace(".", "_");
-    }
+    String tableName = getTableName();
 
     Schema database = dataContext.getSchemaByName(hiveStorage.getDatabase());
     Table table = database.getTableByName(tableName);
@@ -151,6 +183,15 @@ public class BackendHiveImpl extends AbstractBackend {
     }
   }
 
+  private String getTableName() {
+    // remove the first symbol as uri Path is something like "/tableX"
+    String tableName = getDataUri().getPath().substring(1);
+    if (tableName.contains(".")) {
+      tableName = tableName.replace(".", "_");
+    }
+    return tableName;
+  }
+
   @Override
   public boolean delete() {
     throw new UnsupportedOperationException("Not supported yet.");
@@ -170,7 +211,7 @@ public class BackendHiveImpl extends AbstractBackend {
       throw new LcmException("Error: database \"" + hiveStorage.getDatabase() + "\" is not found!");
     }
     // remove the first symbol as uri Path is something like "/tablex"
-    String tableName = getDataUri().getPath().substring(1);
+    String tableName = getTableName();
 
     Table table = schema.getTableByName(tableName);
 

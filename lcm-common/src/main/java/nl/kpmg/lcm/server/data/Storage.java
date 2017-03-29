@@ -14,8 +14,11 @@
 
 package nl.kpmg.lcm.server.data;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
+
 import org.springframework.data.mongodb.core.index.Indexed;
 import org.springframework.data.mongodb.core.mapping.Document;
+import org.springframework.data.mongodb.core.mapping.Field;
 
 import java.util.Map;
 
@@ -36,6 +39,9 @@ public class Storage extends AbstractModel {
 
   private Map options;
 
+  @Field("enrichment-properties")
+  private Map enrichmentProperties;
+
   /**
    *
    * @return options
@@ -46,6 +52,24 @@ public class Storage extends AbstractModel {
 
   public void setOptions(Map options) {
     this.options = options;
+  }
+
+  /**
+   *
+   * @return options
+   */
+  @JsonProperty("enrichment-properties")
+  @Field("enrichment-properties")
+  public Map getEnrichmentProperties() {
+    return enrichmentProperties;
+  }
+
+  @JsonProperty("enrichment-properties")
+  /* this annotation is needed for jersey */
+  @Field("enrichment-properties")
+  /* this annotation is needed for mongoDB */
+  public void setEnrichmentProperties(Map enrichmentProperties) {
+    this.enrichmentProperties = enrichmentProperties;
   }
 
   /**

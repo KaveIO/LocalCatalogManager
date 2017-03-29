@@ -19,10 +19,12 @@ import nl.kpmg.lcm.rest.types.MetaDataRepresentation;
 import nl.kpmg.lcm.rest.types.MetaDatasRepresentation;
 import nl.kpmg.lcm.server.backend.Backend;
 import nl.kpmg.lcm.server.data.Data;
+import nl.kpmg.lcm.server.data.EnrichmentProperties;
 import nl.kpmg.lcm.server.data.metadata.MetaData;
 import nl.kpmg.lcm.server.data.metadata.MetaDataWrapper;
 import nl.kpmg.lcm.server.data.service.MetaDataService;
 import nl.kpmg.lcm.server.data.service.StorageService;
+import nl.kpmg.lcm.server.exception.LcmException;
 import nl.kpmg.lcm.server.rest.authentication.Roles;
 import nl.kpmg.lcm.server.rest.client.version0.types.ConcreteMetaDataRepresentation;
 import nl.kpmg.lcm.server.rest.client.version0.types.ConcreteMetaDatasRepresentation;
@@ -121,7 +123,7 @@ public class LocalMetaDataController {
   public final Response putLocalMetaData(@PathParam("meta_data_id") final String metaDataId,
       final MetaData metadata) {
 
-    metaDataService.update(metaDataId, metadata);
+    metaDataService.update(metadata);
 
     return Response.ok().build();
   }
@@ -146,8 +148,10 @@ public class LocalMetaDataController {
           if (backend != null) {
             Data input = backend.read();
             String fType = (String) request.getParameters().get("type");
-            return Response.ok(input).header("Content-Disposition",
-                String.format("attachment; filename=%s.%s", metadata.getName(), fType)).build();
+            return Response
+                .ok(input)
+                .header("Content-Disposition",
+                    String.format("attachment; filename=%s.%s", metadata.getName(), fType)).build();
 
           }
         } finally {
@@ -182,6 +186,28 @@ public class LocalMetaDataController {
     }
 
     return null;
+  }
+
+  @POST
+  @Path("{meta_data_id}/enrich")
+  @Consumes({"application/nl.kpmg.lcm.server.data.EnrichmentProperties+json"})
+  @Produces({"application/nl.kpmg.lcm.rest.types.MetaDataRepresentation+json"})
+  @RolesAllowed({Roles.ADMINISTRATOR, Roles.API_USER})
+  public final MetaDataRepresentation metadataEnrichment(
+      @PathParam("meta_data_id") final String metaDataId, EnrichmentProperties properties) {
+    MetaData metadata = metaDataService.findById(metaDataId);
+    if (metadata == null) {
+      throw new NotFoundException(String.format("MetaData set %s could not be found", metaDataId));
+    }
+
+    MetaDataWrapper metaDataWrapper = new MetaDataWrapper(metadata);
+    boolean result = metaDataService.enrichMetadata(metaDataWrapper, properties);
+    if (result) {
+      MetaData updatedMetadata = metaDataService.findById(metaDataId);
+      return new ConcreteMetaDataRepresentation(updatedMetadata);
+    } else {
+      throw new LcmException("Unable to enrich the metadata. Id: " + metaDataId);
+    }
   }
 
   /**

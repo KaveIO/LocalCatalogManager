@@ -56,6 +56,7 @@ public class StorageCreateWindow extends Window implements Button.ClickListener 
   private RestClientService restClientService;
 
   private final TextArea optionsArea = new TextArea("Options");
+  private final TextArea enrichmentArea = new TextArea("Enrichment options");
   private final TextField nameField = new TextField("Name");
   private final TextField typeField = new TextField("Type");
   private final Button saveButton = new Button("Save");
@@ -68,13 +69,20 @@ public class StorageCreateWindow extends Window implements Button.ClickListener 
     init();
   }
 
-  public StorageCreateWindow(RestClientService restClientService, Storage storage) throws JsonProcessingException {
+  public StorageCreateWindow(RestClientService restClientService, Storage storage)
+      throws JsonProcessingException {
     super(EDIT_TITLE);
     this.restClientService = restClientService;
     nameField.setValue(storage.getName());
     typeField.setValue(storage.getType());
-    String json = new ObjectMapper().writeValueAsString(storage.getOptions());
-    optionsArea.setValue(json);
+    String storageJson = new ObjectMapper().writeValueAsString(storage.getOptions());
+    optionsArea.setValue(storageJson);
+    if (storage.getEnrichmentProperties() != null) {
+      String enrichmentJson =
+          new ObjectMapper().writeValueAsString(storage.getEnrichmentProperties());
+      enrichmentArea.setValue(enrichmentJson);
+    }
+
     this.storage = storage;
     init();
   }
@@ -82,6 +90,8 @@ public class StorageCreateWindow extends Window implements Button.ClickListener 
   private void init() {
     optionsArea.setWidth("100%");
     optionsArea.setHeight("100%");
+    enrichmentArea.setWidth("100%");
+    enrichmentArea.setHeight("100%");
     saveButton.addClickListener(this);
 
     FormLayout panelContent = new FormLayout();
@@ -89,6 +99,7 @@ public class StorageCreateWindow extends Window implements Button.ClickListener 
     panelContent.addComponent(nameField);
     panelContent.addComponent(typeField);
     panelContent.addComponent(optionsArea);
+    panelContent.addComponent(enrichmentArea);
     panelContent.addComponent(saveButton);
 
     this.setWidth(PANEL_SIZE);
@@ -111,6 +122,15 @@ public class StorageCreateWindow extends Window implements Button.ClickListener 
         notification.addError("Options field is not valid Json", ex);
       }
 
+      JsonNode enrichment = null;
+      try {
+        if (enrichmentArea.getValue() != null && enrichmentArea.getValue().length() > 0) {
+          enrichment = mapper.readTree(enrichmentArea.getValue());
+        }
+      } catch (IOException ex) {
+        notification.addError("Enrichment properties are not valid Json", ex);
+      }
+
       if (notification.hasErrors()) {
         Notification.show("Validation failed: " + notification.errorMessage());
         LOGGER.debug("Validation failed: " + notification.errorMessage());
@@ -119,17 +139,20 @@ public class StorageCreateWindow extends Window implements Button.ClickListener 
 
       ObjectNode rootNode = mapper.createObjectNode();
       rootNode.set("options", options);
+      if (enrichment != null) {
+        rootNode.set("enrichment-properties", enrichment);
+      }
       rootNode.put("name", nameField.getValue());
       rootNode.put("type", typeField.getValue());
 
       try {
-        if(storage != null) {
-            rootNode.put("id", storage.getId());
-            restClientService.updateStorage(rootNode.toString());
-            Notification.show("Update was successful.");
+        if (storage != null) {
+          rootNode.put("id", storage.getId());
+          restClientService.updateStorage(rootNode.toString());
+          Notification.show("Update was successful.");
         } else {
-            restClientService.createStorage(rootNode.toString());
-            Notification.show("Creation of storage successful.");
+          restClientService.createStorage(rootNode.toString());
+          Notification.show("Creation of storage successful.");
         }
         this.close();
       } catch (ServerException | DataCreationException | AuthenticationException | IOException ex) {
@@ -152,7 +175,7 @@ public class StorageCreateWindow extends Window implements Button.ClickListener 
       notification.addError(field.getCaption() + " can not be empty");
     }
 
-    if (field.getValue().indexOf(' ') !=  -1) {
+    if (field.getValue().indexOf(' ') != -1) {
       notification.addError(field.getCaption() + " can not contain spaces!");
     }
 

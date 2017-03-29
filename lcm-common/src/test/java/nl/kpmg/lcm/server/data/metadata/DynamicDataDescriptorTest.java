@@ -32,27 +32,25 @@ import java.util.Map;
 public class DynamicDataDescriptorTest {
   @Test
   public void testConstruction() {
-    String readableValue = "READABLE";
     Long sizeValue = 1234567L;
     String stateValue = "ATTACHED";
-    String timestamp = Long.toString(System.currentTimeMillis());
+    Long timestamp = System.currentTimeMillis();
 
     MetaData metaData = new MetaData();
     DynamicDataDescriptor dynamicData = new DynamicDataDescriptor(metaData);
 
-    dynamicData.setReadable(readableValue);
     dynamicData.setSize(sizeValue);
     dynamicData.setState(stateValue);
-    dynamicData.setUpdateTimestamp(timestamp);
+    dynamicData.setDataUpdateTimestamp(timestamp);
 
     Map dynamicDataMap = metaData.get(dynamicData.getSectionName());
     assertNotNull(dynamicDataMap);
-    assertEquals(4, dynamicDataMap.size());
+    assertEquals(3, dynamicDataMap.size());
 
-    assertEquals(readableValue, dynamicData.getReadable());
     assertEquals(sizeValue, dynamicData.getSize());
     assertEquals(stateValue, dynamicData.getState());
-    assertEquals(timestamp, dynamicData.getUpdateTimestamp());
+    Long readTime = dynamicData.getDataUpdateTimestamp();
+    assertEquals(timestamp, readTime);
   }
 
   @Test
@@ -61,26 +59,23 @@ public class DynamicDataDescriptorTest {
     MetaData metaData = new MetaData();
     DynamicDataDescriptor dynamicData = new DynamicDataDescriptor(metaData);
 
-    assertNull(dynamicData.getReadable());
     assertNull(dynamicData.getSize());
     assertNull(dynamicData.getState());
-    assertNull(dynamicData.getUpdateTimestamp());
+    assertNull(dynamicData.getDataUpdateTimestamp());
   }
 
   @Test
   public void testValidate() {
-    String readableValue = "READABLE";
     Long sizeValue = 1234567L;
     String stateValue = "ATTACHED";
-    String timestamp = Long.toString(System.currentTimeMillis());
+    Long timestamp = System.currentTimeMillis();
 
     MetaData metaData = new MetaData();
     DynamicDataDescriptor dynamicData = new DynamicDataDescriptor(metaData);
 
-    dynamicData.setReadable(readableValue);
     dynamicData.setSize(sizeValue);
     dynamicData.setState(stateValue);
-    dynamicData.setUpdateTimestamp(timestamp);
+    dynamicData.setDataUpdateTimestamp(timestamp);
 
     Notification notification = new Notification();
     dynamicData.validate(notification);

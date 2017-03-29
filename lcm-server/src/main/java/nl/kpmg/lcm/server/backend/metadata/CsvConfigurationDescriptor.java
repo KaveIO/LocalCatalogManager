@@ -35,7 +35,8 @@ public class CsvConfigurationDescriptor extends TableConfigurationDescriptor {
   }
 
   public final Character getSeparatorChar() {
-    return get("separator-char");
+    Object charObj = get("separator-char");
+    return parseChar(charObj);
   }
 
   public final void setSeparatorChar(final Character separatorChar) {
@@ -43,7 +44,8 @@ public class CsvConfigurationDescriptor extends TableConfigurationDescriptor {
   }
 
   public final Character getQuoteChar() {
-    return get("quote-char");
+    Object charObj = get("quote-char");
+    return parseChar(charObj);
   }
 
   public final void setQuoteChar(final Character quoteChar) {
@@ -51,7 +53,22 @@ public class CsvConfigurationDescriptor extends TableConfigurationDescriptor {
   }
 
   public final Character getEscapeChar() {
-    return get("escape-char");
+    Object charObj = get("escape-char");
+    return parseChar(charObj);
+  }
+
+  private Character parseChar(Object charObj) {
+    if (charObj == null) {
+      return null;
+    }
+
+    if (charObj instanceof String) {
+      return ((String) charObj).charAt(0);
+    } else if (charObj instanceof Character) {
+      return (Character) charObj;
+    }
+
+    return null;
   }
 
   public final void setEscapeChar(final Character escapeChar) {
@@ -70,26 +87,21 @@ public class CsvConfigurationDescriptor extends TableConfigurationDescriptor {
     }
 
     if (getMap().get("separator-char") != null) {
-      try {
-        Character separatorChar = get("separator-char");
-      } catch (ClassCastException cce) {
-        notification.addError("\"separator-char\" property is not a char", cce);
+      if (parseChar(getMap().get("separator-char")) == null) {
+        notification.addError("\"separator-char\" property is not a char");
       }
     }
 
+
     if (getMap().get("quote-char") != null) {
-      try {
-        Character quoteChar = get("quote-char");
-      } catch (ClassCastException cce) {
-        notification.addError("\"quote-char\" property is not a char", cce);
+      if (parseChar(getMap().get("quote-char")) == null) {
+        notification.addError("\"quote-char\" property is not a char");
       }
     }
 
     if (getMap().get("escape-char") != null) {
-      try {
-        Character escapeChar = get("escape-char");
-      } catch (ClassCastException cce) {
-        notification.addError("\"escape-char\" property is not a char", cce);
+      if (parseChar(getMap().get("escape-char")) == null) {
+        notification.addError("\"escape-char\" property is not a char");
       }
     }
   }

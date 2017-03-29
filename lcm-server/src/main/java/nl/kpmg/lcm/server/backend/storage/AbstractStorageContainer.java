@@ -14,6 +14,7 @@
 
 package nl.kpmg.lcm.server.backend.storage;
 
+import nl.kpmg.lcm.server.data.EnrichmentProperties;
 import nl.kpmg.lcm.server.data.Storage;
 import nl.kpmg.lcm.server.exception.LcmValidationException;
 import nl.kpmg.lcm.validation.Notification;
@@ -38,6 +39,11 @@ abstract class AbstractStorageContainer {
       throw new LcmValidationException(notification);
     }
     this.storage = storage;
+  }
+
+  protected EnrichmentProperties getEnrichmentProperties() {
+
+      return new EnrichmentProperties(storage.getEnrichmentProperties());
   }
 
   private void basicValidation(Storage storage, Notification notification) {

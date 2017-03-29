@@ -32,11 +32,13 @@ import nl.kpmg.lcm.server.ServerException;
 import nl.kpmg.lcm.server.data.ProgressIndication;
 import nl.kpmg.lcm.server.data.TaskDescription;
 import nl.kpmg.lcm.server.data.TaskDescription.TaskStatus;
+import nl.kpmg.lcm.server.data.TaskType;
 import nl.kpmg.lcm.ui.rest.AuthenticationException;
 import nl.kpmg.lcm.ui.rest.RestClientService;
 
 import org.slf4j.LoggerFactory;
 
+import java.util.Date;
 import java.util.ListIterator;
 
 /**
@@ -218,6 +220,10 @@ public class MonitorPanel extends CustomComponent {
         // Put the resent tasks on the top.
         while (li.hasPrevious()) {
           TaskDescription description = ((TaskDescriptionRepresentation) li.previous()).getItem();
+          if(description.getType() != TaskType.FETCH) {
+              //display only fetch tasks.
+              continue;
+          }
           String json;
           try {
             json = new ObjectMapper().writeValueAsString(description);
@@ -253,9 +259,11 @@ public class MonitorPanel extends CustomComponent {
 
   private void addDescriptionIntoTable(TaskDescription description)
       throws UnsupportedOperationException {
-    String date = description.getStartTime().toString();
+    Date startDate = description.getStartTime();
+    String date = startDate != null ? startDate.toString() : "";
+    String status  = description.getStatus() !=  null? description.getStatus().toString(): "";
     HorizontalLayout actionsLayout = createActionsLayout(description);
-    taskTable.addItem(new Object[] {description.getId(), date, description.getStatus().toString(),
+    taskTable.addItem(new Object[] {description.getId(), date, status,
         actionsLayout}, description.getId());
   }
 

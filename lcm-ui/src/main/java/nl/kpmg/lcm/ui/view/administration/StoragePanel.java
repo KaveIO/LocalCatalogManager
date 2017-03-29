@@ -229,6 +229,14 @@ public class StoragePanel extends CustomComponent implements DynamicDataContaine
       panelContent.addComponent(new DefinedLabel(entry.getKey(), entry.getValue()));
     }
 
+    Map<String, Object> enrichentProperties = item.getEnrichmentProperties();
+
+    if(enrichentProperties !=  null) {
+        for (Map.Entry<String, Object> entry : enrichentProperties.entrySet()) {
+            panelContent.addComponent(new DefinedLabel("Enrichment: " + entry.getKey(), entry.getValue().toString()));
+        }
+    }
+
     storageDetailsPanel.setContent(panelContent);
   }
 

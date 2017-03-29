@@ -18,6 +18,7 @@ import nl.kpmg.lcm.validation.Notification;
 
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.util.HashMap;
 
 /**
  *
@@ -30,12 +31,14 @@ public class MetaDataWrapper implements MetaDataIdentificator {
   protected final DataDescriptor dataDescriptor;
   protected final GeneralInfoDescriptor generalInfoDescriptor;
   protected final DynamicDataDescriptor dynamicDataDescriptor;
+  protected final EnrichmentPropertiesDescriptor enrichmentPropertiesDescriptor;
 
   public MetaDataWrapper(MetaData metaData) {
     this.metaData = metaData;
     this.dataDescriptor = new DataDescriptor(metaData);
     this.generalInfoDescriptor = new GeneralInfoDescriptor(metaData);
     this.dynamicDataDescriptor = new DynamicDataDescriptor(metaData);
+    this.enrichmentPropertiesDescriptor = new EnrichmentPropertiesDescriptor(metaData);
 
     Notification notification = new Notification();
     this.dataDescriptor.validate(notification);
@@ -50,6 +53,7 @@ public class MetaDataWrapper implements MetaDataIdentificator {
     this.dataDescriptor = new DataDescriptor(metaData);
     this.generalInfoDescriptor = new GeneralInfoDescriptor(metaData);
     this.dynamicDataDescriptor = new DynamicDataDescriptor(metaData);
+    this.enrichmentPropertiesDescriptor = new EnrichmentPropertiesDescriptor(metaData);
   }
 
   /**
@@ -69,16 +73,31 @@ public class MetaDataWrapper implements MetaDataIdentificator {
   public String getSourceType() {
     String sourceType = null;
     URI parsedUri;
-      try {
-          if(getData() !=  null && getData().getUri() != null) {
-            parsedUri = new URI(getData().getUri());
-            sourceType = parsedUri.getScheme();
-          }
-      } catch (URISyntaxException ex) {
-          sourceType = null;
+    try {
+      if (getData() != null && getData().getUri() != null) {
+        parsedUri = new URI(getData().getUri());
+        sourceType = parsedUri.getScheme();
       }
+    } catch (URISyntaxException ex) {
+      sourceType = null;
+    }
 
     return sourceType;
+  }
+
+  public String getStorageName() {
+    String storageName = null;
+    URI parsedUri;
+    try {
+      if (getData() != null && getData().getUri() != null) {
+        parsedUri = new URI(getData().getUri());
+        storageName = parsedUri.getHost() != null ? parsedUri.getHost() : parsedUri.getAuthority();
+      }
+    } catch (URISyntaxException ex) {
+      storageName = null;
+    }
+
+    return storageName;
   }
 
   @Override
@@ -103,6 +122,10 @@ public class MetaDataWrapper implements MetaDataIdentificator {
     metaData.set(value.getSectionName(), value.getMap());
   }
 
+  public final void clearDynamicData() {
+    metaData.set(getDynamicData().getSectionName(), new HashMap());
+  }
+
   public final DynamicDataDescriptor getDynamicData() {
     return dynamicDataDescriptor;
   }
@@ -124,5 +147,19 @@ public class MetaDataWrapper implements MetaDataIdentificator {
 
   public boolean isEmpty() {
     return metaData == null;
+  }
+
+  /**
+   * @return the enrichmentPropertiesDescriptor
+   */
+  public EnrichmentPropertiesDescriptor getEnrichmentPropertiesDescriptor() {
+    return enrichmentPropertiesDescriptor;
+  }
+
+  /**
+   * @param value the EnrichmentPropertiesDescriptor to set
+   */
+  public void setEnrichmentPropertiesDescriptor(EnrichmentPropertiesDescriptor value) {
+    metaData.set(value.getSectionName(), value.getMap());
   }
 }

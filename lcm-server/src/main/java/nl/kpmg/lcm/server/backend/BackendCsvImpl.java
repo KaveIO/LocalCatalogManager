@@ -18,6 +18,7 @@ import nl.kpmg.lcm.server.backend.metadata.CsvMetaData;
 import nl.kpmg.lcm.server.backend.storage.CsvStorage;
 import nl.kpmg.lcm.server.data.ContentIterator;
 import nl.kpmg.lcm.server.data.Data;
+import nl.kpmg.lcm.server.data.EnrichmentProperties;
 import nl.kpmg.lcm.server.data.Storage;
 import nl.kpmg.lcm.server.data.metadata.MetaData;
 import nl.kpmg.lcm.server.data.metadata.MetaDataWrapper;
@@ -81,7 +82,8 @@ public class BackendCsvImpl extends AbstractBackend {
     CsvConfiguration csvConfiguration = csvMetaData.getConfiguration();
 
     if (!dataSourceFile.exists()) {
-      throw new LcmException("Unable to find data source file! FilePath: " + dataSourceFile.getPath());
+      throw new LcmException("Unable to find data source file! FilePath: "
+          + dataSourceFile.getPath());
     }
     return (CsvDataContext) DataContextFactory.createCsvDataContext(dataSourceFile,
         csvConfiguration);
@@ -110,22 +112,43 @@ public class BackendCsvImpl extends AbstractBackend {
   }
 
   @Override
-  public DataSetInformation gatherDataSetInformation() {
-    DataSetInformation info = new DataSetInformation();
-    try {
-      info.setUri(dataSourceFile.getCanonicalPath());
-      info.setAttached(dataSourceFile.exists());
-      if (dataSourceFile.exists()) {
+  public MetaData enrichMetadata(EnrichmentProperties enrichment) {
 
-        info.setByteSize(dataSourceFile.length());
-        info.setModificationTime(new Date(dataSourceFile.lastModified()));
+    long start = System.currentTimeMillis();
+    try {
+      csvMetaData.clearDynamicData();
+      if (enrichment.getAccessibility()) {
+        String state = dataSourceFile.exists() ? "ATTACHED" : "DETACHED";
+        csvMetaData.getDynamicData().setState(state);
       }
-    } catch (IOException ex) {
-      LOGGER.error("Unable to get info about datasource: " + dataSourceFile.getPath(), ex);
+
+      if (dataSourceFile.exists()) {
+        if (enrichment.getSize()) {
+          csvMetaData.getDynamicData().setSize(dataSourceFile.length());
+        }
+        if (enrichment.getStructure()) {
+          UpdateableDataContext dataContext = createDataContext();
+          Schema schema = dataContext.getDefaultSchema();
+          if (schema.getTableCount() == 0) {
+            return null;
+          }
+          Table table = schema.getTables()[0];
+          csvMetaData.getTableDescription().setColumns(table.getColumns());
+        }
+        Long dataUpdateTime = new Date(dataSourceFile.lastModified()).getTime();
+        csvMetaData.getDynamicData().setDataUpdateTimestamp(dataUpdateTime);
+      }
+    } catch (Exception ex) {
+      LOGGER.error("Unable to enrich medatadata : " + csvMetaData.getId() + ". Error Message: "
+          + ex.getMessage());
       throw new LcmException("Unable to get info about datasource: " + dataSourceFile.getPath(), ex);
+    } finally {
+      csvMetaData.getDynamicData().setUpdateTimestamp(new Date().getTime());
+      long end = System.currentTimeMillis();
+      csvMetaData.getDynamicData().setUpdateDurationInMillis(end - start);
     }
 
-    return info;
+    return metaDataWrapper.getMetaData();
   }
 
   /**
@@ -140,8 +163,7 @@ public class BackendCsvImpl extends AbstractBackend {
   @Override
   public void store(ContentIterator content, DataTransformationSettings transformationSettings,
       boolean forceOverwrite) {
-    DataSetInformation dataSetInformation = gatherDataSetInformation();
-    if (dataSetInformation.isAttached() && !forceOverwrite) {
+    if (dataSourceFile.exists() && !forceOverwrite) {
       throw new LcmException("Data set is already attached, won't overwrite.");
     }
 
@@ -172,15 +194,15 @@ public class BackendCsvImpl extends AbstractBackend {
         String line = csvWriter.buildLine(lineAsStringValues);
         writer.write(line);
         rowNumber++;
-        if(progressIndicationFactory != null
-                && rowNumber % progressIndicationFactory.getIndicationChunkSize() == 0) {
-            String message =  "Written " + (rowNumber -1) +  " records!";
-            progressIndicationFactory.writeIndication(message);
+        if (progressIndicationFactory != null
+            && rowNumber % progressIndicationFactory.getIndicationChunkSize() == 0) {
+          String message = "Written " + (rowNumber - 1) + " records!";
+          progressIndicationFactory.writeIndication(message);
         }
       }
       writer.flush();
-      String message = "Written successfully all the records: " + (rowNumber -1);
-      if(progressIndicationFactory != null) {
+      String message = "Written successfully all the records: " + (rowNumber - 1);
+      if (progressIndicationFactory != null) {
         progressIndicationFactory.writeIndication(message);
       }
     } catch (IOException ex) {
@@ -188,7 +210,7 @@ public class BackendCsvImpl extends AbstractBackend {
       if (progressIndicationFactory != null) {
         String message =
             String.format("The content is inserted partially, only %d rows in file: %s",
-                (rowNumber -1), dataSourceFile.getName());
+                (rowNumber - 1), dataSourceFile.getName());
         progressIndicationFactory.writeIndication(message);
       }
     }

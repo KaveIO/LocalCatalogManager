@@ -14,10 +14,13 @@
 
 package nl.kpmg.lcm.server.data;
 
+import org.springframework.data.mongodb.core.mapping.Document;
+
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Objects;
+
 import javax.annotation.security.PermitAll;
-import org.springframework.data.mongodb.core.mapping.Document;
 
 /**
  * Contains the schedule of tasks.
@@ -31,7 +34,9 @@ public class TaskSchedule extends AbstractModel {
   /**
    * The schedule. s
    */
-  private List<TaskScheduleItem> items = new LinkedList();
+  private List<TaskScheduleItem> enrichmentItems = new LinkedList();
+  private List<TaskScheduleItem> fetchItems = new LinkedList();
+  private List<TaskScheduleItem> managerItems = new LinkedList();
 
   /**
    * An inner class describing a single schedule item.
@@ -56,6 +61,14 @@ public class TaskSchedule extends AbstractModel {
      * The target expression describing on what the task should run.
      */
     private String target;
+
+    /**
+     * The target expression describing target type i.e. metadata or storage. The value should be
+     * the representing class name.
+     */
+    private String targetType;
+
+    private TaskType taskType;
 
     public String getName() {
       return name;
@@ -88,13 +101,134 @@ public class TaskSchedule extends AbstractModel {
     public void setTarget(String target) {
       this.target = target;
     }
+
+    /**
+     * @return the targetType
+     */
+    public String getTargetType() {
+      return targetType;
+    }
+
+    /**
+     * @param targetType the targetType to set
+     */
+    public void setTargetType(String targetType) {
+      this.targetType = targetType;
+    }
+
+    @Override
+    public boolean equals(Object compared) {
+      if (compared == null || !(compared instanceof TaskScheduleItem)) {
+        return false;
+      }
+
+      if (compared == this) {
+        return true;
+      }
+
+      TaskScheduleItem comparedItem = (TaskScheduleItem) compared;
+      if ((name == null && comparedItem.getName() == null || name.equals(comparedItem.getName()))
+          && (cron == null && comparedItem.getCron() == null || cron.equals(comparedItem.getCron()))
+          && (target == null && comparedItem.getTarget() == null || target.equals(comparedItem
+              .getTarget()))
+          && (targetType == null && comparedItem.getTargetType() == null || targetType
+              .equals(comparedItem.getTargetType()))
+          && (job == null && comparedItem.getJob() == null || job.equals(comparedItem.getJob()))
+          && taskType.equals(comparedItem.getTaskType())) {
+
+        return true;
+      }
+
+      return false;
+    }
+
+    @Override
+    public int hashCode() {
+      return Objects.hash(name, cron, target, targetType, job, taskType);
+    }
+
+    /**
+     * @return the taskType
+     */
+    public TaskType getTaskType() {
+      return taskType;
+    }
+
+    /**
+     * @param taskType the taskType to set
+     */
+    public void setTaskType(TaskType taskType) {
+      this.taskType = taskType;
+    }
+
   }
 
-  public List<TaskScheduleItem> getItems() {
-    return items;
+  @Override
+  public boolean equals(Object compared) {
+    if (compared == null)
+      return false;
+    if (compared == this)
+      return true;
+    if (!(compared instanceof TaskSchedule))
+      return false;
+
+    TaskSchedule comparedTaskSchedule = (TaskSchedule) compared;
+
+    if (enrichmentItems.equals(comparedTaskSchedule.getEnrichmentItems())
+        && fetchItems.equals(comparedTaskSchedule.getFetchItems())
+        && managerItems.equals(comparedTaskSchedule.getManagerItems())) {
+      return true;
+    }
+
+
+    return false;
   }
 
-  public void setItems(List<TaskScheduleItem> items) {
-    this.items = items;
+  @Override
+  public int hashCode() {
+    return Objects.hash(enrichmentItems, fetchItems, managerItems);
   }
+
+  /**
+   * @return the enrichmentItems
+   */
+  public List<TaskScheduleItem> getEnrichmentItems() {
+    return enrichmentItems;
+  }
+
+  /**
+   * @param enrichmentItems the enrichmentItems to set
+   */
+  public void setEnrichmentItems(List<TaskScheduleItem> enrichmentItems) {
+    this.enrichmentItems = enrichmentItems;
+  }
+
+  /**
+   * @return the fetchItems
+   */
+  public List<TaskScheduleItem> getFetchItems() {
+    return fetchItems;
+  }
+
+  /**
+   * @param fetchItems the fetchItems to set
+   */
+  public void setFetchItems(List<TaskScheduleItem> fetchItems) {
+    this.fetchItems = fetchItems;
+  }
+
+  /**
+   * @return the managerItems
+   */
+  public List<TaskScheduleItem> getManagerItems() {
+    return managerItems;
+  }
+
+  /**
+   * @param managerItems the managerItems to set
+   */
+  public void setManagerItems(List<TaskScheduleItem> managerItems) {
+    this.managerItems = managerItems;
+  }
+
 }

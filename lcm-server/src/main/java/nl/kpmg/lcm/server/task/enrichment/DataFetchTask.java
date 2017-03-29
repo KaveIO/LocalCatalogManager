@@ -137,7 +137,7 @@ public class DataFetchTask extends EnrichmentTask {
       backend.store(iterator, new DataTransformationSettings(), true);
 
       metaDataWrapper.getDynamicData().setState("ATTACHED");
-      metaDataService.update(metaDataWrapper.getId(), metaDataWrapper.getMetaData());
+      metaDataService.update(metaDataWrapper.getMetaData());
     } catch (Exception ex) {
       LOGGER.error(ex.getMessage());
 

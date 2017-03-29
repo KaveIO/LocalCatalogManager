@@ -46,10 +46,9 @@ public class MetaDataWrapperTest {
     metaData.setId("4738596435");
     metaData.setName("Test");
     DynamicDataDescriptor dynamicData = new DynamicDataDescriptor(metaData);
-    dynamicData.setReadable("READABLE");
     dynamicData.setSize(123L);
     dynamicData.setState("ATTACHED");
-    dynamicData.setUpdateTimestamp("12423423");
+    dynamicData.setDataUpdateTimestamp(12423423L);
 
     metaData.set(dynamicData.getSectionName(), dynamicData.getMap());
 

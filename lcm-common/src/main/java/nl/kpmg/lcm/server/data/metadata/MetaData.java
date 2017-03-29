@@ -54,11 +54,6 @@ public class MetaData extends AbstractModel implements MetaDataIdentificator {
   private String name;
 
   /**
-   * The type of described data, i.e csv, hive, etc.
-   */
-  private String sourceType;
-
-  /**
    * The inner map in which all the unknown attributes are stored.
    */
   private final Map<String, Object> innerMap;
@@ -139,7 +134,6 @@ public class MetaData extends AbstractModel implements MetaDataIdentificator {
     } catch (Exception ex) {
       LOGGER.error("Couldn't find path: " + path, ex);
     }
-
   }
 
   private void set(final Map map, final String[] path, final Object value) throws Exception {

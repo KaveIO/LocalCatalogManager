@@ -14,10 +14,13 @@
 
 package nl.kpmg.lcm.server.task;
 
+import nl.kpmg.lcm.server.data.Storage;
 import nl.kpmg.lcm.server.data.TaskDescription;
+import nl.kpmg.lcm.server.data.TaskType;
 import nl.kpmg.lcm.server.data.metadata.MetaData;
 import nl.kpmg.lcm.server.data.metadata.MetaDataWrapper;
 import nl.kpmg.lcm.server.data.service.MetaDataService;
+import nl.kpmg.lcm.server.data.service.StorageService;
 import nl.kpmg.lcm.server.data.service.TaskDescriptionService;
 
 import org.quartz.Job;
@@ -43,20 +46,32 @@ public abstract class EnrichmentTask implements Job {
   private final Logger LOGGER = LoggerFactory.getLogger(EnrichmentTask.class.getName());
 
   /**
-   * The field name containing the metadata expression in the JobDataMap.
+   * The id of the object that will be processed. If metadata is transfered the this is metadata id.
    */
   public static final String TARGET_KEY = "target";
+  /**
+   * Point the type of the processed object i.e. storage, metadata etc.
+   */
+  public static final String TARGET_TYPE_KEY = "target-type";
 
   /**
    * The field name containing the task id in the JobDataMap.
    */
-  public static final String TASK_ID_KEY = "task_id";
+  public static final String TASK_ID_KEY = "task-id";
+
+    /**
+   * The field name containing the task type in the JobDataMap.
+   */
+  public static final String TASK_TYPE_KEY = "task-type";
 
   /**
    * The MetaDataService.
    */
   @Autowired
   protected MetaDataService metaDataService;
+
+  @Autowired
+  protected StorageService storageService;
 
   /**
    * The TaskDescriptionService.
@@ -91,30 +106,38 @@ public abstract class EnrichmentTask implements Job {
     JobDataMap jobDataMap = context.getJobDetail().getJobDataMap();
     String target = jobDataMap.getString(TARGET_KEY);
     taskId = jobDataMap.getString(TASK_ID_KEY);
-
+    String targetType = jobDataMap.getString(TARGET_TYPE_KEY);
+    TaskType taskType = (TaskType)jobDataMap.get(TASK_TYPE_KEY);
+    if (targetType == null) {
+      // Metadata is the default target.
+      targetType = MetaData.class.getName();
+    }
     // Update or create the task description
     if (taskId == null) {
       TaskDescription newTaskDescription = new TaskDescription();
       newTaskDescription.setJob(this.getClass().getName());
       newTaskDescription.setTarget(target);
+      newTaskDescription.setType(taskType);
       taskId = taskDescriptionService.createNew(newTaskDescription).getId();
     }
 
-    TaskDescription taskDescription;
-    taskDescription = taskDescriptionService.markTaskAsRunning(taskId);
+    TaskDescription taskDescription = taskDescriptionService.findOne(taskId);
+    if(taskDescription == null) {
+        LOGGER.error("Trying to execute not existing task. Id: " + taskId);
+        return;
+    }
+    taskDescriptionService.markTaskAsRunning(taskDescription);
 
     // Find the MetaData target on which this job needs to be executed
-    List<MetaData> targets;
-    if (target.equals("*")) {
-      targets = metaDataService.findAll();
-    } else {
-      MetaData metadata = metaDataService.findById(target);
-      targets = new LinkedList();
-      if (metadata != null) {
-        targets.add(metadata);
-      }
-    }
+    List<MetaData> targets = loadTargetMetadata(target, targetType, taskDescription);
 
+    TaskDescription.TaskStatus status = processTargets(targets, taskDescription);
+
+    taskDescriptionService.markTaskAsFinished(taskId, status);
+  }
+
+  private TaskDescription.TaskStatus processTargets(List<MetaData> targets,
+      TaskDescription taskDescription) {
     // Execute the actuall code for each target
     TaskDescription.TaskStatus status = TaskDescription.TaskStatus.SUCCESS;
     if (targets != null) {
@@ -128,15 +151,39 @@ public abstract class EnrichmentTask implements Job {
 
           LOGGER.info(String.format("Done with EnrichmentTask %s (%s) with status : %s",
               taskDescription.getId(), taskDescription.getJob(), taskResult));
-          if (taskResult ==  TaskResult.FAILURE) {
-              status = TaskDescription.TaskStatus.FAILED;
+          if (taskResult == TaskResult.FAILURE) {
+            status = TaskDescription.TaskStatus.FAILED;
           }
         } catch (TaskException ex) {
           LOGGER.error("Failed executing task", ex);
         }
       }
     }
+    return status;
+  }
 
-    taskDescriptionService.markTaskAsFinished(taskId, status);
+  private List<MetaData> loadTargetMetadata(String target, String targetType,
+      TaskDescription taskDescription) {
+    List<MetaData> targets;
+    if (target.equals("*")) {
+      targets = metaDataService.findAll();
+    } else {
+      if (targetType.equals(Storage.class.getName())) {
+        Storage storage = storageService.findById(target);
+        targets = metaDataService.findByStorageName(storage.getName());
+        taskDescription.setOptions(storage.getEnrichmentProperties());
+      } else if (targetType.equals(MetaData.class.getName())) {
+        MetaData metadata = metaDataService.findById(target);
+        targets = new LinkedList();
+        if (metadata != null) {
+          targets.add(metadata);
+        }
+      } else {
+        LOGGER.error("Unable to find target type.");
+        taskDescriptionService.markTaskAsFinished(taskId, TaskDescription.TaskStatus.FAILED);
+        targets = null;
+      }
+    }
+    return targets;
   }
 }

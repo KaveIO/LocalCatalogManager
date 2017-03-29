@@ -70,6 +70,8 @@ public class TaskDescription extends AbstractModel {
    * The current status of this job.
    */
   private TaskStatus status;
+  
+  private TaskType type;
 
   private List<ProgressIndication> progress;
 
@@ -184,4 +186,18 @@ public class TaskDescription extends AbstractModel {
   public void setProgress(List<ProgressIndication> progress) {
     this.progress = progress;
   }
+
+    /**
+     * @return the type
+     */
+    public TaskType getType() {
+        return type;
+    }
+
+    /**
+     * @param type the type to set
+     */
+    public void setType(TaskType type) {
+        this.type = type;
+    }
 }
