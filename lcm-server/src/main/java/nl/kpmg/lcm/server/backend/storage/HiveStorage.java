@@ -17,6 +17,9 @@ package nl.kpmg.lcm.server.backend.storage;
 import nl.kpmg.lcm.server.data.Storage;
 import nl.kpmg.lcm.validation.Notification;
 
+import java.util.HashSet;
+import java.util.Set;
+
 /**
  *
  * @author Stoyan Hristov<shristov@intracol.com>
@@ -29,6 +32,10 @@ public class HiveStorage extends AbstractStorageContainer {
 
   @Override
   protected void validate(Storage storage, Notification notification) {
+    if (!getSupportedStorageTypes().contains(storage.getType())) {
+      notification.addError("Storage validation: storage type does not match!");
+    }
+
     String url = (String) storage.getOptions().get("url");
     if (url == null || url.isEmpty()) {
       notification.addError("Storage validation: url is missing or is empty!", null);
@@ -69,5 +76,16 @@ public class HiveStorage extends AbstractStorageContainer {
 
   public String getDriver() {
     return (String) storage.getOptions().get("driver");
+  }
+
+  /**
+   *
+   * @return a set with supported storages. i.e if the type of the pure storage object is csv then
+   *         it could not be passed to Hive Wrapper(HiveStorage)
+   */
+  public static Set<String> getSupportedStorageTypes() {
+    Set result = new HashSet();
+    result.add("hive");
+    return result;
   }
 }

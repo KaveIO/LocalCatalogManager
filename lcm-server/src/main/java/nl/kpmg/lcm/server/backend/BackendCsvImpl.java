@@ -15,13 +15,13 @@
 package nl.kpmg.lcm.server.backend;
 
 import nl.kpmg.lcm.server.backend.metadata.CsvMetaData;
-import nl.kpmg.lcm.server.backend.storage.FileStorage;
+import nl.kpmg.lcm.server.backend.storage.LocalFileStorage;
 import nl.kpmg.lcm.server.data.ContentIterator;
 import nl.kpmg.lcm.server.data.Data;
 import nl.kpmg.lcm.server.data.EnrichmentProperties;
+import nl.kpmg.lcm.server.data.IterativeData;
 import nl.kpmg.lcm.server.data.Storage;
 import nl.kpmg.lcm.server.data.metadata.MetaData;
-import nl.kpmg.lcm.server.data.metadata.MetaDataWrapper;
 import nl.kpmg.lcm.server.exception.LcmException;
 import nl.kpmg.lcm.server.exception.LcmValidationException;
 import nl.kpmg.lcm.validation.Notification;
@@ -41,7 +41,6 @@ import org.slf4j.LoggerFactory;
 import java.io.File;
 import java.io.IOException;
 import java.io.Writer;
-import java.net.URI;
 import java.util.Date;
 import java.util.Map;
 
@@ -49,7 +48,7 @@ import java.util.Map;
  *
  * @author mhoekstra
  */
-@BackendSource(type = "csv")
+@BackendSource(type = {"csv"})
 public class BackendCsvImpl extends AbstractBackend {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(BackendCsvImpl.class.getName());
@@ -64,14 +63,9 @@ public class BackendCsvImpl extends AbstractBackend {
    */
   public BackendCsvImpl(Storage backendStorage, MetaData metaData) {
     super(metaData);
-    String storagePath = new FileStorage(backendStorage).getStoragePath();
-    dataSourceFile = createDataSourceFile(storagePath);
+    String storagePath = new LocalFileStorage(backendStorage).getStoragePath();
     this.csvMetaData = new CsvMetaData(metaData);
-  }
-
-  @Override
-  protected String getSupportedUriSchema() {
-    return "csv";
+    dataSourceFile = createDataSourceFile(storagePath);
   }
 
   private UpdateableDataContext createDataContext() {
@@ -89,16 +83,14 @@ public class BackendCsvImpl extends AbstractBackend {
         csvConfiguration);
   }
 
-
   private File createDataSourceFile(String storagePath) {
     if (dataSourceFile != null) {
       return dataSourceFile;
     }
 
     File baseDir = new File(storagePath);
-    URI dataUri = getDataUri();
 
-    String filePath = dataUri.getPath();
+    String filePath = csvMetaData.getData().getStorageItemName();
     dataSourceFile = new File(storagePath + filePath);
 
     Notification notification = new Notification();
@@ -112,21 +104,21 @@ public class BackendCsvImpl extends AbstractBackend {
   }
 
   @Override
-  public MetaData enrichMetadata(EnrichmentProperties enrichment) {
+  public MetaData enrichMetadata(EnrichmentProperties properties) {
 
     long start = System.currentTimeMillis();
     try {
       csvMetaData.clearDynamicData();
-      if (enrichment.getAccessibility()) {
+      if (properties.getAccessibility()) {
         String state = dataSourceFile.exists() ? "ATTACHED" : "DETACHED";
         csvMetaData.getDynamicData().setState(state);
       }
 
       if (dataSourceFile.exists()) {
-        if (enrichment.getSize()) {
+        if (properties.getSize()) {
           csvMetaData.getDynamicData().setSize(dataSourceFile.length());
         }
-        if (enrichment.getStructure()) {
+        if (properties.getStructure()) {
           UpdateableDataContext dataContext = createDataContext();
           Schema schema = dataContext.getDefaultSchema();
           if (schema.getTableCount() == 0) {
@@ -161,8 +153,14 @@ public class BackendCsvImpl extends AbstractBackend {
    *        false and the content already exists then LcmException is thrown.
    */
   @Override
-  public void store(ContentIterator content, DataTransformationSettings transformationSettings,
+  public void store(Data data, DataTransformationSettings transformationSettings,
       boolean forceOverwrite) {
+
+    if(!(data instanceof IterativeData)) {
+      throw new LcmException("Unable to store streaming data directly to csv.");
+    }
+
+     ContentIterator content = ((IterativeData)data).getIterator();
     if (dataSourceFile.exists() && !forceOverwrite) {
       throw new LcmException("Data set is already attached, won't overwrite.");
     }
@@ -231,7 +229,7 @@ public class BackendCsvImpl extends AbstractBackend {
    *         initialization.
    */
   @Override
-  public Data read() {
+  public IterativeData read() {
     UpdateableDataContext dataContext = createDataContext();
     Schema schema = dataContext.getDefaultSchema();
     if (schema.getTableCount() == 0) {
@@ -240,24 +238,16 @@ public class BackendCsvImpl extends AbstractBackend {
     Table table = schema.getTables()[0];
     DataSet result = dataContext.query().from(table).selectAll().execute();
     csvMetaData.getTableDescription().setColumns(table.getColumns());
-    return new Data(csvMetaData.getMetaData(), new DataSetContentIterator(result));
+    return new IterativeData(csvMetaData.getMetaData(), new DataSetContentIterator(result));
   }
 
   @Override
   public boolean delete() {
-    throw new UnsupportedOperationException("Not supported yet."); // To change body of generated
-                                                                   // methods, choose Tools |
-                                                                   // Templates.
+    throw new UnsupportedOperationException("Backend delete operation is not supported yet.");
   }
 
   @Override
   public void free() {
 
   }
-
-  @Override
-  protected void extraValidation(MetaDataWrapper metaDataWrapper, Notification notification) {
-
-  }
-
 }

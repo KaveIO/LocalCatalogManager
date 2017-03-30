@@ -19,12 +19,11 @@ import nl.kpmg.lcm.server.backend.storage.HiveStorage;
 import nl.kpmg.lcm.server.data.ContentIterator;
 import nl.kpmg.lcm.server.data.Data;
 import nl.kpmg.lcm.server.data.EnrichmentProperties;
+import nl.kpmg.lcm.server.data.IterativeData;
 import nl.kpmg.lcm.server.data.ProgressIndicationFactory;
 import nl.kpmg.lcm.server.data.Storage;
 import nl.kpmg.lcm.server.data.metadata.MetaData;
-import nl.kpmg.lcm.server.data.metadata.MetaDataWrapper;
 import nl.kpmg.lcm.server.exception.LcmException;
-import nl.kpmg.lcm.validation.Notification;
 
 import org.apache.metamodel.MetaModelHelper;
 import org.apache.metamodel.data.DataSet;
@@ -46,7 +45,7 @@ import java.util.Date;
  *
  * @author Stoyan Hristov<shristov@intracol.com>
  */
-@BackendSource(type = "hive")
+@BackendSource(type = {"hive"})
 public class BackendHiveImpl extends AbstractBackend {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(BackendHiveImpl.class.getName());
@@ -83,11 +82,6 @@ public class BackendHiveImpl extends AbstractBackend {
 
   private JdbcDataContext getDataContext() {
     return new JdbcDataContext(getConnection());
-  }
-
-  @Override
-  protected String getSupportedUriSchema() {
-    return "hive";
   }
 
   @Override
@@ -143,8 +137,14 @@ public class BackendHiveImpl extends AbstractBackend {
   }
 
   @Override
-  public void store(ContentIterator content, DataTransformationSettings transformationSettings,
+  public void store(Data data, DataTransformationSettings transformationSettings,
       boolean forceOverwrite) {
+
+    if (!(data instanceof IterativeData)) {
+      throw new LcmException("Unable to store streaming data directly to hive storage.");
+    }
+
+    ContentIterator content = ((IterativeData) data).getIterator();
     JdbcDataContext dataContext = getDataContext();
     if (transformationSettings == null) {
       transformationSettings = new DataTransformationSettings();
@@ -185,7 +185,7 @@ public class BackendHiveImpl extends AbstractBackend {
 
   private String getTableName() {
     // remove the first symbol as uri Path is something like "/tableX"
-    String tableName = getDataUri().getPath().substring(1);
+    String tableName = hiveMetaData.getData().getStorageItemName().substring(1);
     if (tableName.contains(".")) {
       tableName = tableName.replace(".", "_");
     }
@@ -194,16 +194,11 @@ public class BackendHiveImpl extends AbstractBackend {
 
   @Override
   public boolean delete() {
-    throw new UnsupportedOperationException("Not supported yet.");
+    throw new UnsupportedOperationException("Backend delete operation is not supported yet.");
   }
 
   @Override
-  protected void extraValidation(MetaDataWrapper metaDataWrapper, Notification notification) {
-
-  }
-
-  @Override
-  public Data read() {
+  public IterativeData read() {
     JdbcDataContext dataContext = getDataContext();
 
     Schema schema = dataContext.getSchemaByName(hiveStorage.getDatabase());
@@ -226,7 +221,7 @@ public class BackendHiveImpl extends AbstractBackend {
     LOGGER.info(String.format("Read from table: %s successfully", tableName));
     ContentIterator iterator = new DataSetContentIterator(dataSet);
 
-    return new Data(hiveMetaData.getMetaData(), iterator);
+    return new IterativeData(hiveMetaData.getMetaData(), iterator);
   }
 
   @Override

@@ -31,8 +31,8 @@ public class DynamicDataDescriptor extends AbstractMetaDataDescriptor {
    *         stamp (milliseconds)
    */
   public final Long getDataUpdateTimestamp() {
-
-    return get("data-update-timestamp");
+    Object value =  get("data-update-timestamp");
+    return parseLong(value);
   }
 
 
@@ -52,8 +52,8 @@ public class DynamicDataDescriptor extends AbstractMetaDataDescriptor {
    *         stamp (milliseconds)
    */
   public final Long getUpdateTimestamp() {
-
-    return get("update-timestamp");
+    Object value =  get("update-timestamp");
+    return parseLong(value);
   }
 
   /**
@@ -72,8 +72,8 @@ public class DynamicDataDescriptor extends AbstractMetaDataDescriptor {
    *         time stamp (milliseconds)
    */
   public final Long getUpdateDurationTimestamp() {
-
-    return get("update-duration-timestamp");
+    Object value =  get("update-duration-timestamp");
+    return parseLong(value);
   }
 
   /**
@@ -91,17 +91,21 @@ public class DynamicDataDescriptor extends AbstractMetaDataDescriptor {
    * @return the size of the actual data in bytes or null if size is not applicable for the data.
    */
   public final Long getSize() {
-
-    return get("size");
+    Object value =  get("size");
+    return parseLong(value);
   }
 
-  /**
-   * Set the size of the actual data in bytes
-   * 
-   * @param size : the data size in bytes
-   */
-  public final void setSize(final Long size) {
+  private Long parseLong(Object value) {
+    if (value instanceof Long) {
+      return (Long) value;
+    } else if (value instanceof Integer) {
+      return ((Integer) value).longValue();
+    } else {
+      return null;
+    }
+  }
 
+  public final void setSize(final long size) {
     set("size", size);
   }
 
@@ -111,8 +115,8 @@ public class DynamicDataDescriptor extends AbstractMetaDataDescriptor {
    *         data.
    */
   public final Long getItemsCount() {
-
-    return get("count");
+    Object value =  get("count");
+    return parseLong(value);
   }
 
   /**

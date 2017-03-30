@@ -144,7 +144,7 @@ public class DataFetchTriggerService {
    */
   private MetaDataWrapper getMetadata(String metadataId, RemoteLcm lcm) throws ServerException,
       ClientErrorException {
-    WebTarget webTarget = getWebTarget(lcm).path(METADATA_PATH).path(metadataId);
+    WebTarget webTarget = getWebTarget(lcm).path(METADATA_PATH).path(metadataId).queryParam("update", Boolean.TRUE);
     Invocation.Builder req = webTarget.request();
     Response response = req.get();
     try {

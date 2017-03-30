@@ -21,11 +21,16 @@ import nl.kpmg.lcm.configuration.ClientConfiguration;
 import nl.kpmg.lcm.server.ServerException;
 import nl.kpmg.lcm.server.backend.Backend;
 import nl.kpmg.lcm.server.backend.DataTransformationSettings;
+import nl.kpmg.lcm.server.backend.storage.LocalFileStorage;
+import nl.kpmg.lcm.server.backend.storage.S3FileStorage;
 import nl.kpmg.lcm.server.data.ContentIterator;
+import nl.kpmg.lcm.server.data.Data;
+import nl.kpmg.lcm.server.data.IterativeData;
 import nl.kpmg.lcm.server.data.JsonReaderContentIterator;
 import nl.kpmg.lcm.server.data.ProgressIndication;
 import nl.kpmg.lcm.server.data.ProgressIndicationFactory;
 import nl.kpmg.lcm.server.data.RemoteLcm;
+import nl.kpmg.lcm.server.data.StreamingData;
 import nl.kpmg.lcm.server.data.metadata.MetaDataWrapper;
 import nl.kpmg.lcm.server.data.service.RemoteLcmService;
 import nl.kpmg.lcm.server.data.service.StorageService;
@@ -130,12 +135,21 @@ public class DataFetchTask extends EnrichmentTask {
 
   private boolean writeData(InputStream in, MetaDataWrapper metaDataWrapper) {
     try {
-      JsonReader reader = new JsonReader(new InputStreamReader(in, "UTF-8"));
-      ContentIterator iterator = new JsonReaderContentIterator(reader);
       Backend backend = storageService.getBackend(metaDataWrapper);
-      backend.setProgressIndicationFactory(new ProgressIndicationFactory(taskService, taskId, 10000));
-      backend.store(iterator, new DataTransformationSettings(), true);
+      backend
+          .setProgressIndicationFactory(new ProgressIndicationFactory(taskService, taskId, 10000));
+      Data data;
+      String dataType = metaDataWrapper.getData().getDataType();
+      if (S3FileStorage.getSupportedStorageTypes().contains(dataType)
+          || LocalFileStorage.getSupportedStorageTypes().contains(dataType)) {
+        data = new StreamingData(metaDataWrapper.getMetaData(), in);
+      } else {
+        JsonReader reader = new JsonReader(new InputStreamReader(in, "UTF-8"));
+        ContentIterator iterator = new JsonReaderContentIterator(reader);
+        data = new IterativeData(metaDataWrapper.getMetaData(), iterator);
+      }
 
+      backend.store(data, new DataTransformationSettings(), true);
       metaDataWrapper.getDynamicData().setState("ATTACHED");
       metaDataService.update(metaDataWrapper.getMetaData());
     } catch (Exception ex) {
@@ -162,7 +176,7 @@ public class DataFetchTask extends EnrichmentTask {
 
     if (options.get("path") == null) {
       validationNotification.addError(
-          "Error! Options parameter must contain relative path to the resoruce", null);
+          "Error! Options parameter must contain relative path to the resource", null);
     }
   }
 

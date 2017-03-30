@@ -19,15 +19,13 @@ import nl.kpmg.lcm.server.data.Storage;
 import nl.kpmg.lcm.server.data.metadata.MetaDataWrapper;
 import nl.kpmg.lcm.server.exception.LcmException;
 import nl.kpmg.lcm.server.test.mock.MetaDataMocker;
+import nl.kpmg.lcm.server.test.mock.StorageMocker;
 
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
-
-import java.util.HashMap;
-import java.util.Map;
 
 /**
  *
@@ -49,12 +47,7 @@ public class BackendFactoryTest {
     private BackendFactory backendFactory;
 
     public BackendFactoryTest() {
-        csvStorage = new Storage();
-        csvStorage.setName(csvStorageName);
-        Map options = new HashMap();
-        options.put("storagePath", csvStoragePath);
-        csvStorage.setOptions(options);
-        
+        csvStorage = StorageMocker.createCsvStorage();
         validMetaData.getData().setUri(csvStorageURI);
     }
 

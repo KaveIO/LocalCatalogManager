@@ -13,7 +13,11 @@
  */
 package nl.kpmg.lcm.server.data.metadata;
 
+import nl.kpmg.lcm.server.exception.LcmException;
 import nl.kpmg.lcm.validation.Notification;
+
+import java.net.URI;
+import java.net.URISyntaxException;
 
 /**
  *
@@ -33,6 +37,24 @@ public class DataDescriptor extends AbstractMetaDataDescriptor {
     set("uri", uri);
   }
 
+  public String getStorageItemName() {
+    try {
+      URI dataUri = new URI(getUri());
+      return dataUri.getPath();
+    } catch (URISyntaxException ex) {
+      throw new LcmException(String.format("Failure while trying to parse URI '%s'", getUri()), ex);
+    }
+  }
+
+  public String getDataType() {
+    try {
+      URI dataUri = new URI(getUri());
+      return dataUri.getScheme();
+    } catch (URISyntaxException ex) {
+      throw new LcmException(String.format("Failure while trying to parse URI '%s'", getUri()), ex);
+    }
+  }
+
   @Override
   public String getSectionName() {
     return "data";
@@ -45,6 +67,7 @@ public class DataDescriptor extends AbstractMetaDataDescriptor {
           + "\" is not found in the metadata!");
       return;
     }
+
     validateField("uri", notification);
   }
 }

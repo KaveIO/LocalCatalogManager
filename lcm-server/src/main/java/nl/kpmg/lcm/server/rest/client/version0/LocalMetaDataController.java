@@ -18,8 +18,8 @@ import nl.kpmg.lcm.rest.types.MetaDataOperationRequest;
 import nl.kpmg.lcm.rest.types.MetaDataRepresentation;
 import nl.kpmg.lcm.rest.types.MetaDatasRepresentation;
 import nl.kpmg.lcm.server.backend.Backend;
-import nl.kpmg.lcm.server.data.Data;
 import nl.kpmg.lcm.server.data.EnrichmentProperties;
+import nl.kpmg.lcm.server.data.IterativeData;
 import nl.kpmg.lcm.server.data.metadata.MetaData;
 import nl.kpmg.lcm.server.data.metadata.MetaDataWrapper;
 import nl.kpmg.lcm.server.data.service.MetaDataService;
@@ -44,6 +44,7 @@ import javax.ws.rs.PUT;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
+import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
@@ -146,7 +147,7 @@ public class LocalMetaDataController {
         try {
           backend = storageService.getBackend(metaDataWrapper);
           if (backend != null) {
-            Data input = backend.read();
+            IterativeData input = (IterativeData)backend.read();
             String fType = (String) request.getParameters().get("type");
             return Response
                 .ok(input)
@@ -221,11 +222,16 @@ public class LocalMetaDataController {
   @Produces({"application/nl.kpmg.lcm.rest.types.MetaDataRepresentation+json"})
   @RolesAllowed({Roles.ADMINISTRATOR, Roles.API_USER})
   public final MetaDataRepresentation getLocalMetaData(
-      @PathParam("meta_data_id") final String metaDataId) {
+      @PathParam("meta_data_id") final String metaDataId, @QueryParam("update") Boolean update) {
 
     MetaData metadata = metaDataService.getMetaDataDao().findOne(metaDataId);
     if (metadata == null) {
       throw new NotFoundException(String.format("MetaData set %s could not be found", metaDataId));
+    }
+
+    if(update) {
+        Backend backend = storageService.getBackend(new MetaDataWrapper(metadata));
+        metadata =  backend.enrichMetadata(EnrichmentProperties.createDefaultEnrichmentProperties());
     }
 
     return new ConcreteMetaDataRepresentation(metadata);

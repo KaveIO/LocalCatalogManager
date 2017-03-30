@@ -30,7 +30,9 @@ import org.springframework.stereotype.Service;
 
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
+import java.util.HashSet;
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
 /**
@@ -59,7 +61,7 @@ public class BackendFactory {
 
     if (backendClassMap == null || backendClassMap.isEmpty()
         || backendClassMap.get(sourceType) == null) {
-      throw new LcmException("Backend is not implemented for soruce with type: " + sourceType);
+      throw new LcmException("Backend is not implemented for source with type: " + sourceType);
     }
 
     Class backendClass = backendClassMap.get(sourceType);
@@ -103,16 +105,18 @@ public class BackendFactory {
         continue;
       }
 
-      String sourceType = getSupportedSourceType(backendClass);
+      Set<String> sourceTypeList = getSupportedSourceType(backendClass);
 
-      if (sourceType != null) {
+      if (sourceTypeList != null && sourceTypeList.size() > 0) {
         LOGGER.trace(String.format("Put to backendClassMap entity with  key: %s and object of type: %s",
-            sourceType, bd.getBeanClassName()));
-        if (backendClassMap.get(sourceType) != null) {
-          LOGGER.error(String.format("There are more then one Class that implements \"%s\" source Type!",
-              sourceType));
+            sourceTypeList, bd.getBeanClassName()));
+        for(String sourceType: sourceTypeList){
+            if (backendClassMap.get(sourceType) != null) {
+              LOGGER.error(String.format("There are more then one Class that implements \"%s\" source Type!",
+                  sourceType));
+            }
+            backendClassMap.put(sourceType, backendClass);
         }
-        backendClassMap.put(sourceType, backendClass);
       }
     }
   }
@@ -161,12 +165,17 @@ public class BackendFactory {
     return null;
   }
 
-  private String getSupportedSourceType(Class<?> clazz) {
+  private Set<String> getSupportedSourceType(Class<?> clazz) {
     try {
       BackendSource source = clazz.getAnnotation(BackendSource.class);
 
       if (source != null) {
-        return source.type();
+         Set<String> sourceTypes =  new HashSet();
+         for(String type:  source.type()){
+            sourceTypes.add(type);
+         }
+
+         return sourceTypes;
       }
     } catch (SecurityException ex) {
       LOGGER.warn(null, ex);

@@ -16,6 +16,7 @@ package nl.kpmg.lcm.server.backend.storage;
 
 import nl.kpmg.lcm.server.data.Storage;
 import nl.kpmg.lcm.server.exception.LcmValidationException;
+import nl.kpmg.lcm.server.test.mock.StorageMocker;
 
 import org.junit.Assert;
 import org.junit.Test;
@@ -37,20 +38,10 @@ public class HiveStorageTest {
 
   @Test
   public void testCreateStorage() {
-    Storage correctStorage = new Storage();
-    correctStorage.setName(storageName);
-    Map options = new HashMap();
-    options.put("username", username);
-    options.put("password", password);
-    options.put("database", databaseName);
-    options.put("url",  url);
-    options.put("driver", driver);
-    correctStorage.setOptions(options);
-
+    Storage correctStorage = StorageMocker.createHiveStorage();
     HiveStorage hiveStorage = new HiveStorage(correctStorage);
     Assert.assertNotNull(hiveStorage);
   }
-
 
   @Test(expected = LcmValidationException.class)
   public void testValidateStorageMissingUsername() {

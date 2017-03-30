@@ -17,6 +17,9 @@ package nl.kpmg.lcm.server.backend.storage;
 import nl.kpmg.lcm.server.data.Storage;
 import nl.kpmg.lcm.validation.Notification;
 
+import java.util.HashSet;
+import java.util.Set;
+
 /**
  *
  * @author Stoyan Hristov<shristov@intracol.com>
@@ -35,15 +38,54 @@ public class S3FileStorage extends AbstractStorageContainer {
     return (String) storage.getOptions().get("aws-secret-access-key");
   }
 
+  public String getBucketName() {
+    return (String) storage.getOptions().get("bucket");
+  }
+
+  /**
+   * Bucket name must be unique in the amazon S3 domain space so try to keep format like bellow:
+   * "kpmg-lcm-" + system unique key + storage name;.
+   * Where "system unique key" is data specific to creating system
+   */
+  public String setBucketName(String bucketName) {
+    return (String) storage.getOptions().put("bucket", bucketName);
+  }
+
+  public String getFileType() {
+    return storage.getType();
+  }
+
   public String getName() {
     return storage.getName();
   }
 
   @Override
   protected void validate(Storage storage, Notification notification) {
-    String storagePath = (String) storage.getOptions().get("storagePath");
-    if (storagePath == null || storagePath.isEmpty()) {
-      notification.addError("Storage path is missing or is empty!", null);
+    if (!getSupportedStorageTypes().contains(storage.getType())) {
+      notification.addError("Storage validation: storage type does not match!");
     }
+
+    if (getAwsAccessKey() == null || getAwsAccessKey().isEmpty()) {
+      notification.addError("Access key is missing or is empty!", null);
+    }
+
+    if (getAwsSecretAccessKey() == null || getAwsSecretAccessKey().isEmpty()) {
+      notification.addError("Secret access key is missing or is empty!", null);
+    }
+
+    if (getBucketName() == null || getBucketName().isEmpty()) {
+      notification.addError("Bucket name is missing or is empty!", null);
+    }
+  }
+
+  /**
+   *
+   * @return a set with supported storages. i.e if the type of the pure storage object is csv then
+   *         it could not be passed to Hive Wrapper(HiveStorage)
+   */
+  public static Set<String> getSupportedStorageTypes() {
+    Set result = new HashSet();
+    result.add("s3file");
+    return result;
   }
 }

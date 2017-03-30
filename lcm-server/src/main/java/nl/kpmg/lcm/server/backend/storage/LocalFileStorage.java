@@ -17,13 +17,16 @@ package nl.kpmg.lcm.server.backend.storage;
 import nl.kpmg.lcm.server.data.Storage;
 import nl.kpmg.lcm.validation.Notification;
 
+import java.util.HashSet;
+import java.util.Set;
+
 /**
  *
  * @author Stoyan Hristov<shristov@intracol.com>
  */
-public class FileStorage extends AbstractStorageContainer {
+public class LocalFileStorage extends AbstractStorageContainer {
 
-  public FileStorage(Storage storage) {
+  public LocalFileStorage(Storage storage) {
     super(storage);
   }
 
@@ -31,11 +34,30 @@ public class FileStorage extends AbstractStorageContainer {
     return (String) storage.getOptions().get("storagePath");
   }
 
+  public String getFileType() {
+    return storage.getType();
+  }
+
   @Override
   protected void validate(Storage storage, Notification notification) {
+    if (!getSupportedStorageTypes().contains(storage.getType())) {
+      notification.addError("Storage validation: storage type does not match!");
+    }
     String storagePath = (String) storage.getOptions().get("storagePath");
     if (storagePath == null || storagePath.isEmpty()) {
       notification.addError("Storage path is missing or is empty!", null);
     }
+  }
+
+  /**
+   *
+   * @return a set with supported storages. i.e if the type of the pure storage object is csv then
+   *         it could not be passed to Hive Wrapper(HiveStorage)
+   */
+  public static Set<String> getSupportedStorageTypes() {
+    Set result = new HashSet();
+    result.add("csv");
+    result.add("file");
+    return result;
   }
 }

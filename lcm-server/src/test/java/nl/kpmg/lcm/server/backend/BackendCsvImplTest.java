@@ -14,16 +14,16 @@
 
 package nl.kpmg.lcm.server.backend;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 
 import nl.kpmg.lcm.server.data.Storage;
 import nl.kpmg.lcm.server.data.metadata.MetaDataWrapper;
 import nl.kpmg.lcm.server.test.mock.MetaDataMocker;
+import nl.kpmg.lcm.server.test.mock.StorageMocker;
 
 import org.junit.Test;
 
-import java.net.URI;
-import java.util.HashMap;
+import java.util.Set;
 
 
 /***
@@ -45,11 +45,7 @@ public class BackendCsvImplTest {
    * Default constructor.
    */
   public BackendCsvImplTest() {
-    backendStorage = new Storage();
-    backendStorage.setId(TEST_BACKEND_NAME);
-    backendStorage.setOptions(new HashMap());
-    backendStorage.getOptions().put("storagePath", TEST_STORAGE_PATH);
-
+    backendStorage = StorageMocker.createCsvStorage();
   }
 
   /**
@@ -61,26 +57,7 @@ public class BackendCsvImplTest {
     String uri = "csv://test/temp.csv";
     metaDataWrapper.getData().setUri(uri);
     BackendCsvImpl testBackend = new BackendCsvImpl(backendStorage, metaDataWrapper.getMetaData());
-    String testSchema = testBackend.getSupportedUriSchema();
-    assertEquals("csv", testSchema);
-  }
-
-  /**
-   * Tests if the URI is parsed correctly in {@link BackendFileImpl} class.
-   *
-   * @throws BackendException if it is not possible to parse the URI
-   */
-  @Test
-  public final void testParseUri() {
-    String uri = "csv://test/temp.csv";
-    MetaDataWrapper metaDataWrapper = MetaDataMocker.getCsvMetaDataWrapper();
-    metaDataWrapper.getData().setUri(uri);
-
-    BackendCsvImpl testBackend = new BackendCsvImpl(backendStorage, metaDataWrapper.getMetaData());
-    URI dataUri = testBackend.getDataUri();
-
-    assertEquals("csv", dataUri.getScheme());
-    assertEquals("test", dataUri.getHost());
-    assertEquals("/temp.csv", dataUri.getPath());
+    Set<String> testSchema = testBackend.getSupportedUriSchema();
+    assertTrue(testSchema.contains("csv"));
   }
 }

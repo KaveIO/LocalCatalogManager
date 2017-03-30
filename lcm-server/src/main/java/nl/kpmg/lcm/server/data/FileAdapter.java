@@ -13,23 +13,18 @@
  */
 package nl.kpmg.lcm.server.data;
 
-import nl.kpmg.lcm.server.data.metadata.MetaData;
+import java.io.IOException;
+import java.io.InputStream;
 
 /**
  *
  * @author shristov
  */
-public class Data {
-  private final MetaData metaData;
+public interface FileAdapter {
+  public void write(InputStream stream, Long size) throws IOException;
+  public InputStream read() throws IOException;
 
-  public Data(MetaData metaData) {
-    this.metaData = metaData;
-  }
-
-  /**
-   * @return the metaData
-   */
-  public MetaData getMetaData() {
-    return metaData;
-  }
+  public boolean exists() throws IOException;
+  public long length() throws IOException;
+  public long lastModified() throws IOException;
 }

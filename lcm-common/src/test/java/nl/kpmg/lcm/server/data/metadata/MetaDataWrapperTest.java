@@ -72,5 +72,6 @@ public class MetaDataWrapperTest {
     assertEquals(wrapper.getData().getMap(), data.getMap());
     assertEquals(wrapper.getDynamicData().getMap(), dynamicData.getMap());
     assertEquals(wrapper.getGeneralInfo().getMap(), generalInfo.getMap());
+    assertEquals(wrapper.getData().getStorageItemName(), "/mock.csv");
   }
 }

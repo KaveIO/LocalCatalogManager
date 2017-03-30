@@ -154,4 +154,14 @@ public class EnrichmentProperties {
   public void setItemCount(boolean flag) {
     setProperty("items-count", flag);
   }
+
+  public static EnrichmentProperties createDefaultEnrichmentProperties() {
+    EnrichmentProperties enrichment = new EnrichmentProperties(new HashMap());
+    enrichment.setItemCount(true);
+    enrichment.setSize(true);
+    enrichment.setStructure(true);
+    enrichment.setAccessibility(true);
+
+    return enrichment;
+  }
 }

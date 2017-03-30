@@ -35,9 +35,10 @@ public class CsvStorageTest {
     correctStorage.setName("csv-sotrage");
     Map options = new HashMap();
     options.put("storagePath", "/tmp");
+    correctStorage.setType("csv");
     correctStorage.setOptions(options);
 
-    FileStorage hiveStorage = new FileStorage(correctStorage);
+    LocalFileStorage hiveStorage = new LocalFileStorage(correctStorage);
     Assert.assertNotNull(hiveStorage);
   }
 
@@ -48,6 +49,6 @@ public class CsvStorageTest {
     Map options = new HashMap();
     incrrectStorage.setOptions(options);
 
-    new FileStorage(incrrectStorage);
+    new LocalFileStorage(incrrectStorage);
   }
 }

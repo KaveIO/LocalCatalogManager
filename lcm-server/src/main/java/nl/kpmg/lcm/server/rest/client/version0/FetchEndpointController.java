@@ -20,7 +20,10 @@ import com.google.gson.stream.JsonWriter;
 import nl.kpmg.lcm.server.backend.Backend;
 import nl.kpmg.lcm.server.data.ContentIterator;
 import nl.kpmg.lcm.server.data.Data;
+import nl.kpmg.lcm.server.data.EnrichmentProperties;
 import nl.kpmg.lcm.server.data.FetchEndpoint;
+import nl.kpmg.lcm.server.data.IterativeData;
+import nl.kpmg.lcm.server.data.StreamingData;
 import nl.kpmg.lcm.server.data.dao.FetchEndpointDao;
 import nl.kpmg.lcm.server.data.metadata.MetaData;
 import nl.kpmg.lcm.server.data.metadata.MetaDataWrapper;
@@ -34,6 +37,7 @@ import org.apache.commons.io.FilenameUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.net.URI;
@@ -77,8 +81,8 @@ public class FetchEndpointController {
   @Path("/{id}")
   @Produces(MediaType.APPLICATION_OCTET_STREAM)
   @RolesAllowed({Roles.ADMINISTRATOR, Roles.REMOTE_USER})
-  public final Response getOne(@PathParam("id") final String id)
-      throws URISyntaxException, IOException {
+  public final Response getOne(@PathParam("id") final String id) throws URISyntaxException,
+      IOException {
 
     FetchEndpointDao dao = fetchEndpointService.getDao();
     FetchEndpoint fe = dao.findOneById(id);
@@ -88,9 +92,10 @@ public class FetchEndpointController {
     }
     if (new Date(System.currentTimeMillis()).after(fe.getTimeToLive())) {
       fetchEndpointService.getDao().delete(fe);
-      throw new LcmException(String.format("FetchEndpoint %s has expired", id), Response.Status.BAD_REQUEST);
+      throw new LcmException(String.format("FetchEndpoint %s has expired", id),
+          Response.Status.BAD_REQUEST);
     }
-    MetaData md = metaDataService.getMetaDataDao().findOne(fe.getMetadataId());
+    MetaData md = metaDataService.findById(fe.getMetadataId());
     MetaDataWrapper metaDataWrapper = new MetaDataWrapper(md);
     if (metaDataWrapper.isEmpty()) {
       throw new LcmException(String.format("Metadata %s not found", fe.getMetadataId()));
@@ -105,21 +110,37 @@ public class FetchEndpointController {
     StreamingOutput result = new StreamingOutput() {
       @Override
       public void write(OutputStream out) throws IOException, WebApplicationException {
-        ContentIterator iter = data.getIterator();
-        Gson gson = new Gson();
-        try (JsonWriter writer = new JsonWriter(new OutputStreamWriter(out, "UTF-8"))) {
-          writer.setIndent("  ");
-          writer.beginArray();
-          while (iter.hasNext()) {
-            gson.toJson(iter.next(), Map.class, writer);
-          }
-          writer.endArray();
-        }
+        backend.enrichMetadata(EnrichmentProperties.createDefaultEnrichmentProperties());
+        writeData(out, data);
       }
     };
     String mimeType = "application/json";
     Response.ResponseBuilder response = Response.ok(result, mimeType);
     return response.header("Content-Disposition", "attachment; filename=" + name + "." + type)
         .build();
+  }
+
+  private void writeData(OutputStream stream, Data rawData) throws IOException {
+    if (rawData instanceof IterativeData) {
+      IterativeData data = (IterativeData) rawData;
+      ContentIterator iter = data.getIterator();
+      Gson gson = new Gson();
+      try (JsonWriter writer = new JsonWriter(new OutputStreamWriter(stream, "UTF-8"))) {
+        writer.setIndent("  ");
+        writer.beginArray();
+        while (iter.hasNext()) {
+          gson.toJson(iter.next(), Map.class, writer);
+        }
+        writer.endArray();
+      }
+    } else if (rawData instanceof StreamingData) {
+      StreamingData data = (StreamingData) rawData;
+      InputStream in = data.getInputStream();
+      byte[] buffer = new byte[1024 * 1024];
+      int readBytes;
+      while ((readBytes = in.read(buffer)) != -1) {
+        stream.write(buffer, 0, readBytes);
+      }
+    }
   }
 }

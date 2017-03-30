@@ -29,6 +29,7 @@ abstract class AbstractStorageContainer {
   protected Storage storage;
 
   protected AbstractStorageContainer(Storage storage) {
+    this.storage = storage;
     Notification notification = new Notification();
     basicValidation(storage, notification);
     if(!notification.hasErrors()) {
@@ -38,7 +39,6 @@ abstract class AbstractStorageContainer {
     if (notification.hasErrors()) {
       throw new LcmValidationException(notification);
     }
-    this.storage = storage;
   }
 
   protected EnrichmentProperties getEnrichmentProperties() {

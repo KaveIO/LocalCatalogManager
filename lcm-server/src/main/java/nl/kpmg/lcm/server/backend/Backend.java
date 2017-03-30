@@ -43,7 +43,7 @@ public interface Backend {
    *        When set to false the @content is stored only if it does not exist.
    * @param content {@link ContentIterator} that should be stored.
    */
-  public void store(ContentIterator content, DataTransformationSettings transformationSettings,
+  public void store(Data data, DataTransformationSettings transformationSettings,
       boolean forceOverwrite);
 
   /**

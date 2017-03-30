@@ -12,21 +12,30 @@
  * the License.
  */
 
-package nl.kpmg.lcm.server.backend;
+package nl.kpmg.lcm.server.data;
+
+import nl.kpmg.lcm.server.data.metadata.MetaData;
+
+import java.io.InputStream;
 
 /**
  *
  * @author Stoyan Hristov<shristov@intracol.com>
  */
+public class StreamingData extends Data {
 
-import java.lang.annotation.ElementType;
-import java.lang.annotation.Retention;
-import java.lang.annotation.RetentionPolicy;
-import java.lang.annotation.Target;
+  private final InputStream inputStream;
 
-@Retention(RetentionPolicy.RUNTIME)
-@Target(ElementType.TYPE) // on class level
-public @interface BackendSource {
+  public StreamingData(MetaData metaData, InputStream inputStream) {
+    super(metaData);
+    this.inputStream = inputStream;
+  }
 
-  String[] type();
+  /**
+   * @return the iterator
+   */
+  public InputStream getInputStream() {
+    return inputStream;
+  }
+
 }

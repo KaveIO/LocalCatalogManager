@@ -25,6 +25,7 @@ import nl.kpmg.lcm.server.data.dao.StorageDao;
 import nl.kpmg.lcm.server.data.metadata.MetaDataWrapper;
 import nl.kpmg.lcm.server.exception.LcmException;
 import nl.kpmg.lcm.server.test.mock.MetaDataMocker;
+import nl.kpmg.lcm.server.test.mock.StorageMocker;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -32,9 +33,6 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 import org.springframework.test.context.ContextConfiguration;
-
-import java.util.HashMap;
-import java.util.Map;
 
 /**
  *
@@ -58,7 +56,6 @@ public class StorageServiceTest {
 
     private Storage csvStorage;
     private String csvSchame = "csv";
-    private String csvStoragePath = "/tmp";
     private String csvStorageName = "csv-storage";
     private String csvStorageURI = csvSchame + "://" + csvStorageName + "/test.csv";
     
@@ -67,12 +64,7 @@ public class StorageServiceTest {
     @Before
     public void setUp() {
         MockitoAnnotations.initMocks(this);
-        csvStorage = new Storage();
-        csvStorage.setName(csvStorageName);
-        Map options = new HashMap();
-        options.put("storagePath", csvStoragePath);
-        csvStorage.setOptions(options);
-
+        csvStorage = StorageMocker.createCsvStorage();
         validMetaDataWrapper.getData().setUri(csvStorageURI);
     }
 

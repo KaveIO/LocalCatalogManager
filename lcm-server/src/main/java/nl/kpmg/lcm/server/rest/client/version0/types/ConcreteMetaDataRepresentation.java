@@ -34,7 +34,7 @@ public class ConcreteMetaDataRepresentation extends MetaDataRepresentation
 
   @InjectLinks({@InjectLink(resource = LocalMetaDataController.class,
       style = InjectLink.Style.ABSOLUTE, rel = "self", method = "getLocalMetaData",
-      bindings = {@Binding(name = "meta_data_id", value = "${instance.item.id}")})})
+      bindings = {@Binding(name = "meta_data_id", value = "${instance.item.id}"),@Binding(name = "update", value = "false") })})
   @JsonIgnore
   private List<Link> injectedLinks;
 

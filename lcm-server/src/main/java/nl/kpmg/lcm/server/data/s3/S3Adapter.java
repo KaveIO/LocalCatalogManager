@@ -14,49 +14,92 @@
 package nl.kpmg.lcm.server.data.s3;
 
 import com.amazonaws.auth.AWSCredentials;
+import com.amazonaws.auth.AWSStaticCredentialsProvider;
 import com.amazonaws.auth.BasicAWSCredentials;
-import com.amazonaws.regions.Region;
 import com.amazonaws.regions.Regions;
 import com.amazonaws.services.s3.AmazonS3;
-import com.amazonaws.services.s3.AmazonS3Client;
+import com.amazonaws.services.s3.AmazonS3ClientBuilder;
 import com.amazonaws.services.s3.model.GetObjectRequest;
 import com.amazonaws.services.s3.model.ObjectMetadata;
 import com.amazonaws.services.s3.model.PutObjectRequest;
 import com.amazonaws.services.s3.model.S3Object;
 
 import nl.kpmg.lcm.server.backend.storage.S3FileStorage;
+import nl.kpmg.lcm.server.data.FileAdapter;
+import nl.kpmg.lcm.server.task.enrichment.DataFetchTask;
 
+import org.slf4j.LoggerFactory;
+
+import java.io.IOException;
 import java.io.InputStream;
 
 /**
  *
  * @author shristov
  */
-public class S3Adapter {
+public class S3Adapter implements FileAdapter {
+  private static final org.slf4j.Logger LOGGER = LoggerFactory.getLogger(DataFetchTask.class
+      .getName());
+  private String bucketName;
 
-  private String lcmUniqueKey;
-  private final String bucketName;
+  private AmazonS3 s3Client;
+  private String fileName;
 
-  private final AmazonS3 s3;
+  public S3Adapter() {}
 
-  public S3Adapter(S3FileStorage storage) {
+  public S3Adapter(S3FileStorage s3Storage, String fileName) {
 
-    AWSCredentials credentials = new BasicAWSCredentials(storage.getAwsAccessKey(),
-            storage.getAwsAccessKey());
+    AWSCredentials credentials =
+        new BasicAWSCredentials(s3Storage.getAwsAccessKey(), s3Storage.getAwsSecretAccessKey());
+    AWSStaticCredentialsProvider credentialsProvider =
+        new AWSStaticCredentialsProvider(credentials);
+    s3Client =
+        AmazonS3ClientBuilder.standard().withCredentials(credentialsProvider)
+            .withRegion(Regions.EU_WEST_1).build();
 
-    s3 = new AmazonS3Client(credentials);
-    s3.setRegion(Region.getRegion(Regions.EU_WEST_1));
-    bucketName = "lcm-" + lcmUniqueKey + "-" + storage.getName();
+    bucketName = s3Storage.getBucketName();
+    if (fileName.charAt(0) == '/') {// amazon s3 service don't like "/" in front of the file name
+      this.fileName = fileName.substring(1);
+    } else {
+      this.fileName = fileName;
+    }
   }
 
-  public void writeFile(String fileName, InputStream stream, int size) {
+  @Override
+  public void write(InputStream stream, Long size) throws IOException {
     ObjectMetadata metadata = new ObjectMetadata();
     metadata.setContentLength(size);
-    s3.putObject(new PutObjectRequest(bucketName, fileName, stream, metadata));
+    if (!s3Client.doesBucketExist(bucketName)) {
+      s3Client.createBucket(bucketName);
+    }
+    s3Client.putObject(new PutObjectRequest(bucketName, fileName, stream, metadata));
+    LOGGER.info("Successfully written data in s3 storage. Bucket:  " + bucketName);
   }
 
-  public InputStream readFile(String fileName) {
-    S3Object object = s3.getObject(new GetObjectRequest(bucketName, fileName));
-    return object.getObjectContent();
+  @Override
+  public InputStream read() throws IOException {
+    S3Object object = s3Client.getObject(new GetObjectRequest(bucketName, fileName));
+    if (object != null) {
+      return object.getObjectContent();
+    }
+
+    return null;
+  }
+
+  @Override
+  public boolean exists() throws IOException {
+    return s3Client.doesObjectExist(bucketName, fileName);
+  }
+
+  @Override
+  public long length() throws IOException {
+    S3Object object = s3Client.getObject(new GetObjectRequest(bucketName, fileName));
+    return object.getObjectMetadata().getContentLength();
+  }
+
+  @Override
+  public long lastModified() throws IOException {
+    S3Object object = s3Client.getObject(new GetObjectRequest(bucketName, fileName));
+    return object.getObjectMetadata().getLastModified().getTime();
   }
 }

@@ -24,7 +24,7 @@ import nl.kpmg.lcm.rest.types.MetaDatasRepresentation;
 import nl.kpmg.lcm.server.LcmBaseServerTest;
 import nl.kpmg.lcm.server.ServerException;
 import nl.kpmg.lcm.server.backend.Backend;
-import nl.kpmg.lcm.server.data.Data;
+import nl.kpmg.lcm.server.data.IterativeData;
 import nl.kpmg.lcm.server.data.RemoteLcm;
 import nl.kpmg.lcm.server.data.Storage;
 import nl.kpmg.lcm.server.data.TaskDescription;
@@ -34,6 +34,7 @@ import nl.kpmg.lcm.server.data.service.StorageService;
 import nl.kpmg.lcm.server.data.service.TaskDescriptionService;
 import nl.kpmg.lcm.server.rest.authentication.BasicAuthenticationManager;
 import nl.kpmg.lcm.server.test.mock.MetaDataMocker;
+import nl.kpmg.lcm.server.test.mock.StorageMocker;
 
 import org.junit.After;
 import org.junit.AfterClass;
@@ -47,9 +48,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import java.io.File;
 import java.io.IOException;
 import java.io.PrintWriter;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 import javax.ws.rs.client.Entity;
 import javax.ws.rs.client.Invocation;
@@ -120,7 +119,7 @@ public class DataFetchTriggerContollerTest extends LcmBaseServerTest {
     // Client finds the id of the remote lcm that contains the data she wants
     RemoteLcm lcm = getLCMId();
     // Client disovers after metadata id from the remote lcm
-    Storage csvStorage = createStorage();
+    Storage csvStorage = StorageMocker.createCsvStorage();
     MetaDataWrapper md = createStorageAndPostMetadata(csvStorage);
 
     // Sends a request to local lcm to fetch the data and metadata
@@ -136,7 +135,7 @@ public class DataFetchTriggerContollerTest extends LcmBaseServerTest {
   @Test
   public void testNonExistingLcm() throws ServerException, IOException {
     // Client disovers after metadata id from the remote lcm
-    Storage csvStorage = createStorage();
+    Storage csvStorage = StorageMocker.createCsvStorage();
     MetaDataWrapper md = createStorageAndPostMetadata(csvStorage);
     // Sends a request to local lcm to fetch the data and metadata
     postTrigger("non-existing-lcm", md.getId(), csvStorage.getId(), 404);
@@ -145,7 +144,7 @@ public class DataFetchTriggerContollerTest extends LcmBaseServerTest {
   @Test
   public void testNonExistingMetadata() throws ServerException, IOException {
     RemoteLcm lcm = getLCMId();
-    Storage csvStorage = createStorage();
+    Storage csvStorage = StorageMocker.createCsvStorage();
     // Sends a request to local lcm to fetch the data and metadata
     postTrigger(lcm.getId(), "non-existing-metadata", csvStorage.getId(), 404);
   }
@@ -153,7 +152,7 @@ public class DataFetchTriggerContollerTest extends LcmBaseServerTest {
   @Test
   public void testNonExistingStorage() throws ServerException, IOException {
     RemoteLcm lcm = getLCMId();
-    Storage csvStorage = createStorage();
+    Storage csvStorage = StorageMocker.createCsvStorage();
     MetaDataWrapper md = createStorageAndPostMetadata(csvStorage);
     // Sends a request to local lcm to fetch the data and metadata
     postTrigger(lcm.getId(), md.getId(), "non-existing-storage", 404);
@@ -169,21 +168,12 @@ public class DataFetchTriggerContollerTest extends LcmBaseServerTest {
     Backend backend = storageService.getBackend(metadataWrapper);
 
     generateCsvTestFile(CSV_FILE);
-    Data data = backend.read();
+    IterativeData data = (IterativeData)backend.read();
     assertNotNull(data);
     postMeadata(metadataWrapper, 200);
     metadataWrapper = new MetaDataWrapper(getMetadata(200).get(0).getItem());
     return metadataWrapper;
   }
-
-    private Storage createStorage() {
-        Storage csvStorage = new Storage();
-        csvStorage.setName(CSV_STORAGE_NAME);
-        Map options = new HashMap();
-        options.put("storagePath", CSV_STORAGE_PATH);
-        csvStorage.setOptions(options);
-        return csvStorage;
-    }
 
   private void postMeadata(MetaDataWrapper metadataWrapper, int expected) throws ServerException {
     Entity<MetaData> entity = Entity.entity(metadataWrapper.getMetaData(), METADATA_CONTENT_TYPE);

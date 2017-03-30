@@ -12,21 +12,28 @@
  * the License.
  */
 
-package nl.kpmg.lcm.server.backend;
+package nl.kpmg.lcm.server.data;
+
+import nl.kpmg.lcm.server.data.metadata.MetaData;
 
 /**
  *
  * @author Stoyan Hristov<shristov@intracol.com>
  */
+public class IterativeData extends Data {
 
-import java.lang.annotation.ElementType;
-import java.lang.annotation.Retention;
-import java.lang.annotation.RetentionPolicy;
-import java.lang.annotation.Target;
+  private final ContentIterator iterator;
 
-@Retention(RetentionPolicy.RUNTIME)
-@Target(ElementType.TYPE) // on class level
-public @interface BackendSource {
+  public IterativeData(MetaData metaData, ContentIterator iterator) {
+    super(metaData);
+    this.iterator = iterator;
+  }
 
-  String[] type();
+  /**
+   * @return the iterator
+   */
+  public ContentIterator getIterator() {
+    return iterator;
+  }
+
 }

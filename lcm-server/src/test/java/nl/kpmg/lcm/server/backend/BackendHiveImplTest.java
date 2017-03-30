@@ -14,17 +14,16 @@
 
 package nl.kpmg.lcm.server.backend;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 
 import nl.kpmg.lcm.server.data.Storage;
 import nl.kpmg.lcm.server.data.metadata.MetaDataWrapper;
 import nl.kpmg.lcm.server.test.mock.MetaDataMocker;
+import nl.kpmg.lcm.server.test.mock.StorageMocker;
 
 import org.junit.Test;
 
-import java.net.URI;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.Set;
 
 
 /***
@@ -33,30 +32,6 @@ import java.util.Map;
  * @author Stoyan Hristov<shristov@intracol.com>
  */
 public class BackendHiveImplTest {
-
-  private static final String TEST_STORAGE_PATH = "temp_test/";
-  private static final String TEST_BACKEND_NAME = "test";
-
-  /**
-   * Common access tool for all backends.
-   */
-  private Storage backendStorage;
-
-  /**
-   * Default constructor.
-   */
-  public BackendHiveImplTest() {    
-    backendStorage = new Storage();
-    backendStorage.setName("hive-sotrage");
-    Map options = new HashMap();
-    options.put("username", "hive");
-    options.put("password", "hive");
-    options.put("database", "default");
-    options.put("url", "jdbc:hive2://10.191.30.201:10000");
-    options.put("driver", "org.apache.hive.jdbc.HiveDriver");
-    backendStorage.setOptions(options);
-  }
-
   /**
    * Test to check if "hive" URI scheme is supported by getSupportedUriSchema() method.
    */
@@ -66,31 +41,9 @@ public class BackendHiveImplTest {
 
     String uri = "hive://remote-hive-foodmart/product";
     metaDataWrapper.getData().setUri(uri);
-
+   Storage backendStorage = StorageMocker.createHiveStorage();
     BackendHiveImpl testBackend = new BackendHiveImpl(backendStorage, metaDataWrapper.getMetaData());
-    String testSchema = testBackend.getSupportedUriSchema();
-    assertEquals("hive", testSchema);
-  }
-
-  /**
-   * Tests if the URI is parsed correctly in {@link BackendFileImpl} class.
-   *
-   * @throws BackendException if it is not possible to parse the URI
-   */
-  @Test
-  public final void testParseUri() {
-
-    MetaDataWrapper metaDataWrapper = MetaDataMocker.getHiveMetaDataWrapper();
-
-    String uri = "hive://remote-hive-foodmart/product";
-    metaDataWrapper.getData().setUri(uri);
-
-    BackendHiveImpl testBackend =
-        new BackendHiveImpl(backendStorage, metaDataWrapper.getMetaData());
-    URI dataUri = testBackend.getDataUri();
-
-    assertEquals("hive", dataUri.getScheme());
-    assertEquals("remote-hive-foodmart", dataUri.getHost());
-    assertEquals("/product", dataUri.getPath());
+    Set<String> testSchema = testBackend.getSupportedUriSchema();
+    assertTrue(testSchema.contains("hive"));
   }
 }

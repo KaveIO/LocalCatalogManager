@@ -22,8 +22,8 @@ import nl.kpmg.lcm.server.data.TaskDescription;
 import nl.kpmg.lcm.server.data.dao.MetaDataDao;
 import nl.kpmg.lcm.server.data.dao.StorageDao;
 import nl.kpmg.lcm.server.data.metadata.MetaDataWrapper;
-import nl.kpmg.lcm.server.data.service.StorageService;
 import nl.kpmg.lcm.server.task.TaskException;
+import nl.kpmg.lcm.server.test.mock.StorageMocker;
 
 import org.junit.Ignore;
 import org.junit.Test;
@@ -32,8 +32,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.config.AutowireCapableBeanFactory;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
-
-import java.util.HashMap;
 
 /**
  *
@@ -46,11 +44,9 @@ public class DataEnrichmentTaskTest extends LcmBaseTest implements ApplicationCo
   @Autowired
   private MetaDataDao metaDataDao;
 
-  @Autowired
-  private StorageService backendService;
 
   @Autowired
-  private StorageDao backendDao;
+  private StorageDao storageDao;
 
   @Override
   public void setApplicationContext(ApplicationContext context) throws BeansException {
@@ -65,12 +61,8 @@ public class DataEnrichmentTaskTest extends LcmBaseTest implements ApplicationCo
   @Ignore("Disable until csv backend is online")
   @Test
   public void testExecuteWithExistingMetaData() throws TaskException {
-    Storage backendModel = new Storage();
-    backendModel.setId("test");
-    backendModel.setOptions(new HashMap());
-    backendModel.getOptions().put("storagePath", "test/storage");
-    backendDao.save(backendModel);
-
+    Storage storage = StorageMocker.createCsvStorage();
+    storageDao.save(storage);
 
     MetaDataWrapper metaDataWrapper = new MetaDataWrapper();
     metaDataWrapper.getData().setUri("file://test/test");
