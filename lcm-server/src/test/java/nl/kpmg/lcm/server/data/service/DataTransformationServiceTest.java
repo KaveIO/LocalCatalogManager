@@ -15,6 +15,8 @@ package nl.kpmg.lcm.server.data.service;
 
 import static org.junit.Assert.assertTrue;
 
+import nl.kpmg.lcm.server.data.DataFormat;
+
 import org.junit.Test;
 
 /**
@@ -27,31 +29,31 @@ public class DataTransformationServiceTest {
 
   @Test
   public void testCsvToCsv() {
-    boolean result = service.isTransformationAdmissible("csv", "csv");
+    boolean result = service.isTransformationAdmissible(DataFormat.CSV, DataFormat.CSV);
     assertTrue(result);
   }
 
   @Test
   public void testCsvToHive() {
-    boolean result = service.isTransformationAdmissible("csv", "hive");
+    boolean result = service.isTransformationAdmissible(DataFormat.CSV, DataFormat.HIVE);
     assertTrue(result);
   }
 
   @Test
   public void testHiveToHive() {
-    boolean result = service.isTransformationAdmissible("hive", "csv");
+    boolean result = service.isTransformationAdmissible(DataFormat.HIVE, DataFormat.CSV);
     assertTrue(result);
   }
 
   @Test
   public void testHiveToFile() {
-    boolean result = service.isTransformationAdmissible("hive", "file");
+    boolean result = service.isTransformationAdmissible(DataFormat.HIVE, DataFormat.FILE);
     assertTrue(result);
   }
 
   @Test
   public void testFileToHive() {
-    boolean result = service.isTransformationAdmissible("hive", "file");
+    boolean result = service.isTransformationAdmissible(DataFormat.HIVE, DataFormat.FILE);
     assertTrue(result);
   }
 }

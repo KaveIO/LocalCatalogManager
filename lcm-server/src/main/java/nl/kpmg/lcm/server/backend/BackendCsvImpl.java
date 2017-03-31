@@ -18,6 +18,7 @@ import nl.kpmg.lcm.server.backend.metadata.CsvMetaData;
 import nl.kpmg.lcm.server.backend.storage.LocalFileStorage;
 import nl.kpmg.lcm.server.data.ContentIterator;
 import nl.kpmg.lcm.server.data.Data;
+import nl.kpmg.lcm.server.data.DataFormat;
 import nl.kpmg.lcm.server.data.EnrichmentProperties;
 import nl.kpmg.lcm.server.data.IterativeData;
 import nl.kpmg.lcm.server.data.Storage;
@@ -48,7 +49,7 @@ import java.util.Map;
  *
  * @author mhoekstra
  */
-@BackendSource(type = {"csv"})
+@BackendSource(type = {DataFormat.CSV})
 public class BackendCsvImpl extends AbstractBackend {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(BackendCsvImpl.class.getName());

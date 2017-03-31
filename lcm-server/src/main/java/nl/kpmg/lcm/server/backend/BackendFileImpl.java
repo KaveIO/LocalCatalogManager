@@ -17,6 +17,7 @@ package nl.kpmg.lcm.server.backend;
 import nl.kpmg.lcm.server.backend.storage.LocalFileStorage;
 import nl.kpmg.lcm.server.backend.storage.S3FileStorage;
 import nl.kpmg.lcm.server.data.Data;
+import nl.kpmg.lcm.server.data.DataFormat;
 import nl.kpmg.lcm.server.data.EnrichmentProperties;
 import nl.kpmg.lcm.server.data.FileAdapter;
 import nl.kpmg.lcm.server.data.LocalFileAdapter;
@@ -38,7 +39,7 @@ import java.util.Date;
  *
  * @author shristov
  */
-@BackendSource(type = {"file", "s3file"})
+@BackendSource(type = {DataFormat.FILE, DataFormat.S3FILE})
 public class BackendFileImpl extends AbstractBackend {
   private static final org.slf4j.Logger LOGGER = LoggerFactory.getLogger(BackendCsvImpl.class
       .getName());

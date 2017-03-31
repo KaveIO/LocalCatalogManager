@@ -28,6 +28,7 @@ import nl.kpmg.lcm.server.backend.Backend;
 import nl.kpmg.lcm.server.backend.DataTransformationSettings;
 import nl.kpmg.lcm.server.data.ContentIterator;
 import nl.kpmg.lcm.server.data.Data;
+import nl.kpmg.lcm.server.data.DataFormat;
 import nl.kpmg.lcm.server.data.FetchEndpoint;
 import nl.kpmg.lcm.server.data.IterativeData;
 import nl.kpmg.lcm.server.data.JsonReaderContentIterator;
@@ -83,7 +84,7 @@ public class FetchEndpointContollerTest extends LcmBaseServerTest {
   private static final Logger LOG = LoggerFactory.getLogger(FetchEndpointContollerTest.class
       .getName());
 
-  private static final String CSV_SCHEME = "csv";
+  private static final String CSV_SCHEME = DataFormat.CSV;
   private static final String CSV_STORAGE_PATH = System.getProperty("java.io.tmpdir");
   private static final String TMP = System.getProperty("java.io.tmpdir");
   private static final String CSV_STORAGE_NAME = "csv-storage";

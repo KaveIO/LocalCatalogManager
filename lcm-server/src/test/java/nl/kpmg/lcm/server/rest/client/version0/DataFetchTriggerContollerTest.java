@@ -24,6 +24,7 @@ import nl.kpmg.lcm.rest.types.MetaDatasRepresentation;
 import nl.kpmg.lcm.server.LcmBaseServerTest;
 import nl.kpmg.lcm.server.ServerException;
 import nl.kpmg.lcm.server.backend.Backend;
+import nl.kpmg.lcm.server.data.DataFormat;
 import nl.kpmg.lcm.server.data.IterativeData;
 import nl.kpmg.lcm.server.data.RemoteLcm;
 import nl.kpmg.lcm.server.data.Storage;
@@ -65,7 +66,7 @@ public class DataFetchTriggerContollerTest extends LcmBaseServerTest {
   private static final String METADATA_PATH = "client/v0/local";
   private static final String TRIGGER_PATH = "client/v0/remote";
   private static final Logger LOGGER = LoggerFactory.getLogger(DataFetchTriggerContollerTest.class.getName());
-  private static final String CSV_SCHEME = "csv";
+  private static final String CSV_SCHEME = DataFormat.CSV;
   private static final String CSV_STORAGE_PATH = System.getProperty("java.io.tmpdir");
   private static final String CSV_STORAGE_NAME = "csv-storage";
   private static final String CSV_FILE_NAME = "temp.csv";

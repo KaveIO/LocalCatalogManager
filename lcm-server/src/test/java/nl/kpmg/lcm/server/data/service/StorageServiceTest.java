@@ -20,6 +20,7 @@ import static org.mockito.BDDMockito.given;
 import nl.kpmg.lcm.server.backend.Backend;
 import nl.kpmg.lcm.server.backend.BackendCsvImpl;
 import nl.kpmg.lcm.server.backend.BackendFactory;
+import nl.kpmg.lcm.server.data.DataFormat;
 import nl.kpmg.lcm.server.data.Storage;
 import nl.kpmg.lcm.server.data.dao.StorageDao;
 import nl.kpmg.lcm.server.data.metadata.MetaDataWrapper;
@@ -55,7 +56,7 @@ public class StorageServiceTest {
     private StorageService storageService;
 
     private Storage csvStorage;
-    private String csvSchame = "csv";
+    private String csvSchame = DataFormat.CSV;
     private String csvStorageName = "csv-storage";
     private String csvStorageURI = csvSchame + "://" + csvStorageName + "/test.csv";
     

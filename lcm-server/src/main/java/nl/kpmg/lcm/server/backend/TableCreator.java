@@ -17,9 +17,9 @@ package nl.kpmg.lcm.server.backend;
 import nl.kpmg.lcm.server.backend.metadata.ColumnDescription;
 import nl.kpmg.lcm.server.exception.LcmException;
 
+import org.apache.metamodel.UpdateableDataContext;
 import org.apache.metamodel.create.CreateTable;
 import org.apache.metamodel.create.CreateTableColumnBuilder;
-import org.apache.metamodel.jdbc.JdbcDataContext;
 import org.apache.metamodel.schema.ColumnType;
 import org.apache.metamodel.schema.Schema;
 import org.apache.metamodel.schema.Table;
@@ -33,11 +33,11 @@ import java.util.Map;
  * @author Stoyan Hristov<shristov@intracol.com>
  */
 public class TableCreator {
-  private final JdbcDataContext dataContext;
+  private final UpdateableDataContext dataContext;
   private final DataTransformationSettings transformationSettings;
   private static final Logger logger = LoggerFactory.getLogger(TableCreator.class.getName());
 
-  public TableCreator(JdbcDataContext dataContext,
+  public TableCreator(UpdateableDataContext dataContext,
       DataTransformationSettings transformationSettings) {
     this.dataContext = dataContext;
     if (transformationSettings != null) {

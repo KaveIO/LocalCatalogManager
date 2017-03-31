@@ -19,6 +19,7 @@ import nl.kpmg.lcm.configuration.ClientConfiguration;
 import nl.kpmg.lcm.rest.types.FetchEndpointRepresentation;
 import nl.kpmg.lcm.rest.types.MetaDataRepresentation;
 import nl.kpmg.lcm.server.ServerException;
+import nl.kpmg.lcm.server.data.DataFormat;
 import nl.kpmg.lcm.server.data.FetchEndpoint;
 import nl.kpmg.lcm.server.data.RemoteLcm;
 import nl.kpmg.lcm.server.data.Storage;
@@ -135,6 +136,7 @@ public class DataFetchTriggerService {
     String newItemName = getUpdatedStorageItemName(originalDataType, localStorage.getType(), path);
     String metaDataURI = localStorage.getType() + "://" + localStorage.getName() + newItemName;
     metaDataWrapper.getData().setUri(metaDataURI);
+    metaDataWrapper.clearDynamicData();
     metaDataWrapper.getDynamicData().setState("DETACHED");
     metaDataService.getMetaDataDao().save(metaDataWrapper.getMetaData());
   }
@@ -145,7 +147,7 @@ public class DataFetchTriggerService {
       }
 
       String newItemName = originalItemName;
-      if(originalDataFormat.equals("csv")){
+      if(originalDataFormat.equals(DataFormat.CSV)){
           if(originalItemName.indexOf(".csv") == originalItemName.length() - 4 ) {
             newItemName = originalItemName.substring(0, originalItemName.length() - 4);
           } else {
@@ -153,7 +155,7 @@ public class DataFetchTriggerService {
           }
       }
 
-      if(originalDataFormat.equals("json")){
+      if(originalDataFormat.equals(DataFormat.JSON)){
           if(originalItemName.indexOf(".json") == originalItemName.length() - 5 ) {
             newItemName = originalItemName.substring(0, originalItemName.length() - 5);
           } else {
@@ -161,11 +163,11 @@ public class DataFetchTriggerService {
           }
       }
 
-       if(destinationDataFormat.equals("csv")){
+       if(destinationDataFormat.equals(DataFormat.CSV)){
            newItemName =  newItemName + ".csv";
        }
 
-       if(destinationDataFormat.equals("json")){
+       if(destinationDataFormat.equals(DataFormat.JSON)){
            newItemName =  newItemName + ".json";
        }
 

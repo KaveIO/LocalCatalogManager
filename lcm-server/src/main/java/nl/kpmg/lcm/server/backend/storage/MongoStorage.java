@@ -18,6 +18,8 @@ import nl.kpmg.lcm.server.data.DataFormat;
 import nl.kpmg.lcm.server.data.Storage;
 import nl.kpmg.lcm.validation.Notification;
 
+import org.apache.commons.lang.StringUtils;
+
 import java.util.HashSet;
 import java.util.Set;
 
@@ -25,18 +27,10 @@ import java.util.Set;
  *
  * @author Stoyan Hristov<shristov@intracol.com>
  */
-public class LocalFileStorage extends AbstractStorageContainer {
+public class MongoStorage extends AbstractStorageContainer {
 
-  public LocalFileStorage(Storage storage) {
+  public MongoStorage(Storage storage) {
     super(storage);
-  }
-
-  public String getStoragePath() {
-    return (String) storage.getOptions().get("storagePath");
-  }
-
-  public String getFileType() {
-    return storage.getType();
   }
 
   @Override
@@ -44,10 +38,44 @@ public class LocalFileStorage extends AbstractStorageContainer {
     if (!getSupportedStorageTypes().contains(storage.getType())) {
       notification.addError("Storage validation: storage type does not match!");
     }
-    String storagePath = (String) storage.getOptions().get("storagePath");
-    if (storagePath == null || storagePath.isEmpty()) {
-      notification.addError("Storage path is missing or is empty!", null);
+
+    if (getHostname() == null || getHostname().isEmpty()) {
+      notification.addError("Storage validation: \"hostname\" is missing or is empty!", null);
     }
+
+    if (getPort() == null || getPort().isEmpty() || !StringUtils.isNumeric(getPort())) {
+      notification.addError(
+          "Storage validation: \"port\" is missing or its value is not a number!", null);
+    }
+
+    if (getPassword() == null || getUsername() == null) {
+      notification.addError("Storage validation: \"username\" or/and \"password\" is missing!",
+          null);
+    }
+
+    if (getDatabase() == null || getDatabase().isEmpty()) {
+      notification.addError("Storage validation: \"database\" is missing or is empty!", null);
+    }
+  }
+
+  public String getHostname() {
+    return (String) storage.getOptions().get("hostname");
+  }
+
+  public String getPort() {
+    return (String) storage.getOptions().get("port");
+  }
+
+  public String getDatabase() {
+    return (String) storage.getOptions().get("database");
+  }
+
+  public String getUsername() {
+    return (String) storage.getOptions().get("username");
+  }
+
+  public String getPassword() {
+    return (String) storage.getOptions().get("password");
   }
 
   /**
@@ -57,9 +85,7 @@ public class LocalFileStorage extends AbstractStorageContainer {
    */
   public static Set<String> getSupportedStorageTypes() {
     Set result = new HashSet();
-    result.add(DataFormat.CSV);
-    result.add(DataFormat.FILE);
-    result.add(DataFormat.JSON);
+    result.add(DataFormat.MONGO);
     return result;
   }
 }

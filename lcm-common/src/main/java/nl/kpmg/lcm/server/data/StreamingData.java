@@ -42,8 +42,8 @@ public class StreamingData extends Data {
 
   public static Set<String> getStreamingDataTypes() {
     Set result = new HashSet();
-    result.add("s3file");
-    result.add("file");
+    result.add(DataFormat.S3FILE);
+    result.add(DataFormat.FILE);
     return result;
   }
 

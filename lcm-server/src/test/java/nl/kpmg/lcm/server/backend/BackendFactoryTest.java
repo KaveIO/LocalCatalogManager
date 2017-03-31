@@ -15,6 +15,7 @@ package nl.kpmg.lcm.server.backend;
 
 import static org.junit.Assert.*;
 
+import nl.kpmg.lcm.server.data.DataFormat;
 import nl.kpmg.lcm.server.data.Storage;
 import nl.kpmg.lcm.server.data.metadata.MetaDataWrapper;
 import nl.kpmg.lcm.server.exception.LcmException;
@@ -36,7 +37,7 @@ import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 public class BackendFactoryTest {
 
     private Storage csvStorage;
-    private String csvSchame = "csv";
+    private String csvSchame = DataFormat.CSV;
     private String csvStoragePath = "/tmp";
     private String csvStorageName = "csv-storage";
     private String csvStorageURI = csvSchame + "://" + csvStorageName + "/test.csv";

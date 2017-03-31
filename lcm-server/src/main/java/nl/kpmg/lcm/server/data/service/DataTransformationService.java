@@ -13,6 +13,8 @@
  */
 package nl.kpmg.lcm.server.data.service;
 
+import nl.kpmg.lcm.server.data.DataFormat;
+
 import org.springframework.stereotype.Service;
 
 import java.util.HashSet;
@@ -31,15 +33,15 @@ public class DataTransformationService {
   private final Set<String> itemDataFormats = new HashSet();
 
   public DataTransformationService() {
-    tabularDataFormats.add("csv");
-    tabularDataFormats.add("hive");
+    tabularDataFormats.add(DataFormat.CSV);
+    tabularDataFormats.add(DataFormat.HIVE);
     tabularDataFormats.add("sql");
 
-    fileDataFormats.add("file");
-    fileDataFormats.add("s3file");
+    fileDataFormats.add(DataFormat.FILE);
+    fileDataFormats.add(DataFormat.S3FILE);
 
-    itemDataFormats.add("json");
-    itemDataFormats.add("mongo");
+    itemDataFormats.add(DataFormat.JSON);
+    itemDataFormats.add(DataFormat.MONGO);
   }
 
   public boolean isTransformationAdmissible(String inputDataFormat, String outputDataFormat) {

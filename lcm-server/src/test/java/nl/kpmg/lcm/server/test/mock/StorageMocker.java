@@ -13,6 +13,7 @@
  */
 package nl.kpmg.lcm.server.test.mock;
 
+import nl.kpmg.lcm.server.data.DataFormat;
 import nl.kpmg.lcm.server.data.Storage;
 
 import java.util.HashMap;
@@ -32,7 +33,7 @@ public class StorageMocker {
     Map options = new HashMap();
     options.put("storagePath", CSV_STORAGE_PATH);
     csvStorage.setOptions(options);
-    csvStorage.setType("csv");
+    csvStorage.setType(DataFormat.CSV);
     return csvStorage;
   }
 
@@ -46,7 +47,22 @@ public class StorageMocker {
     options.put("url", "jdbc:hive2://10.191.30.201:10000");
     options.put("driver", "org.apache.hive.jdbc.HiveDriver");
     backendStorage.setOptions(options);
-    backendStorage.setType("hive");
+    backendStorage.setType(DataFormat.HIVE);
+
+    return backendStorage;
+  }
+
+   public static Storage createMongoStorage() {
+    Storage backendStorage = new Storage();
+    backendStorage.setName("mongo-sotrage");
+    Map options = new HashMap();
+    options.put("username", "mongo");
+    options.put("password", "mongo");
+    options.put("database", "lcm");
+    options.put("hostname", "localhost");
+    options.put("port", "12345");
+    backendStorage.setOptions(options);
+    backendStorage.setType(DataFormat.MONGO);
 
     return backendStorage;
   }

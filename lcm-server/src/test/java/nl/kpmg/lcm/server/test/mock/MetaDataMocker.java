@@ -76,4 +76,19 @@ public class MetaDataMocker {
 
     return tabularMetaData;
   }
+
+  public static MetaDataWrapper getMongoMetaDataWrapper() {
+    TabularMetaData tabularMetaData = new TabularMetaData();
+    tabularMetaData.setName("Mongo-metadata");
+    tabularMetaData.setId("585a57236d31212d0ad5fca6");
+    tabularMetaData.getData().setUri("mongo://mongoStorage/mock");
+    tabularMetaData.getGeneralInfo().setOwner("KPMG");
+    tabularMetaData.getGeneralInfo().setDescription("Sample description");
+    List columns = new ArrayList();
+    columns.add(new ColumnDescription("name", ColumnType.STRING));
+    columns.add(new ColumnDescription("age", ColumnType.INTEGER));
+    tabularMetaData.getTableDescription().setColumns(columns);
+
+    return tabularMetaData;
+  }
 }

@@ -15,5 +15,7 @@ docker exec -t $DOCKER_NAME mongo -eval 'db.metadata.insert({"name":"csvExample"
 docker exec -t $DOCKER_NAME mongo -eval 'db.storage.insert({"name": "local", "type": "csv", "options":[{"storagePath":"/tmp"}]})' localhost/lcm
 docker exec -t $DOCKER_NAME mongo -eval 'db.storage.insert({"name": "remote-hive-sample", "type": "hive", "options":[{"username": "username", "password" : "password", "database": "sample", "url": "jdbc:hive2://10.191.0.1:10000", "driver" : "org.apache.hive.jdbc.HiveDriver"}]})' localhost/lcm
 docker exec -t $DOCKER_NAME mongo -eval 'db.storage.insert({"name": "s3storage", "type": "s3", "options":[{"aws-access-key":"sample-acces-key", "aws-secret-access-key": "sample-secret-access-key", }]})' localhost/lcm
+docker exec -t $DOCKER_NAME mongo -eval 'db.storage.insert({"name": "mongoStorage", "type": "mongo", "options":[{"username": "", "password" : "", "database": "lcm", "hostname": "localhost", "port" : "27017"}]})' localhost/lcm
+docker exec -t $DOCKER_NAME mongo -eval 'db.storage.insert({"name": "jsonStorage", "type" : "json", "options" : { "storagePath" : "/tmp" }, "enrichment-properties" : { "cron-expression" : "  0 * * * * ?", "collected-properties" : [ "accessibility", "size", "structure", "last-time-scanned-at", "last-time-scanned-time" ] } })' localhost/lcm
 
 docker exec -t $DOCKER_NAME mongo -eval 'db.remote_lcm.insert({"domain" : "0.0.0.0", "protocol" : "https", "port" :"4444"})' localhost/lcm
