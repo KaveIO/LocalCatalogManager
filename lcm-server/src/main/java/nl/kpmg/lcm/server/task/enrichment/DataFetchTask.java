@@ -21,8 +21,6 @@ import nl.kpmg.lcm.configuration.ClientConfiguration;
 import nl.kpmg.lcm.server.ServerException;
 import nl.kpmg.lcm.server.backend.Backend;
 import nl.kpmg.lcm.server.backend.DataTransformationSettings;
-import nl.kpmg.lcm.server.backend.storage.LocalFileStorage;
-import nl.kpmg.lcm.server.backend.storage.S3FileStorage;
 import nl.kpmg.lcm.server.data.ContentIterator;
 import nl.kpmg.lcm.server.data.Data;
 import nl.kpmg.lcm.server.data.IterativeData;
@@ -140,8 +138,7 @@ public class DataFetchTask extends EnrichmentTask {
           .setProgressIndicationFactory(new ProgressIndicationFactory(taskService, taskId, 10000));
       Data data;
       String dataType = metaDataWrapper.getData().getDataType();
-      if (S3FileStorage.getSupportedStorageTypes().contains(dataType)
-          || LocalFileStorage.getSupportedStorageTypes().contains(dataType)) {
+      if (StreamingData.getStreamingDataTypes().contains(dataType)) {
         data = new StreamingData(metaDataWrapper.getMetaData(), in);
       } else {
         JsonReader reader = new JsonReader(new InputStreamReader(in, "UTF-8"));

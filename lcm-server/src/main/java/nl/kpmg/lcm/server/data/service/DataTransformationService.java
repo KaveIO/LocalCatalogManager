@@ -36,10 +36,10 @@ public class DataTransformationService {
     tabularDataFormats.add("sql");
 
     fileDataFormats.add("file");
+    fileDataFormats.add("s3file");
 
     itemDataFormats.add("json");
     itemDataFormats.add("mongo");
-
   }
 
   public boolean isTransformationAdmissible(String inputDataFormat, String outputDataFormat) {

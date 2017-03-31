@@ -31,6 +31,8 @@ import nl.kpmg.lcm.server.rest.client.version0.HttpResponseHandler;
 import nl.kpmg.lcm.server.task.enrichment.DataFetchTask;
 
 import org.glassfish.jersey.client.authentication.HttpAuthenticationFeature;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
@@ -54,6 +56,7 @@ import javax.ws.rs.core.Response;
  */
 @Service
 public class DataFetchTriggerService {
+  private static final Logger LOGGER = LoggerFactory.getLogger(DataFetchTriggerService.class.getName());
 
   @Autowired
   private MetaDataService metaDataService;
@@ -126,11 +129,47 @@ public class DataFetchTriggerService {
   private void updateMetaData(MetaDataWrapper metaDataWrapper, Storage localStorage)
       throws ServerException, NotFoundException, ClientErrorException {
 
-    String path = parseDataUri(metaDataWrapper.getData().getUri()).getPath();
-    String metaDataURI = localStorage.getType() + "://" + localStorage.getName() + path;
+    URI originalDataUri = parseDataUri(metaDataWrapper.getData().getUri());
+    String path = originalDataUri.getPath();
+    String originalDataType =  originalDataUri.getScheme();
+    String newItemName = getUpdatedStorageItemName(originalDataType, localStorage.getType(), path);
+    String metaDataURI = localStorage.getType() + "://" + localStorage.getName() + newItemName;
     metaDataWrapper.getData().setUri(metaDataURI);
     metaDataWrapper.getDynamicData().setState("DETACHED");
     metaDataService.getMetaDataDao().save(metaDataWrapper.getMetaData());
+  }
+
+  private String getUpdatedStorageItemName(String originalDataFormat, String destinationDataFormat, String originalItemName) {
+      if(originalDataFormat.equals(destinationDataFormat)) {
+          return originalItemName;
+      }
+
+      String newItemName = originalItemName;
+      if(originalDataFormat.equals("csv")){
+          if(originalItemName.indexOf(".csv") == originalItemName.length() - 4 ) {
+            newItemName = originalItemName.substring(0, originalItemName.length() - 4);
+          } else {
+             LOGGER.warn("Illeagal state, 'csv' metadata format without '.csv' file sufix");
+          }
+      }
+
+      if(originalDataFormat.equals("json")){
+          if(originalItemName.indexOf(".json") == originalItemName.length() - 5 ) {
+            newItemName = originalItemName.substring(0, originalItemName.length() - 5);
+          } else {
+              LOGGER.warn("Illeagal state, 'json' metadata format without '.json' file sufix");
+          }
+      }
+
+       if(destinationDataFormat.equals("csv")){
+           newItemName =  newItemName + ".csv";
+       }
+
+       if(destinationDataFormat.equals("json")){
+           newItemName =  newItemName + ".json";
+       }
+
+      return newItemName;
   }
 
   /**

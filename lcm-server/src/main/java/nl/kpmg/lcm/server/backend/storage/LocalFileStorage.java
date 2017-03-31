@@ -58,6 +58,7 @@ public class LocalFileStorage extends AbstractStorageContainer {
     Set result = new HashSet();
     result.add("csv");
     result.add("file");
+    result.add("json");
     return result;
   }
 }

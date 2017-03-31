@@ -17,6 +17,8 @@ package nl.kpmg.lcm.server.data;
 import nl.kpmg.lcm.server.data.metadata.MetaData;
 
 import java.io.InputStream;
+import java.util.HashSet;
+import java.util.Set;
 
 /**
  *
@@ -36,6 +38,13 @@ public class StreamingData extends Data {
    */
   public InputStream getInputStream() {
     return inputStream;
+  }
+
+  public static Set<String> getStreamingDataTypes() {
+    Set result = new HashSet();
+    result.add("s3file");
+    result.add("file");
+    return result;
   }
 
 }
