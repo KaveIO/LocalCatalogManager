@@ -44,7 +44,7 @@ public class Main {
       System.in.read();
       server.stop();
     } catch (ServerException ex) {
-      LOG.error( null, ex);
+      LOG.error( "Error! Unable to the start server. Message: " + ex.getMessage());
     }
   }
 }

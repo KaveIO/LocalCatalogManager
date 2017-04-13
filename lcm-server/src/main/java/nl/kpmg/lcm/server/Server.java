@@ -82,8 +82,13 @@ public class Server {
         break;
       case "mongo":
         LOGGER.info( "Loading mongo based storage ApplicationContext");
+        try {
         context = new ClassPathXmlApplicationContext(
             new String[] {"application-context-server-mongo.xml"});
+        } catch (Exception e) {
+            throw new ServerException("Unable to initialize monogo cotext! "
+                    + "Check if Mongo DB is up and running and accessible.Error message:"  +  e.getMessage());
+        }
         break;
       default:
         throw new ServerException("Couldn't determine LCM storage engine.");
