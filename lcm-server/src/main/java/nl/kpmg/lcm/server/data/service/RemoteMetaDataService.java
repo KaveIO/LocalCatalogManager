@@ -17,7 +17,6 @@ package nl.kpmg.lcm.server.data.service;
 import nl.kpmg.lcm.client.HttpsClientFactory;
 import nl.kpmg.lcm.configuration.ClientConfiguration;
 import nl.kpmg.lcm.rest.types.MetaDatasRepresentation;
-import nl.kpmg.lcm.server.ServerException;
 import nl.kpmg.lcm.server.data.RemoteLcm;
 import nl.kpmg.lcm.server.exception.LcmException;
 import nl.kpmg.lcm.server.rest.client.version0.types.ConcreteMetaDataRepresentation;
@@ -86,7 +85,7 @@ public class RemoteMetaDataService {
             response.readEntity(MetaDatasRepresentation.class);
         return datasRepresentation;
       }
-    } catch (ServerException ex) {
+    } catch (Exception ex) {
       logger.error( "Unable to make request. Error " + ex.getMessage());
       MetaDatasRepresentation emptObject = new MetaDatasRepresentation();
       emptObject.setItems(Collections.emptyList());
