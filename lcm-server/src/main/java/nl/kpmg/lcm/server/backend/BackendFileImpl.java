@@ -14,6 +14,7 @@
 package nl.kpmg.lcm.server.backend;
 
 
+import nl.kpmg.lcm.server.data.TransferSettings;
 import nl.kpmg.lcm.server.backend.storage.LocalFileStorage;
 import nl.kpmg.lcm.server.backend.storage.S3FileStorage;
 import nl.kpmg.lcm.server.data.Data;
@@ -94,8 +95,7 @@ public class BackendFileImpl extends AbstractBackend {
   }
 
   @Override
-  public void store(Data data, DataTransformationSettings transformationSettings,
-      boolean forceOverwrite) {
+  public void store(Data data, TransferSettings transferSettings) {
 
     if (!(data instanceof StreamingData)) {
       throw new LcmException("Unable to storeiterative data directly to file.");
@@ -104,7 +104,7 @@ public class BackendFileImpl extends AbstractBackend {
     Long size = metaDataWrapper.getDynamicData().getSize();
     String filePath = metaDataWrapper.getData().getStorageItemName();
     try {
-      if (fileAdapter.exists() && !forceOverwrite) {
+      if (fileAdapter.exists() && !transferSettings.isForceOverwrite()) {
         throw new LcmException("Data set is already attached, won't overwrite.");
       }
       StreamingData streamingData = (StreamingData) data;

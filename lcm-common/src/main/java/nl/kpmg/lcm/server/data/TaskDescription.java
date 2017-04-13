@@ -70,7 +70,7 @@ public class TaskDescription extends AbstractModel {
    * The current status of this job.
    */
   private TaskStatus status;
-  
+
   private TaskType type;
 
   private List<ProgressIndication> progress;
@@ -107,6 +107,8 @@ public class TaskDescription extends AbstractModel {
 
   private Map options;
 
+  private TransferSettings transferSettings;
+
   public TaskDescription() {
     progress = new ArrayList<ProgressIndication>();
   }
@@ -123,6 +125,20 @@ public class TaskDescription extends AbstractModel {
    */
   public void setOptions(Map options) {
     this.options = options;
+  }
+
+  /**
+   * @return the options
+   */
+  public TransferSettings getTransferSettings() {
+    return transferSettings;
+  }
+
+  /**
+   * @param options the options to set
+   */
+  public void setTransferSettings(TransferSettings transferSettings) {
+    this.transferSettings = transferSettings;
   }
 
   public Date getEndTime() {
@@ -187,17 +203,17 @@ public class TaskDescription extends AbstractModel {
     this.progress = progress;
   }
 
-    /**
-     * @return the type
-     */
-    public TaskType getType() {
-        return type;
-    }
+  /**
+   * @return the type
+   */
+  public TaskType getType() {
+    return type;
+  }
 
-    /**
-     * @param type the type to set
-     */
-    public void setType(TaskType type) {
-        this.type = type;
-    }
+  /**
+   * @param type the type to set
+   */
+  public void setType(TaskType type) {
+    this.type = type;
+  }
 }

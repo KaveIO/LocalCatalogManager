@@ -14,6 +14,7 @@
 
 package nl.kpmg.lcm.server.backend;
 
+import nl.kpmg.lcm.server.data.TransferSettings;
 import nl.kpmg.lcm.server.backend.metadata.CsvMetaData;
 import nl.kpmg.lcm.server.backend.storage.LocalFileStorage;
 import nl.kpmg.lcm.server.data.ContentIterator;
@@ -154,15 +155,14 @@ public class BackendCsvImpl extends AbstractBackend {
    *        false and the content already exists then LcmException is thrown.
    */
   @Override
-  public void store(Data data, DataTransformationSettings transformationSettings,
-      boolean forceOverwrite) {
+  public void store(Data data, TransferSettings transferSettings) {
 
     if(!(data instanceof IterativeData)) {
       throw new LcmException("Unable to store streaming data directly to csv.");
     }
 
      ContentIterator content = ((IterativeData)data).getIterator();
-    if (dataSourceFile.exists() && !forceOverwrite) {
+    if (dataSourceFile.exists() && !transferSettings.isForceOverwrite()) {
       throw new LcmException("Data set is already attached, won't overwrite.");
     }
 

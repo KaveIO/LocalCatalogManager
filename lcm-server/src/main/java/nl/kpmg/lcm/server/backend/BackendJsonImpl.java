@@ -14,6 +14,8 @@
 
 package nl.kpmg.lcm.server.backend;
 
+import nl.kpmg.lcm.server.data.TransferSettings;
+
 import com.google.gson.Gson;
 
 import nl.kpmg.lcm.server.backend.metadata.TabularMetaData;
@@ -150,15 +152,14 @@ public class BackendJsonImpl extends AbstractBackend {
    *        false and the content already exists then LcmException is thrown.
    */
   @Override
-  public void store(Data data, DataTransformationSettings transformationSettings,
-      boolean forceOverwrite) {
+  public void store(Data data, TransferSettings transferSettings) {
 
     if (!(data instanceof IterativeData)) {
       throw new LcmException("Unable to store streaming data directly to json.");
     }
 
     ContentIterator content = ((IterativeData) data).getIterator();
-    if (dataSourceFile.exists() && !forceOverwrite) {
+    if (dataSourceFile.exists() && !transferSettings.isForceOverwrite()) {
       throw new LcmException("Data set is already attached, won't overwrite.");
     }
 

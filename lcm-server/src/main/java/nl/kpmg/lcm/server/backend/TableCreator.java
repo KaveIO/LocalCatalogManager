@@ -14,6 +14,7 @@
 
 package nl.kpmg.lcm.server.backend;
 
+import nl.kpmg.lcm.server.data.TransferSettings;
 import nl.kpmg.lcm.server.backend.metadata.ColumnDescription;
 import nl.kpmg.lcm.server.exception.LcmException;
 
@@ -34,16 +35,16 @@ import java.util.Map;
  */
 public class TableCreator {
   private final UpdateableDataContext dataContext;
-  private final DataTransformationSettings transformationSettings;
+  private final TransferSettings transformationSettings;
   private static final Logger logger = LoggerFactory.getLogger(TableCreator.class.getName());
 
   public TableCreator(UpdateableDataContext dataContext,
-      DataTransformationSettings transformationSettings) {
+      TransferSettings transformationSettings) {
     this.dataContext = dataContext;
     if (transformationSettings != null) {
       this.transformationSettings = transformationSettings;
     } else {
-      this.transformationSettings = new DataTransformationSettings();
+      this.transformationSettings = new TransferSettings();
     }
   }
 

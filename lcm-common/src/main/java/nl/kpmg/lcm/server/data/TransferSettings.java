@@ -12,28 +12,30 @@
  * the License.
  */
 
-package nl.kpmg.lcm.server.backend;
+package nl.kpmg.lcm.server.data;
 
 /**
  * When the MetaData does not contains information how the data to be interpreted then
- * DataTransformationSettings must be used.
+ TransferSettings must be used.
  *
  * @author Stoyan Hristov<shristov@intracol.com>
  */
-public class DataTransformationSettings {
+public class TransferSettings {
   private static final int DEFAULT_DECIMAL_PRECISION = 10;
   private static final int DEFAULT_VARCHAR_SIZE = 255;
   private static final int DEAFULT_MAXIMUM_INSERTED_RECORDS_PER_QUERY = 10000;
+  private static final boolean DEFAULT_FORCE_OVERWRITE = Boolean.FALSE;
 
   private Integer maximumInsertedRecordsPerQuery = DEAFULT_MAXIMUM_INSERTED_RECORDS_PER_QUERY;
   private Integer varCharSize = DEFAULT_VARCHAR_SIZE;
   private Integer decimalPrecision = DEFAULT_DECIMAL_PRECISION;
+  private boolean forceOverwrite = DEFAULT_FORCE_OVERWRITE;
 
   /**
    *
    * @return the maximumInsertedRecordsPerQuery
    */
-  Integer getMaximumInsertedRecordsPerQuery() {
+  public Integer getMaximumInsertedRecordsPerQuery() {
     return maximumInsertedRecordsPerQuery;
   }
 
@@ -53,7 +55,7 @@ public class DataTransformationSettings {
    * @return the varchar Size
    *
    */
-  Integer getVarCharSize() {
+  public Integer getVarCharSize() {
     return varCharSize;
   }
 
@@ -75,7 +77,7 @@ public class DataTransformationSettings {
   /**
    * @return the decimalPrecision
    */
-  Integer getDecimalPrecision() {
+  public Integer getDecimalPrecision() {
     return decimalPrecision;
   }
 
@@ -93,4 +95,18 @@ public class DataTransformationSettings {
   public void setDecimalPrecision(Integer decimalPrecision) {
     this.decimalPrecision = decimalPrecision;
   }
+
+    /**
+     * @return the forceOverwrite
+     */
+    public boolean isForceOverwrite() {
+        return forceOverwrite;
+    }
+
+    /**
+     * @param forceOverwrite : overwrite the data(file table etc.) if it already exists.
+     */
+    public void setForceOverwrite(boolean forceOverwrite) {
+        this.forceOverwrite = forceOverwrite;
+    }
 }

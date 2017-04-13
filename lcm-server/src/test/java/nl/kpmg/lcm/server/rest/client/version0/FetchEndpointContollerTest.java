@@ -25,7 +25,7 @@ import nl.kpmg.lcm.rest.types.MetaDatasRepresentation;
 import nl.kpmg.lcm.server.LcmBaseServerTest;
 import nl.kpmg.lcm.server.ServerException;
 import nl.kpmg.lcm.server.backend.Backend;
-import nl.kpmg.lcm.server.backend.DataTransformationSettings;
+import nl.kpmg.lcm.server.data.TransferSettings;
 import nl.kpmg.lcm.server.data.ContentIterator;
 import nl.kpmg.lcm.server.data.Data;
 import nl.kpmg.lcm.server.data.DataFormat;
@@ -156,7 +156,9 @@ public class FetchEndpointContollerTest extends LcmBaseServerTest {
 
       backend = storageService.getBackend(md);
       Data data = new IterativeData(md.getMetaData(), iter);
-      backend.store(data, new DataTransformationSettings(), true);
+      TransferSettings transferSettings =  new TransferSettings();
+      transferSettings.setForceOverwrite(true);
+      backend.store(data, transferSettings);
     }
 
     IterativeData data = (IterativeData) backend.read();

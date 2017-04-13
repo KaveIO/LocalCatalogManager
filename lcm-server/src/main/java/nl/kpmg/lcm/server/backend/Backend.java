@@ -14,6 +14,7 @@
 
 package nl.kpmg.lcm.server.backend;
 
+import nl.kpmg.lcm.server.data.TransferSettings;
 import nl.kpmg.lcm.server.data.ContentIterator;
 import nl.kpmg.lcm.server.data.Data;
 import nl.kpmg.lcm.server.data.EnrichmentProperties;
@@ -43,8 +44,7 @@ public interface Backend {
    *        When set to false the @content is stored only if it does not exist.
    * @param content {@link ContentIterator} that should be stored.
    */
-  public void store(Data data, DataTransformationSettings transformationSettings,
-      boolean forceOverwrite);
+  public void store(Data data, TransferSettings transferSettings);
 
   /**
    * Method to read some content from a data storage backend.

@@ -41,9 +41,9 @@ public class Version0ClientTest extends LcmBaseServerTest {
 
     assertEquals(200, response.getStatus());
 
-    String restult = response.readEntity(String.class);
+    String result = response.readEntity(String.class);
     ObjectMapper objectMapper = new ObjectMapper();
-    Map responseMap = objectMapper.readValue(restult, Map.class);
+    Map responseMap = objectMapper.readValue(result, Map.class);
 
     assertTrue(responseMap.containsKey("links"));
     List responseLinkList = (List) responseMap.get("links");

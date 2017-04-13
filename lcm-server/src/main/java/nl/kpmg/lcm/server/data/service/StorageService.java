@@ -72,7 +72,7 @@ public class StorageService {
         || metadataWrapper.getData().getUri() == null
         || metadataWrapper.getData().getUri().isEmpty()) {
       String errorMessage =
-          "Invalid input data! Metata data could not be null nither the data URI!";
+          "Invalid input data! Metadata data could not be null nither the data URI!";
       LOGGER.warn(errorMessage);
 
       throw new LcmException(errorMessage);

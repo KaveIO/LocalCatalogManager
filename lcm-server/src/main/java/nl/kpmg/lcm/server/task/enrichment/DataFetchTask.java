@@ -20,7 +20,6 @@ import nl.kpmg.lcm.client.HttpsClientFactory;
 import nl.kpmg.lcm.configuration.ClientConfiguration;
 import nl.kpmg.lcm.server.ServerException;
 import nl.kpmg.lcm.server.backend.Backend;
-import nl.kpmg.lcm.server.backend.DataTransformationSettings;
 import nl.kpmg.lcm.server.data.ContentIterator;
 import nl.kpmg.lcm.server.data.Data;
 import nl.kpmg.lcm.server.data.IterativeData;
@@ -29,10 +28,10 @@ import nl.kpmg.lcm.server.data.ProgressIndication;
 import nl.kpmg.lcm.server.data.ProgressIndicationFactory;
 import nl.kpmg.lcm.server.data.RemoteLcm;
 import nl.kpmg.lcm.server.data.StreamingData;
+import nl.kpmg.lcm.server.data.TaskDescription;
+import nl.kpmg.lcm.server.data.TransferSettings;
 import nl.kpmg.lcm.server.data.metadata.MetaDataWrapper;
 import nl.kpmg.lcm.server.data.service.RemoteLcmService;
-import nl.kpmg.lcm.server.data.service.StorageService;
-import nl.kpmg.lcm.server.data.service.TaskDescriptionService;
 import nl.kpmg.lcm.server.task.EnrichmentTask;
 import nl.kpmg.lcm.server.task.TaskException;
 import nl.kpmg.lcm.server.task.TaskResult;
@@ -59,16 +58,10 @@ public class DataFetchTask extends EnrichmentTask {
   private static final Logger LOGGER = LoggerFactory.getLogger(DataFetchTask.class.getName());
 
   @Autowired
-  private StorageService storageService;
-
-  @Autowired
   private RemoteLcmService remoteLcmService;
 
   @Autowired
   private ClientConfiguration configuration;
-
-  @Autowired
-  private TaskDescriptionService taskService;
 
   // TODO once the Authorization model is implemented this part may be refactored
   // Now directly is used admin user and its password. After the refactoring there
@@ -99,19 +92,31 @@ public class DataFetchTask extends EnrichmentTask {
     String fetchUrl = buildFetchURL(options);
 
     InputStream in = openInputStream(fetchUrl);
-
-    if (!writeData(in, metadata)) {
-      taskService.updateProgress(taskId, new ProgressIndication("Task excecution failed!"));
+    TransferSettings transferSettings = getTransferSettings();
+    if (!writeData(in, metadata, transferSettings)) {
+      taskDescriptionService.updateProgress(taskId, new ProgressIndication(
+          "Task excecution failed!"));
       return TaskResult.FAILURE;
     }
 
     return TaskResult.SUCCESS;
   }
 
+  private TransferSettings getTransferSettings() {
+    TaskDescription taskDescription = taskDescriptionService.findOne(taskId);
+    TransferSettings settings = taskDescription.getTransferSettings();
+    if (settings == null) {
+      LOGGER.warn("No trasformations settings are found and default ones willbe used!");
+      return new TransferSettings();
+    }
+
+    return settings;
+  }
+
   private InputStream openInputStream(String fetchUrl) throws TaskException {
 
-    HttpAuthenticationFeature credentials = HttpAuthenticationFeature.basicBuilder()
-        .credentials(adminUser, adminPassword).build();
+    HttpAuthenticationFeature credentials =
+        HttpAuthenticationFeature.basicBuilder().credentials(adminUser, adminPassword).build();
 
     HttpsClientFactory clientFactory = new HttpsClientFactory(configuration, credentials);
 
@@ -131,11 +136,12 @@ public class DataFetchTask extends EnrichmentTask {
     return response.readEntity(InputStream.class);
   }
 
-  private boolean writeData(InputStream in, MetaDataWrapper metaDataWrapper) {
+  private boolean writeData(InputStream in, MetaDataWrapper metaDataWrapper,
+      TransferSettings transferSettings) {
     try {
       Backend backend = storageService.getBackend(metaDataWrapper);
-      backend
-          .setProgressIndicationFactory(new ProgressIndicationFactory(taskService, taskId, 10000));
+      backend.setProgressIndicationFactory(new ProgressIndicationFactory(taskDescriptionService,
+          taskId, 10000));
       Data data;
       String dataType = metaDataWrapper.getData().getDataType();
       if (StreamingData.getStreamingDataTypes().contains(dataType)) {
@@ -146,7 +152,7 @@ public class DataFetchTask extends EnrichmentTask {
         data = new IterativeData(metaDataWrapper.getMetaData(), iterator);
       }
 
-      backend.store(data, new DataTransformationSettings(), true);
+      backend.store(data, transferSettings);
       metaDataWrapper.getDynamicData().setState("ATTACHED");
       metaDataService.update(metaDataWrapper.getMetaData());
     } catch (Exception ex) {
@@ -157,7 +163,8 @@ public class DataFetchTask extends EnrichmentTask {
     return true;
   }
 
-  private void validation(Map options, MetaDataWrapper metaDataWrapper, Notification validationNotification) {
+  private void validation(Map options, MetaDataWrapper metaDataWrapper,
+      Notification validationNotification) {
     if (metaDataWrapper.isEmpty()) {
       validationNotification.addError("Error! MetaData parameter could not be null.", null);
     }

@@ -14,18 +14,24 @@
 
 package nl.kpmg.lcm.server.rest.client.version0;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+
 import nl.kpmg.lcm.client.ClientException;
 import nl.kpmg.lcm.rest.types.MetaDatasRepresentation;
 import nl.kpmg.lcm.server.ServerException;
+import nl.kpmg.lcm.server.data.TransferSettings;
 import nl.kpmg.lcm.server.data.service.DataFetchTriggerService;
 import nl.kpmg.lcm.server.data.service.RemoteMetaDataService;
 import nl.kpmg.lcm.server.exception.LcmValidationException;
 import nl.kpmg.lcm.server.rest.authentication.Roles;
 import nl.kpmg.lcm.validation.Notification;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
+import java.io.IOException;
 import java.util.Map;
 
 import javax.annotation.security.RolesAllowed;
@@ -45,6 +51,7 @@ import javax.ws.rs.core.Response;
 @Component
 @Path("client/v0/remote")
 public class RemoteMetaDataController {
+  private static final Logger LOGGER = LoggerFactory.getLogger(RemoteMetaDataController.class.getName());
 
   @Autowired
   private DataFetchTriggerService dataFetchTriggerService;
@@ -67,7 +74,25 @@ public class RemoteMetaDataController {
     }
 
     String localStorageId = (String) payload.get("local-storage-id");
-    dataFetchTriggerService.scheduleDataFetchTask(lcmId, metadataId, localStorageId);
+    String transferSettingsString = (String) payload.get("transfer-settings");
+
+    TransferSettings transferSettings = null;
+    if (transferSettingsString == null) {
+        LOGGER.info("Unable to find TransferSettings object! Default settings will be used!");
+      transferSettings = new TransferSettings();
+    } else {
+      try {
+        ObjectMapper objectMapper = new ObjectMapper();
+        transferSettings = objectMapper.readValue(transferSettingsString, TransferSettings.class);
+      } catch (IOException iae) {
+        LOGGER
+            .warn("Unable to parse TransferSettings object, most probably it has invalid structure! Default settings will be used!");
+        transferSettings = new TransferSettings();
+      }
+    }
+
+    dataFetchTriggerService.scheduleDataFetchTask(lcmId, metadataId, localStorageId,
+        transferSettings);
 
     return Response.ok().build();
   }

@@ -25,6 +25,7 @@ import nl.kpmg.lcm.server.data.RemoteLcm;
 import nl.kpmg.lcm.server.data.Storage;
 import nl.kpmg.lcm.server.data.TaskDescription;
 import nl.kpmg.lcm.server.data.TaskType;
+import nl.kpmg.lcm.server.data.TransferSettings;
 import nl.kpmg.lcm.server.data.dao.RemoteLcmDao;
 import nl.kpmg.lcm.server.data.metadata.MetaData;
 import nl.kpmg.lcm.server.data.metadata.MetaDataWrapper;
@@ -82,7 +83,7 @@ public class DataFetchTriggerService {
   private static final String FETCH_DATA_PATH = FETCH_ENDPOINT_CONTROLLER_PATH + "/fetch";
   private HttpAuthenticationFeature credentials;
 
-  public void scheduleDataFetchTask(String lcmId, String metadataId, String localStorageId)
+  public void scheduleDataFetchTask(String lcmId, String metadataId, String localStorageId, TransferSettings transferSettings)
       throws ServerException {
     RemoteLcmDao dao = lcmService.getDao();
     RemoteLcm lcm = dao.findOneById(lcmId);
@@ -101,10 +102,10 @@ public class DataFetchTriggerService {
 
     updateMetaData(metaDataWrapper, localStorage);
 
-    createFetchTask(metadataId, lcmId, lcm);
+    createFetchTask(metadataId, lcmId, lcm, transferSettings);
   }
 
-  private void createFetchTask(String metadataId, String lcmId, RemoteLcm lcm)
+  private void createFetchTask(String metadataId, String lcmId, RemoteLcm lcm, TransferSettings transferSettings)
       throws ServerException, ClientErrorException {
     TaskDescription dataFetchTaskDescription = new TaskDescription();
     dataFetchTaskDescription.setJob(DataFetchTask.class.getName());
@@ -124,6 +125,9 @@ public class DataFetchTriggerService {
 
     dataFetchTaskDescription.setOptions(options);
 
+    dataFetchTaskDescription.setTransferSettings(transferSettings);
+
+
     taskDescriptionService.createNew(dataFetchTaskDescription);
   }
 
@@ -136,7 +140,6 @@ public class DataFetchTriggerService {
     String newItemName = getUpdatedStorageItemName(originalDataType, localStorage.getType(), path);
     String metaDataURI = localStorage.getType() + "://" + localStorage.getName() + newItemName;
     metaDataWrapper.getData().setUri(metaDataURI);
-    metaDataWrapper.clearDynamicData();
     metaDataWrapper.getDynamicData().setState("DETACHED");
     metaDataService.getMetaDataDao().save(metaDataWrapper.getMetaData());
   }

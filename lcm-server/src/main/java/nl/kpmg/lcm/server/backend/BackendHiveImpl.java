@@ -14,6 +14,7 @@
 
 package nl.kpmg.lcm.server.backend;
 
+import nl.kpmg.lcm.server.data.TransferSettings;
 import nl.kpmg.lcm.server.backend.metadata.TabularMetaData;
 import nl.kpmg.lcm.server.backend.storage.HiveStorage;
 import nl.kpmg.lcm.server.data.ContentIterator;
@@ -138,8 +139,7 @@ public class BackendHiveImpl extends AbstractBackend {
   }
 
   @Override
-  public void store(Data data, DataTransformationSettings transformationSettings,
-      boolean forceOverwrite) {
+  public void store(Data data, TransferSettings transferSettings) {
 
     if (!(data instanceof IterativeData)) {
       throw new LcmException("Unable to store streaming data directly to hive storage.");
@@ -147,27 +147,27 @@ public class BackendHiveImpl extends AbstractBackend {
 
     ContentIterator content = ((IterativeData) data).getIterator();
     JdbcDataContext dataContext = getDataContext();
-    if (transformationSettings == null) {
-      transformationSettings = new DataTransformationSettings();
+    if (transferSettings == null) {
+      transferSettings = new TransferSettings();
     }
     String tableName = getTableName();
 
     Schema database = dataContext.getSchemaByName(hiveStorage.getDatabase());
     Table table = database.getTableByName(tableName);
 
-    if (table != null && !forceOverwrite) {
+    if (table != null && !transferSettings.isForceOverwrite()) {
       throw new LcmException("Error, can not store the data! Table: \"" + tableName
           + "\" already exists and storing is started without overwriting!");
     }
 
-    if (table != null && forceOverwrite) {
+    if (table != null && transferSettings.isForceOverwrite()) {
       DropTable dropTable = new DropTable(database, tableName);
       dataContext.executeUpdate(dropTable);
       table = null;
     }
 
     if (table == null) {
-      TableCreator crator = new TableCreator(dataContext, transformationSettings);
+      TableCreator crator = new TableCreator(dataContext, transferSettings);
       crator.createTable(database, tableName, hiveMetaData.getTableDescription().getColumns());
     }
 
@@ -177,7 +177,7 @@ public class BackendHiveImpl extends AbstractBackend {
               .getTableDescription().getColumns());
       hiveWriter.setProgressIndicationFactory(progressIndicationFactory);
 
-      hiveWriter.write(content, transformationSettings.getMaximumInsertedRecordsPerQuery());
+      hiveWriter.write(content, transferSettings.getMaximumInsertedRecordsPerQuery());
 
     } catch (SQLException ex) {
       throw new LcmException("Unable to stora the data: ", ex);

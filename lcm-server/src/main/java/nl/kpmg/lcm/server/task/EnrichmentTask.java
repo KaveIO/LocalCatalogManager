@@ -77,7 +77,7 @@ public abstract class EnrichmentTask implements Job {
    * The TaskDescriptionService.
    */
   @Autowired
-  private TaskDescriptionService taskDescriptionService;
+  protected TaskDescriptionService taskDescriptionService;
 
   /**
    * Method called to process the actual code of this task.
