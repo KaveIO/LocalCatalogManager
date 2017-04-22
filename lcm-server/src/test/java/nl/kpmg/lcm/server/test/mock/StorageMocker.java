@@ -41,12 +41,14 @@ public class StorageMocker {
     Storage backendStorage = new Storage();
     backendStorage.setName("hive-sotrage");
     Map options = new HashMap();
-    options.put("username", "hive");
-    options.put("password", "hive");
     options.put("database", "default");
     options.put("url", "jdbc:hive2://10.191.30.201:10000");
     options.put("driver", "org.apache.hive.jdbc.HiveDriver");
     backendStorage.setOptions(options);
+    Map credentials =  new HashMap();
+    credentials.put("username", "hive");
+    credentials.put("password", "hive");
+    backendStorage.setCredentials(credentials);
     backendStorage.setType(DataFormat.HIVE);
 
     return backendStorage;
@@ -56,12 +58,14 @@ public class StorageMocker {
     Storage backendStorage = new Storage();
     backendStorage.setName("mongo-sotrage");
     Map options = new HashMap();
-    options.put("username", "mongo");
-    options.put("password", "mongo");
     options.put("database", "lcm");
     options.put("hostname", "localhost");
     options.put("port", "12345");
     backendStorage.setOptions(options);
+    Map credentials =  new HashMap();
+    credentials.put("username", "mongo");
+    credentials.put("password", "mongo");
+    backendStorage.setCredentials(credentials);
     backendStorage.setType(DataFormat.MONGO);
 
     return backendStorage;

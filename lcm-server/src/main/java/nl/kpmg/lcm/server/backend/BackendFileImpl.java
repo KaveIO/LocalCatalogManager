@@ -14,7 +14,6 @@
 package nl.kpmg.lcm.server.backend;
 
 
-import nl.kpmg.lcm.server.data.TransferSettings;
 import nl.kpmg.lcm.server.backend.storage.LocalFileStorage;
 import nl.kpmg.lcm.server.backend.storage.S3FileStorage;
 import nl.kpmg.lcm.server.data.Data;
@@ -24,6 +23,7 @@ import nl.kpmg.lcm.server.data.FileAdapter;
 import nl.kpmg.lcm.server.data.LocalFileAdapter;
 import nl.kpmg.lcm.server.data.Storage;
 import nl.kpmg.lcm.server.data.StreamingData;
+import nl.kpmg.lcm.server.data.TransferSettings;
 import nl.kpmg.lcm.server.data.metadata.MetaData;
 import nl.kpmg.lcm.server.data.s3.S3Adapter;
 import nl.kpmg.lcm.server.exception.LcmException;
@@ -48,6 +48,7 @@ public class BackendFileImpl extends AbstractBackend {
 
   public BackendFileImpl(Storage storage, MetaData metaData) {
     super(metaData);
+
     String filePath = metaDataWrapper.getData().getStorageItemName();
     if (S3FileStorage.getSupportedStorageTypes().contains(storage.getType())) {
       fileAdapter = new S3Adapter(new S3FileStorage(storage), filePath);
@@ -102,6 +103,7 @@ public class BackendFileImpl extends AbstractBackend {
     }
 
     Long size = metaDataWrapper.getDynamicData().getSize();
+
     String filePath = metaDataWrapper.getData().getStorageItemName();
     try {
       if (fileAdapter.exists() && !transferSettings.isForceOverwrite()) {
@@ -123,7 +125,7 @@ public class BackendFileImpl extends AbstractBackend {
     InputStream in;
     try {
       in = fileAdapter.read();
-      if(in != null) {
+      if (in != null) {
         return new StreamingData(metaDataWrapper.getMetaData(), in);
       }
     } catch (IOException ex) {

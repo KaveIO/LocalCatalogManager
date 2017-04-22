@@ -16,9 +16,12 @@ package nl.kpmg.lcm.server.backend.storage;
 
 import nl.kpmg.lcm.server.data.DataFormat;
 import nl.kpmg.lcm.server.data.Storage;
+import nl.kpmg.lcm.server.security.EncryptionException;
 import nl.kpmg.lcm.validation.Notification;
 
 import org.apache.commons.lang.StringUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.HashSet;
 import java.util.Set;
@@ -28,6 +31,7 @@ import java.util.Set;
  * @author Stoyan Hristov<shristov@intracol.com>
  */
 public class MongoStorage extends AbstractStorageContainer {
+  private static final Logger LOGGER = LoggerFactory.getLogger(MongoStorage.class.getName());
 
   public MongoStorage(Storage storage) {
     super(storage);
@@ -48,13 +52,25 @@ public class MongoStorage extends AbstractStorageContainer {
           "Storage validation: \"port\" is missing or its value is not a number!", null);
     }
 
-    if (getPassword() == null || getUsername() == null) {
-      notification.addError("Storage validation: \"username\" or/and \"password\" is missing!",
-          null);
-    }
-
     if (getDatabase() == null || getDatabase().isEmpty()) {
       notification.addError("Storage validation: \"database\" is missing or is empty!", null);
+    }
+
+    validateCredentials(notification);
+  }
+
+  public void validateCredentials(Notification notification) {
+    if (storage.getCredentials() == null) {
+      notification.addError("Credentials does not exists!");
+      return;
+    }
+
+    if (getUsername() == null) {
+      notification.addError("Storage validation: account is missing or is empty!", null);
+    }
+
+    if (getPassword() == null) {
+      notification.addError("Storage validation: \"password\" is missing!", null);
     }
   }
 
@@ -71,11 +87,27 @@ public class MongoStorage extends AbstractStorageContainer {
   }
 
   public String getUsername() {
-    return (String) storage.getOptions().get("username");
+    if (storage.getCredentials() == null) {
+      return null;
+    }
+
+    return (String) storage.getCredentials().get("username");
   }
 
+
+  public void setUsername(String username) {
+    storage.getCredentials().put("username", username);
+  }
+
+  /**
+   *
+   * @return unencrypted password
+   * @throws EncryptionException when the password is not already encrypted. In such cases you need
+   *         first to use encryptPassword method. Also EncryptionException may thrown if the
+   *         encryption library does not succeed to decrypt the password in any reason.
+   */
   public String getPassword() {
-    return (String) storage.getOptions().get("password");
+    return (String) storage.getCredentials().get("password");
   }
 
   /**
@@ -86,6 +118,15 @@ public class MongoStorage extends AbstractStorageContainer {
   public static Set<String> getSupportedStorageTypes() {
     Set result = new HashSet();
     result.add(DataFormat.MONGO);
+    return result;
+  }
+
+  /**
+   * @return a set with credentials fields that needs to be encrypted for this storage type
+   */
+  public static Set<String> getEncryptedCredentialsFields() {
+    Set result = new HashSet();
+    result.add("password");
     return result;
   }
 }

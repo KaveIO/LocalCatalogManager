@@ -14,8 +14,8 @@
 
 package nl.kpmg.lcm.server.backend;
 
-import nl.kpmg.lcm.server.data.TransferSettings;
 import nl.kpmg.lcm.server.backend.metadata.ColumnDescription;
+import nl.kpmg.lcm.server.data.TransferSettings;
 import nl.kpmg.lcm.server.exception.LcmException;
 
 import org.apache.metamodel.UpdateableDataContext;
@@ -112,7 +112,7 @@ public class TableCreator {
 
       CreateTableColumnBuilder builder = createTable.withColumn(entry.getKey()).ofType(columnType);
 
-      if (size != null || size != 0) {
+      if (size != null && size != 0) {
         builder.ofSize(size);
       }
     }

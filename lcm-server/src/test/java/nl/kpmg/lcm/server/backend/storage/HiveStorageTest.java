@@ -29,9 +29,6 @@ import java.util.Map;
  * @author Stoyan Hristov<shristov@intracol.com>
  */
 public class HiveStorageTest {
-   private String storageName = "hive-storage";
-   private String username =  "hive";
-   private String password = "hive";
    private String databaseName = "default";
    private String url = "jdbc:hive2://192.168.1.1:10000";
    private String driver = "org.apache.hive.jdbc.HiveDriver";
@@ -45,11 +42,8 @@ public class HiveStorageTest {
 
   @Test(expected = LcmValidationException.class)
   public void testValidateStorageMissingUsername() {
-    Storage incorrectStorage = new Storage();
-    incorrectStorage.setName(storageName);
+    Storage incorrectStorage = StorageMocker.createHiveStorage();
     Map options = new HashMap();
-    options.put("password", password);
-    options.put("database", databaseName);
     options.put("url",  url);
     options.put("driver", driver);
     incorrectStorage.setOptions(options);
@@ -59,11 +53,8 @@ public class HiveStorageTest {
 
   @Test(expected = LcmValidationException.class)
   public void testValidateStorageMissingPassword() {
-    Storage incorrectStorage = new Storage();
-    incorrectStorage.setName(storageName);
+    Storage incorrectStorage = StorageMocker.createHiveStorage();
     Map options = new HashMap();
-    options.put("username", username);
-    options.put("database", databaseName);
     options.put("url",  url);
     options.put("driver", driver);
     incorrectStorage.setOptions(options);
@@ -74,11 +65,8 @@ public class HiveStorageTest {
 
   @Test(expected = LcmValidationException.class)
   public void testValidateStorageMissingDatabase() {
-    Storage incorrectStorage = new Storage();
-    incorrectStorage.setName(storageName);
+    Storage incorrectStorage = StorageMocker.createHiveStorage();
     Map options = new HashMap();
-    options.put("username", username);
-    options.put("password", password);
     options.put("url",  url);
     options.put("driver", driver);
     incorrectStorage.setOptions(options);
@@ -89,11 +77,8 @@ public class HiveStorageTest {
 
   @Test(expected = LcmValidationException.class)
   public void testValidateStorageMissingDriver() {
-    Storage incorrectStorage = new Storage();
-    incorrectStorage.setName(storageName);
+    Storage incorrectStorage = StorageMocker.createHiveStorage();
     Map options = new HashMap();
-    options.put("username", username);
-    options.put("password", password);
     options.put("database", databaseName);
     options.put("url",  url);
     incorrectStorage.setOptions(options);
@@ -103,8 +88,7 @@ public class HiveStorageTest {
 
   @Test(expected = LcmValidationException.class)
   public void testValidateStorageMissingUrl() {
-    Storage incorrectStorage = new Storage();
-    incorrectStorage.setName(storageName);
+    Storage incorrectStorage = StorageMocker.createHiveStorage();
     Map options = new HashMap();
     options.put("storagePath", "hive");
     incorrectStorage.setOptions(options);

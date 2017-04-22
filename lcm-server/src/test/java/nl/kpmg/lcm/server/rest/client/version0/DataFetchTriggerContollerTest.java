@@ -165,7 +165,7 @@ public class DataFetchTriggerContollerTest extends LcmBaseServerTest {
     MetaDataWrapper metadataWrapper = MetaDataMocker.getCsvMetaDataWrapper();
     metadataWrapper.getData().setUri(CSV_STORAGE_URI);
 
-    storageService.getStorageDao().save(csvStorage);
+    storageService.add(csvStorage);
     Backend backend = storageService.getBackend(metadataWrapper);
 
     generateCsvTestFile(CSV_FILE);

@@ -37,7 +37,7 @@ public class LocalFileAdapter implements FileAdapter {
 
   @Override
   public void write(InputStream stream, Long size) throws IOException {
-    if(size <= 0)  {
+    if(size != null && size <= 0)  {
         return;
     }
 

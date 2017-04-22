@@ -14,7 +14,6 @@
 
 package nl.kpmg.lcm.server.backend;
 
-import nl.kpmg.lcm.server.data.TransferSettings;
 import nl.kpmg.lcm.server.backend.metadata.TabularMetaData;
 import nl.kpmg.lcm.server.backend.storage.HiveStorage;
 import nl.kpmg.lcm.server.data.ContentIterator;
@@ -24,6 +23,7 @@ import nl.kpmg.lcm.server.data.EnrichmentProperties;
 import nl.kpmg.lcm.server.data.IterativeData;
 import nl.kpmg.lcm.server.data.ProgressIndicationFactory;
 import nl.kpmg.lcm.server.data.Storage;
+import nl.kpmg.lcm.server.data.TransferSettings;
 import nl.kpmg.lcm.server.data.metadata.MetaData;
 import nl.kpmg.lcm.server.exception.LcmException;
 

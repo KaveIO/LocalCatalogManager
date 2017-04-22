@@ -155,7 +155,7 @@ public abstract class EnrichmentTask implements Job {
             status = TaskDescription.TaskStatus.FAILED;
           }
         } catch (TaskException ex) {
-          LOGGER.error("Failed executing task", ex);
+          LOGGER.error("Failed executing task! Message : " +  ex.getMessage());
         }
       }
     }

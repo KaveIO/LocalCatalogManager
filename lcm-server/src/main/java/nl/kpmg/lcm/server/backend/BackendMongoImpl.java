@@ -14,7 +14,6 @@
 
 package nl.kpmg.lcm.server.backend;
 
-import nl.kpmg.lcm.server.data.TransferSettings;
 import nl.kpmg.lcm.server.backend.metadata.ColumnDescription;
 import nl.kpmg.lcm.server.backend.metadata.TabularMetaData;
 import nl.kpmg.lcm.server.backend.storage.MongoStorage;
@@ -25,6 +24,7 @@ import nl.kpmg.lcm.server.data.EnrichmentProperties;
 import nl.kpmg.lcm.server.data.IterativeData;
 import nl.kpmg.lcm.server.data.ProgressIndicationFactory;
 import nl.kpmg.lcm.server.data.Storage;
+import nl.kpmg.lcm.server.data.TransferSettings;
 import nl.kpmg.lcm.server.data.metadata.MetaData;
 import nl.kpmg.lcm.server.exception.LcmException;
 
@@ -65,10 +65,11 @@ public class BackendMongoImpl extends AbstractBackend {
 
   private UpdateableDataContext getDataContext() {
     if (mongoContext == null) {
+      String password = mongoStorage.getPassword();
       mongoContext =
           DataContextFactory.createMongoDbDataContext(mongoStorage.getHostname(),
               Integer.parseInt(mongoStorage.getPort()), mongoStorage.getDatabase(),
-              mongoStorage.getUsername(), mongoStorage.getPassword().toCharArray());
+              mongoStorage.getUsername(), password.toCharArray());
     }
 
     return mongoContext;

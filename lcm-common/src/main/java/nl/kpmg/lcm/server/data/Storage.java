@@ -14,6 +14,7 @@
 
 package nl.kpmg.lcm.server.data;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 import org.springframework.data.mongodb.core.index.Indexed;
@@ -39,6 +40,8 @@ public class Storage extends AbstractModel {
 
   private Map options;
 
+  private Map credentials;
+
   @Field("enrichment-properties")
   private Map enrichmentProperties;
 
@@ -54,9 +57,30 @@ public class Storage extends AbstractModel {
     this.options = options;
   }
 
+  /** This section is treated in a different way. It must never be exposed outside of the
+   * application through the REST api or any other way.
+   *
+   * @return credentials
+   */
+  @JsonIgnore
+  public Map getCredentials() {
+    return credentials;
+  }
+
+  /**
+   * This section is treated in a different way. It is never exposed outside of the application
+   * through the REST api.
+   *
+   * @param credentials
+   */
+  @JsonProperty
+  public void setCredentials(Map credentials) {
+    this.credentials = credentials;
+  }
+
   /**
    *
-   * @return options
+   * @return enrichment-properties
    */
   @JsonProperty("enrichment-properties")
   @Field("enrichment-properties")

@@ -94,7 +94,7 @@ public class MetaDataService {
         LOGGER.warn(ex.getNotification().errorMessage());
         return false;
       } catch (LcmException ex) {
-        LOGGER.warn(ex.getMessage(), ex);
+        LOGGER.warn(ex.getMessage());
         return false;
       }
 

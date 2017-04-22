@@ -18,6 +18,10 @@ import jersey.repackaged.com.google.common.collect.Lists;
 
 import nl.kpmg.lcm.server.backend.Backend;
 import nl.kpmg.lcm.server.backend.BackendFactory;
+import nl.kpmg.lcm.server.backend.storage.HiveStorage;
+import nl.kpmg.lcm.server.backend.storage.MongoStorage;
+import nl.kpmg.lcm.server.backend.storage.S3FileStorage;
+import nl.kpmg.lcm.server.data.DataFormat;
 import nl.kpmg.lcm.server.data.Storage;
 import nl.kpmg.lcm.server.data.dao.StorageDao;
 import nl.kpmg.lcm.server.data.metadata.MetaDataWrapper;
@@ -55,8 +59,52 @@ public class StorageService {
     return storageDao.findOne(id);
   }
 
-  public StorageDao getStorageDao() {
-    return storageDao;
+  public void delete(Storage storage) {
+    storageDao.delete(storage);
+  }
+
+  public Storage add(Storage storage) {
+    return saveStorage(storage);
+  }
+
+  public Storage update(Storage storage) {
+    return saveStorage(storage);
+  }
+
+  /**
+   * Save the passed storage. If "credentials" section is missing then checks the mong if storage
+   * with the same id already exists(i.e. update). If such exists the  "credentials" section is preserved.
+   * This is needed because the "credentials" section is never returned outside of server module for
+   * security reasons. When the end user tries to update a storage it is important to preserve the
+   * old credentials if new ones are not passed.
+   * There is one important consequence from the statements above:
+   * "Credentials" sections can never be removed from existing storage. If you want bypass it then
+   * set to storage empty "credentials" section.
+   * @param storage to save
+   * @return saved storage
+   */
+  public Storage saveStorage(Storage storage) {
+    if (storage.getType().equals(DataFormat.HIVE)) {
+      storage = presetCredentails(storage);
+      new HiveStorage(storage);// create not used wrapper to validate the structure of the storage
+    } else if (storage.getType().equals(DataFormat.S3FILE)) {
+      storage = presetCredentails(storage);
+      new S3FileStorage(storage);// create not used wrapper to validate the structure of the storage
+    } else if (storage.getType().equals(DataFormat.MONGO)) {
+      storage = presetCredentails(storage);
+      new MongoStorage(storage);// create not used wrapper to validate the structure of the storage
+    }
+
+    return storageDao.save(storage);
+  }
+
+  private Storage presetCredentails(Storage storage) {
+    if (storage.getCredentials() == null) {
+      Storage oldStorage = storageDao.findOne(storage.getId());
+      storage.setCredentials(oldStorage.getCredentials());
+    }
+
+    return storage;
   }
 
   /**
@@ -94,9 +142,7 @@ public class StorageService {
       Backend backend = backendFactory.createBackend(scheme, storage, metadataWrapper);
 
       return backend;
-
     } catch (URISyntaxException ex) {
-      LOGGER.error(null, ex);
       throw new LcmException("Error! Unable to parse medata data URI!");
     }
   }

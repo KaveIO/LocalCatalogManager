@@ -22,6 +22,11 @@ import nl.kpmg.lcm.validation.Notification;
 public class LcmValidationException extends IllegalArgumentException {
   Notification notification;
 
+  public LcmValidationException(String message) {
+    this.notification = new Notification();
+    notification.addError(message);
+  }
+
   public LcmValidationException(Notification notification) {
     this.notification = notification;
   }

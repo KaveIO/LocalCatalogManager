@@ -16,7 +16,11 @@ package nl.kpmg.lcm.server.backend.storage;
 
 import nl.kpmg.lcm.server.data.DataFormat;
 import nl.kpmg.lcm.server.data.Storage;
+import nl.kpmg.lcm.server.security.EncryptionException;
 import nl.kpmg.lcm.validation.Notification;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.HashSet;
 import java.util.Set;
@@ -26,6 +30,7 @@ import java.util.Set;
  * @author Stoyan Hristov<shristov@intracol.com>
  */
 public class HiveStorage extends AbstractStorageContainer {
+  private static final Logger LOGGER = LoggerFactory.getLogger(HiveStorage.class.getName());
 
   public HiveStorage(Storage storage) {
     super(storage);
@@ -42,19 +47,11 @@ public class HiveStorage extends AbstractStorageContainer {
       notification.addError("Storage validation: url is missing or is empty!", null);
     }
 
-    String password = (String) storage.getOptions().get("password");
-    String username = (String) storage.getOptions().get("username");
-    if (password == null || password.isEmpty() || username == null || username.isEmpty()) {
-      notification.addError("Storage validation: account is missing or is empty!", null);
-    }
-
-    String driver = (String) storage.getOptions().get("driver");
-    if (driver == null || driver.isEmpty()) {
+    if (getDriver() == null || getDriver().isEmpty()) {
       notification.addError("Storage validation: driver is missing or is empty!", null);
     }
 
-    String database = (String) storage.getOptions().get("database");
-    if (database == null || database.isEmpty()) {
+    if (getDatabase() == null || getDatabase().isEmpty()) {
       notification.addError("Storage validation: database is missing or is empty!", null);
     }
   }
@@ -68,11 +65,22 @@ public class HiveStorage extends AbstractStorageContainer {
   }
 
   public String getUsername() {
-    return (String) storage.getOptions().get("username");
+    return (String) storage.getCredentials().get("username");
   }
 
+  public void setUsername(String username) {
+    storage.getCredentials().put("username", username);
+  }
+
+  /**
+   *
+   * @return unencrypted password
+   * @throws EncryptionException when the password is not already encrypted. In such cases you need
+   *         first to use encryptPassword method. Also EncryptionException may thrown if the
+   *         encryption library does not succeed to decrypt the password in any reason.
+   */
   public String getPassword() {
-    return (String) storage.getOptions().get("password");
+    return (String) storage.getCredentials().get("password");
   }
 
   public String getDriver() {
@@ -87,6 +95,15 @@ public class HiveStorage extends AbstractStorageContainer {
   public static Set<String> getSupportedStorageTypes() {
     Set result = new HashSet();
     result.add(DataFormat.HIVE);
+    return result;
+  }
+
+  /**
+   * @return a set with credentials fields that needs to be encrypted for this storage type
+   */
+  public static Set<String> getEncryptedCredentialsFields() {
+    Set result = new HashSet();
+    result.add("password");
     return result;
   }
 }

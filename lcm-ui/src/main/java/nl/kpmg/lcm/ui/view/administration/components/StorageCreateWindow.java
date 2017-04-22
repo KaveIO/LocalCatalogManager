@@ -56,6 +56,7 @@ public class StorageCreateWindow extends Window implements Button.ClickListener 
   private RestClientService restClientService;
 
   private final TextArea optionsArea = new TextArea("Options");
+  private final TextArea credentialsArea = new TextArea("Credentials");
   private final TextArea enrichmentArea = new TextArea("Enrichment options");
   private final TextField nameField = new TextField("Name");
   private final TextField typeField = new TextField("Type");
@@ -63,8 +64,11 @@ public class StorageCreateWindow extends Window implements Button.ClickListener 
   private Storage storage;
   private final static int MAX_LENGTH = 128;
 
+  private boolean isCreateOpereration;
+
   public StorageCreateWindow(RestClientService restClientService) {
     super(CREATE_TITLE);
+    isCreateOpereration = true;
     this.restClientService = restClientService;
     init();
   }
@@ -72,6 +76,7 @@ public class StorageCreateWindow extends Window implements Button.ClickListener 
   public StorageCreateWindow(RestClientService restClientService, Storage storage)
       throws JsonProcessingException {
     super(EDIT_TITLE);
+    isCreateOpereration = false;
     this.restClientService = restClientService;
     nameField.setValue(storage.getName());
     typeField.setValue(storage.getType());
@@ -90,6 +95,8 @@ public class StorageCreateWindow extends Window implements Button.ClickListener 
   private void init() {
     optionsArea.setWidth("100%");
     optionsArea.setHeight("100%");
+    credentialsArea.setWidth("100%");
+    credentialsArea.setHeight("100%");
     enrichmentArea.setWidth("100%");
     enrichmentArea.setHeight("100%");
     saveButton.addClickListener(this);
@@ -99,6 +106,7 @@ public class StorageCreateWindow extends Window implements Button.ClickListener 
     panelContent.addComponent(nameField);
     panelContent.addComponent(typeField);
     panelContent.addComponent(optionsArea);
+    panelContent.addComponent(credentialsArea);
     panelContent.addComponent(enrichmentArea);
     panelContent.addComponent(saveButton);
 
@@ -122,6 +130,15 @@ public class StorageCreateWindow extends Window implements Button.ClickListener 
         notification.addError("Options field is not valid Json", ex);
       }
 
+      JsonNode credentials = null;
+      try {
+        if (credentialsArea.getValue() != null && credentialsArea.getValue().length() > 0) {
+          credentials = mapper.readTree(credentialsArea.getValue());
+        }
+      } catch (IOException ex) {
+        notification.addError("Credentials field is not valid Json", ex);
+      }
+
       JsonNode enrichment = null;
       try {
         if (enrichmentArea.getValue() != null && enrichmentArea.getValue().length() > 0) {
@@ -136,9 +153,12 @@ public class StorageCreateWindow extends Window implements Button.ClickListener 
         LOGGER.debug("Validation failed: " + notification.errorMessage());
         return;
       }
-
+      // TODO refactore this: use directly storage isntead of json
       ObjectNode rootNode = mapper.createObjectNode();
       rootNode.set("options", options);
+      if (credentials != null) {
+        rootNode.set("credentials", credentials);
+      }
       if (enrichment != null) {
         rootNode.set("enrichment-properties", enrichment);
       }

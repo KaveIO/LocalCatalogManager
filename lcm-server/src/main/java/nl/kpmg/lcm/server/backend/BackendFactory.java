@@ -153,7 +153,6 @@ public class BackendFactory {
     } catch (IllegalArgumentException ex) {
       LOGGER.warn("Unable to call constructor with param: " + storage.getId(), ex);
     } catch (InvocationTargetException ex) {
-      LOGGER.warn(null, ex);
       if (ex.getCause() instanceof LcmException) {
         throw (LcmException) ex.getCause();
       }

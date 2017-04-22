@@ -29,9 +29,6 @@ import java.util.Map;
  * @author Stoyan Hristov<shristov@intracol.com>
  */
 public class MongoStorageTest {
-   private String storageName = "mongo-storage";
-   private String username =  "mongo";
-   private String password = "mongo";
    private String databaseName = "lcm";
    private String hostname = "localhost";
    private String port = "12345";
@@ -45,11 +42,8 @@ public class MongoStorageTest {
 
   @Test(expected = LcmValidationException.class)
   public void testValidateStorageMissingUsername() {
-    Storage incorrectStorage = new Storage();
-    incorrectStorage.setName(storageName);
+    Storage incorrectStorage = StorageMocker.createMongoStorage();
     Map options = new HashMap();
-    options.put("password", password);
-    options.put("database", databaseName);
     options.put("hostname",  hostname);
     options.put("port", port);
     incorrectStorage.setOptions(options);
@@ -59,26 +53,19 @@ public class MongoStorageTest {
 
   @Test(expected = LcmValidationException.class)
   public void testValidateStorageMissingPassword() {
-    Storage incorrectStorage = new Storage();
-    incorrectStorage.setName(storageName);
+    Storage incorrectStorage = StorageMocker.createMongoStorage();
     Map options = new HashMap();
-    options.put("username", username);
-    options.put("database", databaseName);
     options.put("hostname",  hostname);
     options.put("port", port);
     incorrectStorage.setOptions(options);
 
     new MongoStorage(incorrectStorage);
-
   }
 
   @Test(expected = LcmValidationException.class)
   public void testValidateStorageMissingDatabase() {
-    Storage incorrectStorage = new Storage();
-    incorrectStorage.setName(storageName);
+    Storage incorrectStorage = StorageMocker.createMongoStorage();
     Map options = new HashMap();
-    options.put("username", username);
-    options.put("password", password);
     options.put("hostname",  hostname);
     options.put("port", port);
     incorrectStorage.setOptions(options);
@@ -89,11 +76,8 @@ public class MongoStorageTest {
 
   @Test(expected = LcmValidationException.class)
   public void testValidateStorageMissingPort() {
-    Storage incorrectStorage = new Storage();
-    incorrectStorage.setName(storageName);
+    Storage incorrectStorage = StorageMocker.createMongoStorage();
     Map options = new HashMap();
-    options.put("username", username);
-    options.put("password", password);
     options.put("database", databaseName);
     options.put("hostname",  hostname);
     incorrectStorage.setOptions(options);
@@ -103,8 +87,7 @@ public class MongoStorageTest {
 
   @Test(expected = LcmValidationException.class)
   public void testValidateStorageMissingHostname() {
-    Storage incorrectStorage = new Storage();
-    incorrectStorage.setName(storageName);
+    Storage incorrectStorage = StorageMocker.createMongoStorage();
     Map options = new HashMap();
     options.put("storagePath", "blahblah");
     incorrectStorage.setOptions(options);

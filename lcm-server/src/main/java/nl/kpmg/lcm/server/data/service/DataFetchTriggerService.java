@@ -95,7 +95,7 @@ public class DataFetchTriggerService {
     if (metaDataWrapper.isEmpty()) {
       throw new NotFoundException(String.format("Metadata with id: %s is not found", metadataId));
     }
-    Storage localStorage = storageService.getStorageDao().findOne(localStorageId);
+    Storage localStorage = storageService.findById(localStorageId);
     if (localStorage == null) {
       throw new NotFoundException(String.format("Storage with id: %s is not found", localStorageId));
     }

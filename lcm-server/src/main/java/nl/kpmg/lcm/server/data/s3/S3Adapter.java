@@ -48,9 +48,11 @@ public class S3Adapter implements FileAdapter {
   public S3Adapter() {}
 
   public S3Adapter(S3FileStorage s3Storage, String fileName) {
+    String secretAcccessKey;
+    secretAcccessKey = s3Storage.getAwsSecretAccessKey();
 
     AWSCredentials credentials =
-        new BasicAWSCredentials(s3Storage.getAwsAccessKey(), s3Storage.getAwsSecretAccessKey());
+        new BasicAWSCredentials(s3Storage.getAwsAccessKey(), secretAcccessKey);
     AWSStaticCredentialsProvider credentialsProvider =
         new AWSStaticCredentialsProvider(credentials);
     s3Client =

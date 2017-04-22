@@ -79,7 +79,7 @@ public class StorageController {
   @Produces({"application/nl.kpmg.lcm.rest.types.StoragesRepresentation+json"})
   @RolesAllowed({Roles.ADMINISTRATOR, Roles.API_USER})
   public StorageRepresentation getStorageHandler(@PathParam("storage_id") String storageId) {
-    Storage storage = storageService.getStorageDao().findOne(storageId);
+    Storage storage = storageService.findById(storageId);
     return new ConcreteStorageRepresentation(storage);
   }
 
@@ -94,9 +94,9 @@ public class StorageController {
   @RolesAllowed({Roles.ADMINISTRATOR})
   public Response deleteStorageHandler(final @PathParam("storage_id") String storageId) {
 
-    Storage storage = storageService.getStorageDao().findOne(storageId);
+    Storage storage = storageService.findById(storageId);
     if (storage != null) {
-      storageService.getStorageDao().delete(storage);
+      storageService.delete(storage);
       return Response.ok().build();
     } else {
       return Response.status(Status.NOT_FOUND).build();
@@ -104,7 +104,7 @@ public class StorageController {
   }
 
   /**
-   * Add a specific storage handler.
+   * Add new storage.
    *
    * @param storage
    * @return
@@ -113,12 +113,12 @@ public class StorageController {
   @Consumes({"application/nl.kpmg.lcm.server.data.Storage+json"})
   @RolesAllowed({Roles.ADMINISTRATOR})
   public Response createNewStorage(final Storage storage) {
-    storageService.getStorageDao().save(storage);
+    storageService.add(storage);
     return Response.ok().build();
   }
 
-    /**
-   * Add a specific storage handler.
+  /**
+   * Update existing.
    *
    * @param storage
    * @return
@@ -127,7 +127,7 @@ public class StorageController {
   @Consumes({"application/nl.kpmg.lcm.server.data.Storage+json"})
   @RolesAllowed({Roles.ADMINISTRATOR})
   public Response overwriteStorage(final Storage storage) {
-    storageService.getStorageDao().save(storage);
+    storageService.update(storage);
     return Response.ok().build();
   }
 

@@ -25,7 +25,6 @@ import nl.kpmg.lcm.rest.types.MetaDatasRepresentation;
 import nl.kpmg.lcm.server.LcmBaseServerTest;
 import nl.kpmg.lcm.server.ServerException;
 import nl.kpmg.lcm.server.backend.Backend;
-import nl.kpmg.lcm.server.data.TransferSettings;
 import nl.kpmg.lcm.server.data.ContentIterator;
 import nl.kpmg.lcm.server.data.Data;
 import nl.kpmg.lcm.server.data.DataFormat;
@@ -33,6 +32,7 @@ import nl.kpmg.lcm.server.data.FetchEndpoint;
 import nl.kpmg.lcm.server.data.IterativeData;
 import nl.kpmg.lcm.server.data.JsonReaderContentIterator;
 import nl.kpmg.lcm.server.data.Storage;
+import nl.kpmg.lcm.server.data.TransferSettings;
 import nl.kpmg.lcm.server.data.metadata.MetaData;
 import nl.kpmg.lcm.server.data.metadata.MetaDataWrapper;
 import nl.kpmg.lcm.server.data.service.FetchEndpointService;
@@ -116,7 +116,7 @@ public class FetchEndpointContollerTest extends LcmBaseServerTest {
     List<Storage> allStorage = storageService.findAll();
     for (Storage s : allStorage) {
       if (s != null) {
-        storageService.getStorageDao().delete(s);
+        storageService.delete(s);
       }
     }
   }
@@ -199,7 +199,7 @@ public class FetchEndpointContollerTest extends LcmBaseServerTest {
     MetaDataWrapper metadata = MetaDataMocker.getCsvMetaDataWrapper();
     metadata.getData().setUri(CSV_STORAGE_URI);
 
-    storageService.getStorageDao().save(csvStorage);
+    storageService.add(csvStorage);
     Backend backend = storageService.getBackend(metadata);
 
     generateCsvTestFile(CSV_FILE);

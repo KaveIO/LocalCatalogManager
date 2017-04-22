@@ -32,8 +32,8 @@ abstract class AbstractStorageContainer {
     this.storage = storage;
     Notification notification = new Notification();
     basicValidation(storage, notification);
-    if(!notification.hasErrors()) {
-        validate(storage, notification);
+    if (!notification.hasErrors()) {
+      validate(storage, notification);
     }
 
     if (notification.hasErrors()) {
@@ -43,7 +43,7 @@ abstract class AbstractStorageContainer {
 
   protected EnrichmentProperties getEnrichmentProperties() {
 
-      return new EnrichmentProperties(storage.getEnrichmentProperties());
+    return new EnrichmentProperties(storage.getEnrichmentProperties());
   }
 
   private void basicValidation(Storage storage, Notification notification) {

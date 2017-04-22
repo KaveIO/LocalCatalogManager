@@ -33,6 +33,8 @@
         <mongo:custom-converters>
             <mongo:converter ref="mongoUserReadConverter"/>
             <mongo:converter ref="mongoUserWriteConverter"/>
+            <mongo:converter ref="mongoStorageReadConverter"/>
+            <mongo:converter ref="mongoStorageWriteConverter"/>
             <mongo:converter ref="mongoMetaDataReadConverter"/>
             <mongo:converter ref="mongoMetaDataWriteConverter"/>
         </mongo:custom-converters>
@@ -40,6 +42,8 @@
 
     <bean id="mongoUserReadConverter" class="nl.kpmg.lcm.server.data.dao.mongo.MongoUserReadConverter"/>
     <bean id="mongoUserWriteConverter" class="nl.kpmg.lcm.server.data.dao.mongo.MongoUserWriteConverter"/>
+    <bean id="mongoStorageReadConverter" class="nl.kpmg.lcm.server.data.dao.mongo.MongoStorageReadConverter"/>
+    <bean id="mongoStorageWriteConverter" class="nl.kpmg.lcm.server.data.dao.mongo.MongoStorageWriteConverter"/>
     <bean id="mongoMetaDataReadConverter" class="nl.kpmg.lcm.server.data.dao.mongo.MongoMetaDataReadConverter"/>
     <bean id="mongoMetaDataWriteConverter" class="nl.kpmg.lcm.server.data.dao.mongo.MongoMetaDataWriteConverter"/>
     

@@ -17,6 +17,9 @@ package nl.kpmg.lcm.server.backend.storage;
 import nl.kpmg.lcm.server.data.Storage;
 import nl.kpmg.lcm.validation.Notification;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.util.HashSet;
 import java.util.Set;
 
@@ -25,18 +28,25 @@ import java.util.Set;
  * @author Stoyan Hristov<shristov@intracol.com>
  */
 public class S3FileStorage extends AbstractStorageContainer {
+  private static final Logger LOGGER = LoggerFactory.getLogger(S3FileStorage.class.getName());
+
 
   public S3FileStorage(Storage storage) {
     super(storage);
   }
 
   public String getAwsAccessKey() {
-    return (String) storage.getOptions().get("aws-access-key");
+    return (String) storage.getCredentials().get("aws-access-key");
+  }
+
+  public void setAwsAccessKey(String awsAcessKey) {
+    storage.getCredentials().put("aws-access-key", awsAcessKey);
   }
 
   public String getAwsSecretAccessKey() {
-    return (String) storage.getOptions().get("aws-secret-access-key");
+    return (String) storage.getCredentials().get("aws-secret-access-key");
   }
+
 
   public String getBucketName() {
     return (String) storage.getOptions().get("bucket");
@@ -44,8 +54,8 @@ public class S3FileStorage extends AbstractStorageContainer {
 
   /**
    * Bucket name must be unique in the amazon S3 domain space so try to keep format like bellow:
-   * "kpmg-lcm-" + system unique key + storage name;.
-   * Where "system unique key" is data specific to creating system
+   * "kpmg-lcm-" + system unique key + storage name;. Where "system unique key" is data specific to
+   * creating system
    */
   public String setBucketName(String bucketName) {
     return (String) storage.getOptions().put("bucket", bucketName);
@@ -69,12 +79,22 @@ public class S3FileStorage extends AbstractStorageContainer {
       notification.addError("Access key is missing or is empty!", null);
     }
 
-    if (getAwsSecretAccessKey() == null || getAwsSecretAccessKey().isEmpty()) {
-      notification.addError("Secret access key is missing or is empty!", null);
+    validateCredentials(notification);
+  }
+
+  public void validateCredentials(Notification notification) {
+
+    if (storage.getCredentials() == null) {
+      notification.addError("Credentials does not exists!");
+      return;
+    }
+
+    if (getAwsSecretAccessKey() == null) {
+      notification.addError("Storage validation: \"aws-secret-access-key\" is missing!");
     }
 
     if (getBucketName() == null || getBucketName().isEmpty()) {
-      notification.addError("Bucket name is missing or is empty!", null);
+      notification.addError("Bucket name is missing or is empty!");
     }
   }
 
@@ -86,6 +106,15 @@ public class S3FileStorage extends AbstractStorageContainer {
   public static Set<String> getSupportedStorageTypes() {
     Set result = new HashSet();
     result.add("s3file");
+    return result;
+  }
+
+  /**
+   * @return a set with credentials fields that needs to be encrypted for this storage type
+   */
+  public static Set<String> getEncryptedCredentialsFields() {
+    Set result = new HashSet();
+    result.add("aws-secret-access-key");
     return result;
   }
 }
