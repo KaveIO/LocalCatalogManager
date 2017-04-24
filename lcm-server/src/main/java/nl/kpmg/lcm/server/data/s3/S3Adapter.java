@@ -11,6 +11,7 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
+
 package nl.kpmg.lcm.server.data.s3;
 
 import com.amazonaws.auth.AWSCredentials;
@@ -26,6 +27,7 @@ import com.amazonaws.services.s3.model.S3Object;
 
 import nl.kpmg.lcm.server.backend.storage.S3FileStorage;
 import nl.kpmg.lcm.server.data.FileAdapter;
+import nl.kpmg.lcm.server.exception.LcmException;
 import nl.kpmg.lcm.server.task.enrichment.DataFetchTask;
 
 import org.slf4j.LoggerFactory;
@@ -38,8 +40,8 @@ import java.io.InputStream;
  * @author shristov
  */
 public class S3Adapter implements FileAdapter {
-  private static final org.slf4j.Logger LOGGER = LoggerFactory.getLogger(DataFetchTask.class
-      .getName());
+  private static final org.slf4j.Logger LOGGER =
+      LoggerFactory.getLogger(DataFetchTask.class.getName());
   private String bucketName;
 
   private AmazonS3 s3Client;
@@ -55,12 +57,11 @@ public class S3Adapter implements FileAdapter {
         new BasicAWSCredentials(s3Storage.getAwsAccessKey(), secretAcccessKey);
     AWSStaticCredentialsProvider credentialsProvider =
         new AWSStaticCredentialsProvider(credentials);
-    s3Client =
-        AmazonS3ClientBuilder.standard().withCredentials(credentialsProvider)
-            .withRegion(Regions.EU_WEST_1).build();
+    s3Client = AmazonS3ClientBuilder.standard().withCredentials(credentialsProvider)
+        .withRegion(Regions.EU_WEST_1).build();
 
     bucketName = s3Storage.getBucketName();
-    if (fileName.charAt(0) == '/') {// amazon s3 service don't like "/" in front of the file name
+    if (fileName.charAt(0) == '/') { // amazon s3 service don't like "/" in front of the file name
       this.fileName = fileName.substring(1);
     } else {
       this.fileName = fileName;
@@ -69,8 +70,8 @@ public class S3Adapter implements FileAdapter {
 
   @Override
   public void write(InputStream stream, Long size) throws IOException {
-    if(size == null || size <=0 ){
-        throw new LcmException("Error! Unable to transfer file to s3 storage with unknown size.");
+    if (size == null || size <= 0) {
+      throw new LcmException("Error! Unable to transfer file to s3 storage with unknown size.");
     }
 
     ObjectMetadata metadata = new ObjectMetadata();
