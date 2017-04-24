@@ -22,6 +22,7 @@ import nl.kpmg.lcm.server.ServerException;
 import nl.kpmg.lcm.server.backend.Backend;
 import nl.kpmg.lcm.server.data.ContentIterator;
 import nl.kpmg.lcm.server.data.Data;
+import nl.kpmg.lcm.server.data.EnrichmentProperties;
 import nl.kpmg.lcm.server.data.IterativeData;
 import nl.kpmg.lcm.server.data.JsonReaderContentIterator;
 import nl.kpmg.lcm.server.data.ProgressIndication;
@@ -153,8 +154,7 @@ public class DataFetchTask extends EnrichmentTask {
       }
 
       backend.store(data, transferSettings);
-      metaDataWrapper.getDynamicData().setState("ATTACHED");
-      metaDataService.update(metaDataWrapper.getMetaData());
+      metaDataService.enrichMetadata(metaDataWrapper, EnrichmentProperties.createDefaultEnrichmentProperties());
     } catch (Exception ex) {
       LOGGER.error(ex.getMessage());
 

@@ -36,6 +36,7 @@ import nl.kpmg.lcm.rest.types.RemoteLcmsRepresentation;
 import nl.kpmg.lcm.server.ServerException;
 import nl.kpmg.lcm.server.data.RemoteLcm;
 import nl.kpmg.lcm.server.data.metadata.MetaDataWrapper;
+import nl.kpmg.lcm.server.exception.LcmValidationException;
 import nl.kpmg.lcm.ui.rest.AuthenticationException;
 import nl.kpmg.lcm.ui.rest.RestClientService;
 import nl.kpmg.lcm.ui.view.transfer.components.StartTransferWindow;
@@ -220,12 +221,18 @@ public class SchedulePanel extends CustomComponent {
         if (result != null) {
           for (MetaDataRepresentation item : result.getItems()) {
 
-            MetaDataWrapper metaData = new MetaDataWrapper(item.getItem());
+            MetaDataWrapper metaData;
+            try {
+                metaData = new MetaDataWrapper(item.getItem());
+            } catch(LcmValidationException lve){
+                LOGGER.warn("Unable to create wrapper around metadata. Message: " + lve.getMessage());
+                continue;
+            }
             String json = null;
             try {
               json = new ObjectMapper().writeValueAsString(metaData.getMetaData());
             } catch (JsonProcessingException ex) {
-              LOGGER.warn("Unable to convert metatda:  " + metaData.getId() + "Exception : "
+              LOGGER.warn("Unable to convert metadata:  " + metaData.getId() + "Exception : "
                   + ex.getMessage());
               continue;
             }

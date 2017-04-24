@@ -25,7 +25,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 
-import java.util.HashMap;
 import java.util.Map;
 
 /**
@@ -73,12 +72,11 @@ public class DataEnrichmentTask extends EnrichmentTask {
     // metadata enrichment is empty and there is storage enrichment section
     if (enrichment == null && options != null) {
       enrichment = new EnrichmentProperties(options);
-    } else { // default enrichment properties.
-      enrichment = new EnrichmentProperties(new HashMap());
-      enrichment.setItemCount(true);
-      enrichment.setSize(true);
-      enrichment.setStructure(true);
-      enrichment.setAccessibility(true);
+    }
+
+    //If no preset enrichment properties are found then set the default enrichment properties.
+    if (enrichment == null) {
+      enrichment = EnrichmentProperties.createDefaultEnrichmentProperties();
     }
 
     boolean result = false;

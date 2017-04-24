@@ -28,18 +28,18 @@ import nl.kpmg.lcm.rest.types.MetaDataRepresentation;
 import nl.kpmg.lcm.rest.types.MetaDatasRepresentation;
 import nl.kpmg.lcm.server.ServerException;
 import nl.kpmg.lcm.server.data.metadata.MetaDataWrapper;
+import nl.kpmg.lcm.server.exception.LcmValidationException;
 import nl.kpmg.lcm.ui.rest.AuthenticationException;
 import nl.kpmg.lcm.ui.rest.RestClientService;
 import nl.kpmg.lcm.ui.view.metadata.MetadataCreateWindow;
 import nl.kpmg.lcm.ui.view.metadata.MetadataEditWindow;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
-import java.util.List;
-
 import javax.annotation.PostConstruct;
-import javax.ws.rs.core.Link;
 
 /**
  *
@@ -49,6 +49,8 @@ import javax.ws.rs.core.Link;
 @SpringView(name = MetadataOverviewViewImpl.VIEW_NAME)
 public class MetadataOverviewViewImpl extends VerticalLayout
     implements MetadataOverviewView, Button.ClickListener {
+  private static final Logger LOGGER = LoggerFactory.getLogger(MetadataOverviewViewImpl.class
+      .getName());
 
   /**
    * The linkable name of this view.
@@ -146,16 +148,19 @@ public class MetadataOverviewViewImpl extends VerticalLayout
       items = restClientService.getLocalMetadata();
 
       for (MetaDataRepresentation item : items.getItems()) {
-        List<Link> links = item.getLinks();
-
+        MetaDataWrapper metaDataWrapper;
+        try {
+          metaDataWrapper = new MetaDataWrapper(item.getItem());
+        } catch (LcmValidationException lve) {
+          LOGGER.warn("Unable to create wrapper around metadata. Message: " + lve.getMessage());
+          continue;
+        }
         Button viewButton = new Button("view");
         viewButton.setData(item);
         viewButton.addClickListener(new ViewButtonClickListener());
         viewButton.addStyleName("link");
-
-        MetaDataWrapper metaDataWrapper = new MetaDataWrapper(item.getItem());
         table.addItem(new Object[] {metaDataWrapper.getName(), metaDataWrapper.getData().getUri(),
-            viewButton}, metaDataWrapper.getName());
+            viewButton}, metaDataWrapper.getData().getUri());
       }
     } catch (AuthenticationException ex) {
       getUI().getNavigator().navigateTo("");

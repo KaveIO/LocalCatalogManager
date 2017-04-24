@@ -69,6 +69,10 @@ public class S3Adapter implements FileAdapter {
 
   @Override
   public void write(InputStream stream, Long size) throws IOException {
+    if(size == null || size <=0 ){
+        throw new LcmException("Error! Unable to transfer file to s3 storage with unknown size.");
+    }
+
     ObjectMetadata metadata = new ObjectMetadata();
     metadata.setContentLength(size);
     if (!s3Client.doesBucketExist(bucketName)) {
