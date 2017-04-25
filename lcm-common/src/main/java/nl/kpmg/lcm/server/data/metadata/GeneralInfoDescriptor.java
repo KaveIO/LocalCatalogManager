@@ -13,18 +13,27 @@
  */
 package nl.kpmg.lcm.server.data.metadata;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
+
 import nl.kpmg.lcm.validation.Notification;
+
+import java.util.Map;
 
 /**
  *
  * @author shristov
  */
+@JsonInclude(JsonInclude.Include.NON_NULL)
 public class GeneralInfoDescriptor extends AbstractMetaDataDescriptor {
   private String owner;
   private String description;
 
   public GeneralInfoDescriptor(MetaData metaData) {
     super(metaData);
+  }
+
+  public GeneralInfoDescriptor(Map map) {
+    super(map);
   }
 
   @Override

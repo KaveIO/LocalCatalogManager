@@ -152,14 +152,14 @@ public class MetaDataWrapper implements MetaDataIdentificator {
   /**
    * @return the enrichmentPropertiesDescriptor
    */
-  public EnrichmentPropertiesDescriptor getEnrichmentPropertiesDescriptor() {
+  public EnrichmentPropertiesDescriptor getEnrichmentProperties() {
     return enrichmentPropertiesDescriptor;
   }
 
   /**
    * @param value the EnrichmentPropertiesDescriptor to set
    */
-  public void setEnrichmentPropertiesDescriptor(EnrichmentPropertiesDescriptor value) {
+  public void setEnrichmentProperties(EnrichmentPropertiesDescriptor value) {
     metaData.set(value.getSectionName(), value.getMap());
   }
 }

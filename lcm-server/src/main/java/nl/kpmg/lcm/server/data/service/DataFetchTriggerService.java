@@ -141,7 +141,7 @@ public class DataFetchTriggerService {
     String metaDataURI = localStorage.getType() + "://" + localStorage.getName() + newItemName;
     metaDataWrapper.getData().setUri(metaDataURI);
     metaDataWrapper.getDynamicData().setState("DETACHED");
-    metaDataService.getMetaDataDao().save(metaDataWrapper.getMetaData());
+    metaDataService.update(metaDataWrapper.getMetaData());
   }
 
   private String getUpdatedStorageItemName(String originalDataFormat, String destinationDataFormat, String originalItemName) {

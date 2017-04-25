@@ -13,6 +13,8 @@
  */
 package nl.kpmg.lcm.server.backend.metadata;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
+
 import nl.kpmg.lcm.server.data.metadata.AbstractMetaDataDescriptor;
 import nl.kpmg.lcm.server.data.metadata.MetaData;
 import nl.kpmg.lcm.validation.Notification;
@@ -21,6 +23,7 @@ import nl.kpmg.lcm.validation.Notification;
  *
  * @author shristov
  */
+@JsonInclude(JsonInclude.Include.NON_NULL)
 public class TableConfigurationDescriptor extends AbstractMetaDataDescriptor {
 
   public TableConfigurationDescriptor(MetaData metaData) {

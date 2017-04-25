@@ -14,11 +14,15 @@
 
 package nl.kpmg.lcm.server.data;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
+import com.fasterxml.jackson.annotation.JsonInclude.Include;
+
 import javax.persistence.Id;
 
 /**
  * AbsractModel class for generic model parameters.
  */
+@JsonInclude(Include.NON_NULL)
 public class AbstractModel {
 
   /**

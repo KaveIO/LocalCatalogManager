@@ -13,16 +13,25 @@
  */
 package nl.kpmg.lcm.server.data.metadata;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
+
 import nl.kpmg.lcm.validation.Notification;
+
+import java.util.Map;
 
 /**
  *
  * @author shristov
  */
+@JsonInclude(JsonInclude.Include.NON_NULL)
 public class DynamicDataDescriptor extends AbstractMetaDataDescriptor {
 
   public DynamicDataDescriptor(MetaData metaData) {
     super(metaData);
+  }
+
+  public DynamicDataDescriptor(Map map) {
+    super(map);
   }
 
   /**
@@ -31,7 +40,7 @@ public class DynamicDataDescriptor extends AbstractMetaDataDescriptor {
    *         stamp (milliseconds)
    */
   public final Long getDataUpdateTimestamp() {
-    Object value =  get("data-update-timestamp");
+    Object value = get("data-update-timestamp");
     return parseLong(value);
   }
 
@@ -52,7 +61,7 @@ public class DynamicDataDescriptor extends AbstractMetaDataDescriptor {
    *         stamp (milliseconds)
    */
   public final Long getUpdateTimestamp() {
-    Object value =  get("update-timestamp");
+    Object value = get("update-timestamp");
     return parseLong(value);
   }
 
@@ -72,7 +81,7 @@ public class DynamicDataDescriptor extends AbstractMetaDataDescriptor {
    *         time stamp (milliseconds)
    */
   public final Long getUpdateDurationTimestamp() {
-    Object value =  get("update-duration-timestamp");
+    Object value = get("update-duration-timestamp");
     return parseLong(value);
   }
 
@@ -81,7 +90,7 @@ public class DynamicDataDescriptor extends AbstractMetaDataDescriptor {
    * @param timestamp: the duration of the last collection of dynamic data . the value must be is in
    *        unix time stamp (milliseconds)
    */
-  public final void setUpdateDurationInMillis(final long timestamp) {
+  public final void setUpdateDurationTimestamp(final long timestamp) {
 
     set("update-duration-timestamp", timestamp);
   }
@@ -91,7 +100,7 @@ public class DynamicDataDescriptor extends AbstractMetaDataDescriptor {
    * @return the size of the actual data in bytes or null if size is not applicable for the data.
    */
   public final Long getSize() {
-    Object value =  get("size");
+    Object value = get("size");
     return parseLong(value);
   }
 
@@ -115,7 +124,7 @@ public class DynamicDataDescriptor extends AbstractMetaDataDescriptor {
    *         data.
    */
   public final Long getItemsCount() {
-    Object value =  get("count");
+    Object value = get("count");
     return parseLong(value);
   }
 

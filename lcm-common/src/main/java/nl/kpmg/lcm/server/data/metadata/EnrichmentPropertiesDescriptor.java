@@ -13,19 +13,27 @@
  */
 package nl.kpmg.lcm.server.data.metadata;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
+
 import nl.kpmg.lcm.server.data.EnrichmentProperties;
 import nl.kpmg.lcm.validation.Notification;
 
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 /**
  *
  * @author shristov
  */
+@JsonInclude(JsonInclude.Include.NON_NULL)
 public class EnrichmentPropertiesDescriptor extends AbstractMetaDataDescriptor {
   public EnrichmentPropertiesDescriptor(MetaData metaData) {
     super(metaData);
+  }
+
+  public EnrichmentPropertiesDescriptor(Map map) {
+    super(map);
   }
 
   @Override
@@ -35,7 +43,7 @@ public class EnrichmentPropertiesDescriptor extends AbstractMetaDataDescriptor {
 
   @Override
   public void validate(Notification notification) {
-    //Intentialy blank as there are no manadtory properties.
+    // Intentialy blank as there are no manadtory properties.
   }
 
   public final String getCron() {

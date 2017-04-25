@@ -89,7 +89,7 @@ public class BackendFileImpl extends AbstractBackend {
     } finally {
       metaDataWrapper.getDynamicData().setUpdateTimestamp(new Date().getTime());
       long end = System.currentTimeMillis();
-      metaDataWrapper.getDynamicData().setUpdateDurationInMillis(end - start);
+      metaDataWrapper.getDynamicData().setUpdateDurationTimestamp(end - start);
     }
 
     return metaDataWrapper.getMetaData();

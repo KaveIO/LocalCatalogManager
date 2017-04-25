@@ -13,6 +13,8 @@
  */
 package nl.kpmg.lcm.server.backend.metadata;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
+
 import nl.kpmg.lcm.validation.Notification;
 
 import org.slf4j.Logger;
@@ -25,6 +27,7 @@ import java.util.Map;
  *
  * @author shristov
  */
+@JsonInclude(JsonInclude.Include.NON_NULL)
 public class ColumnMapDescriptor {
   private Map map;
   private static final Logger LOGGER = LoggerFactory.getLogger(ColumnMapDescriptor.class.getName());

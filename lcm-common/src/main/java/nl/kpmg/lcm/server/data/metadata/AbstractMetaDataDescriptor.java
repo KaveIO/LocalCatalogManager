@@ -13,6 +13,8 @@
  */
 package nl.kpmg.lcm.server.data.metadata;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+
 import nl.kpmg.lcm.validation.Notification;
 
 import java.util.HashMap;
@@ -29,10 +31,16 @@ public abstract class AbstractMetaDataDescriptor {
     this.metaData = metaData;
   }
 
+  public AbstractMetaDataDescriptor(Map map) {
+    metaData = new MetaData();
+    metaData.set(getSectionName(), map);
+  }
+
   public void createMap() {
     metaData.set(getSectionName(), new HashMap());
   }
 
+  @JsonIgnore
   public Map getMap() {
     return metaData.get(getSectionName());
   }
@@ -66,6 +74,7 @@ public abstract class AbstractMetaDataDescriptor {
     }
   }
 
+  @JsonIgnore
   public abstract String getSectionName();
 
   public abstract void validate(Notification notification);

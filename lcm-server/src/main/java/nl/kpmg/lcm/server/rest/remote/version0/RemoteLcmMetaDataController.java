@@ -98,7 +98,7 @@ public class RemoteLcmMetaDataController {
   public final MetaDataRepresentation getLocalMetaData(
       @PathParam("meta_data_id") final String metaDataId) {
 
-    MetaData metadata = metaDataService.getMetaDataDao().findOne(metaDataId);
+    MetaData metadata = metaDataService.findById(metaDataId);
     if (metadata == null) {
       throw new NotFoundException(String.format("MetaData set %s could not be found", metaDataId));
     }
@@ -113,7 +113,7 @@ public class RemoteLcmMetaDataController {
   public final FetchEndpointRepresentation generateFetch(
       @PathParam("metadata_id") final String metadata_id) {
 
-    MetaData md = metaDataService.getMetaDataDao().findOne(metadata_id);
+    MetaData md = metaDataService.findById(metadata_id);
     if (md == null) {
       throw new NotFoundException(String.format("Metadata %s not found", metadata_id));
     }

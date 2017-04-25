@@ -139,7 +139,7 @@ public class BackendCsvImpl extends AbstractBackend {
     } finally {
       csvMetaData.getDynamicData().setUpdateTimestamp(new Date().getTime());
       long end = System.currentTimeMillis();
-      csvMetaData.getDynamicData().setUpdateDurationInMillis(end - start);
+      csvMetaData.getDynamicData().setUpdateDurationTimestamp(end - start);
     }
 
     return metaDataWrapper.getMetaData();

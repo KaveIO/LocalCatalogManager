@@ -34,8 +34,8 @@ public class MetaDataWrapperTest {
 
     metaDataWrapper.setName("test");
 
-    String expected = "{\"id\":null,\"name\":\"test\"}";
-    String actual = objectMapper.writeValueAsString(metaDataWrapper.getMetaData());
+    String expected = "{\"name\":\"test\"}";
+    String actual = objectMapper.writeValueAsString(metaDataWrapper.getMetaData().getInnerMap());
     assertEquals(expected, actual);
   }
 

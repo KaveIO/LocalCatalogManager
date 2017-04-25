@@ -136,7 +136,7 @@ public class BackendJsonImpl extends AbstractBackend {
     } finally {
       jsonMetaData.getDynamicData().setUpdateTimestamp(new Date().getTime());
       long end = System.currentTimeMillis();
-      jsonMetaData.getDynamicData().setUpdateDurationInMillis(end - start);
+      jsonMetaData.getDynamicData().setUpdateDurationTimestamp(end - start);
     }
 
     return metaDataWrapper.getMetaData();

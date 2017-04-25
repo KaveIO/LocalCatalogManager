@@ -13,6 +13,8 @@
  */
 package nl.kpmg.lcm.server.backend.metadata;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
+
 import nl.kpmg.lcm.server.data.metadata.AbstractMetaDataDescriptor;
 import nl.kpmg.lcm.server.data.metadata.MetaData;
 import nl.kpmg.lcm.validation.Notification;
@@ -31,6 +33,7 @@ import java.util.Map;
  *
  * @author shristov
  */
+@JsonInclude(JsonInclude.Include.NON_NULL)
 public class TableDescriptionDescriptor extends AbstractMetaDataDescriptor {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(TableDescriptionDescriptor.class

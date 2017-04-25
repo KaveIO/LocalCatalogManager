@@ -106,7 +106,8 @@ public class LocalMetaDataController {
   @Consumes({"application/nl.kpmg.lcm.server.data.MetaData+json"})
   @RolesAllowed({Roles.ADMINISTRATOR, Roles.API_USER})
   public final Response createNewMetaData(final MetaData metaData) {
-    metaDataService.getMetaDataDao().save(metaData);
+    new MetaDataWrapper(metaData);//validate that MetaData has correct format
+    metaDataService.create(metaData);
     return Response.ok().build();
   }
 
@@ -123,7 +124,7 @@ public class LocalMetaDataController {
   @RolesAllowed({Roles.ADMINISTRATOR, Roles.API_USER})
   public final Response putLocalMetaData(@PathParam("meta_data_id") final String metaDataId,
       final MetaData metadata) {
-
+    new MetaDataWrapper(metadata);//validate that MetaData has correct format
     metaDataService.update(metadata);
 
     return Response.ok().build();
@@ -137,7 +138,7 @@ public class LocalMetaDataController {
   public final Response metadataOperation(@PathParam("meta_data_id") final String metaDataId,
       MetaDataOperationRequest request) {
 
-    MetaData metadata = metaDataService.getMetaDataDao().findOne(metaDataId);
+    MetaData metadata = metaDataService.findById(metaDataId);
     MetaDataWrapper metaDataWrapper = new MetaDataWrapper(metadata);
     Backend backend = null;
     switch (request.getOperation()) {
@@ -224,7 +225,7 @@ public class LocalMetaDataController {
   public final MetaDataRepresentation getLocalMetaData(
       @PathParam("meta_data_id") final String metaDataId, @QueryParam("update") Boolean update) {
 
-    MetaData metadata = metaDataService.getMetaDataDao().findOne(metaDataId);
+    MetaData metadata = metaDataService.findById(metaDataId);
     if (metadata == null) {
       throw new NotFoundException(String.format("MetaData set %s could not be found", metaDataId));
     }
@@ -248,9 +249,9 @@ public class LocalMetaDataController {
   @RolesAllowed({Roles.ADMINISTRATOR, Roles.API_USER})
   public final Response deleteLocalMetaData(@PathParam("meta_data_id") final String metaDataId) {
 
-    MetaData metadata = metaDataService.getMetaDataDao().findOne(metaDataId);
+    MetaData metadata = metaDataService.findById(metaDataId);
     if (metadata != null) {
-      metaDataService.getMetaDataDao().delete(metadata);
+      metaDataService.delete(metadata);
       return Response.ok().build();
     } else {
       return Response.status(Status.NOT_FOUND).build();

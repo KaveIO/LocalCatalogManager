@@ -54,12 +54,16 @@ public class MetaDataService {
     return metaDataDao.findOne(id);
   }
 
-  public MetaDataDao getMetaDataDao() {
-    return metaDataDao;
+  public void create(MetaData metadata) {
+    metaDataDao.save(metadata);
   }
 
   public void update(MetaData metadata) {
     metaDataDao.save(metadata);
+  }
+
+  public void delete(MetaData metadata) {
+    metaDataDao.delete(metadata);
   }
 
   public List<MetaData> findByStorageName(String storageName) {

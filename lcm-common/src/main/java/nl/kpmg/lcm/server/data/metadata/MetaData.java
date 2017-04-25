@@ -48,10 +48,6 @@ public class MetaData extends AbstractModel implements MetaDataIdentificator {
    */
   private static final Logger LOGGER = LoggerFactory.getLogger(MetaData.class.getName());
 
-  /**
-   * The unique name of the metadata object.
-   */
-  private String name;
 
   /**
    * The inner map in which all the unknown attributes are stored.
@@ -72,6 +68,9 @@ public class MetaData extends AbstractModel implements MetaDataIdentificator {
    */
   public MetaData(final Map map) {
     this.innerMap = new HashMap(map);
+    if (map.containsKey("id")) {
+      setId((String) map.get("id"));
+    }
   }
 
   /**
@@ -157,11 +156,19 @@ public class MetaData extends AbstractModel implements MetaDataIdentificator {
 
   @Override
   public final String getName() {
-    return name;
+    if (innerMap.containsKey("name")) {
+      return (String) innerMap.get("name");
+    }
+
+    return null;
   }
 
   @Override
   public final void setName(final String name) {
-    this.name = name;
+    innerMap.put("name", name);
+  }
+
+  public Map getInnerMap() {
+    return innerMap;
   }
 }

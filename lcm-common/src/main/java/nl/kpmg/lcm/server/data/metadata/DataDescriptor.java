@@ -13,20 +13,28 @@
  */
 package nl.kpmg.lcm.server.data.metadata;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
+
 import nl.kpmg.lcm.server.exception.LcmException;
 import nl.kpmg.lcm.validation.Notification;
 
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.util.Map;
 
 /**
  *
  * @author shristov
  */
+@JsonInclude(JsonInclude.Include.NON_NULL)
 public class DataDescriptor extends AbstractMetaDataDescriptor {
 
   public DataDescriptor(MetaData metaData) {
     super(metaData);
+  }
+
+  public DataDescriptor(Map map) {
+    super(map);
   }
 
   public final String getUri() {

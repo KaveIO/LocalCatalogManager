@@ -69,7 +69,7 @@ public class TaskScheduleService {
     for (MetaData metadata : metadataList) {
       MetaDataWrapper metadataWrapper = new MetaDataWrapper(metadata);
       EnrichmentProperties enrichment =
-          metadataWrapper.getEnrichmentPropertiesDescriptor().getEnrichmentProperties();
+          metadataWrapper.getEnrichmentProperties().getEnrichmentProperties();
       if (enrichment != null) {
         TaskSchedule.TaskScheduleItem item = new TaskSchedule.TaskScheduleItem();
         item.setCron(enrichment.getCronExpression());

@@ -122,7 +122,7 @@ public class BackendMongoImpl extends AbstractBackend {
     } finally {
       mongoMetaData.getDynamicData().setUpdateTimestamp(new Date().getTime());
       long end = System.currentTimeMillis();
-      mongoMetaData.getDynamicData().setUpdateDurationInMillis(end - start);
+      mongoMetaData.getDynamicData().setUpdateDurationTimestamp(end - start);
     }
     return mongoMetaData.getMetaData();
   }

@@ -133,7 +133,7 @@ public class BackendHiveImpl extends AbstractBackend {
     } finally {
       hiveMetaData.getDynamicData().setUpdateTimestamp(new Date().getTime());
       long end = System.currentTimeMillis();
-      hiveMetaData.getDynamicData().setUpdateDurationInMillis(end - start);
+      hiveMetaData.getDynamicData().setUpdateDurationTimestamp(end - start);
     }
     return hiveMetaData.getMetaData();
   }

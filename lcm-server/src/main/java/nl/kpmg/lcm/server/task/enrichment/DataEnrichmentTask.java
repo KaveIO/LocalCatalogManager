@@ -67,7 +67,7 @@ public class DataEnrichmentTask extends EnrichmentTask {
       throws TaskException {
     EnrichmentProperties enrichment;
 
-    enrichment = metadataWrapper.getEnrichmentPropertiesDescriptor().getEnrichmentProperties();
+    enrichment = metadataWrapper.getEnrichmentProperties().getEnrichmentProperties();
 
     // metadata enrichment is empty and there is storage enrichment section
     if (enrichment == null && options != null) {
