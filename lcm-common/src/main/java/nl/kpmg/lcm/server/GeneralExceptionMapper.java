@@ -11,6 +11,7 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
+
 package nl.kpmg.lcm.server;
 
 import org.slf4j.Logger;
@@ -23,11 +24,10 @@ import javax.ws.rs.ext.ExceptionMapper;
 import javax.ws.rs.ext.Provider;
 
 /**
- * Catch all exception mapper for the REST interface.
- *
- * By default uncaught exceptions are not displayed by grizzly. This is nice but terrible for
- * debugging. This mapper makes sure all uncaught exceptions are at least logged as a warning. This
- * has a drawback that in some cases default behavior is lost (404 messages).
+ * Catch all exception mapper for the REST interface. By default uncaught exceptions are not
+ * displayed by grizzly. This is nice but terrible for debugging. This mapper makes sure all
+ * uncaught exceptions are at least logged as a warning. This has a drawback that in some cases
+ * default behavior is lost (404 messages).
  *
  * @author mhoekstra
  */
@@ -48,29 +48,28 @@ public class GeneralExceptionMapper implements ExceptionMapper<Throwable> {
   public final Response toResponse(final Throwable ex) {
     Response response;
     if (NotFoundException.class.isAssignableFrom(ex.getClass())) {
-      LOGGER.warn("Resource not found on server! Error message: ", ex.getMessage());
-      response =
-          Response.status(Response.Status.NOT_FOUND).type("text/plain")
-              .entity("Resource not found on server.").build();
+      LOGGER.warn("Resource not found on server! Error message: {}", ex.getMessage());
+      LOGGER.debug("Stacktrace ", ex);
+      response = Response.status(Response.Status.NOT_FOUND).type("text/plain")
+          .entity("Resource not found on server.").build();
     } else if (ForbiddenException.class.isAssignableFrom(ex.getClass())) {
-      LOGGER.warn("Access is forbidden for the user role! Error message: ", ex.getMessage());
-      response =
-          Response.status(Response.Status.FORBIDDEN).type("text/plain")
-              .entity("Request failed! Check logs for more information.").build();
+      LOGGER.warn("Access is forbidden for the user role! Error message: {}", ex.getMessage());
+      LOGGER.debug("Stacktrace ", ex);
+      response = Response.status(Response.Status.FORBIDDEN).type("text/plain")
+          .entity("Request failed! Check logs for more information.").build();
     } else {
-      String logErrorMessage =
-          ex.getMessage() != null ? "Error message: " + ex.getMessage() : "" + "Exception type: "
-              + ex.getClass().getName();
-      LOGGER.warn("Request failed!", logErrorMessage);
+      String logErrorMessage = ex.getMessage() != null ? "Error message: " + ex.getMessage()
+          : "" + "Exception type: " + ex.getClass().getName();
 
-      String eMessage =
+      LOGGER.warn("Request failed! Error message: {}", logErrorMessage);
+      LOGGER.debug("Stacktrace ", ex);
+
+      String errorMessage =
           ex.getMessage() != null ? "Error message: " + ex.getMessage() : ex.getClass().getName();
-      response =
-          Response.status(Response.Status.INTERNAL_SERVER_ERROR).type("text/plain")
-              .entity("Request failed! Check logs for more information." + eMessage).build();
+      response = Response.status(Response.Status.INTERNAL_SERVER_ERROR).type("text/plain")
+          .entity("Request failed! Check logs for more information." + errorMessage).build();
     }
 
     return response;
   }
-
 }
