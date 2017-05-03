@@ -83,7 +83,8 @@ public class DataFetchTriggerService {
   private static final String FETCH_DATA_PATH = FETCH_ENDPOINT_CONTROLLER_PATH + "/fetch";
   private HttpAuthenticationFeature credentials;
 
-  public void scheduleDataFetchTask(String lcmId, String metadataId, String localStorageId, TransferSettings transferSettings)
+  public void scheduleDataFetchTask(String lcmId, String metadataId, String localStorageId,
+          TransferSettings transferSettings, String namespacePath)
       throws ServerException {
     RemoteLcmDao dao = lcmService.getDao();
     RemoteLcm lcm = dao.findOneById(lcmId);
@@ -100,7 +101,7 @@ public class DataFetchTriggerService {
       throw new NotFoundException(String.format("Storage with id: %s is not found", localStorageId));
     }
 
-    updateMetaData(metaDataWrapper, localStorage);
+    updateMetaData(metaDataWrapper, localStorage, namespacePath);
 
     createFetchTask(metadataId, lcmId, lcm, transferSettings);
   }
@@ -131,7 +132,7 @@ public class DataFetchTriggerService {
     taskDescriptionService.createNew(dataFetchTaskDescription);
   }
 
-  private void updateMetaData(MetaDataWrapper metaDataWrapper, Storage localStorage)
+  private void updateMetaData(MetaDataWrapper metaDataWrapper, Storage localStorage, String namespacePath)
       throws ServerException, NotFoundException, ClientErrorException {
 
     URI originalDataUri = parseDataUri(metaDataWrapper.getData().getUri());
@@ -140,6 +141,7 @@ public class DataFetchTriggerService {
     String newItemName = getUpdatedStorageItemName(originalDataType, localStorage.getType(), path);
     String metaDataURI = localStorage.getType() + "://" + localStorage.getName() + newItemName;
     metaDataWrapper.getData().setUri(metaDataURI);
+    metaDataWrapper.getData().setPath(namespacePath);
     metaDataWrapper.getDynamicData().setState("DETACHED");
     metaDataService.update(metaDataWrapper.getMetaData());
   }

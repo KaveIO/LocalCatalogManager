@@ -36,6 +36,7 @@ public class MetaDataMocker {
     csvMetaData.setName("CSV-metadata");
     csvMetaData.setId("585a57136d31212d0ad5fca6");
     csvMetaData.getData().setUri("csv://test/temp.csv");
+    csvMetaData.getData().setPath("kpmg/lcm/test");
     csvMetaData.getGeneralInfo().setOwner("KPMG");
     csvMetaData.getGeneralInfo().setDescription("Sample description");
     List columns = new ArrayList();
@@ -52,6 +53,7 @@ public class MetaDataMocker {
     metaData.setId("585a57136d31212d0ad5fca6");
     DataDescriptor data = new DataDescriptor(metaData);
     data.setUri("csv://test/temp.csv");
+    data.setPath("kpmg/lcm/test");
     metaData.set(data.getSectionName(), data.getMap());
 
     GeneralInfoDescriptor generalInfo = new GeneralInfoDescriptor(metaData);
@@ -67,6 +69,7 @@ public class MetaDataMocker {
     tabularMetaData.setName("Hive-metadata");
     tabularMetaData.setId("585a57236d31212d0ad5fca6");
     tabularMetaData.getData().setUri("hive://remote-hive-foodmart/product");
+    tabularMetaData.getData().setPath("kpmg/lcm/test");
     tabularMetaData.getGeneralInfo().setOwner("KPMG");
     tabularMetaData.getGeneralInfo().setDescription("Sample description");
     List columns = new ArrayList();
@@ -82,6 +85,7 @@ public class MetaDataMocker {
     tabularMetaData.setName("Mongo-metadata");
     tabularMetaData.setId("585a57236d31212d0ad5fca6");
     tabularMetaData.getData().setUri("mongo://mongoStorage/mock");
+    tabularMetaData.getData().setPath("kpmg/lcm/test");
     tabularMetaData.getGeneralInfo().setOwner("KPMG");
     tabularMetaData.getGeneralInfo().setDescription("Sample description");
     List columns = new ArrayList();

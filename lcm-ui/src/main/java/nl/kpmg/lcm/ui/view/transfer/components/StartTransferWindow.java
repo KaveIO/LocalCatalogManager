@@ -28,6 +28,7 @@ import com.vaadin.ui.Window;
 import nl.kpmg.lcm.client.ClientException;
 import nl.kpmg.lcm.rest.types.StorageRepresentation;
 import nl.kpmg.lcm.rest.types.StoragesRepresentation;
+import nl.kpmg.lcm.server.NamespacePathValidator;
 import nl.kpmg.lcm.server.ServerException;
 import nl.kpmg.lcm.server.data.Storage;
 import nl.kpmg.lcm.server.data.TransferSettings;
@@ -52,7 +53,7 @@ public class StartTransferWindow extends Window implements Button.ClickListener 
    */
   private static final String DIALOG_WIDTH = "600px";
 
-  private static final String TAB_HEIGHT = "220px";
+  private static final String TAB_HEIGHT = "250px";
 
   /**
    * The default size of the side panels of this view.
@@ -68,6 +69,7 @@ public class StartTransferWindow extends Window implements Button.ClickListener 
   private String remoteLcmId;
   private String remoteLcmUrl;
   private String remoteMetadataId;
+  private TextField metadataNameSpaceField;
   private final Button startButton = new Button("Start");
 
   private ComboBox overwriteComboBox;
@@ -139,10 +141,12 @@ public class StartTransferWindow extends Window implements Button.ClickListener 
     FormLayout commonContentPanel = new FormLayout();
     commonContentPanel.setMargin(true);
     storageListComboBox = initStorageListComboBox();
+    metadataNameSpaceField = new TextField("Namespace path");
     commonContentPanel.addComponent(remoteLcmLabel);
     commonContentPanel.addComponent(metadataIdLabel);
     commonContentPanel.addComponent(metadataNameLabel);
     commonContentPanel.addComponent(storageListComboBox);
+    commonContentPanel.addComponent(metadataNameSpaceField);
     commonContentPanel.addComponent(startButton);
     commonContentPanel.setMargin(true);
     commonContentPanel.setHeight(TAB_HEIGHT);
@@ -211,6 +215,7 @@ public class StartTransferWindow extends Window implements Button.ClickListener 
     ObjectMapper mapper = new ObjectMapper();
     ObjectNode rootNode = mapper.createObjectNode();
     rootNode.put("local-storage-id", (String) storageListComboBox.getValue());
+    rootNode.put("namespace-path", (String) metadataNameSpaceField.getValue());
     ObjectMapper objectMapper = new ObjectMapper();
     String value = null;
     try {
@@ -250,8 +255,16 @@ public class StartTransferWindow extends Window implements Button.ClickListener 
 
   private void validate(nl.kpmg.lcm.validation.Notification notification) {
     String selection = (String) storageListComboBox.getValue();
-    if (selection == null || selection.length() == 0) {
+    if (selection == null || selection.isEmpty()) {
       notification.addError("You must select storage!");
     }
+
+    String namespaceSelection = (String) metadataNameSpaceField.getValue();
+    if (namespaceSelection == null || namespaceSelection.isEmpty()) {
+      notification.addError("You must enter namespace path!");
+    }
+
+    NamespacePathValidator validator  =  new NamespacePathValidator();
+    validator.validate(namespaceSelection, notification);
   }
 }

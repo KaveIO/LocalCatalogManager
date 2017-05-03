@@ -16,6 +16,7 @@ package nl.kpmg.lcm.server.data.service;
 
 import jersey.repackaged.com.google.common.collect.Lists;
 
+import nl.kpmg.lcm.server.Constants;
 import nl.kpmg.lcm.server.backend.Backend;
 import nl.kpmg.lcm.server.data.EnrichmentProperties;
 import nl.kpmg.lcm.server.data.dao.MetaDataDao;
@@ -29,8 +30,10 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Set;
 
 /**
  *
@@ -120,5 +123,84 @@ public class MetaDataService {
     }
 
     return true;
+  }
+
+  /**
+   * 
+   * @param namespace base namespace path
+   * @param recursive  when true returns and the metadatas of sub namespaces.
+   * @return List of metadatas that belongs to @namespace
+   */
+  public List<MetaData> findAllByNamespace(String namespace, boolean recursive) {
+    List<MetaData> all = Lists.newLinkedList(metaDataDao.findAll());
+    List<MetaData> filtered = new LinkedList();
+    for (MetaData metadata : all) {
+      if (doesMetadataBelongsToNamespace(metadata, namespace, recursive)) {
+        filtered.add(metadata);
+      }
+    }
+
+    return filtered;
+  }
+
+  /**
+   * 
+   * @param metadata which is check
+   * @param namespace must be in format "section1/section2"
+   * @param recursive check recursively i.e. if the metadata belongs to subsection
+   * @return true if @metadata belongs to @namespace 
+   */
+  public boolean doesMetadataBelongsToNamespace(MetaData metadata, String namespace,
+      boolean recursive) {
+    MetaDataWrapper metadataWrapper = new MetaDataWrapper(metadata);
+    String path = metadataWrapper.getData().getPath();
+
+    if (path != null && path.equals(namespace)) {
+      return true;
+    }
+
+    // ensure that the rest of the path is separate namespace section
+    // i.e. namepsace kpmg/lcm/test belongs to kpmg/lcm
+    // but kpmg/lsmtest does not!
+    namespace += Constants.NAMESPACE_SEPARATOR;
+    if (path != null && recursive && path.startsWith(namespace)) {
+      return true;
+    }
+
+    return false;
+  }
+
+  /**
+   * 
+   * @param namespace must be in format "section1/section2".
+   * @param recursive check recursively i.e. for subsections of the subsection
+   * @return List with sub namespaces.
+   */
+  public Set<String> getAllSubNamespaces(String namespace, boolean recursive) {
+    List<MetaData> all = Lists.newLinkedList(findAll());
+    Set<String> namespaceSet = new HashSet();
+    for (MetaData metadata : all) {
+      MetaDataWrapper metadataWrapper = new MetaDataWrapper(metadata);
+      String path = metadataWrapper.getData().getPath();
+      if (path == null) {
+        LOGGER.warn("Metadata has null path:  Id: " + metadata.getId());
+        continue;
+      }
+
+      if (path.equals(namespace)) {
+        namespaceSet.add(path);
+        continue;
+      }
+
+      // ensure that the rest of the path is separate namespace section
+      // i.e. namepsace kpmg/lcm/test belongs to kpmg/lcm
+      // but kpmg/lsmtest does not!
+      namespace += Constants.NAMESPACE_SEPARATOR;
+      if (recursive && path.startsWith(namespace)) {
+        namespaceSet.add(path);
+      }
+
+    }
+    return namespaceSet;
   }
 }

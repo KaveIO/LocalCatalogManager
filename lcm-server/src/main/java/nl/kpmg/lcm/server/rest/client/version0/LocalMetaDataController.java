@@ -32,11 +32,14 @@ import nl.kpmg.lcm.server.rest.client.version0.types.ConcreteMetaDatasRepresenta
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import javax.annotation.security.RolesAllowed;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.DELETE;
+import javax.ws.rs.DefaultValue;
 import javax.ws.rs.GET;
 import javax.ws.rs.NotFoundException;
 import javax.ws.rs.POST;
@@ -83,13 +86,23 @@ public class LocalMetaDataController {
   /**
    * Get the head versions of all MetaData.
    *
+   * @param namespace to filter metadata on. default empty
+   * @param recursive get all underlying metadata from namespace. default false
    * @return The head versions
    */
   @GET
   @Produces({"application/nl.kpmg.lcm.rest.types.MetaDatasRepresentation+json"})
   @RolesAllowed({Roles.ADMINISTRATOR, Roles.API_USER})
-  public final MetaDatasRepresentation getLocalMetaDataOverview() {
-    List all = metaDataService.findAll();
+  public final MetaDatasRepresentation getLocalMetaDataOverview(
+      @QueryParam("namespace") @DefaultValue("") String namespace,
+      @QueryParam("recursive") @DefaultValue("False") Boolean recursive) {
+
+    List all;
+    if (!namespace.isEmpty()) {
+      all = metaDataService.findAllByNamespace(namespace, recursive);
+    } else {
+      all = metaDataService.findAll();
+    }
     MetaDatasRepresentation metaDatasRepresentation = new ConcreteMetaDatasRepresentation();
     metaDatasRepresentation.setRepresentedItems(ConcreteMetaDataRepresentation.class, all);
 
@@ -106,7 +119,7 @@ public class LocalMetaDataController {
   @Consumes({"application/nl.kpmg.lcm.server.data.MetaData+json"})
   @RolesAllowed({Roles.ADMINISTRATOR, Roles.API_USER})
   public final Response createNewMetaData(final MetaData metaData) {
-    new MetaDataWrapper(metaData);//validate that MetaData has correct format
+    new MetaDataWrapper(metaData);// validate that MetaData has correct format
     metaDataService.create(metaData);
     return Response.ok().build();
   }
@@ -124,7 +137,7 @@ public class LocalMetaDataController {
   @RolesAllowed({Roles.ADMINISTRATOR, Roles.API_USER})
   public final Response putLocalMetaData(@PathParam("meta_data_id") final String metaDataId,
       final MetaData metadata) {
-    new MetaDataWrapper(metadata);//validate that MetaData has correct format
+    new MetaDataWrapper(metadata);// validate that MetaData has correct format
     metaDataService.update(metadata);
 
     return Response.ok().build();
@@ -148,12 +161,10 @@ public class LocalMetaDataController {
         try {
           backend = storageService.getBackend(metaDataWrapper);
           if (backend != null) {
-            IterativeData input = (IterativeData)backend.read();
+            IterativeData input = (IterativeData) backend.read();
             String fType = (String) request.getParameters().get("type");
-            return Response
-                .ok(input)
-                .header("Content-Disposition",
-                    String.format("attachment; filename=%s.%s", metadata.getName(), fType)).build();
+            return Response.ok(input).header("Content-Disposition",
+                String.format("attachment; filename=%s.%s", metadata.getName(), fType)).build();
 
           }
         } finally {
@@ -230,9 +241,9 @@ public class LocalMetaDataController {
       throw new NotFoundException(String.format("MetaData set %s could not be found", metaDataId));
     }
 
-    if(update) {
-        Backend backend = storageService.getBackend(new MetaDataWrapper(metadata));
-        metadata =  backend.enrichMetadata(EnrichmentProperties.createDefaultEnrichmentProperties());
+    if (update) {
+      Backend backend = storageService.getBackend(new MetaDataWrapper(metadata));
+      metadata = backend.enrichMetadata(EnrichmentProperties.createDefaultEnrichmentProperties());
     }
 
     return new ConcreteMetaDataRepresentation(metadata);
@@ -256,5 +267,21 @@ public class LocalMetaDataController {
     } else {
       return Response.status(Status.NOT_FOUND).build();
     }
+  }
+
+  @GET
+  @Path("namespace")
+  @Produces({"application/json"})
+  @RolesAllowed({Roles.ADMINISTRATOR, Roles.API_USER})
+  public final Set<String> getSubNamespaces(@QueryParam("namespace") String namespace,
+      @QueryParam("recursive") Boolean recursive) {
+
+    if (namespace != null && !namespace.isEmpty()) {
+      if (recursive == null) {
+        recursive = Boolean.FALSE;
+      }
+      return metaDataService.getAllSubNamespaces(namespace, recursive);
+    }
+    return new HashSet<String>();
   }
 }

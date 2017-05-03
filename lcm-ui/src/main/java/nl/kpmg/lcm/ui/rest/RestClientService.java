@@ -36,6 +36,8 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
+import java.util.Set;
+
 import javax.ws.rs.ProcessingException;
 import javax.ws.rs.client.Entity;
 import javax.ws.rs.client.Invocation;
@@ -348,6 +350,23 @@ public class RestClientService {
     if (statusInfo.getFamily() != Response.Status.Family.SUCCESSFUL) {
       throw new DataCreationException(
           String.format("%s - %s", statusInfo.getStatusCode(), statusInfo.getReasonPhrase()));
+    }
+  }
+
+  public Set<String> getSubNamespaces(String baseNamespace)
+      throws AuthenticationException, ServerException, ClientException {
+    String pathTemplate = "client/v0/local/namespace?namespace=%s";
+    String path = String.format(pathTemplate, baseNamespace );
+    LOGGER.info(String.format("Executing get on LCM-Server on path: %s", path));
+    Response response = getClient(path).get();
+    Set<String>  result = null;
+    if (response.getStatusInfo().getFamily() == Response.Status.Family.SUCCESSFUL) {
+      result = response.readEntity(Set.class);
+      return result;
+    } else {
+      LOGGER.warn(String.format("Call to LCM-Server failed with: %d - %s",
+          response.getStatus(), response.getStatusInfo().getReasonPhrase()));
+      throw new ClientException("Call to LCM-Server failed", response);
     }
   }
 }

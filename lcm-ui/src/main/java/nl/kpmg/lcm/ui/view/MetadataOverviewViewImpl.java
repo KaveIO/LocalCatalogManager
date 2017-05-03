@@ -19,13 +19,14 @@ import com.vaadin.spring.annotation.SpringView;
 import com.vaadin.ui.Button;
 import com.vaadin.ui.HorizontalLayout;
 import com.vaadin.ui.Notification;
-import com.vaadin.ui.Table;
+import com.vaadin.ui.TreeTable;
 import com.vaadin.ui.UI;
 import com.vaadin.ui.VerticalLayout;
 
 import nl.kpmg.lcm.client.ClientException;
 import nl.kpmg.lcm.rest.types.MetaDataRepresentation;
 import nl.kpmg.lcm.rest.types.MetaDatasRepresentation;
+import nl.kpmg.lcm.server.Constants;
 import nl.kpmg.lcm.server.ServerException;
 import nl.kpmg.lcm.server.data.metadata.MetaDataWrapper;
 import nl.kpmg.lcm.server.exception.LcmValidationException;
@@ -39,6 +40,8 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
+import java.util.Arrays;
+
 import javax.annotation.PostConstruct;
 
 /**
@@ -49,8 +52,8 @@ import javax.annotation.PostConstruct;
 @SpringView(name = MetadataOverviewViewImpl.VIEW_NAME)
 public class MetadataOverviewViewImpl extends VerticalLayout
     implements MetadataOverviewView, Button.ClickListener {
-  private static final Logger LOGGER = LoggerFactory.getLogger(MetadataOverviewViewImpl.class
-      .getName());
+  private static final Logger LOGGER =
+      LoggerFactory.getLogger(MetadataOverviewViewImpl.class.getName());
 
   /**
    * The linkable name of this view.
@@ -72,7 +75,7 @@ public class MetadataOverviewViewImpl extends VerticalLayout
   /**
    * Main UI table containing the current list of metadata items.
    */
-  private final Table table = new Table();
+  private final TreeTable table = new TreeTable();
 
   private final Button createButton = new Button("Create");
 
@@ -159,8 +162,13 @@ public class MetadataOverviewViewImpl extends VerticalLayout
         viewButton.setData(item);
         viewButton.addClickListener(new ViewButtonClickListener());
         viewButton.addStyleName("link");
+
+        addPathToTable(metaDataWrapper.getData().getPath());
+
         table.addItem(new Object[] {metaDataWrapper.getName(), metaDataWrapper.getData().getUri(),
-            viewButton}, metaDataWrapper.getData().getUri());
+            viewButton}, metaDataWrapper.getId());
+        table.setChildrenAllowed(metaDataWrapper.getId(), false);
+        table.setParent(metaDataWrapper.getId(), metaDataWrapper.getData().getPath());
       }
     } catch (AuthenticationException ex) {
       getUI().getNavigator().navigateTo("");
@@ -169,6 +177,29 @@ public class MetadataOverviewViewImpl extends VerticalLayout
       getUI().getNavigator().navigateTo("");
     } catch (ClientException ex) {
       Notification.show("Couldn't fetch remote data.");
+    }
+  }
+
+  /**
+   * Recursive method for adding the path to the TreeTable. This method will walk up a path and add
+   * non existing nodes to the tree.
+   * 
+   * @param path full path to add to the tree
+   */
+  private void addPathToTable(String path) {
+    if (path == null || path.isEmpty() || table.containsId(path)) {
+      return;
+    }
+
+    String[] split = path.split(Constants.NAMESPACE_SEPARATOR);
+
+    table.addItem(new Object[] {split[split.length - 1], null, null}, path);
+
+    if (split.length > 1) {
+      String parent = String.join(Constants.NAMESPACE_SEPARATOR,
+          Arrays.copyOfRange(split, 0, split.length - 1));
+      addPathToTable(parent);
+      table.setParent(path, parent);
     }
   }
 

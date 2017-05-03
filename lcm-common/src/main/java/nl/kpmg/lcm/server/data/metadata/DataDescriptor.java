@@ -15,6 +15,7 @@ package nl.kpmg.lcm.server.data.metadata;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 
+import nl.kpmg.lcm.server.NamespacePathValidator;
 import nl.kpmg.lcm.server.exception.LcmException;
 import nl.kpmg.lcm.validation.Notification;
 
@@ -43,6 +44,14 @@ public class DataDescriptor extends AbstractMetaDataDescriptor {
 
   public final void setUri(final String uri) {
     set("uri", uri);
+  }
+
+ public final String getPath() {
+    return get("path");
+  }
+
+  public final void setPath(final String path) {
+    set("path", path);
   }
 
   public String getStorageItemName() {
@@ -75,7 +84,11 @@ public class DataDescriptor extends AbstractMetaDataDescriptor {
           + "\" is not found in the metadata!");
       return;
     }
-
     validateField("uri", notification);
+
+    validateField("path", notification);
+    String path = (String)getMap().get("path");
+    NamespacePathValidator validator = new NamespacePathValidator();
+    validator.validate(path, notification);
   }
 }

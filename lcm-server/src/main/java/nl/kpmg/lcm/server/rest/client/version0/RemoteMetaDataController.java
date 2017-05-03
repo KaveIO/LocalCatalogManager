@@ -74,6 +74,8 @@ public class RemoteMetaDataController {
     }
 
     String localStorageId = (String) payload.get("local-storage-id");
+    String namespacePath = (String) payload.get("namespace-path");
+
     String transferSettingsString = (String) payload.get("transfer-settings");
 
     TransferSettings transferSettings = null;
@@ -92,7 +94,7 @@ public class RemoteMetaDataController {
     }
 
     dataFetchTriggerService.scheduleDataFetchTask(lcmId, metadataId, localStorageId,
-        transferSettings);
+        transferSettings, namespacePath);
 
     return Response.ok().build();
   }

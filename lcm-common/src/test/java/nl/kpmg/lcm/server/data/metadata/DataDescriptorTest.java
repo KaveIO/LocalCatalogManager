@@ -57,11 +57,14 @@ public class DataDescriptorTest {
   @Test
   public void testValidate() {
     String uri = "csv://local2/mock.csv";
+    String path = "kpmg/lcm/test";
 
     MetaData metaData = new MetaData();
     DataDescriptor data = new DataDescriptor(metaData);
 
     data.setUri(uri);
+    data.setPath(path);
+
     Notification notification = new Notification();
     data.validate(notification);
     assertFalse(notification.hasErrors());

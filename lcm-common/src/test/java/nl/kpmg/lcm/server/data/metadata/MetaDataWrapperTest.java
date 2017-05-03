@@ -54,6 +54,7 @@ public class MetaDataWrapperTest {
 
     DataDescriptor data = new DataDescriptor(metaData);
     data.setUri("csv://local2/mock.csv");
+    data.setPath("kpmg/lcm/test");
 
     metaData.set(data.getSectionName(), data.getMap());
 
