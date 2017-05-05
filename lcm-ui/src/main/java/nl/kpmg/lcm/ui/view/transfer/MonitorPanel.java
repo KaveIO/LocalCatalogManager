@@ -38,6 +38,8 @@ import nl.kpmg.lcm.ui.rest.RestClientService;
 
 import org.slf4j.LoggerFactory;
 
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.ListIterator;
 
@@ -160,7 +162,8 @@ public class MonitorPanel extends CustomComponent {
   private Table initTaskTable() throws UnsupportedOperationException {
     Table table = new Table();
     table.setWidth("100%");
-    table.addContainerProperty("Id", String.class, null);
+    table.addContainerProperty("Matadata", String.class, null);
+    table.addContainerProperty("Source LCM", String.class, null);
     table.addContainerProperty("Start time", String.class, null);
     table.addContainerProperty("Status", String.class, null);
     table.addContainerProperty("Actions", HorizontalLayout.class, null);
@@ -259,12 +262,22 @@ public class MonitorPanel extends CustomComponent {
 
   private void addDescriptionIntoTable(TaskDescription description)
       throws UnsupportedOperationException {
+    String metadataName = null;
+    String detailsRemoteLcm = null;
+    if (description.getDetails() != null) {
+      metadataName = (String) description.getDetails().get("metadataName");
+      detailsRemoteLcm = (String) description.getDetails().get("remoteLcmName");
+    }
+    String data = metadataName != null ? metadataName : "";
+    String remoteLcm = detailsRemoteLcm != null ? detailsRemoteLcm : "";
+
     Date startDate = description.getStartTime();
-    String date = startDate != null ? startDate.toString() : "";
-    String status  = description.getStatus() !=  null? description.getStatus().toString(): "";
+    DateFormat df = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+    String date = startDate != null ? df.format(startDate) : "";
+    String status = description.getStatus() != null ? description.getStatus().toString() : "";
     HorizontalLayout actionsLayout = createActionsLayout(description);
-    taskTable.addItem(new Object[] {description.getId(), date, status,
-        actionsLayout}, description.getId());
+    taskTable.addItem(new Object[] {data, remoteLcm, date, status, actionsLayout},
+        description.getId());
   }
 
   private boolean isSearchingForAll(Object statusValue) {

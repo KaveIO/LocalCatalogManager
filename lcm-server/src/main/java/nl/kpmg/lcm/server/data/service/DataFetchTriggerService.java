@@ -58,7 +58,8 @@ import javax.ws.rs.core.Response;
  */
 @Service
 public class DataFetchTriggerService {
-  private static final Logger LOGGER = LoggerFactory.getLogger(DataFetchTriggerService.class.getName());
+  private static final Logger LOGGER = LoggerFactory.getLogger(DataFetchTriggerService.class
+      .getName());
 
   @Autowired
   private MetaDataService metaDataService;
@@ -84,8 +85,7 @@ public class DataFetchTriggerService {
   private HttpAuthenticationFeature credentials;
 
   public void scheduleDataFetchTask(String lcmId, String metadataId, String localStorageId,
-          TransferSettings transferSettings, String namespacePath)
-      throws ServerException {
+      TransferSettings transferSettings, String namespacePath) throws ServerException {
     RemoteLcmDao dao = lcmService.getDao();
     RemoteLcm lcm = dao.findOneById(lcmId);
     if (lcm == null) {
@@ -103,16 +103,16 @@ public class DataFetchTriggerService {
 
     updateMetaData(metaDataWrapper, localStorage, namespacePath);
 
-    createFetchTask(metadataId, lcmId, lcm, transferSettings);
+    createFetchTask(metaDataWrapper, lcmId, lcm, transferSettings);
   }
 
-  private void createFetchTask(String metadataId, String lcmId, RemoteLcm lcm, TransferSettings transferSettings)
-      throws ServerException, ClientErrorException {
+  private void createFetchTask(MetaDataWrapper metaDataWrapper, String lcmId, RemoteLcm lcm,
+      TransferSettings transferSettings) throws ServerException, ClientErrorException {
     TaskDescription dataFetchTaskDescription = new TaskDescription();
     dataFetchTaskDescription.setJob(DataFetchTask.class.getName());
     dataFetchTaskDescription.setType(TaskType.FETCH);
     dataFetchTaskDescription.setStatus(TaskDescription.TaskStatus.PENDING);
-    dataFetchTaskDescription.setTarget(metadataId);
+    dataFetchTaskDescription.setTarget(metaDataWrapper.getId());
 
     Calendar calendar = Calendar.getInstance();
     calendar.add(Calendar.MINUTE, 2);
@@ -121,23 +121,35 @@ public class DataFetchTriggerService {
 
     Map<String, String> options = new HashMap();
     options.put("remoteLcm", lcmId);
-    FetchEndpoint fetchURL = generateFetchURL(metadataId, lcm);
+    FetchEndpoint fetchURL = generateFetchURL(metaDataWrapper.getId(), lcm);
     options.put("path", FETCH_DATA_PATH + "/" + fetchURL.getId());
 
     dataFetchTaskDescription.setOptions(options);
 
     dataFetchTaskDescription.setTransferSettings(transferSettings);
 
+    Map<String, String> details = new HashMap();
+    String template = "%s://%s:%s";
+    String remoteLcmDescription =
+        String.format(template, lcm.getProtocol(), lcm.getDomain(), lcm.getPort().toString());
+
+    details.put("remoteLcmURI", remoteLcmDescription);
+    details.put("remoteLcmName", lcm.getName());
+
+    details.put("metadataURI", metaDataWrapper.getData().getUri());
+    details.put("metadataName", metaDataWrapper.getName());
+
+    dataFetchTaskDescription.setDetail(details);
 
     taskDescriptionService.createNew(dataFetchTaskDescription);
   }
 
-  private void updateMetaData(MetaDataWrapper metaDataWrapper, Storage localStorage, String namespacePath)
-      throws ServerException, NotFoundException, ClientErrorException {
+  private void updateMetaData(MetaDataWrapper metaDataWrapper, Storage localStorage,
+      String namespacePath) throws ServerException, NotFoundException, ClientErrorException {
 
     URI originalDataUri = parseDataUri(metaDataWrapper.getData().getUri());
     String path = originalDataUri.getPath();
-    String originalDataType =  originalDataUri.getScheme();
+    String originalDataType = originalDataUri.getScheme();
     String newItemName = getUpdatedStorageItemName(originalDataType, localStorage.getType(), path);
     String metaDataURI = localStorage.getType() + "://" + localStorage.getName() + newItemName;
     metaDataWrapper.getData().setUri(metaDataURI);
@@ -146,37 +158,38 @@ public class DataFetchTriggerService {
     metaDataService.update(metaDataWrapper.getMetaData());
   }
 
-  private String getUpdatedStorageItemName(String originalDataFormat, String destinationDataFormat, String originalItemName) {
-      if(originalDataFormat.equals(destinationDataFormat)) {
-          return originalItemName;
+  private String getUpdatedStorageItemName(String originalDataFormat, String destinationDataFormat,
+      String originalItemName) {
+    if (originalDataFormat.equals(destinationDataFormat)) {
+      return originalItemName;
+    }
+
+    String newItemName = originalItemName;
+    if (originalDataFormat.equals(DataFormat.CSV)) {
+      if (originalItemName.indexOf(".csv") == originalItemName.length() - 4) {
+        newItemName = originalItemName.substring(0, originalItemName.length() - 4);
+      } else {
+        LOGGER.warn("Illeagal state, 'csv' metadata format without '.csv' file sufix");
       }
+    }
 
-      String newItemName = originalItemName;
-      if(originalDataFormat.equals(DataFormat.CSV)){
-          if(originalItemName.indexOf(".csv") == originalItemName.length() - 4 ) {
-            newItemName = originalItemName.substring(0, originalItemName.length() - 4);
-          } else {
-             LOGGER.warn("Illeagal state, 'csv' metadata format without '.csv' file sufix");
-          }
+    if (originalDataFormat.equals(DataFormat.JSON)) {
+      if (originalItemName.indexOf(".json") == originalItemName.length() - 5) {
+        newItemName = originalItemName.substring(0, originalItemName.length() - 5);
+      } else {
+        LOGGER.warn("Illeagal state, 'json' metadata format without '.json' file sufix");
       }
+    }
 
-      if(originalDataFormat.equals(DataFormat.JSON)){
-          if(originalItemName.indexOf(".json") == originalItemName.length() - 5 ) {
-            newItemName = originalItemName.substring(0, originalItemName.length() - 5);
-          } else {
-              LOGGER.warn("Illeagal state, 'json' metadata format without '.json' file sufix");
-          }
-      }
+    if (destinationDataFormat.equals(DataFormat.CSV)) {
+      newItemName = newItemName + ".csv";
+    }
 
-       if(destinationDataFormat.equals(DataFormat.CSV)){
-           newItemName =  newItemName + ".csv";
-       }
+    if (destinationDataFormat.equals(DataFormat.JSON)) {
+      newItemName = newItemName + ".json";
+    }
 
-       if(destinationDataFormat.equals(DataFormat.JSON)){
-           newItemName =  newItemName + ".json";
-       }
-
-      return newItemName;
+    return newItemName;
   }
 
   /**
@@ -190,7 +203,8 @@ public class DataFetchTriggerService {
    */
   private MetaDataWrapper getMetadata(String metadataId, RemoteLcm lcm) throws ServerException,
       ClientErrorException {
-    WebTarget webTarget = getWebTarget(lcm).path(METADATA_PATH).path(metadataId).queryParam("update", Boolean.TRUE);
+    WebTarget webTarget =
+        getWebTarget(lcm).path(METADATA_PATH).path(metadataId).queryParam("update", Boolean.TRUE);
     Invocation.Builder req = webTarget.request();
     Response response = req.get();
     try {

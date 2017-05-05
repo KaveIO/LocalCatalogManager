@@ -107,6 +107,8 @@ public class TaskDescription extends AbstractModel {
 
   private Map options;
 
+  private Map details;
+
   private TransferSettings transferSettings;
 
   public TaskDescription() {
@@ -128,14 +130,28 @@ public class TaskDescription extends AbstractModel {
   }
 
   /**
-   * @return the options
+   * @return the details
+   */
+  public Map getDetails() {
+    return details;
+  }
+
+  /**
+   * @param options the details to set
+   */
+  public void setDetail(Map details) {
+    this.details = details;
+  }
+
+  /**
+   * @return the TransferSettings
    */
   public TransferSettings getTransferSettings() {
     return transferSettings;
   }
 
   /**
-   * @param options the options to set
+   * @param transferSettings the options to set
    */
   public void setTransferSettings(TransferSettings transferSettings) {
     this.transferSettings = transferSettings;
