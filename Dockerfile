@@ -29,6 +29,8 @@ ADD docker/config/application.properties lcm-complete/config/
 COPY docker/entrypoint.sh .
 
 EXPOSE 8081 8080
+VOLUME /data
+
 ENTRYPOINT ["./entrypoint.sh"]
 
 ##################### INSTALLATION END #####################

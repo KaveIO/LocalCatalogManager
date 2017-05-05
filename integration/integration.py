@@ -8,70 +8,114 @@ import base64
 import urllib.request, urllib.error, urllib.parse
 import ssl
 import json
+import argparse
+import sys
 
 from time import sleep
+from os import path
 
-class TestCase(unittest.TestCase):
+class IntegrationTestCase(unittest.TestCase):
   client = docker.from_env()
+  dockers = {
+    'lcm-integration-mongo': {
+      'image': 'mongo:3',
+      'hostname': 'mongo',
+      'detach': True,
+      'ports': {'27017/tcp': 27017}
+    }, 
+    'lcm-integration-server': {
+      'image': 'kave/lcm:latest',
+      'command': 'server',
+      'hostname': 'server',
+      'links': {'lcm-integration-mongo': 'mongo'},
+      'volumes': {'data': {'bind':'/data', 'mode': 'rw'}},
+      'detach': True,
+      'ports': {'8081/tcp': 8081},
+      'stdin_open':True
+    },
+    'lcm-integration-ui': {
+      'image': 'kave/lcm:latest',
+      'command': 'ui',
+      'hostname': 'ui',
+      'links': {'lcm-integration-server': 'server'},
+      'detach': True,
+      'ports': {'8080/tcp': 8080},
+      'stdin_open': True
+    }
+  }
+  fixture = {
+    'metadata': [
+      {"name":"example", "general": { "creation_date": "01-21-2016 00:00:00", "owner": "bob", "description": "This is the newly computed train schedule for optimized transport flow."}, "data": { "uri": "csv://local/mock.csv", "options": { "table-description": { "columns" : {"column_a" : {}, "column_b": {}}}}}}
+    ], 
+    'storage': [
+      {"name": "local", "type": "csv", "options":{"storagePath":"/data"}}
+    ]
+  }
+
+  retain = False
+
   server_url = 'http://localhost:8081'
+
   username = 'admin'
   password = 'admin'
 
   @classmethod
   def setUpClass(cls):
-    cls.tearDownClass()
-    mongo = cls.client.containers.run("mongo:3",
-      hostname="mongo",
-      name="lcm-integration-mongo",
-      detach=True,
-      ports={'27017/tcp': 27017})
+    if not cls.retain:
+      cls.tearDownDockers()
 
-    server = cls.client.containers.run("kave/lcm", "server",
-      hostname="server",
-      name="lcm-integration-server",
-      links={"lcm-integration-mongo": "mongo"},
-      detach=True,
-      ports={'8081/tcp': 8081},
-      stdin_open=True)
-
-    ui = cls.client.containers.run("kave/lcm", "ui",
-      hostname="ui",
-      name="lcm-integration-ui",
-      links={"lcm-integration-server": "server"},
-      detach=True,
-      ports={'8080/tcp': 8080},
-      stdin_open=True)
-
-    # Some random backoff time to allow mongo to become alive
-    sleep(5)
-
-    cls.load_fixture()
-
+    cls.setUpDockers()
 
   @classmethod
   def tearDownClass(cls):
-    containers = cls.client.containers.list(all=True)
-    for container in containers: 
-      if container.name in ["lcm-integration-mongo", "lcm-integration-server", "lcm-integration-ui"]: 
-        container.remove(force=True)
+    if not cls.retain: 
+      cls.tearDownDockers()
 
   @classmethod
-  def load_fixture(cls): 
-    mongo = cls.client.containers.get('lcm-integration-mongo')
-    fixture = cls.get_fixture()
+  def setUpDockers(cls):
+    print('')
+    print('Setting up containers')
+    container_names = [container.name for container in cls.client.containers.list(all=True)]
+
+    for name in cls.dockers:
+      if name not in container_names:
+        print('  booting %s' % name)
+        docker_config = cls.dockers[name]
+        if 'volumes' in docker_config:
+          original_volume_names = list(docker_config['volumes'].keys())
+          for volume in original_volume_names:
+            if volume[0] != '/':
+              docker_config['volumes'][path.dirname(path.abspath(__file__)) + '/' + volume] = docker_config['volumes'][volume]
+              docker_config['volumes'].pop(volume, None)
+
+        cls.client.containers.run(**docker_config, name=name)
+      else:
+        print('  skipping %s' %  name)
+   
+    # Some arbitrarybackoff time to allow the dockers to become alive
+    sleep(5)
+
+    cls.load_fixture('lcm-integration-mongo', cls.fixture)
+
+  @classmethod
+  def tearDownDockers(cls):
+    containers = cls.client.containers.list(all=True)
+    docker_names = list(cls.dockers.keys())
+
+    for container in containers:
+      if container.name in docker_names:
+        container.remove(force=True)
+
+    # Some arbitrary backoff time to allow the dockers to become alive
+    sleep(5)
+
+
+  @classmethod
+  def load_fixture(cls, docker_name, fixture): 
+    mongo = cls.client.containers.get(docker_name)
     for collection in fixture:
       for document in fixture[collection]:
         mongo.exec_run('mongo -eval \'db.%s.insert(%s)\' localhost/lcm' % (collection, json.dumps(document)))
-
-  @classmethod 
-  def get_fixture(cls):
-    return {
-      'metadata': [
-        {"name":"example", "general": { "creation_date": "01-01-2015 00:00:00", "owner": "bob", "description": "This is the newly computed train schedule for optimized transport flow.", "tags": ["train", "svm", "lolwut"], "size": 58084631, "records": 3455461}, "data": { "uri": "csv://local/mock.csv"}}
-      ], 'storage': [
-        {"name": "local", "type": "csv", "options":[{"storagePath":"/tmp"}]}
-      ]
-    }
 
   @classmethod
   def print_docker_output(cls, container_id): 
@@ -81,7 +125,16 @@ class TestCase(unittest.TestCase):
     print('--------------  Container %s error stream  --------------' % container.name)
     print(err.decode('utf-8').replace('\\n', '\n'))
     print('')
-  
+ 
+  @classmethod
+  def print_lcm_log(cls, container_id):
+    print('Printing for %s ' % container_id)
+    container = cls.client.containers.get(container_id)
+    result = container.exec_run('tail -n 100 lcm-complete/logs/lcm.log')
+    print('--------------  Container %s lcm.log  --------------' % container.name)
+    print(result.decode('utf-8').replace('\\n', '\n'))
+    print('')
+ 
   def get_context(self):
     # Example code from a different project
     # We need to do this, somehow we need the right ssl certificate configured here for the two way 
@@ -102,12 +155,44 @@ class TestCase(unittest.TestCase):
     if authorization is None:
       authorization = self.get_authorization(self.username, self.password)
 
+    if type(data) is dict: 
+      data = json.dumps(data).encode('utf-8')
+
     req = urllib.request.Request(url, data, {
       'Content-Type': content_type,
       'Authorization': authorization})
 
     return urllib.request.urlopen(req)
-      
 
+  def request_to_json(self, url, **kwargs):
+    response = self.request(url, **kwargs)
+    body = response.read()
+    return json.loads(body)
+
+def main(**kwargs): 
+  parser = argparse.ArgumentParser(description='Runs integration tests')
+  parser.add_argument('--retain', 
+    dest='retain', 
+    action='store_true',
+    help='Retain the dockers booted after test execution')
+  parser.add_argument('unittest_args', nargs='*')
+  args = parser.parse_args()
   
+  # Put the parsed args on our test class
+  IntegrationTestCase.retain = args.retain
 
+  # 'Repair' the args for the unittest module
+  unit_argv = [sys.argv[0]] + args.unittest_args
+  
+  unittest.main(argv=unit_argv, **kwargs)
+
+
+if __name__ == "__main__":
+  from core import *
+
+  test_suite = unittest.TestSuite()
+  test_suite.addTest(unittest.makeSuite(TestCoreIntegration))
+  test_suite.addTest(unittest.makeSuite(TestCoreFetchUrlIntegration))
+
+  runner=unittest.TextTestRunner()
+  runner.run(test_suite)
