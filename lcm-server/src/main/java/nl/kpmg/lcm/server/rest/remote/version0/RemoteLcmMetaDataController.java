@@ -24,8 +24,8 @@ import nl.kpmg.lcm.server.data.service.MetaDataService;
 import nl.kpmg.lcm.server.data.service.StorageService;
 import nl.kpmg.lcm.server.rest.authentication.Roles;
 import nl.kpmg.lcm.server.rest.client.version0.types.ConcreteFetchEndpointRepresentation;
-import nl.kpmg.lcm.server.rest.client.version0.types.ConcreteMetaDataRepresentation;
-import nl.kpmg.lcm.server.rest.client.version0.types.ConcreteMetaDatasRepresentation;
+import nl.kpmg.lcm.server.rest.client.version0.types.ConcreteRemoteLcmMetaDataRepresentation;
+import nl.kpmg.lcm.server.rest.client.version0.types.ConcreteRemoteLcmMetaDatasRepresentation;
 
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -69,16 +69,16 @@ public class RemoteLcmMetaDataController {
   public final MetaDatasRepresentation getLocalMetaDataOverview(
       @QueryParam("search") String searchString) {
 
-    MetaDatasRepresentation metaDatasRepresentation = new ConcreteMetaDatasRepresentation();
+    MetaDatasRepresentation metaDatasRepresentation = new ConcreteRemoteLcmMetaDatasRepresentation();
     if (searchString == null || searchString.isEmpty()) {
       List all = metaDataService.findAll();
-      metaDatasRepresentation.setRepresentedItems(ConcreteMetaDataRepresentation.class, all);
+      metaDatasRepresentation.setRepresentedItems(ConcreteRemoteLcmMetaDataRepresentation.class, all);
     } else {
       // TODO Check this!
       MetaData result = metaDataService.findById(searchString);
       List metaDataList = new ArrayList<MetaData>();
       metaDataList.add(result);
-      metaDatasRepresentation.setRepresentedItems(ConcreteMetaDataRepresentation.class,
+      metaDatasRepresentation.setRepresentedItems(ConcreteRemoteLcmMetaDataRepresentation.class,
           metaDataList);
     }
 
@@ -103,7 +103,7 @@ public class RemoteLcmMetaDataController {
       throw new NotFoundException(String.format("MetaData set %s could not be found", metaDataId));
     }
 
-    return new ConcreteMetaDataRepresentation(metadata);
+    return new ConcreteRemoteLcmMetaDataRepresentation(metadata);
   }
 
   @GET

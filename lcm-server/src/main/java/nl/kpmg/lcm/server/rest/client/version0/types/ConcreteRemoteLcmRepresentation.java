@@ -21,6 +21,7 @@ import nl.kpmg.lcm.rest.types.RemoteLcmRepresentation;
 import nl.kpmg.lcm.server.data.RemoteLcm;
 import nl.kpmg.lcm.server.rest.client.version0.RemoteLcmController;
 
+import org.glassfish.jersey.linking.Binding;
 import org.glassfish.jersey.linking.InjectLink;
 import org.glassfish.jersey.linking.InjectLinks;
 
@@ -31,16 +32,9 @@ import javax.ws.rs.core.Link;
 public class ConcreteRemoteLcmRepresentation extends RemoteLcmRepresentation
     implements LinkInjectable {
 
-  @InjectLinks({@InjectLink(resource = RemoteLcmController.class, style = InjectLink.Style.ABSOLUTE,
-      rel = "self"
-      // method = "getLocalMetaData",
-      // bindings = {
-      // @Binding(
-      // name = "meta_data_id",
-      // value = "${instance.item.id}"
-      // )
-      // }
-      )})
+  @InjectLinks({@InjectLink(resource = RemoteLcmController.class,
+      style = InjectLink.Style.ABSOLUTE, rel = "slef", method = "getOne", bindings = {@Binding(
+          name = "id", value = "${instance.item.id}")})})
   @JsonIgnore
   private List<Link> injectedLinks;
 

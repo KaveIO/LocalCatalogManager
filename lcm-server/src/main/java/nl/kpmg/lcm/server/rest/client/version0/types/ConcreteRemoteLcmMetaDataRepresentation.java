@@ -17,9 +17,11 @@ package nl.kpmg.lcm.server.rest.client.version0.types;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 
 import nl.kpmg.lcm.rest.types.LinkInjectable;
-import nl.kpmg.lcm.rest.types.MetaDatasRepresentation;
-import nl.kpmg.lcm.server.rest.client.version0.LocalMetaDataController;
+import nl.kpmg.lcm.rest.types.MetaDataRepresentation;
+import nl.kpmg.lcm.server.data.metadata.MetaData;
+import nl.kpmg.lcm.server.rest.remote.version0.RemoteLcmMetaDataController;
 
+import org.glassfish.jersey.linking.Binding;
 import org.glassfish.jersey.linking.InjectLink;
 import org.glassfish.jersey.linking.InjectLinks;
 
@@ -27,32 +29,20 @@ import java.util.List;
 
 import javax.ws.rs.core.Link;
 
-/**
-  * A wrapper class for a list Metadata objects
- * and object's links.
- *
- * @author mhoekstra
- */
-public class ConcreteMetaDatasRepresentation extends MetaDatasRepresentation
-    implements LinkInjectable {
+public class ConcreteRemoteLcmMetaDataRepresentation extends MetaDataRepresentation implements
+    LinkInjectable {
 
-  /**
-   * The actual TaskDescription.
-   */
-
-  private List<ConcreteMetaDataRepresentation> items;
-
-  /**
-   * The links the of a TaskDescription.
-   */
-  @InjectLinks({
-      @InjectLink(resource = LocalMetaDataController.class, style = InjectLink.Style.ABSOLUTE,
-          rel = "local.metadata.overview"),
-      @InjectLink(resource = LocalMetaDataController.class, method = "createNewMetaData",
-          style = InjectLink.Style.ABSOLUTE, rel = "local.metadata.create",
-          type = "application/nl.kpmg.lcm.server.data.MetaData+json")})
+  @InjectLinks({@InjectLink(resource = RemoteLcmMetaDataController.class,
+      style = InjectLink.Style.ABSOLUTE, rel = "self", method = "getLocalMetaData",
+      bindings = {@Binding(name = "meta_data_id", value = "${instance.item.id}")})})
   @JsonIgnore
   private List<Link> injectedLinks;
+
+  public ConcreteRemoteLcmMetaDataRepresentation() {}
+
+  public ConcreteRemoteLcmMetaDataRepresentation(MetaData metadata) {
+    setItem(metadata);
+  }
 
   @Override
   public List<Link> getInjectedLinks() {
