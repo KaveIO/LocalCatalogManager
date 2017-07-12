@@ -1,11 +1,11 @@
 /*
  * Copyright 2016 KPMG N.V. (unless otherwise stated).
- *
+ * 
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except
  * in compliance with the License. You may obtain a copy of the License at
- *
+ * 
  * http://www.apache.org/licenses/LICENSE-2.0
- *
+ * 
  * Unless required by applicable law or agreed to in writing, software distributed under the License
  * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
  * or implied. See the License for the specific language governing permissions and limitations under
@@ -38,9 +38,7 @@ import nl.kpmg.lcm.server.test.mock.MetaDataMocker;
 import nl.kpmg.lcm.server.test.mock.StorageMocker;
 
 import org.junit.After;
-import org.junit.AfterClass;
 import org.junit.Before;
-import org.junit.BeforeClass;
 import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -65,13 +63,14 @@ public class DataFetchTriggerContollerTest extends LcmBaseServerTest {
       "application/nl.kpmg.lcm.server.data.MetaData+json";
   private static final String METADATA_PATH = "client/v0/local";
   private static final String TRIGGER_PATH = "client/v0/remote";
-  private static final Logger LOGGER = LoggerFactory.getLogger(DataFetchTriggerContollerTest.class.getName());
+  private static final Logger LOGGER = LoggerFactory.getLogger(DataFetchTriggerContollerTest.class
+      .getName());
   private static final String CSV_SCHEME = DataFormat.CSV;
   private static final String CSV_STORAGE_PATH = System.getProperty("java.io.tmpdir");
   private static final String CSV_STORAGE_NAME = "csv-storage";
   private static final String CSV_FILE_NAME = "temp.csv";
-  private static final String CSV_STORAGE_URI =
-      CSV_SCHEME + "://" + CSV_STORAGE_NAME + "/" + CSV_FILE_NAME;
+  private static final String CSV_STORAGE_URI = CSV_SCHEME + "://" + CSV_STORAGE_NAME + "/"
+      + CSV_FILE_NAME;
   private static final File CSV_FILE = new File(CSV_STORAGE_PATH + File.separator + CSV_FILE_NAME);
   private static final String LCM_PATH = "client/v0/remoteLcm";
   private static final String LCM_CONTENT_TYPE =
@@ -85,6 +84,10 @@ public class DataFetchTriggerContollerTest extends LcmBaseServerTest {
 
   @Autowired
   private ServerConfiguration serverConfiguration;
+
+  private static MetaDataWrapper md;
+  private static Storage csvStorage;
+  private static RemoteLcm lcm;
 
   /**
    * Always clean up DB.
@@ -105,26 +108,19 @@ public class DataFetchTriggerContollerTest extends LcmBaseServerTest {
   }
 
   @Before
-  public void beforeTest() throws ServerException {
-
+  public void beforeTest() throws ServerException, IOException {
+    if (csvStorage == null) {
+      // Client finds the id of the remote lcm that contains the data she wants
+      lcm = getLCMId();
+      csvStorage = StorageMocker.createCsvStorage();
+      md = createStorageAndPostMetadata(csvStorage);
+    }
   }
-
-  @AfterClass
-  public static void afterClass() {}
-
-  @BeforeClass
-  public static void beforeClass() {}
 
   @Test
   public void testTrigger() throws ServerException, IOException {
-    // Client finds the id of the remote lcm that contains the data she wants
-    RemoteLcm lcm = getLCMId();
-    // Client disovers after metadata id from the remote lcm
-    Storage csvStorage = StorageMocker.createCsvStorage();
-    MetaDataWrapper md = createStorageAndPostMetadata(csvStorage);
-
     // Sends a request to local lcm to fetch the data and metadata
-    postTrigger(lcm.getId(), md.getId(), csvStorage.getId(), 200);
+    postTrigger(lcm.getId(), md.getId(), csvStorage.getId(), "test", 200);
 
     // In the end we should have a task scheduled
     List<TaskDescription> tdList = taskDescriptionService.findAll();
@@ -135,32 +131,24 @@ public class DataFetchTriggerContollerTest extends LcmBaseServerTest {
 
   @Test
   public void testNonExistingLcm() throws ServerException, IOException {
-    // Client disovers after metadata id from the remote lcm
-    Storage csvStorage = StorageMocker.createCsvStorage();
-    MetaDataWrapper md = createStorageAndPostMetadata(csvStorage);
     // Sends a request to local lcm to fetch the data and metadata
-    postTrigger("non-existing-lcm", md.getId(), csvStorage.getId(), 404);
+    postTrigger("non-existing-lcm", md.getId(), csvStorage.getId(), "test", 404);
   }
 
   @Test
   public void testNonExistingMetadata() throws ServerException, IOException {
-    RemoteLcm lcm = getLCMId();
-    Storage csvStorage = StorageMocker.createCsvStorage();
     // Sends a request to local lcm to fetch the data and metadata
-    postTrigger(lcm.getId(), "non-existing-metadata", csvStorage.getId(), 404);
+    postTrigger(lcm.getId(), "non-existing-metadata", csvStorage.getId(), "test", 404);
   }
 
   @Test
   public void testNonExistingStorage() throws ServerException, IOException {
-    RemoteLcm lcm = getLCMId();
-    Storage csvStorage = StorageMocker.createCsvStorage();
-    MetaDataWrapper md = createStorageAndPostMetadata(csvStorage);
     // Sends a request to local lcm to fetch the data and metadata
-    postTrigger(lcm.getId(), md.getId(), "non-existing-storage", 404);
+    postTrigger(lcm.getId(), md.getId(), "non-existing-storage", "test", 404);
   }
 
-  private MetaDataWrapper createStorageAndPostMetadata(Storage csvStorage)
-      throws IOException, ServerException {
+  private MetaDataWrapper createStorageAndPostMetadata(Storage csvStorage) throws IOException,
+      ServerException {
 
     MetaDataWrapper metadataWrapper = MetaDataMocker.getCsvMetaDataWrapper();
     metadataWrapper.getData().setUri(CSV_STORAGE_URI);
@@ -169,7 +157,7 @@ public class DataFetchTriggerContollerTest extends LcmBaseServerTest {
     Backend backend = storageService.getBackend(metadataWrapper);
 
     generateCsvTestFile(CSV_FILE);
-    IterativeData data = (IterativeData)backend.read();
+    IterativeData data = (IterativeData) backend.read();
     assertNotNull(data);
     postMeadata(metadataWrapper, 200);
     metadataWrapper = new MetaDataWrapper(getMetadata(200).get(0).getItem());
@@ -179,20 +167,24 @@ public class DataFetchTriggerContollerTest extends LcmBaseServerTest {
   private void postMeadata(MetaDataWrapper metadataWrapper, int expected) throws ServerException {
     Entity<MetaData> entity = Entity.entity(metadataWrapper.getMetaData(), METADATA_CONTENT_TYPE);
 
-    Response resp = getWebTarget().path(METADATA_PATH).request().header(AUTH_USER_HEADER, "admin")
-        .header(BasicAuthenticationManager.BASIC_AUTHENTICATION_HEADER, basicAuthTokenAdmin)
-        .post(entity);
+    Response resp =
+        getWebTarget().path(METADATA_PATH).request().header(AUTH_USER_HEADER, "admin")
+            .header(BasicAuthenticationManager.BASIC_AUTHENTICATION_HEADER, basicAuthTokenAdmin)
+            .post(entity);
 
     assertEquals(expected, resp.getStatus());
   }
 
-  private void postTrigger(String lcmId, String metadataId, String storageId, int expected) throws ServerException {
-    String payload = "{\"local-storage-id\" : \"" + storageId + "\"}";
+  private void postTrigger(String lcmId, String metadataId, String storageId, String namespace,
+      int expected) throws ServerException {
+    String payload =
+        "{\"local-storage-id\" : \"" + storageId + "\", \"namespace-path\": \"" + namespace + "\"}";
     Entity<String> entity = Entity.entity(payload, "application/json");
-    Response resp = getWebTarget().path(TRIGGER_PATH).path(lcmId).path("metadata").path(metadataId)
-        .request().header(AUTH_USER_HEADER, "admin")
-        .header(BasicAuthenticationManager.BASIC_AUTHENTICATION_HEADER, basicAuthTokenAdmin)
-        .post(entity);
+    Response resp =
+        getWebTarget().path(TRIGGER_PATH).path(lcmId).path("metadata").path(metadataId).request()
+            .header(AUTH_USER_HEADER, "admin")
+            .header(BasicAuthenticationManager.BASIC_AUTHENTICATION_HEADER, basicAuthTokenAdmin)
+            .post(entity);
     assertEquals(expected, resp.getStatus());
   }
 
@@ -200,12 +192,12 @@ public class DataFetchTriggerContollerTest extends LcmBaseServerTest {
     RemoteLcm lcm = new RemoteLcm();
     lcm.setId("uid" + 0);
     lcm.setDomain(serverConfiguration.getServiceName());
-    if(serverConfiguration.isUnsafe()){
-        lcm.setPort(serverConfiguration.getServicePort());
-        lcm.setProtocol("http");
+    if (serverConfiguration.isUnsafe()) {
+      lcm.setPort(serverConfiguration.getServicePort());
+      lcm.setProtocol("http");
     } else {
-        lcm.setPort(serverConfiguration.getSecureServicePort());
-        lcm.setProtocol("https");
+      lcm.setPort(serverConfiguration.getSecureServicePort());
+      lcm.setProtocol("https");
     }
     postLcm(lcm, 200);
 
@@ -214,9 +206,10 @@ public class DataFetchTriggerContollerTest extends LcmBaseServerTest {
 
   private void postLcm(RemoteLcm lcm, int expected) throws ServerException {
     Entity<RemoteLcm> entity = Entity.entity(lcm, LCM_CONTENT_TYPE);
-    Response resp = getWebTarget().path(LCM_PATH).request().header(AUTH_USER_HEADER, "admin")
-        .header(BasicAuthenticationManager.BASIC_AUTHENTICATION_HEADER, basicAuthTokenAdmin)
-        .post(entity);
+    Response resp =
+        getWebTarget().path(LCM_PATH).request().header(AUTH_USER_HEADER, "admin")
+            .header(BasicAuthenticationManager.BASIC_AUTHENTICATION_HEADER, basicAuthTokenAdmin)
+            .post(entity);
     assertEquals(expected, resp.getStatus());
   }
 

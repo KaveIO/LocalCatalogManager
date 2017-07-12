@@ -22,13 +22,13 @@
     <bean id="sessionAuthenticationManager" class="nl.kpmg.lcm.server.rest.authentication.SessionAuthenticationManager" />
     <bean id="basicAuthenticationManager" class="nl.kpmg.lcm.server.rest.authentication.BasicAuthenticationManager" />
     
-    <mongo:mongo id="mongo" host="${lcm.server.storage.mongo.host}" port="${lcm.server.storage.mongo.port}" />
-    <mongo:db-factory 
-        id="mongoDbFactory" 
-        mongo-ref="mongo" 
-        dbname="${lcm.server.storage.mongo.database}" 
-        username="${lcm.server.storage.mongo.username}" 
-        password="${lcm.server.storage.mongo.password}" />
+    <mongo:mongo-client 
+        id="mongoClient"
+        credentials="${lcm.server.storage.mongo.credentials}"
+        host="${lcm.server.storage.mongo.host}"
+        port="${lcm.server.storage.mongo.port}"
+    />
+
     <mongo:mapping-converter>
         <mongo:custom-converters>
             <mongo:converter ref="mongoUserReadConverter"/>
@@ -47,7 +47,13 @@
     <bean id="mongoMetaDataReadConverter" class="nl.kpmg.lcm.server.data.dao.mongo.MongoMetaDataReadConverter"/>
     <bean id="mongoMetaDataWriteConverter" class="nl.kpmg.lcm.server.data.dao.mongo.MongoMetaDataWriteConverter"/>
     
-
+    <bean id="mongoDbName" class="java.lang.String">
+        <constructor-arg value="${lcm.server.storage.mongo.database}"/>
+    </bean>
+    <bean id="mongoDbFactory" class="org.springframework.data.mongodb.core.SimpleMongoDbFactory">
+        <constructor-arg name="mongoClient" ref="mongoClient"/>
+        <constructor-arg name="databaseName" ref="mongoDbName"/>        
+    </bean>
     <bean id="mongoTemplate" class="org.springframework.data.mongodb.core.MongoTemplate">
         <constructor-arg name="mongoDbFactory" ref="mongoDbFactory"/>
         <constructor-arg name="mongoConverter" ref="mappingConverter"/>

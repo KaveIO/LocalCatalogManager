@@ -21,6 +21,10 @@ import nl.kpmg.lcm.validation.Notification;
  */
 public class NamespacePathValidator {
   public void validate(String path, Notification notification) {
+    if (path == null) {
+      notification.addError("Error: Namesapce path is null");
+      return;
+    }
     String pattern = "^([a-zA-Z0-9_-]+(/[a-zA-Z0-9_-]+)*)?$";
     java.util.regex.Pattern p = java.util.regex.Pattern.compile(pattern);
     java.util.regex.Matcher m = p.matcher(path);
