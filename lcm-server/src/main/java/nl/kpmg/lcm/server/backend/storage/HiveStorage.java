@@ -16,7 +16,6 @@ package nl.kpmg.lcm.server.backend.storage;
 
 import nl.kpmg.lcm.server.data.DataFormat;
 import nl.kpmg.lcm.server.data.Storage;
-import nl.kpmg.lcm.server.security.EncryptionException;
 import nl.kpmg.lcm.validation.Notification;
 
 import org.slf4j.Logger;
@@ -68,16 +67,9 @@ public class HiveStorage extends AbstractStorageContainer {
     return (String) storage.getCredentials().get("username");
   }
 
-  public void setUsername(String username) {
-    storage.getCredentials().put("username", username);
-  }
-
   /**
    *
    * @return unencrypted password
-   * @throws EncryptionException when the password is not already encrypted. In such cases you need
-   *         first to use encryptPassword method. Also EncryptionException may thrown if the
-   *         encryption library does not succeed to decrypt the password in any reason.
    */
   public String getPassword() {
     return (String) storage.getCredentials().get("password");

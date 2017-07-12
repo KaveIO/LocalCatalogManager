@@ -126,14 +126,18 @@ public abstract class EnrichmentTask implements Job {
         LOGGER.error("Trying to execute not existing task. Id: " + taskId);
         return;
     }
-    taskDescriptionService.markTaskAsRunning(taskDescription);
 
-    // Find the MetaData target on which this job needs to be executed
-    List<MetaData> targets = loadTargetMetadata(target, targetType, taskDescription);
+    TaskDescription.TaskStatus status =  TaskDescription.TaskStatus.FAILED;
+    try {
+        taskDescriptionService.markTaskAsRunning(taskDescription);
 
-    TaskDescription.TaskStatus status = processTargets(targets, taskDescription);
+        // Find the MetaData target on which this job needs to be executed
+        List<MetaData> targets = loadTargetMetadata(target, targetType, taskDescription);
 
-    taskDescriptionService.markTaskAsFinished(taskId, status);
+        status = processTargets(targets, taskDescription);
+    } finally {
+        taskDescriptionService.markTaskAsFinished(taskId, status);
+    }
   }
 
   private TaskDescription.TaskStatus processTargets(List<MetaData> targets,

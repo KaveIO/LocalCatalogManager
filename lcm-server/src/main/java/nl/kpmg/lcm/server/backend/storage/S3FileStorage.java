@@ -14,6 +14,7 @@
 
 package nl.kpmg.lcm.server.backend.storage;
 
+import nl.kpmg.lcm.server.data.DataFormat;
 import nl.kpmg.lcm.server.data.Storage;
 import nl.kpmg.lcm.validation.Notification;
 
@@ -105,7 +106,7 @@ public class S3FileStorage extends AbstractStorageContainer {
    */
   public static Set<String> getSupportedStorageTypes() {
     Set result = new HashSet();
-    result.add("s3file");
+    result.add(DataFormat.S3FILE);
     return result;
   }
 

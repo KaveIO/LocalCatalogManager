@@ -44,6 +44,7 @@ public class StreamingData extends Data {
     Set result = new HashSet();
     result.add(DataFormat.S3FILE);
     result.add(DataFormat.FILE);
+    result.add(DataFormat.HDFSFILE);
     return result;
   }
 

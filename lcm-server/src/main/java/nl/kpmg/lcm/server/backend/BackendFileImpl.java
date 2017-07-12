@@ -14,6 +14,7 @@
 package nl.kpmg.lcm.server.backend;
 
 
+import nl.kpmg.lcm.server.backend.storage.HdfsFileStorage;
 import nl.kpmg.lcm.server.backend.storage.LocalFileStorage;
 import nl.kpmg.lcm.server.backend.storage.S3FileStorage;
 import nl.kpmg.lcm.server.data.Data;
@@ -24,6 +25,7 @@ import nl.kpmg.lcm.server.data.LocalFileAdapter;
 import nl.kpmg.lcm.server.data.Storage;
 import nl.kpmg.lcm.server.data.StreamingData;
 import nl.kpmg.lcm.server.data.TransferSettings;
+import nl.kpmg.lcm.server.data.hdfs.HdfsAdapter;
 import nl.kpmg.lcm.server.data.metadata.MetaData;
 import nl.kpmg.lcm.server.data.s3.S3Adapter;
 import nl.kpmg.lcm.server.exception.LcmException;
@@ -40,9 +42,9 @@ import java.util.Date;
  *
  * @author shristov
  */
-@BackendSource(type = {DataFormat.FILE, DataFormat.S3FILE})
+@BackendSource(type = {DataFormat.FILE, DataFormat.S3FILE, DataFormat.HDFSFILE})
 public class BackendFileImpl extends AbstractBackend {
-  private static final org.slf4j.Logger LOGGER = LoggerFactory.getLogger(BackendCsvImpl.class
+  private static final org.slf4j.Logger LOGGER = LoggerFactory.getLogger(BackendFileImpl.class
       .getName());
   private FileAdapter fileAdapter;
 
@@ -54,6 +56,8 @@ public class BackendFileImpl extends AbstractBackend {
       fileAdapter = new S3Adapter(new S3FileStorage(storage), filePath);
     } else if (LocalFileStorage.getSupportedStorageTypes().contains(storage.getType())) {
       fileAdapter = new LocalFileAdapter(new LocalFileStorage(storage), filePath);
+    } else if (HdfsFileStorage.getSupportedStorageTypes().contains(storage.getType())) {
+      fileAdapter = new HdfsAdapter(new HdfsFileStorage(storage), filePath);
     } else {
       LOGGER.warn("Improper storage object is passed to BackendFileImpl. Storage id: "
           + storage.getId());

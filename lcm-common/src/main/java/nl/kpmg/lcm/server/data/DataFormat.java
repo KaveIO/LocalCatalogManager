@@ -23,5 +23,6 @@ public class DataFormat {
     public static final String CSV = "csv";
     public static final String JSON = "json";
     public static final String HIVE = "hive";
+    public static final String HDFSFILE = "hdfsfile";
     public static final String MONGO = "mongo";
 }

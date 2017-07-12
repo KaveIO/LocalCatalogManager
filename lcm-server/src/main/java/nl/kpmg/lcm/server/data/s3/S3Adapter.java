@@ -47,8 +47,6 @@ public class S3Adapter implements FileAdapter {
   private AmazonS3 s3Client;
   private String fileName;
 
-  public S3Adapter() {}
-
   public S3Adapter(S3FileStorage s3Storage, String fileName) {
     String secretAcccessKey;
     secretAcccessKey = s3Storage.getAwsSecretAccessKey();
