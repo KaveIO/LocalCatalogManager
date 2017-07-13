@@ -25,7 +25,7 @@ import java.util.Map;
  * @author shristov
  */
 public abstract class AbstractMetaDataDescriptor {
-  private final MetaData metaData;
+  protected final MetaData metaData;
 
   public AbstractMetaDataDescriptor(MetaData metaData) {
     this.metaData = metaData;
@@ -43,6 +43,10 @@ public abstract class AbstractMetaDataDescriptor {
   @JsonIgnore
   public Map getMap() {
     return metaData.get(getSectionName());
+  }
+
+  public boolean exists(){
+      return metaData.get(getSectionName()) != null;
   }
 
   protected final <T> T get(final String fieldName) {

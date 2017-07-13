@@ -13,11 +13,14 @@
  */
 package nl.kpmg.lcm.server.backend.metadata;
 
+import nl.kpmg.lcm.server.data.metadata.DataItemsDescriptor;
 import nl.kpmg.lcm.server.data.metadata.MetaData;
 import nl.kpmg.lcm.server.data.metadata.MetaDataWrapper;
 import nl.kpmg.lcm.server.data.metadata.Wrapper;
 import nl.kpmg.lcm.server.exception.LcmValidationException;
 import nl.kpmg.lcm.validation.Notification;
+
+import java.util.Map;
 
 /**
  *
@@ -26,18 +29,18 @@ import nl.kpmg.lcm.validation.Notification;
 @Wrapper
 public class TabularMetaData extends MetaDataWrapper {
 
-  private TableDescriptionDescriptor tableDescription;
-  private TableConfigurationDescriptor tableConfiguration;
-
   public TabularMetaData(MetaData metaData) {
     super(metaData);
-    tableDescription = new TableDescriptionDescriptor(metaData);
-    tableConfiguration = new TableConfigurationDescriptor(metaData);
-
+    Map<String, DataItemsDescriptor> allDataDescriptors = getDynamicData().getAllDynamicDataDescriptors();
+    if(getDynamicData().getAllDynamicDataDescriptors() == null) {
+        return;
+    }
     Notification notification = new Notification();
-    tableDescription.validate(notification);
-    tableConfiguration.validate(notification);
-
+    for(String key: allDataDescriptors.keySet()){
+        TabularDynamicDataDescriptor newDescriptor = new TabularDynamicDataDescriptor(metaData, key);
+        newDescriptor.getTableConfigurationDescriptor().validate(notification);
+        newDescriptor.getTableDescriptionDescriptor().validate(notification);
+    }
     if (notification.hasErrors()) {
       throw new LcmValidationException(notification);
     }
@@ -45,24 +48,24 @@ public class TabularMetaData extends MetaDataWrapper {
 
   public TabularMetaData() {
     super();
-    tableDescription = new TableDescriptionDescriptor(metaData);
-    tableConfiguration = new TableConfigurationDescriptor(metaData);
+    
   }
 
   public final void setTableDescription(final TableDescriptionDescriptor value) {
     metaData.set(value.getSectionName(), value.getMap());
   }
 
-  public final TableDescriptionDescriptor getTableDescription() {
-    return tableDescription;
+  public final TableDescriptionDescriptor getTableDescription(String key) {
+      
+    return new TableDescriptionDescriptor(metaData, key);
   }
 
   public final void setTableConfiguration(final TableConfigurationDescriptor value) {
     metaData.set(value.getSectionName(), value.getMap());
   }
 
-  public final TableConfigurationDescriptor getTableConfiguration() {
-    return tableConfiguration;
+  public final TableConfigurationDescriptor getTableConfiguration(String key) {
+      return new TableConfigurationDescriptor(metaData, key);
   }
 
 }

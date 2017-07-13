@@ -15,17 +15,18 @@
 package nl.kpmg.lcm.server.backend;
 
 import static org.junit.Assert.assertTrue;
+import static org.mockito.Mockito.mock;
 
 import nl.kpmg.lcm.server.data.DataFormat;
 import nl.kpmg.lcm.server.data.Storage;
 import nl.kpmg.lcm.server.data.metadata.MetaDataWrapper;
+import nl.kpmg.lcm.server.data.service.StorageService;
 import nl.kpmg.lcm.server.test.mock.MetaDataMocker;
 import nl.kpmg.lcm.server.test.mock.StorageMocker;
 
 import org.junit.Test;
 
 import java.util.Set;
-
 
 /***
  * The class contains unit tests for BackendMongoImpl
@@ -36,11 +37,13 @@ public class BackendMongoImplTest {
   /**
    * Test to check if "hive" URI scheme is supported by getSupportedUriSchema() method.
    */
+  private StorageService storageService = mock(StorageService.class);
+
   @Test
   public final void testGetSupportedUriSchema() {
     MetaDataWrapper metaDataWrapper = MetaDataMocker.getMongoMetaDataWrapper();
     Storage backendStorage = StorageMocker.createMongoStorage();
-    BackendMongoImpl testBackend = new BackendMongoImpl(backendStorage, metaDataWrapper.getMetaData());
+    BackendMongoImpl testBackend = new BackendMongoImpl(metaDataWrapper.getMetaData(),  storageService);
     Set<String> testSchema = testBackend.getSupportedUriSchema();
     assertTrue(testSchema.contains(DataFormat.MONGO));
   }

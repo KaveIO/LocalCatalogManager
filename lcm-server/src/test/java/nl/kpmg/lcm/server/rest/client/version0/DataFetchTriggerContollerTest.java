@@ -47,6 +47,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import java.io.File;
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.util.ArrayList;
 import java.util.List;
 
 import javax.ws.rs.client.Entity;
@@ -151,13 +152,18 @@ public class DataFetchTriggerContollerTest extends LcmBaseServerTest {
       ServerException {
 
     MetaDataWrapper metadataWrapper = MetaDataMocker.getCsvMetaDataWrapper();
-    metadataWrapper.getData().setUri(CSV_STORAGE_URI);
+      List<String> uriList = new ArrayList();
+        uriList.add(CSV_STORAGE_URI);
+        String key = MetaDataMocker.getTestKey();
+        metadataWrapper.getDynamicData().getDynamicDataDescriptor(key).setURI(uriList.get(0));
+    metadataWrapper.getData().setUri(uriList);
 
     storageService.add(csvStorage);
     Backend backend = storageService.getBackend(metadataWrapper);
 
     generateCsvTestFile(CSV_FILE);
-    IterativeData data = (IterativeData) backend.read();
+    
+    IterativeData data = (IterativeData)backend.read(key);
     assertNotNull(data);
     postMeadata(metadataWrapper, 200);
     metadataWrapper = new MetaDataWrapper(getMetadata(200).get(0).getItem());

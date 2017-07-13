@@ -34,9 +34,9 @@ public class TableConfigurationDescriptorTest {
   @Test
   public void testConstruction() {
     String encoding = FileHelper.UTF_16_ENCODING;
-
+    String testKey = "1283245748395bvbx";
     MetaData metaData = new MetaData();
-    TableConfigurationDescriptor tableConfiguration = new TableConfigurationDescriptor(metaData);
+    TableConfigurationDescriptor tableConfiguration = new TableConfigurationDescriptor(metaData, testKey);
 
     tableConfiguration.setEncoding(encoding);
     assertEquals(encoding, tableConfiguration.getEncoding());
@@ -50,7 +50,8 @@ public class TableConfigurationDescriptorTest {
   public void testBlankConstruction() {
 
     MetaData metaData = new MetaData();
-    TableConfigurationDescriptor tableConfiguration = new TableConfigurationDescriptor(metaData);
+    String testKey = "1283245748395bvbx";
+    TableConfigurationDescriptor tableConfiguration = new TableConfigurationDescriptor(metaData, testKey);
 
     assertNull(tableConfiguration.getEncoding());
   }
@@ -60,7 +61,8 @@ public class TableConfigurationDescriptorTest {
     String encoding = FileHelper.UTF_16_ENCODING;
 
     MetaData metaData = new MetaData();
-    TableConfigurationDescriptor tableConfiguration = new TableConfigurationDescriptor(metaData);
+    String testKey = "1283245748395bvbx";
+    TableConfigurationDescriptor tableConfiguration = new TableConfigurationDescriptor(metaData, testKey);
 
     tableConfiguration.setEncoding(encoding);
     Notification notification = new Notification();

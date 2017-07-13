@@ -14,11 +14,11 @@
 
 package nl.kpmg.lcm.server.backend;
 
-import nl.kpmg.lcm.server.data.TransferSettings;
 import nl.kpmg.lcm.server.data.ContentIterator;
 import nl.kpmg.lcm.server.data.Data;
 import nl.kpmg.lcm.server.data.EnrichmentProperties;
 import nl.kpmg.lcm.server.data.ProgressIndicationFactory;
+import nl.kpmg.lcm.server.data.TransferSettings;
 import nl.kpmg.lcm.server.data.metadata.MetaData;
 
 import org.apache.metamodel.data.DataSet;
@@ -44,21 +44,21 @@ public interface Backend {
    *        When set to false the @content is stored only if it does not exist.
    * @param content {@link ContentIterator} that should be stored.
    */
-  public void store(Data data, TransferSettings transferSettings);
+  public void store(Data data, String key, TransferSettings transferSettings);
 
   /**
    * Method to read some content from a data storage backend.
    *
    * @return {@link DataSet} with the data to be read.
    */
-  public Data read();
+  public Data read(String key);
 
   /**
    * Method to delete some content on a data storage backend.
    *
    * @return true if delete is successful, false otherwise.
    */
-  public boolean delete();
+  public boolean delete(String key);
 
   /**
    * Method finalize is used to free all underlaying resources Call it when you are done with the

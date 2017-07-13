@@ -25,8 +25,8 @@ import nl.kpmg.lcm.validation.Notification;
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class CsvConfigurationDescriptor extends TableConfigurationDescriptor {
 
-  public CsvConfigurationDescriptor(MetaData metaData) {
-    super(metaData);
+  public CsvConfigurationDescriptor(MetaData metaData, String key) {
+    super(metaData, key);
   }
 
   public final Integer getColumnNameLine() {

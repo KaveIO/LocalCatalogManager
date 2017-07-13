@@ -39,8 +39,10 @@ public class TableDescriptionDescriptor extends AbstractMetaDataDescriptor {
   private static final Logger LOGGER = LoggerFactory.getLogger(TableDescriptionDescriptor.class
       .getName());
 
-  public TableDescriptionDescriptor(MetaData metaData) {
+  private String key;
+  public TableDescriptionDescriptor(MetaData metaData, String key) {
     super(metaData);
+    this.key =  key;
   }
 
   private final Map getRawColumns() {
@@ -133,17 +135,15 @@ public class TableDescriptionDescriptor extends AbstractMetaDataDescriptor {
 
   @Override
   public String getSectionName() {
-    return "data.options.table-description";
+    return "dynamic.data.items."+ key+ ".table-description";
   }
 
   @Override
   public void validate(Notification notification) {
-    if (getMap() == null) {
-      notification.addError("Error: Section \"" + getSectionName()
-          + "\" is not found in the metadata!");
-      return;
+    if (getMap() != null) {
+
+        validateField("columns", notification);
     }
-    validateField("columns", notification);
   }
 
 }

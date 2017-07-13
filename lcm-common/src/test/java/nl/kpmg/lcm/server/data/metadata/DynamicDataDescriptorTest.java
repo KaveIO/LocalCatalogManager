@@ -17,7 +17,6 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertTrue;
 
 import nl.kpmg.lcm.validation.Notification;
 
@@ -36,32 +35,47 @@ public class DynamicDataDescriptorTest {
     String stateValue = "ATTACHED";
     Long timestamp = System.currentTimeMillis();
 
-    MetaData metaData = new MetaData();
-    DynamicDataDescriptor dynamicData = new DynamicDataDescriptor(metaData);
+    MetaDataWrapper metaData = new MetaDataWrapper();
 
-    dynamicData.setSize(sizeValue);
-    dynamicData.setState(stateValue);
-    dynamicData.setDataUpdateTimestamp(timestamp);
+    String testKey = "test1234";
 
-    Map dynamicDataMap = metaData.get(dynamicData.getSectionName());
+    DataItemsDescriptor dynamicDataDescriptor =
+        new DataItemsDescriptor(metaData.getMetaData(), testKey);
+    dynamicDataDescriptor.getDetailsDescriptor().setSize(sizeValue);
+    dynamicDataDescriptor.getDetailsDescriptor().setState(stateValue);
+    dynamicDataDescriptor.getDetailsDescriptor().setDataUpdateTimestamp(timestamp);
+    metaData.getDynamicData().addDynamicDataDescriptors(testKey, dynamicDataDescriptor.getMap());
+
+    Map dynamicDataMap = metaData.getDynamicData().getMap();
     assertNotNull(dynamicDataMap);
-    assertEquals(3, dynamicDataMap.size());
 
-    assertEquals(sizeValue, dynamicData.getSize());
-    assertEquals(stateValue, dynamicData.getState());
-    Long readTime = dynamicData.getDataUpdateTimestamp();
+    DataItemsDescriptor readDynamicDataDescriptor =
+        metaData.getDynamicData().getDynamicDataDescriptor(testKey);
+    assertEquals(3, readDynamicDataDescriptor.getDetailsDescriptor().getMap().size());
+
+    assertEquals(sizeValue, readDynamicDataDescriptor.getDetailsDescriptor().getSize());
+    assertEquals(stateValue, readDynamicDataDescriptor.getDetailsDescriptor().getState());
+    Long readTime = readDynamicDataDescriptor.getDetailsDescriptor().getDataUpdateTimestamp();
     assertEquals(timestamp, readTime);
   }
 
   @Test
   public void testBlankConstruction() {
 
-    MetaData metaData = new MetaData();
-    DynamicDataDescriptor dynamicData = new DynamicDataDescriptor(metaData);
+    MetaDataWrapper metaData = new MetaDataWrapper();
 
-    assertNull(dynamicData.getSize());
-    assertNull(dynamicData.getState());
-    assertNull(dynamicData.getDataUpdateTimestamp());
+    String testKey = "test1234";
+    DataItemsDescriptor dynamicDataDescriptor =
+        new DataItemsDescriptor(metaData.getMetaData(), testKey);
+    assertNull(metaData.getDynamicData().getDynamicDataDescriptor(testKey));
+    String testURI = "csv://local/test.csv";
+    dynamicDataDescriptor.setURI(testURI);
+    metaData.getDynamicData().addDynamicDataDescriptors(testKey, dynamicDataDescriptor.getMap());
+    DataDetailsDescriptor details =
+        metaData.getDynamicData().getDynamicDataDescriptor(testKey).getDetailsDescriptor();
+    assertNull(details.getSize());
+    assertNull(details.getState());
+    assertNull(details.getDataUpdateTimestamp());
   }
 
   @Test
@@ -70,15 +84,20 @@ public class DynamicDataDescriptorTest {
     String stateValue = "ATTACHED";
     Long timestamp = System.currentTimeMillis();
 
-    MetaData metaData = new MetaData();
-    DynamicDataDescriptor dynamicData = new DynamicDataDescriptor(metaData);
+    MetaDataWrapper metaData = new MetaDataWrapper();
 
-    dynamicData.setSize(sizeValue);
-    dynamicData.setState(stateValue);
-    dynamicData.setDataUpdateTimestamp(timestamp);
+    String testKey = "test1234";
+    DataItemsDescriptor dynamicDataDescriptor =
+        new DataItemsDescriptor(metaData.getMetaData(), testKey);
+    dynamicDataDescriptor.getDetailsDescriptor().setSize(sizeValue);
+    dynamicDataDescriptor.getDetailsDescriptor().setState(stateValue);
+    dynamicDataDescriptor.getDetailsDescriptor().setDataUpdateTimestamp(timestamp);
+    metaData.getDynamicData().addDynamicDataDescriptors(testKey, dynamicDataDescriptor.getMap());
 
     Notification notification = new Notification();
-    dynamicData.validate(notification);
+    DataDetailsDescriptor details =
+        metaData.getDynamicData().getDynamicDataDescriptor(testKey).getDetailsDescriptor();
+    details.validate(notification);
     assertFalse(notification.hasErrors());
   }
 
@@ -88,8 +107,7 @@ public class DynamicDataDescriptorTest {
     MetaData metaData = new MetaData();
     DynamicDataDescriptor dynamicData = new DynamicDataDescriptor(metaData);
 
-    Notification notification = new Notification();
-    dynamicData.validate(notification);
-    assertTrue(notification.hasErrors());
+    String testKey = "test1234";
+    assertNull(dynamicData.getDynamicDataDescriptor(testKey));
   }
 }

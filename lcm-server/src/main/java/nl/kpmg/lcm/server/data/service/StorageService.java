@@ -59,6 +59,10 @@ public class StorageService {
     return storageDao.findOne(id);
   }
 
+  public Storage findByName(String name) {
+    return storageDao.findOneByName(name);
+  }
+
   public void delete(Storage storage) {
     storageDao.delete(storage);
   }
@@ -121,13 +125,14 @@ public class StorageService {
         || metadataWrapper.getData().getUri().isEmpty()) {
       String errorMessage =
           "Invalid input data! Metadata data could not be null nither the data URI!";
-      LOGGER.warn(errorMessage);
 
       throw new LcmException(errorMessage);
     }
 
     try {
-      URI parsedUri = new URI(metadataWrapper.getData().getUri());
+      // all the URIs must have same data type
+      String unparesURI =  metadataWrapper.getData().getUri().get(0);
+      URI parsedUri = new URI(unparesURI);
       String scheme = parsedUri.getScheme();
 
       String storageName =
@@ -139,11 +144,45 @@ public class StorageService {
             "Error! Unable to find Storage for the given metadata! Storage name:" + storageName);
       }
 
-      Backend backend = backendFactory.createBackend(scheme, storage, metadataWrapper);
+      Backend backend = backendFactory.createBackend(scheme, this, metadataWrapper);
 
       return backend;
     } catch (URISyntaxException ex) {
       throw new LcmException("Error! Unable to parse medata data URI!");
     }
   }
+
+  public String getStorageItemName(String uri) {
+    String result = null;
+    try {
+      if (uri != null) {
+        URI parsedUri = new URI(uri);
+        result = parsedUri.getPath();
+      }
+    } catch (URISyntaxException ex) {
+      LOGGER.warn("unable to parse storage uri: " + uri);
+      result = null;
+    }
+    return result;
+  }
+
+    public Storage getStorageByUri(String uri) {
+        String storagName = getStorageName(uri);
+        return findByName(storagName);    
+    }
+  
+  public String getStorageName(String uri) {
+    String result = null;
+    try {
+      if (uri != null) {
+        URI parsedUri = new URI(uri);
+        result = parsedUri.getHost() != null ? parsedUri.getHost() : parsedUri.getAuthority();
+      }
+    } catch (URISyntaxException ex) {
+      LOGGER.warn("unable to parse storage uri: " + uri);
+      result = null;
+    }
+    return result;
+  }
+
 }

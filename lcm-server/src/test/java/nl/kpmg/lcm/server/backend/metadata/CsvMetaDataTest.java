@@ -37,16 +37,17 @@ public class CsvMetaDataTest {
     List columns = new ArrayList();
     columns.add(new ColumnDescription("name", ColumnType.STRING));
     columns.add(new ColumnDescription("age", ColumnType.STRING));
-    TableDescriptionDescriptor tableDescription = new TableDescriptionDescriptor(metaData);
+    String testKey = "1283245748395bvbx";
+    TableDescriptionDescriptor tableDescription = new TableDescriptionDescriptor(metaData, testKey);
     tableDescription.setColumns(columns);
     metaData.set(tableDescription.getSectionName(), tableDescription.getMap());
 
-    TableConfigurationDescriptor tableConfiguration = new TableConfigurationDescriptor(metaData);
+    TableConfigurationDescriptor tableConfiguration = new TableConfigurationDescriptor(metaData, testKey);
     tableConfiguration.setEncoding(FileHelper.UTF_8_ENCODING);
     metaData.set(tableConfiguration.getSectionName(), tableConfiguration.getMap());
 
     CsvMetaData csvMetaData = new CsvMetaData(metaData);
-    CsvConfiguration csvConfiguration = csvMetaData.getConfiguration();
+    CsvConfiguration csvConfiguration = csvMetaData.getConfiguration(testKey);
     Assert.assertNotNull(csvConfiguration);
     Assert.assertEquals(FileHelper.UTF_8_ENCODING, csvConfiguration.getEncoding());
   }

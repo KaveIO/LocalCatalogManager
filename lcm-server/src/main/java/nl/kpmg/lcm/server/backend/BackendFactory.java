@@ -14,9 +14,9 @@
 
 package nl.kpmg.lcm.server.backend;
 
-import nl.kpmg.lcm.server.data.Storage;
 import nl.kpmg.lcm.server.data.metadata.MetaData;
 import nl.kpmg.lcm.server.data.metadata.MetaDataWrapper;
+import nl.kpmg.lcm.server.data.service.StorageService;
 import nl.kpmg.lcm.server.exception.LcmException;
 import nl.kpmg.lcm.server.exception.LcmValidationException;
 import nl.kpmg.lcm.validation.Notification;
@@ -47,9 +47,9 @@ public class BackendFactory {
   private static final int MAX_KEY_LENGTH = 1024;
   private final String backendSourcePackage = "nl.kpmg.lcm.server.backend";
 
-  public Backend createBackend(String sourceType, Storage storage, MetaDataWrapper metaDataWrapper) {
+  public Backend createBackend(String sourceType, StorageService storageService, MetaDataWrapper metaDataWrapper) {
 
-    Notification notification = validate(sourceType, storage);
+   Notification notification = validate(sourceType, storageService);
 
     if (notification.hasErrors()) {
       throw new LcmValidationException(notification);
@@ -65,11 +65,11 @@ public class BackendFactory {
     }
 
     Class backendClass = backendClassMap.get(sourceType);
-    Backend backendImpl = getBackendImplementation(backendClass, storage, metaDataWrapper);
+    Backend backendImpl = getBackendImplementation(backendClass,storageService, metaDataWrapper);
     return backendImpl;
   }
 
-  private Notification validate(String sourceType, Storage storage) {
+  private Notification validate(String sourceType, StorageService storageService) {
     Notification notification = new Notification();
     if (sourceType == null) {
       notification.addError("Data source type could not be null", null);
@@ -79,8 +79,8 @@ public class BackendFactory {
       notification.addError("Data source type could not be longer then: " + MAX_KEY_LENGTH, null);
     }
 
-    if (storage == null) {
-      notification.addError("Storage parameter could not be null", null);
+    if (storageService == null) {
+      notification.addError("Storage Service parameter could not be null", null);
     }
 
     return notification;
@@ -135,11 +135,11 @@ public class BackendFactory {
     return null;
   }
 
-  private Backend getBackendImplementation(Class<?> clazz, Storage storage, MetaDataWrapper metaDataWrapper) {
+  private Backend getBackendImplementation(Class<?> clazz, StorageService storageService, MetaDataWrapper metaDataWrapper) {
     try {
-      Constructor<?> constructor = clazz.getConstructor(Storage.class, MetaData.class);
+      Constructor<?> constructor = clazz.getConstructor(MetaData.class, StorageService.class);
       Backend backendImpl =
-          (Backend) constructor.newInstance(new Object[] {storage, metaDataWrapper.getMetaData()});
+          (Backend) constructor.newInstance(new Object[] {metaDataWrapper.getMetaData(), storageService });
 
       return backendImpl;
     } catch (NoSuchMethodException ex) {
@@ -151,7 +151,7 @@ public class BackendFactory {
     } catch (IllegalAccessException ex) {
       LOGGER.warn(null, ex);
     } catch (IllegalArgumentException ex) {
-      LOGGER.warn("Unable to call constructor with param: " + storage.getId(), ex);
+      LOGGER.warn("Unable to call constructor", ex);
     } catch (InvocationTargetException ex) {
       if (ex.getCause() instanceof LcmException) {
         throw (LcmException) ex.getCause();
@@ -159,6 +159,7 @@ public class BackendFactory {
       if (ex.getCause() instanceof LcmValidationException) {
         throw (LcmValidationException) ex.getCause();
       }
+      LOGGER.warn("Unable to call backend constructor", ex);
     }
 
     return null;

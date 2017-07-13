@@ -36,7 +36,9 @@ public class TableDescriptionDescriptorTest {
     List<ColumnDescription> columnsList = new ArrayList();
     columnsList.add(new ColumnDescription("name", ColumnType.STRING));
     columnsList.add(new ColumnDescription("age", ColumnType.INTEGER));
-    TableDescriptionDescriptor tableDescription = new TableDescriptionDescriptor(metaData);
+    
+    String testKey = "1283245748395bvbx";
+    TableDescriptionDescriptor tableDescription = new TableDescriptionDescriptor(metaData,testKey);
     tableDescription.setColumns(columnsList);
     metaData.set(tableDescription.getSectionName(), tableDescription.getMap());
     Map<String, ColumnDescription> columnsMap = tableDescription.getColumns();

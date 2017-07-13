@@ -40,6 +40,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 
 import javax.annotation.PostConstruct;
@@ -108,7 +109,7 @@ public class MetadataOverviewViewImpl extends VerticalLayout
     menubar.addComponent(refreshButton);
 
     table.addContainerProperty("Name", String.class, null);
-    table.addContainerProperty("Location", String.class, null);
+    table.addContainerProperty("Location", ArrayList.class, null);
     table.addContainerProperty("Actions", Button.class, null);
 
     table.setWidth("100%");

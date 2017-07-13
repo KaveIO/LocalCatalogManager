@@ -14,8 +14,6 @@
 
 package nl.kpmg.lcm.server.data;
 
-import nl.kpmg.lcm.server.data.metadata.MetaData;
-
 /**
  *
  * @author Stoyan Hristov<shristov@intracol.com>
@@ -24,8 +22,7 @@ public class IterativeData extends Data {
 
   private final ContentIterator iterator;
 
-  public IterativeData(MetaData metaData, ContentIterator iterator) {
-    super(metaData);
+  public IterativeData(ContentIterator iterator) {
     this.iterator = iterator;
   }
 

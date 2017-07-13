@@ -15,14 +15,17 @@
 package nl.kpmg.lcm.server.backend;
 
 import static org.junit.Assert.assertTrue;
+import static org.mockito.Mockito.mock;
 
 import nl.kpmg.lcm.server.data.DataFormat;
 import nl.kpmg.lcm.server.data.Storage;
 import nl.kpmg.lcm.server.data.metadata.MetaDataWrapper;
+import nl.kpmg.lcm.server.data.service.StorageService;
 import nl.kpmg.lcm.server.test.mock.MetaDataMocker;
 import nl.kpmg.lcm.server.test.mock.StorageMocker;
 
 import org.junit.Test;
+import org.mockito.Mock;
 
 import java.util.Set;
 
@@ -36,6 +39,10 @@ public class BackendCsvImplTest {
 
   private static final String TEST_STORAGE_PATH = "temp_test/";
   private static final String TEST_BACKEND_NAME = "test";
+
+
+    @Mock
+    private StorageService storageService = mock(StorageService.class);
 
   /**
    * Common access tool for all backends.
@@ -55,7 +62,7 @@ public class BackendCsvImplTest {
   @Test
   public final void testGetSupportedUriSchema() {
     MetaDataWrapper metaDataWrapper = MetaDataMocker.getCsvMetaDataWrapper();
-    BackendCsvImpl testBackend = new BackendCsvImpl(backendStorage, metaDataWrapper.getMetaData());
+    BackendCsvImpl testBackend = new BackendCsvImpl(metaDataWrapper.getMetaData(), storageService);
     Set<String> testSchema = testBackend.getSupportedUriSchema();
     assertTrue(testSchema.contains(DataFormat.CSV));
   }

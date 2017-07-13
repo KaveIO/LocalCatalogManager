@@ -31,6 +31,7 @@ import nl.kpmg.lcm.server.data.RemoteLcm;
 import nl.kpmg.lcm.server.data.StreamingData;
 import nl.kpmg.lcm.server.data.TaskDescription;
 import nl.kpmg.lcm.server.data.TransferSettings;
+import nl.kpmg.lcm.server.data.metadata.DataItemsDescriptor;
 import nl.kpmg.lcm.server.data.metadata.MetaDataWrapper;
 import nl.kpmg.lcm.server.data.service.RemoteLcmService;
 import nl.kpmg.lcm.server.task.EnrichmentTask;
@@ -90,16 +91,25 @@ public class DataFetchTask extends EnrichmentTask {
     }
 
     initConfiguration(options);
-    String fetchUrl = buildFetchURL(options);
-
-    InputStream in = openInputStream(fetchUrl);
     TransferSettings transferSettings = getTransferSettings();
-    if (!writeData(in, metadata, transferSettings)) {
-      taskDescriptionService.updateProgress(taskId, new ProgressIndication(
-          "Task excecution failed!"));
-      return TaskResult.FAILURE;
-    }
+      if (metadata.getDynamicData() == null
+              || metadata.getDynamicData().getAllDynamicDataDescriptors() == null
+              || metadata.getDynamicData().getAllDynamicDataDescriptors().isEmpty()) {
+          taskDescriptionService.updateProgress(taskId, new ProgressIndication(
+                  "No dynamic data items detected!"));
+          return TaskResult.FAILURE;
+      }
 
+    Map<String, DataItemsDescriptor> dynamicDataMap = metadata.getDynamicData().getAllDynamicDataDescriptors();
+    for(String key : dynamicDataMap.keySet()) {
+        String fetchUrl = buildFetchURL(options, key);
+        InputStream in = openInputStream(fetchUrl);
+        if (!writeData(in, metadata, key, transferSettings)) {
+          taskDescriptionService.updateProgress(taskId, new ProgressIndication(
+              "Task excecution failed!"));
+          return TaskResult.FAILURE;
+        }
+    }
     return TaskResult.SUCCESS;
   }
 
@@ -137,7 +147,7 @@ public class DataFetchTask extends EnrichmentTask {
     return response.readEntity(InputStream.class);
   }
 
-  private boolean writeData(InputStream in, MetaDataWrapper metaDataWrapper,
+  private boolean writeData(InputStream in, MetaDataWrapper metaDataWrapper, String key,
       TransferSettings transferSettings) {
     try {
       Backend backend = storageService.getBackend(metaDataWrapper);
@@ -146,14 +156,14 @@ public class DataFetchTask extends EnrichmentTask {
       Data data;
       String dataType = metaDataWrapper.getData().getDataType();
       if (StreamingData.getStreamingDataTypes().contains(dataType)) {
-        data = new StreamingData(metaDataWrapper.getMetaData(), in);
+        data = new StreamingData(in);
       } else {
         JsonReader reader = new JsonReader(new InputStreamReader(in, "UTF-8"));
         ContentIterator iterator = new JsonReaderContentIterator(reader);
-        data = new IterativeData(metaDataWrapper.getMetaData(), iterator);
+        data = new IterativeData(iterator);
       }
 
-      backend.store(data, transferSettings);
+      backend.store(data, key,transferSettings);
       metaDataService.enrichMetadata(metaDataWrapper, EnrichmentProperties.createDefaultEnrichmentProperties());
     } catch (Exception ex) {
       LOGGER.error(ex.getMessage());
@@ -184,11 +194,11 @@ public class DataFetchTask extends EnrichmentTask {
     }
   }
 
-  private String buildFetchURL(Map options) {
+  private String buildFetchURL(Map options, String key) {
     String remoteLcmId = options.get("remoteLcm").toString();
     RemoteLcm remoteLcm = remoteLcmService.findOneById(remoteLcmId);
     String path = options.get("path").toString();
-    String fetchUrl = buildRemoteUrl(remoteLcm) + path;
+    String fetchUrl = buildRemoteUrl(remoteLcm) + path + "?data_key=" + key;
 
     return fetchUrl;
   }

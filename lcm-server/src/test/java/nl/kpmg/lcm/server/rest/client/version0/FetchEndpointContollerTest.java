@@ -1,11 +1,11 @@
 /*
  * Copyright 2016 KPMG N.V. (unless otherwise stated).
- *
+ * 
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except
  * in compliance with the License. You may obtain a copy of the License at
- *
+ * 
  * http://www.apache.org/licenses/LICENSE-2.0
- *
+ * 
  * Unless required by applicable law or agreed to in writing, software distributed under the License
  * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
  * or implied. See the License for the specific language governing permissions and limitations under
@@ -56,6 +56,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.PrintWriter;
+import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
@@ -132,7 +133,7 @@ public class FetchEndpointContollerTest extends LcmBaseServerTest {
   public void testExpiration() throws ServerException, IOException, InterruptedException {
     FetchEndpoint fe = addTestFetchEndpoint();
     Thread.sleep(1);
-    getFetchURL(fe.getId(), 400);
+    getFetchURL(fe.getId(), 400, MetaDataMocker.getTestKey());
   }
 
   @Test
@@ -145,23 +146,26 @@ public class FetchEndpointContollerTest extends LcmBaseServerTest {
     String id = md.getId();
     // Get transfer token
     FetchEndpoint token = generateFetchURL(id, 200);
+    
+    String key = MetaDataMocker.getTestKey();
     // Download the file
-    Response resp = getFetchURL(token.getId(), 200);
+    Response resp = getFetchURL(token.getId(), 200, key);
 
     Backend backend;
+
     try (BufferedReader br =
         new BufferedReader(new InputStreamReader(resp.readEntity(InputStream.class), "UTF-8"))) {
       JsonReader reader = new JsonReader(br);
       ContentIterator iter = new JsonReaderContentIterator(reader);
 
       backend = storageService.getBackend(md);
-      Data data = new IterativeData(md.getMetaData(), iter);
-      TransferSettings transferSettings =  new TransferSettings();
+      Data data = new IterativeData(iter);
+      TransferSettings transferSettings = new TransferSettings();
       transferSettings.setForceOverwrite(true);
-      backend.store(data, transferSettings);
+      backend.store(data, key, transferSettings);
     }
 
-    IterativeData data = (IterativeData) backend.read();
+    IterativeData data = (IterativeData) backend.read(key);
     ContentIterator di = data.getIterator();
     int numOfLines = 0;
 
@@ -197,13 +201,17 @@ public class FetchEndpointContollerTest extends LcmBaseServerTest {
     Storage csvStorage = StorageMocker.createCsvStorage();
 
     MetaDataWrapper metadata = MetaDataMocker.getCsvMetaDataWrapper();
-    metadata.getData().setUri(CSV_STORAGE_URI);
+    List<String> uriList = new ArrayList();
+    uriList.add(CSV_STORAGE_URI);
+     metadata.getData().setUri(uriList);
+    String key = MetaDataMocker.getTestKey();
+    metadata.getDynamicData().getDynamicDataDescriptor(key).setURI(uriList.get(0));
 
     storageService.add(csvStorage);
     Backend backend = storageService.getBackend(metadata);
 
     generateCsvTestFile(CSV_FILE);
-    IterativeData data = (IterativeData) backend.read();
+    IterativeData data = (IterativeData) backend.read(key);
     assertNotNull(data);
     postMetadata(metadata, 200);
     return new MetaDataWrapper(getMetadata(200).get(0).getItem());
@@ -233,10 +241,10 @@ public class FetchEndpointContollerTest extends LcmBaseServerTest {
     }
   }
 
-  private Response getFetchURL(String id, int expected) throws ServerException,
+  private Response getFetchURL(String id, int expected,  String key) throws ServerException,
       FileNotFoundException, IOException {
     Response response =
-        getWebTarget().path(FETCH_PATH).path(id).request().header(AUTH_USER_HEADER, "admin")
+        getWebTarget().path(FETCH_PATH).path(id).queryParam("data_key", key).request().header(AUTH_USER_HEADER, "admin")
             .header(BasicAuthenticationManager.BASIC_AUTHENTICATION_HEADER, basicAuthTokenAdmin)
             .get();
 

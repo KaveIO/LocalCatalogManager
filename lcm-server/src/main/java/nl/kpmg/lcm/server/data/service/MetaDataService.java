@@ -30,6 +30,8 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
@@ -70,16 +72,19 @@ public class MetaDataService {
   }
 
   public List<MetaData> findByStorageName(String storageName) {
-    // TODO This probably could be optimized.
     List<MetaData> metadataList = findAll();
-    List<MetaData> targets = new LinkedList();
+    HashMap<String, MetaData> targets = new HashMap();
     for (MetaData metadata : metadataList) {
-      if (new MetaDataWrapper(metadata).getStorageName().equals(storageName)) {
-        targets.add(metadata);
+        List<String> storages = new MetaDataWrapper(metadata).getStorageName();
+      for(String storage :  storages) {
+        if (storage.equals(storageName)) {
+          targets.put(metadata.getId(), metadata);
+          break; // Once this metadata is added it is not needed to ad it again
+        }
       }
     }
 
-    return targets;
+    return new ArrayList(targets.values());
   }
 
   /**

@@ -23,6 +23,8 @@ import nl.kpmg.lcm.validation.Notification;
 
 import org.junit.Test;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -33,12 +35,13 @@ public class DataDescriptorTest {
   @Test
   public void testConstruction() {
     String uri = "csv://local2/mock.csv";
-
+    List uriList = new ArrayList();
+    uriList.add(uri);
     MetaData metaData = new MetaData();
     DataDescriptor data = new DataDescriptor(metaData);
 
-    data.setUri(uri);
-    assertEquals(uri, data.getUri());
+    data.setUri(uriList);
+    assertEquals(uriList, data.getUri());
 
     Map map = metaData.get(data.getSectionName());
     assertNotNull(map);
@@ -57,12 +60,14 @@ public class DataDescriptorTest {
   @Test
   public void testValidate() {
     String uri = "csv://local2/mock.csv";
+    List uriList = new ArrayList();
+    uriList.add(uri);
     String path = "kpmg/lcm/test";
 
     MetaData metaData = new MetaData();
     DataDescriptor data = new DataDescriptor(metaData);
 
-    data.setUri(uri);
+    data.setUri(uriList);
     data.setPath(path);
 
     Notification notification = new Notification();

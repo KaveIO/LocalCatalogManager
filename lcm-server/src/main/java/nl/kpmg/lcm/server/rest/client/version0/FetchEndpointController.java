@@ -33,14 +33,12 @@ import nl.kpmg.lcm.server.data.service.StorageService;
 import nl.kpmg.lcm.server.exception.LcmException;
 import nl.kpmg.lcm.server.rest.authentication.Roles;
 
-import org.apache.commons.io.FilenameUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
-import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.Date;
 import java.util.Map;
@@ -52,6 +50,7 @@ import javax.ws.rs.NotFoundException;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
+import javax.ws.rs.QueryParam;
 import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
@@ -81,7 +80,7 @@ public class FetchEndpointController {
   @Path("/{id}")
   @Produces(MediaType.APPLICATION_OCTET_STREAM)
   @RolesAllowed({Roles.ADMINISTRATOR, Roles.REMOTE_USER})
-  public final Response getOne(@PathParam("id") final String id) throws URISyntaxException,
+  public final Response getOne(@PathParam("id") final String id, @QueryParam("data_key") String dataKey) throws URISyntaxException,
       IOException {
 
     FetchEndpointDao dao = fetchEndpointService.getDao();
@@ -103,10 +102,7 @@ public class FetchEndpointController {
 
     Backend backend = storageService.getBackend(metaDataWrapper);
 
-    Data data = backend.read();
-    URI uri = new URI(metaDataWrapper.getData().getUri());
-    String type = "json";// uri.getScheme();
-    String name = FilenameUtils.getBaseName(uri.toString());
+    Data data = backend.read(dataKey);
     StreamingOutput result = new StreamingOutput() {
       @Override
       public void write(OutputStream out) throws IOException, WebApplicationException {
@@ -116,8 +112,7 @@ public class FetchEndpointController {
     };
     String mimeType = "application/json";
     Response.ResponseBuilder response = Response.ok(result, mimeType);
-    return response.header("Content-Disposition", "attachment; filename=" + name + "." + type)
-        .build();
+    return response.build();
   }
 
   private void writeData(OutputStream stream, Data rawData) throws IOException {

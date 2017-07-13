@@ -26,6 +26,9 @@ import nl.kpmg.lcm.server.test.mock.MetaDataMocker;
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 
+import java.util.ArrayList;
+import java.util.List;
+
 public class MongoMetaDataDaoTest extends LcmBaseTest {
 
   @Autowired
@@ -38,7 +41,9 @@ public class MongoMetaDataDaoTest extends LcmBaseTest {
 
     MetaDataWrapper metaDataWrapper = MetaDataMocker.getCsvMetaDataWrapper();
     metaDataWrapper.setName(expectedName);
-    metaDataWrapper.getData().setUri(expectedUri);
+    List uriList = new ArrayList();
+    uriList.add(expectedUri);
+    metaDataWrapper.getData().setUri(uriList);
 
     MetaData saved = metaDataDao.save(metaDataWrapper.getMetaData());
 
@@ -46,6 +51,6 @@ public class MongoMetaDataDaoTest extends LcmBaseTest {
     MetaDataWrapper actualMetaDataWrapper = new MetaDataWrapper(actual);
     assertFalse(actual == metaDataWrapper.getMetaData());
     assertEquals(expectedName, actualMetaDataWrapper.getName());
-    assertEquals(expectedUri, actualMetaDataWrapper.getData().getUri());
+    assertEquals(expectedUri, actualMetaDataWrapper.getData().getUri().get(0));
   }
 }

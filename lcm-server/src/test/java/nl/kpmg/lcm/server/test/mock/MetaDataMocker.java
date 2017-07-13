@@ -31,18 +31,27 @@ import java.util.List;
  * @author shristov
  */
 public class MetaDataMocker {
+ 
+  public static String getTestKey() {
+      return "1283245748395bvbx";
+  }
+    
   public static MetaDataWrapper getCsvMetaDataWrapper() {
     CsvMetaData csvMetaData = new CsvMetaData();
     csvMetaData.setName("CSV-metadata");
     csvMetaData.setId("585a57136d31212d0ad5fca6");
-    csvMetaData.getData().setUri("csv://test/temp.csv");
+    List<String> uriList =  new ArrayList();
+    uriList.add("csv://test/temp.csv");
+    csvMetaData.getData().setUri(uriList);
     csvMetaData.getData().setPath("kpmg/lcm/test");
     csvMetaData.getGeneralInfo().setOwner("KPMG");
     csvMetaData.getGeneralInfo().setDescription("Sample description");
     List columns = new ArrayList();
     columns.add(new ColumnDescription("name", ColumnType.STRING));
     columns.add(new ColumnDescription("age", ColumnType.INTEGER));
-    csvMetaData.getTableDescription().setColumns(columns);
+    String key = getTestKey();
+    csvMetaData.getTableDescription(key).setColumns(columns);
+    csvMetaData.getDynamicData().getDynamicDataDescriptor(key).setURI(uriList.get(0));
 
     return csvMetaData;
   }
@@ -52,7 +61,9 @@ public class MetaDataMocker {
     metaData.setName("metadata");
     metaData.setId("585a57136d31212d0ad5fca6");
     DataDescriptor data = new DataDescriptor(metaData);
-    data.setUri("csv://test/temp.csv");
+    List uriList =  new ArrayList();
+    uriList.add("csv://test/temp.csv");
+    data.setUri(uriList);
     data.setPath("kpmg/lcm/test");
     metaData.set(data.getSectionName(), data.getMap());
 
@@ -68,14 +79,17 @@ public class MetaDataMocker {
     TabularMetaData tabularMetaData = new TabularMetaData();
     tabularMetaData.setName("Hive-metadata");
     tabularMetaData.setId("585a57236d31212d0ad5fca6");
-    tabularMetaData.getData().setUri("hive://remote-hive-foodmart/product");
+    List uriList =  new ArrayList();
+    uriList.add("hive://remote-hive-foodmart/product");
+    tabularMetaData.getData().setUri(uriList);
     tabularMetaData.getData().setPath("kpmg/lcm/test");
     tabularMetaData.getGeneralInfo().setOwner("KPMG");
     tabularMetaData.getGeneralInfo().setDescription("Sample description");
     List columns = new ArrayList();
     columns.add(new ColumnDescription("name", ColumnType.STRING));
     columns.add(new ColumnDescription("age", ColumnType.INTEGER));
-    tabularMetaData.getTableDescription().setColumns(columns);
+    String key = getTestKey();
+    tabularMetaData.getTableDescription(key).setColumns(columns);
 
     return tabularMetaData;
   }
@@ -84,14 +98,17 @@ public class MetaDataMocker {
     TabularMetaData tabularMetaData = new TabularMetaData();
     tabularMetaData.setName("Mongo-metadata");
     tabularMetaData.setId("585a57236d31212d0ad5fca6");
-    tabularMetaData.getData().setUri("mongo://mongoStorage/mock");
+    List uriList =  new ArrayList();
+    uriList.add("mongo://mongoStorage/mock");
+    tabularMetaData.getData().setUri(uriList);
     tabularMetaData.getData().setPath("kpmg/lcm/test");
     tabularMetaData.getGeneralInfo().setOwner("KPMG");
     tabularMetaData.getGeneralInfo().setDescription("Sample description");
     List columns = new ArrayList();
     columns.add(new ColumnDescription("name", ColumnType.STRING));
     columns.add(new ColumnDescription("age", ColumnType.INTEGER));
-    tabularMetaData.getTableDescription().setColumns(columns);
+    String key = getTestKey();
+    tabularMetaData.getTableDescription(key).setColumns(columns);
 
     return tabularMetaData;
   }

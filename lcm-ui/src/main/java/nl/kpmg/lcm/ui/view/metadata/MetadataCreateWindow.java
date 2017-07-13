@@ -198,8 +198,8 @@ public class MetadataCreateWindow extends Window implements Button.ClickListener
 
     if (dynamicDataView.getValue() != null && !dynamicDataView.getValue().isEmpty()) {
       Map dynamicDataMap = getDescriptor(dynamicDataView.getValue());
-      DynamicDataDescriptor dynamicDataDescriptor = new DynamicDataDescriptor(dynamicDataMap);
-      metadata.setDynamicData(dynamicDataDescriptor);
+      DynamicDataDescriptor dynamicData = new DynamicDataDescriptor(dynamicDataMap);
+      metadata.setDynamicData(dynamicData);
     }
 
     if (dataView.getValue() != null && !dataView.getValue().isEmpty()) {

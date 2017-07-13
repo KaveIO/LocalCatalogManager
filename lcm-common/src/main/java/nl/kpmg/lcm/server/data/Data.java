@@ -13,23 +13,10 @@
  */
 package nl.kpmg.lcm.server.data;
 
-import nl.kpmg.lcm.server.data.metadata.MetaData;
-
 /**
  *
  * @author shristov
  */
 public class Data {
-  private final MetaData metaData;
-
-  public Data(MetaData metaData) {
-    this.metaData = metaData;
-  }
-
-  /**
-   * @return the metaData
-   */
-  public MetaData getMetaData() {
-    return metaData;
-  }
+ 
 }

@@ -27,6 +27,7 @@ import nl.kpmg.lcm.server.data.TaskDescription;
 import nl.kpmg.lcm.server.data.TaskType;
 import nl.kpmg.lcm.server.data.TransferSettings;
 import nl.kpmg.lcm.server.data.dao.RemoteLcmDao;
+import nl.kpmg.lcm.server.data.metadata.DataItemsDescriptor;
 import nl.kpmg.lcm.server.data.metadata.MetaData;
 import nl.kpmg.lcm.server.data.metadata.MetaDataWrapper;
 import nl.kpmg.lcm.server.rest.client.version0.HttpResponseHandler;
@@ -44,6 +45,8 @@ import java.net.URISyntaxException;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.LinkedList;
+import java.util.List;
 import java.util.Map;
 
 import javax.ws.rs.ClientErrorException;
@@ -136,7 +139,7 @@ public class DataFetchTriggerService {
     details.put("remoteLcmURI", remoteLcmDescription);
     details.put("remoteLcmName", lcm.getName());
 
-    details.put("metadataURI", metaDataWrapper.getData().getUri());
+    details.put("metadataURI", metaDataWrapper.getData().getUri().get(0));
     details.put("metadataName", metaDataWrapper.getName());
 
     dataFetchTaskDescription.setDetail(details);
@@ -147,15 +150,39 @@ public class DataFetchTriggerService {
   private void updateMetaData(MetaDataWrapper metaDataWrapper, Storage localStorage,
       String namespacePath) throws ServerException, NotFoundException, ClientErrorException {
 
-    URI originalDataUri = parseDataUri(metaDataWrapper.getData().getUri());
+    List<String> uriList = metaDataWrapper.getData().getUri();
+    List<String> newUriList = new LinkedList();
+    for (String uri : uriList) {
+      String metaDataURI = getUpdatedURI(uri, localStorage);
+      newUriList.add(metaDataURI);
+      metaDataWrapper.getData().setPath(namespacePath);
+      Map<String, DataItemsDescriptor> dynamicDataMap =
+          metaDataWrapper.getDynamicData().getAllDynamicDataDescriptors();
+      for (DataItemsDescriptor descriptor : dynamicDataMap.values()) {
+        descriptor.getDetailsDescriptor().setState("DETACHED");
+      }
+    }
+    for (String key : metaDataWrapper.getDynamicData().getAllDynamicDataDescriptors().keySet()) {
+
+      DataItemsDescriptor dynamicDataDescriptor =
+          metaDataWrapper.getDynamicData().getDynamicDataDescriptor(key);
+
+      String uri = dynamicDataDescriptor.getURI();
+      String updatedDataItemURI = getUpdatedURI(uri, localStorage);
+      dynamicDataDescriptor.setURI(updatedDataItemURI);
+    }
+
+    metaDataWrapper.getData().setUri(newUriList);
+    metaDataService.update(metaDataWrapper.getMetaData());
+  }
+
+  private String getUpdatedURI(String uri, Storage localStorage) throws ServerException {
+    URI originalDataUri = parseDataUri(uri);
     String path = originalDataUri.getPath();
     String originalDataType = originalDataUri.getScheme();
     String newItemName = getUpdatedStorageItemName(originalDataType, localStorage.getType(), path);
     String metaDataURI = localStorage.getType() + "://" + localStorage.getName() + newItemName;
-    metaDataWrapper.getData().setUri(metaDataURI);
-    metaDataWrapper.getData().setPath(namespacePath);
-    metaDataWrapper.getDynamicData().setState("DETACHED");
-    metaDataService.update(metaDataWrapper.getMetaData());
+    return metaDataURI;
   }
 
   private String getUpdatedStorageItemName(String originalDataFormat, String destinationDataFormat,

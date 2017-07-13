@@ -35,14 +35,24 @@ public class CsvMetaData extends TabularMetaData {
     super();
   }
 
-  public CsvConfiguration getConfiguration() {
+  public CsvConfiguration getDefaultConfiguration(){
+      return getConfiguration(null);
+  }
+
+  public boolean doesConfigurationExists(String key) {
+    CsvConfigurationDescriptor csvDescriptor = new CsvConfigurationDescriptor(getMetaData(), key);
+
+    return csvDescriptor.exists();
+  }
+
+  public CsvConfiguration getConfiguration(String key) {
     int columnNameLine = CsvConfiguration.DEFAULT_COLUMN_NAME_LINE;
     String encoding = FileHelper.DEFAULT_ENCODING;
     char separatorChar = CsvConfiguration.DEFAULT_SEPARATOR_CHAR;
     char quoteChar = CsvConfiguration.NOT_A_CHAR;
     char escapeChar = CsvConfiguration.DEFAULT_ESCAPE_CHAR;
 
-    CsvConfigurationDescriptor csvDescriptor = new CsvConfigurationDescriptor(getMetaData());
+    CsvConfigurationDescriptor csvDescriptor = new CsvConfigurationDescriptor(getMetaData(), key);
     if (csvDescriptor.getColumnNameLine() != null) {
       columnNameLine = csvDescriptor.getColumnNameLine();
     }

@@ -14,10 +14,12 @@
 package nl.kpmg.lcm.server.backend;
 
 import static org.junit.Assert.*;
+import static org.mockito.Mockito.mock;
 
 import nl.kpmg.lcm.server.data.DataFormat;
 import nl.kpmg.lcm.server.data.Storage;
 import nl.kpmg.lcm.server.data.metadata.MetaDataWrapper;
+import nl.kpmg.lcm.server.data.service.StorageService;
 import nl.kpmg.lcm.server.exception.LcmException;
 import nl.kpmg.lcm.server.test.mock.MetaDataMocker;
 import nl.kpmg.lcm.server.test.mock.StorageMocker;
@@ -27,6 +29,9 @@ import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
+
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  *
@@ -43,35 +48,38 @@ public class BackendFactoryTest {
     private String csvStorageURI = csvSchame + "://" + csvStorageName + "/test.csv";
     private MetaDataWrapper validMetaData = MetaDataMocker.getCsvMetaDataWrapper();
     
+      
+  private StorageService storageService = mock(StorageService.class);;
 
     @Autowired
-    private BackendFactory backendFactory;
-
+    private BackendFactory backendFactory;     
     public BackendFactoryTest() {
         csvStorage = StorageMocker.createCsvStorage();
-        validMetaData.getData().setUri(csvStorageURI);
+        List uriList = new ArrayList();
+        uriList.add(csvStorageURI);
+        validMetaData.getData().setUri(uriList);
     }
 
     @Test
     public void testCreateBackendCSV() throws Exception {
-        Backend csvBackend = backendFactory.createBackend(csvSchame, csvStorage, validMetaData);
+        Backend csvBackend = backendFactory.createBackend(csvSchame, storageService, validMetaData);
         assertNotNull(csvBackend);
         assertTrue(csvBackend instanceof BackendCsvImpl);
     }
 
     @Test(expected = LcmException.class)
     public void testCreateBackendInvalidSchema() throws Exception {
-        backendFactory.createBackend("this_is_invalid_schema", csvStorage, validMetaData);
+        backendFactory.createBackend("this_is_invalid_schema", storageService, validMetaData);
     }
 
     @Test(expected = IllegalArgumentException.class)
     public void testCreateBackendNullSchema() throws Exception {
-        backendFactory.createBackend(null, csvStorage, validMetaData);
+        backendFactory.createBackend(null, storageService, validMetaData);
     }
 
     @Test(expected = IllegalArgumentException.class)
     public void testCreateBackendTooShortSchema() throws Exception {
-        backendFactory.createBackend("", csvStorage, validMetaData);
+        backendFactory.createBackend("", storageService, validMetaData);
     }
 
     @Test(expected = IllegalArgumentException.class)
@@ -97,11 +105,11 @@ public class BackendFactoryTest {
                 + "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbb1111111111111111111dfsgsdffffff"
                 + "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbb1111111111111111111dfsgsdffffff";
 
-        backendFactory.createBackend(veryLongSchema, csvStorage, validMetaData);
+        backendFactory.createBackend(veryLongSchema,  storageService, validMetaData);
     }
 
     @Test(expected = IllegalArgumentException.class)
     public void testCreateBackendNullStorage() throws Exception {
         backendFactory.createBackend(csvSchame, null, validMetaData);
-    }
+}
 }

@@ -103,7 +103,8 @@ public class MetadataEditWindow extends Window implements Button.ClickListener {
 
     panelContent.setMargin(true);
     addDefinedLabel(panelContent, "Name", item.getName());
-    addDefinedLabel(panelContent, "Location", item.getData().getUri());
+    //TODO refactore this uri list can not be listed here!
+    addDefinedLabel(panelContent, "Location", item.getData().getUri().get(0));
     addDefinedLabel(panelContent, "Owner", item.getGeneralInfo().getOwner());
     addDefinedLabel(panelContent, "Description", item.getGeneralInfo().getDescription());
 

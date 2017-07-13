@@ -14,8 +14,6 @@
 
 package nl.kpmg.lcm.server.data;
 
-import nl.kpmg.lcm.server.data.metadata.MetaData;
-
 import java.io.InputStream;
 import java.util.HashSet;
 import java.util.Set;
@@ -28,8 +26,7 @@ public class StreamingData extends Data {
 
   private final InputStream inputStream;
 
-  public StreamingData(MetaData metaData, InputStream inputStream) {
-    super(metaData);
+  public StreamingData(InputStream inputStream) {
     this.inputStream = inputStream;
   }
 

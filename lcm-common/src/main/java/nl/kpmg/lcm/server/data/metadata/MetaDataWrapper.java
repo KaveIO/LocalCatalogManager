@@ -18,7 +18,8 @@ import nl.kpmg.lcm.validation.Notification;
 
 import java.net.URI;
 import java.net.URISyntaxException;
-import java.util.HashMap;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  *
@@ -30,14 +31,14 @@ public class MetaDataWrapper implements MetaDataIdentificator {
   protected final MetaData metaData;
   protected final DataDescriptor dataDescriptor;
   protected final GeneralInfoDescriptor generalInfoDescriptor;
-  protected final DynamicDataDescriptor dynamicDataDescriptor;
+  protected final DynamicDataDescriptor dynamicData;
   protected final EnrichmentPropertiesDescriptor enrichmentPropertiesDescriptor;
 
   public MetaDataWrapper(MetaData metaData) {
     this.metaData = metaData;
     this.dataDescriptor = new DataDescriptor(metaData);
     this.generalInfoDescriptor = new GeneralInfoDescriptor(metaData);
-    this.dynamicDataDescriptor = new DynamicDataDescriptor(metaData);
+    this.dynamicData = new DynamicDataDescriptor(metaData);
     this.enrichmentPropertiesDescriptor = new EnrichmentPropertiesDescriptor(metaData);
 
     Notification notification = new Notification();
@@ -52,7 +53,7 @@ public class MetaDataWrapper implements MetaDataIdentificator {
     this.metaData = new MetaData();
     this.dataDescriptor = new DataDescriptor(metaData);
     this.generalInfoDescriptor = new GeneralInfoDescriptor(metaData);
-    this.dynamicDataDescriptor = new DynamicDataDescriptor(metaData);
+    this.dynamicData = new DynamicDataDescriptor(metaData);
     this.enrichmentPropertiesDescriptor = new EnrichmentPropertiesDescriptor(metaData);
   }
 
@@ -71,33 +72,28 @@ public class MetaDataWrapper implements MetaDataIdentificator {
   }
 
   public String getSourceType() {
-    String sourceType = null;
-    URI parsedUri;
-    try {
-      if (getData() != null && getData().getUri() != null) {
-        parsedUri = new URI(getData().getUri());
-        sourceType = parsedUri.getScheme();
-      }
-    } catch (URISyntaxException ex) {
-      sourceType = null;
-    }
-
-    return sourceType;
+        return getData().getDataType();    
   }
 
-  public String getStorageName() {
-    String storageName = null;
-    URI parsedUri;
-    try {
-      if (getData() != null && getData().getUri() != null) {
-        parsedUri = new URI(getData().getUri());
-        storageName = parsedUri.getHost() != null ? parsedUri.getHost() : parsedUri.getAuthority();
-      }
-    } catch (URISyntaxException ex) {
-      storageName = null;
-    }
+  public List<String> getStorageName() {
+    List<String> storageNameList = new ArrayList();
 
-    return storageName;
+    List<String> uriList = getData().getUri();
+    for (String uri : uriList) {
+      URI parsedUri;
+      try {
+        if (getData() != null && getData().getUri() != null) {
+          parsedUri = new URI(uri);
+          String storageName =
+              parsedUri.getHost() != null ? parsedUri.getHost() : parsedUri.getAuthority();
+          storageNameList.add(storageName);
+        }
+      } catch (URISyntaxException ex) {
+        // TODO log the syntax error Logger.
+        continue;
+      }
+    }
+    return storageNameList;
   }
 
   @Override
@@ -122,12 +118,8 @@ public class MetaDataWrapper implements MetaDataIdentificator {
     metaData.set(value.getSectionName(), value.getMap());
   }
 
-  public final void clearDynamicData() {
-    metaData.set(getDynamicData().getSectionName(), new HashMap());
-  }
-
   public final DynamicDataDescriptor getDynamicData() {
-    return dynamicDataDescriptor;
+    return dynamicData;
   }
 
   public final GeneralInfoDescriptor getGeneralInfo() {

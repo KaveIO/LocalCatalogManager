@@ -15,10 +15,12 @@
 package nl.kpmg.lcm.server.backend;
 
 import static org.junit.Assert.assertTrue;
+import static org.mockito.Mockito.mock;
 
 import nl.kpmg.lcm.server.data.DataFormat;
 import nl.kpmg.lcm.server.data.Storage;
 import nl.kpmg.lcm.server.data.metadata.MetaDataWrapper;
+import nl.kpmg.lcm.server.data.service.StorageService;
 import nl.kpmg.lcm.server.test.mock.MetaDataMocker;
 import nl.kpmg.lcm.server.test.mock.StorageMocker;
 
@@ -36,11 +38,13 @@ public class BackendHiveImplTest {
   /**
    * Test to check if "hive" URI scheme is supported by getSupportedUriSchema() method.
    */
+ private StorageService storageService = mock(StorageService.class);
+  
   @Test
   public final void testGetSupportedUriSchema() {
     MetaDataWrapper metaDataWrapper = MetaDataMocker.getHiveMetaDataWrapper();
     Storage backendStorage = StorageMocker.createHiveStorage();
-    BackendHiveImpl testBackend = new BackendHiveImpl(backendStorage, metaDataWrapper.getMetaData());
+    BackendHiveImpl testBackend = new BackendHiveImpl(metaDataWrapper.getMetaData(), storageService);
     Set<String> testSchema = testBackend.getSupportedUriSchema();
     assertTrue(testSchema.contains(DataFormat.HIVE));
   }

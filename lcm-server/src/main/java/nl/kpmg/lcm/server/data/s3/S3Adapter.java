@@ -28,7 +28,6 @@ import com.amazonaws.services.s3.model.S3Object;
 import nl.kpmg.lcm.server.backend.storage.S3FileStorage;
 import nl.kpmg.lcm.server.data.FileAdapter;
 import nl.kpmg.lcm.server.exception.LcmException;
-import nl.kpmg.lcm.server.task.enrichment.DataFetchTask;
 
 import org.slf4j.LoggerFactory;
 
@@ -41,7 +40,7 @@ import java.io.InputStream;
  */
 public class S3Adapter implements FileAdapter {
   private static final org.slf4j.Logger LOGGER =
-      LoggerFactory.getLogger(DataFetchTask.class.getName());
+      LoggerFactory.getLogger(S3Adapter.class.getName());
   private String bucketName;
 
   private AmazonS3 s3Client;

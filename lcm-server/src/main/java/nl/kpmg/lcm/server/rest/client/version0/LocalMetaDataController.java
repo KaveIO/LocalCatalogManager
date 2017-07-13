@@ -148,7 +148,8 @@ public class LocalMetaDataController {
   @Consumes({"application/nl.kpmg.lcm.rest.types.MetaDataOperationRequest+json"})
   @Produces(MediaType.APPLICATION_OCTET_STREAM)
   @RolesAllowed({Roles.ADMINISTRATOR, Roles.API_USER})
-  public final Response metadataOperation(@PathParam("meta_data_id") final String metaDataId,
+  public final Response metadataOperation(@PathParam("meta_data_id") final String metaDataId, 
+          @QueryParam("data_key") String dataKey,
       MetaDataOperationRequest request) {
 
     MetaData metadata = metaDataService.findById(metaDataId);
@@ -161,7 +162,7 @@ public class LocalMetaDataController {
         try {
           backend = storageService.getBackend(metaDataWrapper);
           if (backend != null) {
-            IterativeData input = (IterativeData) backend.read();
+            IterativeData input = (IterativeData) backend.read(dataKey);
             String fType = (String) request.getParameters().get("type");
             return Response.ok(input).header("Content-Disposition",
                 String.format("attachment; filename=%s.%s", metadata.getName(), fType)).build();

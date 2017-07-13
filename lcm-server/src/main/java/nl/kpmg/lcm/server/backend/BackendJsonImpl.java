@@ -13,9 +13,6 @@
  */
 
 package nl.kpmg.lcm.server.backend;
-
-import nl.kpmg.lcm.server.data.TransferSettings;
-
 import com.google.gson.Gson;
 
 import nl.kpmg.lcm.server.backend.metadata.TabularMetaData;
@@ -26,7 +23,9 @@ import nl.kpmg.lcm.server.data.DataFormat;
 import nl.kpmg.lcm.server.data.EnrichmentProperties;
 import nl.kpmg.lcm.server.data.IterativeData;
 import nl.kpmg.lcm.server.data.Storage;
+import nl.kpmg.lcm.server.data.TransferSettings;
 import nl.kpmg.lcm.server.data.metadata.MetaData;
+import nl.kpmg.lcm.server.data.service.StorageService;
 import nl.kpmg.lcm.server.exception.LcmException;
 import nl.kpmg.lcm.server.exception.LcmValidationException;
 import nl.kpmg.lcm.validation.Notification;
@@ -54,7 +53,7 @@ import java.util.Map;
 public class BackendJsonImpl extends AbstractBackend {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(BackendJsonImpl.class.getName());
-  private File dataSourceFile = null;
+  //private File dataSourceFile = null;
   private final TabularMetaData jsonMetaData;
 
   /**
@@ -63,14 +62,13 @@ public class BackendJsonImpl extends AbstractBackend {
    *        and then the storage object loaded be loaded .
    * @param metaData - valid @metaData that representing CSV data source.
    */
-  public BackendJsonImpl(Storage backendStorage, MetaData metaData) {
-    super(metaData);
-    String storagePath = new LocalFileStorage(backendStorage).getStoragePath();
+  public BackendJsonImpl(MetaData metaData, StorageService storageService) {
+    super(metaData, storageService);
     this.jsonMetaData = new TabularMetaData(metaData);
-    dataSourceFile = createDataSourceFile(storagePath);
+
   }
 
-  private JsonDataContext createDataContext() {
+  private JsonDataContext createDataContext(File dataSourceFile) {
     if (jsonMetaData == null) {
       throw new IllegalStateException("MetaData parameter could not be null");
     }
@@ -82,15 +80,14 @@ public class BackendJsonImpl extends AbstractBackend {
     return (JsonDataContext) DataContextFactory.createJsonDataContext(dataSourceFile);
   }
 
-  private File createDataSourceFile(String storagePath) {
-    if (dataSourceFile != null) {
-      return dataSourceFile;
-    }
-
+  private File createDataSourceFile(String key) {
+    String dataURI = metaDataWrapper.getDynamicData().getDynamicDataDescriptor(key).getURI();
+    String filePath = storageService.getStorageItemName(dataURI);
+    Storage storage = storageService.getStorageByUri(dataURI);        
+    String storagePath = new LocalFileStorage(storage).getStoragePath();
+    
     File baseDir = new File(storagePath);
-
-    String filePath = jsonMetaData.getData().getStorageItemName();
-    dataSourceFile = new File(storagePath + filePath);
+    File dataSourceFile = new File(storagePath + filePath);
 
     Notification notification = new Notification();
     FilePathValidator.validate(baseDir, dataSourceFile, notification);
@@ -104,39 +101,45 @@ public class BackendJsonImpl extends AbstractBackend {
 
   @Override
   public MetaData enrichMetadata(EnrichmentProperties properties) {
-
+    expandDataURISection();
+    if (metaDataWrapper.getDynamicData().getAllDynamicDataDescriptors() == null) {
+      return metaDataWrapper.getMetaData();
+    }
+    for (String key : metaDataWrapper.getDynamicData().getAllDynamicDataDescriptors().keySet()) {
+    File dataSourceFile = createDataSourceFile(key);
     long start = System.currentTimeMillis();
     try {
-      jsonMetaData.clearDynamicData();
+      jsonMetaData.getDynamicData().getDynamicDataDescriptor(key).clearDetailsDescriptor();
       if (properties.getAccessibility()) {
         String state = dataSourceFile.exists() ? "ATTACHED" : "DETACHED";
-        jsonMetaData.getDynamicData().setState(state);
+        jsonMetaData.getDynamicData().getDynamicDataDescriptor(key).getDetailsDescriptor().setState(state);
       }
 
       if (dataSourceFile.exists()) {
         if (properties.getSize()) {
-          jsonMetaData.getDynamicData().setSize(dataSourceFile.length());
+          jsonMetaData.getDynamicData().getDynamicDataDescriptor(key).getDetailsDescriptor().setSize(dataSourceFile.length());
         }
         if (properties.getStructure()) {
-          JsonDataContext dataContext = createDataContext();
+          JsonDataContext dataContext = createDataContext(dataSourceFile);
           Schema schema = dataContext.getDefaultSchema();
           if (schema.getTableCount() == 0) {
             return null;
           }
           Table table = schema.getTables()[0];
-          jsonMetaData.getTableDescription().setColumns(table.getColumns());
+          jsonMetaData.getTableDescription(key).setColumns(table.getColumns());
         }
         Long dataUpdateTime = new Date(dataSourceFile.lastModified()).getTime();
-        jsonMetaData.getDynamicData().setDataUpdateTimestamp(dataUpdateTime);
+        jsonMetaData.getDynamicData().getDynamicDataDescriptor(key).getDetailsDescriptor().setDataUpdateTimestamp(dataUpdateTime);
       }
     } catch (Exception ex) {
       LOGGER.error("Unable to enrich medatadata : " + jsonMetaData.getId() + ". Error Message: "
           + ex.getMessage());
       throw new LcmException("Unable to get info about datasource: " + dataSourceFile.getPath(), ex);
     } finally {
-      jsonMetaData.getDynamicData().setUpdateTimestamp(new Date().getTime());
+      jsonMetaData.getDynamicData().getDynamicDataDescriptor(key).getDetailsDescriptor().setUpdateTimestamp(new Date().getTime());
       long end = System.currentTimeMillis();
-      jsonMetaData.getDynamicData().setUpdateDurationTimestamp(end - start);
+      jsonMetaData.getDynamicData().getDynamicDataDescriptor(key).getDetailsDescriptor().setUpdateDurationTimestamp(end - start);
+    }
     }
 
     return metaDataWrapper.getMetaData();
@@ -152,22 +155,24 @@ public class BackendJsonImpl extends AbstractBackend {
    *        false and the content already exists then LcmException is thrown.
    */
   @Override
-  public void store(Data data, TransferSettings transferSettings) {
+  public void store(Data data, String key, TransferSettings transferSettings) {
 
     if (!(data instanceof IterativeData)) {
       throw new LcmException("Unable to store streaming data directly to json.");
     }
 
+    File dataSourceFile = createDataSourceFile(key);
+    
     ContentIterator content = ((IterativeData) data).getIterator();
     if (dataSourceFile.exists() && !transferSettings.isForceOverwrite()) {
-      throw new LcmException("Data set is already attached, won't overwrite.");
+      throw new LcmException("Data set is already attached, won't overwrite. Data item: " + key);
     }
 
     int rowNumber = 1;
     Gson gson = new Gson();
     try (Writer writer = FileHelper.getBufferedWriter(dataSourceFile);) {
       if (progressIndicationFactory != null) {
-        String message = "Start transfer.";
+        String message = "Start transfer. File: "+ dataSourceFile.getName();
         progressIndicationFactory.writeIndication(message);
       }
       while (content.hasNext()) {
@@ -210,20 +215,22 @@ public class BackendJsonImpl extends AbstractBackend {
    *         initialization.
    */
   @Override
-  public IterativeData read() {
-    JsonDataContext dataContext = createDataContext();
+  public IterativeData read(String key) {
+    File dataSourceFile = createDataSourceFile(key);
+
+    JsonDataContext dataContext = createDataContext(dataSourceFile);
     Schema schema = dataContext.getDefaultSchema();
     if (schema.getTableCount() == 0) {
       return null;
     }
     Table table = schema.getTables()[0];
     DataSet result = dataContext.query().from(table).selectAll().execute();
-    jsonMetaData.getTableDescription().setColumns(table.getColumns());
-    return new IterativeData(jsonMetaData.getMetaData(), new DataSetContentIterator(result));
+    jsonMetaData.getTableDescription(key).setColumns(table.getColumns());
+    return new IterativeData(new DataSetContentIterator(result));
   }
 
   @Override
-  public boolean delete() {
+  public boolean delete(String key) {
     throw new UnsupportedOperationException("Backend delete operation is not supported yet.");
   }
 

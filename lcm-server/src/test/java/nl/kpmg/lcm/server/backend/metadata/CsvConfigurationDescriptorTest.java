@@ -34,7 +34,8 @@ public class CsvConfigurationDescriptorTest {
   @Test
   public void testConstruction() {
     MetaData metaData = new MetaData();
-    CsvConfigurationDescriptor csvConfiguration = new CsvConfigurationDescriptor(metaData);
+    String testKey = "1283245748395bvbx";
+    CsvConfigurationDescriptor csvConfiguration = new CsvConfigurationDescriptor(metaData, testKey);
     Character escapeChar = '\\';
     Character quoteChar = '"';
     Character separatorChar = ',';
@@ -62,7 +63,8 @@ public class CsvConfigurationDescriptorTest {
   public void testBlankConstruction() {
 
     MetaData metaData = new MetaData();
-    CsvConfigurationDescriptor csvConfiguration = new CsvConfigurationDescriptor(metaData);
+    String testKey = "1283245748395bvbx";
+    CsvConfigurationDescriptor csvConfiguration = new CsvConfigurationDescriptor(metaData, testKey);
 
     assertNull(csvConfiguration.getEncoding());
     assertNull(csvConfiguration.getColumnNameLine());
@@ -74,7 +76,8 @@ public class CsvConfigurationDescriptorTest {
   @Test
   public void testValidate() {
     MetaData metaData = new MetaData();
-    CsvConfigurationDescriptor csvConfiguration = new CsvConfigurationDescriptor(metaData);
+    String testKey = "1283245748395bvbx";
+    CsvConfigurationDescriptor csvConfiguration = new CsvConfigurationDescriptor(metaData, testKey);
     csvConfiguration.setColumnNameLine(1);
     csvConfiguration.setEscapeChar('\\');
     csvConfiguration.setQuoteChar('"');

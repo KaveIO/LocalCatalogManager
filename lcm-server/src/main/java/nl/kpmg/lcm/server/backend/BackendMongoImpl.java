@@ -1,11 +1,11 @@
 /*
  * Copyright 2016 KPMG N.V. (unless otherwise stated).
- *
+ * 
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except
  * in compliance with the License. You may obtain a copy of the License at
- *
+ * 
  * http://www.apache.org/licenses/LICENSE-2.0
- *
+ * 
  * Unless required by applicable law or agreed to in writing, software distributed under the License
  * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
  * or implied. See the License for the specific language governing permissions and limitations under
@@ -26,6 +26,7 @@ import nl.kpmg.lcm.server.data.ProgressIndicationFactory;
 import nl.kpmg.lcm.server.data.Storage;
 import nl.kpmg.lcm.server.data.TransferSettings;
 import nl.kpmg.lcm.server.data.metadata.MetaData;
+import nl.kpmg.lcm.server.data.service.StorageService;
 import nl.kpmg.lcm.server.exception.LcmException;
 
 import org.apache.metamodel.DataContextFactory;
@@ -53,93 +54,107 @@ public class BackendMongoImpl extends AbstractBackend {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(BackendMongoImpl.class.getName());
 
-  private final MongoStorage mongoStorage;
   private final TabularMetaData mongoMetaData;
   private UpdateableDataContext mongoContext = null;
 
-  public BackendMongoImpl(Storage backendStorage, MetaData metaData) {
-    super(metaData);
-    this.mongoStorage = new MongoStorage(backendStorage);
+  public BackendMongoImpl(MetaData metaData, StorageService service) {
+    super(metaData, service);
     this.mongoMetaData = new TabularMetaData(metaData);
   }
 
-  private UpdateableDataContext getDataContext() {
-    if (mongoContext == null) {
-      String password = mongoStorage.getPassword();
-      mongoContext =
-          DataContextFactory.createMongoDbDataContext(mongoStorage.getHostname(),
-              Integer.parseInt(mongoStorage.getPort()), mongoStorage.getDatabase(),
-              mongoStorage.getUsername(), password.toCharArray());
-    }
-
-    return mongoContext;
+  private UpdateableDataContext getDataContext(MongoStorage mongoStorage) {
+    String password = mongoStorage.getPassword();
+    return DataContextFactory.createMongoDbDataContext(mongoStorage.getHostname(),
+        Integer.parseInt(mongoStorage.getPort()), mongoStorage.getDatabase(),
+        mongoStorage.getUsername(), password.toCharArray());
   }
 
   @Override
   public MetaData enrichMetadata(EnrichmentProperties enrichment) {
-    long start = System.currentTimeMillis();
-    try {
-      mongoMetaData.clearDynamicData();
-      if (enrichment.getItemsCount() || enrichment.getStructure() || enrichment.getAccessibility()) {
-        UpdateableDataContext dataContext = getDataContext();
+    expandDataURISection();
+    if (metaDataWrapper.getDynamicData().getAllDynamicDataDescriptors() == null) {
+      return metaDataWrapper.getMetaData();
+    }
+    for (String key : metaDataWrapper.getDynamicData().getAllDynamicDataDescriptors().keySet()) {
+      long start = System.currentTimeMillis();
+      try {
+        mongoMetaData.getDynamicData().getDynamicDataDescriptor(key).clearDetailsDescriptor();
+        if (enrichment.getItemsCount() || enrichment.getStructure()
+            || enrichment.getAccessibility()) {
+          String dataURI = metaDataWrapper.getDynamicData().getDynamicDataDescriptor(key).getURI();
+          Storage storage = storageService.getStorageByUri(dataURI);
+          MongoStorage mongoStorage = new MongoStorage(storage);
+          UpdateableDataContext dataContext = getDataContext(mongoStorage);
 
-        Schema database = dataContext.getSchemaByName(mongoStorage.getDatabase());
-        if (database == null) {
-          if (enrichment.getAccessibility()) {
-            mongoMetaData.getDynamicData().setState("DETACHED");
+          Schema database = dataContext.getSchemaByName(mongoStorage.getDatabase());
+          if (database == null) {
+            if (enrichment.getAccessibility()) {
+              mongoMetaData.getDynamicData().getDynamicDataDescriptor(key).getDetailsDescriptor()
+                  .setState("DETACHED");
+            }
+            return mongoMetaData.getMetaData();
           }
-          return mongoMetaData.getMetaData();
-        }
-        Table table = database.getTableByName(getTableName());
-        if (table == null) {
-          if (enrichment.getAccessibility()) {
-            mongoMetaData.getDynamicData().setState("DETACHED");
+          Table table = database.getTableByName(getTableName(dataURI));
+          if (table == null) {
+            if (enrichment.getAccessibility()) {
+              mongoMetaData.getDynamicData().getDynamicDataDescriptor(key).getDetailsDescriptor()
+                  .setState("DETACHED");
+            }
+            return mongoMetaData.getMetaData();
           }
-          return mongoMetaData.getMetaData();
-        }
 
-        if (enrichment.getAccessibility()) {
-          mongoMetaData.getDynamicData().setState("ATTACHED");
-        }
+          if (enrichment.getAccessibility()) {
+            mongoMetaData.getDynamicData().getDynamicDataDescriptor(key).getDetailsDescriptor()
+                .setState("ATTACHED");
+          }
 
-        if (enrichment.getItemsCount()) {
-          Query query = dataContext.query().from(table).selectCount().toQuery();
-          DataSet dataSet = dataContext.query().from(table).selectCount().execute();
-          Row result = MetaModelHelper.executeSingleRowQuery(dataContext, query);
-          Long count = (Long) result.getValue(0);
-          mongoMetaData.getDynamicData().setItemsCount(count);
-        }
+          if (enrichment.getItemsCount()) {
+            Query query = dataContext.query().from(table).selectCount().toQuery();
+            DataSet dataSet = dataContext.query().from(table).selectCount().execute();
+            Row result = MetaModelHelper.executeSingleRowQuery(dataContext, query);
+            Long count = (Long) result.getValue(0);
+            mongoMetaData.getDynamicData().getDynamicDataDescriptor(key).getDetailsDescriptor()
+                .setItemsCount(count);
+          }
 
-        if (enrichment.getStructure()) {
-          mongoMetaData.getTableDescription().setColumns(table.getColumns());
-        }
+          if (enrichment.getStructure()) {
+            mongoMetaData.getTableDescription(key).setColumns(table.getColumns());
+          }
 
+        }
+      } catch (Exception ex) {
+        LOGGER.error("Unable to enrich medatadata : " + mongoMetaData.getId() + ". Error Message: "
+            + ex.getMessage());
+        throw new LcmException("Unable to enrich medatadata : " + mongoMetaData.getId(), ex);
+      } finally {
+        mongoMetaData.getDynamicData().getDynamicDataDescriptor(key).getDetailsDescriptor()
+            .setUpdateTimestamp(new Date().getTime());
+        long end = System.currentTimeMillis();
+        mongoMetaData.getDynamicData().getDynamicDataDescriptor(key).getDetailsDescriptor()
+            .setUpdateDurationTimestamp(end - start);
       }
-    } catch (Exception ex) {
-      LOGGER.error("Unable to enrich medatadata : " + mongoMetaData.getId() + ". Error Message: "
-          + ex.getMessage());
-      throw new LcmException("Unable to enrich medatadata : " + mongoMetaData.getId(), ex);
-    } finally {
-      mongoMetaData.getDynamicData().setUpdateTimestamp(new Date().getTime());
-      long end = System.currentTimeMillis();
-      mongoMetaData.getDynamicData().setUpdateDurationTimestamp(end - start);
     }
     return mongoMetaData.getMetaData();
   }
 
   @Override
-  public void store(Data data, TransferSettings transferSettings) {
+  public void store(Data data, String key, TransferSettings transferSettings) {
 
     if (!(data instanceof IterativeData)) {
       throw new LcmException("Unable to store streaming data directly to hive storage.");
     }
 
     ContentIterator content = ((IterativeData) data).getIterator();
-    UpdateableDataContext dataContext = getDataContext();
+
+    String dataURI = metaDataWrapper.getDynamicData().getDynamicDataDescriptor(key).getURI();
+    Storage storage = storageService.getStorageByUri(dataURI);
+    MongoStorage mongoStorage = new MongoStorage(storage);
+
+    UpdateableDataContext dataContext = getDataContext(mongoStorage);
     if (transferSettings == null) {
       transferSettings = new TransferSettings();
     }
-    String tableName = getTableName();
+    String tableName = getTableName(dataURI);
 
     Schema database = dataContext.getSchemaByName(mongoStorage.getDatabase());
     Table table = database.getTableByName(tableName);
@@ -158,11 +173,12 @@ public class BackendMongoImpl extends AbstractBackend {
     if (table == null) {
       TableCreator crator = new TableCreator(dataContext, transferSettings);
       table =
-          crator.createTable(database, tableName, mongoMetaData.getTableDescription().getColumns());
+          crator.createTable(database, tableName, mongoMetaData.getTableDescription(key)
+              .getColumns());
     }
 
     InsertInto insert = new InsertInto(table);
-    Map<String, ColumnDescription> columns = mongoMetaData.getTableDescription().getColumns();
+    Map<String, ColumnDescription> columns = mongoMetaData.getTableDescription(key).getColumns();
     String[] columnNames = (String[]) columns.keySet().toArray(new String[] {});
     while (content.hasNext()) {
       Map row = content.next();
@@ -170,12 +186,14 @@ public class BackendMongoImpl extends AbstractBackend {
         insert = insert.value(columnName, row.get(columnName));
       }
     }
-    getDataContext().executeUpdate(insert);
+    dataContext.executeUpdate(insert);
   }
 
-  private String getTableName() {
+
+  private String getTableName(String uri) {
+    String storageItem = storageService.getStorageItemName(uri);
     // remove the first symbol as uri Path is something like "/tableX"
-    String tableName = mongoMetaData.getData().getStorageItemName().substring(1);
+    String tableName = storageItem.substring(1);
     if (tableName.contains(".")) {
       tableName = tableName.replace(".", "_");
     }
@@ -183,20 +201,24 @@ public class BackendMongoImpl extends AbstractBackend {
   }
 
   @Override
-  public boolean delete() {
+  public boolean delete(String key) {
     throw new UnsupportedOperationException("Not supported yet.");
   }
 
   @Override
-  public IterativeData read() {
-    UpdateableDataContext dataContext = getDataContext();
+  public IterativeData read(String key) {
+    String dataURI = metaDataWrapper.getDynamicData().getDynamicDataDescriptor(key).getURI();
+    Storage storage = storageService.getStorageByUri(dataURI);
+    MongoStorage mongoStorage = new MongoStorage(storage);
+
+    UpdateableDataContext dataContext = getDataContext(mongoStorage);
 
     Schema schema = dataContext.getSchemaByName(mongoStorage.getDatabase());
     if (schema == null) {
       throw new LcmException("Error: database \"" + mongoStorage.getDatabase() + "\" is not found!");
     }
     // remove the first symbol as uri Path is something like "/tablex"
-    String tableName = getTableName();
+    String tableName = getTableName(dataURI);
 
     Table table = schema.getTableByName(tableName);
 
@@ -205,13 +227,13 @@ public class BackendMongoImpl extends AbstractBackend {
           + "\" in the metadata is not found!");
     }
 
-    mongoMetaData.getTableDescription().setColumns(table.getColumns());
+    mongoMetaData.getTableDescription(key).setColumns(table.getColumns());
 
     DataSet dataSet = dataContext.query().from(table).selectAll().execute();
     LOGGER.info(String.format("Read from table: %s successfully", tableName));
     ContentIterator iterator = new DataSetContentIterator(dataSet);
 
-    return new IterativeData(mongoMetaData.getMetaData(), iterator);
+    return new IterativeData(iterator);
   }
 
   @Override
