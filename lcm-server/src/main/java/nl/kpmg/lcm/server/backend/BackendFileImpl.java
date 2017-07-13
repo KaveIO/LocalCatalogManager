@@ -20,14 +20,18 @@ import nl.kpmg.lcm.server.data.Data;
 import nl.kpmg.lcm.server.data.DataFormat;
 import nl.kpmg.lcm.server.data.EnrichmentProperties;
 import nl.kpmg.lcm.server.data.FileAdapter;
+import nl.kpmg.lcm.server.data.FileSystemAdapter;
 import nl.kpmg.lcm.server.data.LocalFileAdapter;
+import nl.kpmg.lcm.server.data.LocalFileSystemAdapter;
 import nl.kpmg.lcm.server.data.Storage;
 import nl.kpmg.lcm.server.data.StreamingData;
 import nl.kpmg.lcm.server.data.TransferSettings;
-import nl.kpmg.lcm.server.data.hdfs.HdfsAdapter;
+import nl.kpmg.lcm.server.data.hdfs.HdfsFileAdapter;
+import nl.kpmg.lcm.server.data.hdfs.HdfsFileSystemAdapter;
 import nl.kpmg.lcm.server.data.metadata.DataItemsDescriptor;
 import nl.kpmg.lcm.server.data.metadata.MetaData;
-import nl.kpmg.lcm.server.data.s3.S3Adapter;
+import nl.kpmg.lcm.server.data.s3.S3FileAdapter;
+import nl.kpmg.lcm.server.data.s3.S3FileSystemAdapter;
 import nl.kpmg.lcm.server.data.service.StorageService;
 import nl.kpmg.lcm.server.exception.LcmException;
 import nl.kpmg.lcm.server.exception.LcmValidationException;
@@ -38,6 +42,7 @@ import org.slf4j.LoggerFactory;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.Date;
+import java.util.List;
 
 /**
  * 
@@ -58,11 +63,11 @@ public class BackendFileImpl extends AbstractBackend {
     FileAdapter fileAdapter = null;
     Notification notification = new Notification();
     if (S3FileStorage.getSupportedStorageTypes().contains(storage.getType())) {
-      fileAdapter = new S3Adapter(new S3FileStorage(storage), filePath);
+      fileAdapter = new S3FileAdapter(new S3FileStorage(storage), filePath);
     } else if (LocalFileStorage.getSupportedStorageTypes().contains(storage.getType())) {
       fileAdapter = new LocalFileAdapter(new LocalFileStorage(storage), filePath);
     } else if (HdfsFileStorage.getSupportedStorageTypes().contains(storage.getType())) {
-      fileAdapter = new HdfsAdapter(new HdfsFileStorage(storage), filePath);
+      fileAdapter = new HdfsFileAdapter(new HdfsFileStorage(storage), filePath);
     } else {
       LOGGER.warn("Improper storage object is passed to BackendFileImpl. Storage id: "
           + storage.getId());
@@ -129,12 +134,13 @@ public class BackendFileImpl extends AbstractBackend {
             .getSize();
     String dataURI = metaDataWrapper.getDynamicData().getDynamicDataDescriptor(key).getURI();
     String filePath = storageService.getStorageItemName(dataURI);
-   Storage storage = storageService.getStorageByUri(dataURI);
+    Storage storage = storageService.getStorageByUri(dataURI);
     FileAdapter fileAdapter = getFileAdapter(storage, filePath);
 
     try {
       if (fileAdapter.exists() && !transferSettings.isForceOverwrite()) {
-        throw new LcmException("Data set is already attached, won't overwrite. Data item: " + dataURI);
+        throw new LcmException("Data set is already attached, won't overwrite. Data item: "
+            + dataURI);
       }
       StreamingData streamingData = (StreamingData) data;
       InputStream in = streamingData.getInputStream();
@@ -174,4 +180,38 @@ public class BackendFileImpl extends AbstractBackend {
   public void free() {
 
   }
+
+  @Override
+  protected List loadDataItems(String storageName, String subPath) {
+
+    Storage storage = storageService.findByName(storageName);
+    FileSystemAdapter fileSystem = getFileSystemAdapter(storage);
+    try {
+      return fileSystem.listFileNames(subPath);
+    } catch (IOException ex) {
+      LOGGER.error("Unable to laod data items");
+      return null;
+    }
+  }
+
+  private FileSystemAdapter getFileSystemAdapter(Storage storage) {
+    FileSystemAdapter fileSystemAdapter = null;
+    Notification notification = new Notification();
+    if (S3FileStorage.getSupportedStorageTypes().contains(storage.getType())) {
+      fileSystemAdapter = new S3FileSystemAdapter(new S3FileStorage(storage));
+    } else if (LocalFileStorage.getSupportedStorageTypes().contains(storage.getType())) {
+      fileSystemAdapter = new LocalFileSystemAdapter(new LocalFileStorage(storage));
+    } else if (HdfsFileStorage.getSupportedStorageTypes().contains(storage.getType())) {
+      fileSystemAdapter = new HdfsFileSystemAdapter(new HdfsFileStorage(storage));
+    } else {
+      LOGGER.warn("Improper storage object is passed to BackendFileImpl. Storage id: "
+          + storage.getId());
+      notification.addError("Improper storage object is passed to BackendFileImpl.");
+      throw new LcmValidationException(notification);
+    }
+
+
+    return fileSystemAdapter;
+  }
+
 }

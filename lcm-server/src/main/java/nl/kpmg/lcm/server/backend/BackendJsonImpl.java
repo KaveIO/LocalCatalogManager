@@ -43,6 +43,8 @@ import java.io.File;
 import java.io.IOException;
 import java.io.Writer;
 import java.util.Date;
+import java.util.LinkedList;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -237,5 +239,28 @@ public class BackendJsonImpl extends AbstractBackend {
   @Override
   public void free() {
 
+  }
+
+  @Override
+  protected List loadDataItems(String storageName, String subPath) {
+
+    Storage storage = storageService.findByName(storageName);
+    LocalFileStorage fileStorage = new LocalFileStorage(storage);
+    String storagePath = fileStorage.getStoragePath();
+    File dataSourceDir = new File(storagePath + subPath);
+
+    if (!dataSourceDir.exists() || !dataSourceDir.isDirectory()) {
+      throw new LcmException("The storage is pointing non existing directory");
+    }
+
+    File[] files = dataSourceDir.listFiles();
+    List<String> fileNameList = new LinkedList();
+    for (File file : files) {
+      if (file.isFile()) {
+        fileNameList.add(file.getName());
+      }
+    }
+
+    return fileNameList;
   }
 }

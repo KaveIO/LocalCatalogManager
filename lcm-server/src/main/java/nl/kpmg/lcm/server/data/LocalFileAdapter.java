@@ -27,8 +27,8 @@ import java.io.InputStream;
  * @author shristov
  */
 public class LocalFileAdapter implements FileAdapter {
-  private LocalFileStorage storage;
-  private String fileName;
+  private final LocalFileStorage storage;
+  private final String fileName;
 
   public LocalFileAdapter(LocalFileStorage storage, String fileName) {
     this.storage = storage;
@@ -69,5 +69,6 @@ public class LocalFileAdapter implements FileAdapter {
     String fullFilePath = storage.getStoragePath() + fileName;
     return (new File(fullFilePath)).lastModified();
   }
+
 
 }

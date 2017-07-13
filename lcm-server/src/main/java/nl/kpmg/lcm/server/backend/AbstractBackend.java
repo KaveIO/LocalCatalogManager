@@ -22,12 +22,16 @@ import nl.kpmg.lcm.server.data.service.StorageService;
 import nl.kpmg.lcm.server.exception.LcmValidationException;
 import nl.kpmg.lcm.validation.Notification;
 
+import org.apache.commons.lang3.StringUtils;
+import org.slf4j.LoggerFactory;
+
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.regex.Pattern;
 
 /**
  *
@@ -38,12 +42,14 @@ abstract class AbstractBackend implements Backend {
   protected ProgressIndicationFactory progressIndicationFactory;
   protected final StorageService storageService;
 
+  private final org.slf4j.Logger LOGGER = LoggerFactory.getLogger(StorageService.class.getName());
+
   protected AbstractBackend(MetaData metaData, StorageService storageService) {
     metaDataWrapper = new MetaDataWrapper(metaData);
     Notification validationNotification = new Notification();
     validation(metaDataWrapper, validationNotification);
-    if(storageService ==  null){
-        validationNotification.addError("Storage survice is null");
+    if (storageService == null) {
+      validationNotification.addError("Storage survice is null");
     }
     if (validationNotification.hasErrors()) {
       throw new LcmValidationException(validationNotification);
@@ -92,18 +98,64 @@ abstract class AbstractBackend implements Backend {
     List<String> uriList = metaDataWrapper.getData().getUri();
     for (String uri : uriList) {
       if (!uri.contains("*")) {
-        String key = getURIHasKey(uri);
-        if (key == null) {
-          key = generateKey();
-          DataItemsDescriptor dynamicDataDescriptor =
-              new DataItemsDescriptor(metaDataWrapper.getMetaData(), key);
-          dynamicDataDescriptor.setURI(uri);
-          metaDataWrapper.getDynamicData().addDynamicDataDescriptors(key,
-              dynamicDataDescriptor.getMap());
-        }
+        processDataItemURI(uri);
       } else {// something like 'csv://local/test*.csv'
-        // TODO implement in future - LCM -342
+        URI parsedUri = null;
+        try {
+          parsedUri = new URI(uri);
+        } catch (URISyntaxException ex) {
+          LOGGER.error("Error! URI can not be parsed:" + uri);
+          continue;
+        }
+        String path = parsedUri.getPath();
+        int index = StringUtils.lastIndexOf(path, "/");
+        String subPath = path.substring(0, index);
+        if (subPath.contains("*")) {
+          LOGGER.error("Error! URI has invalid syntax. Wildcard symbol is used in the path:" + uri);
+          continue;
+        }
+
+        String item = path.substring(index + 1, path.length());
+        Pattern namePattern = Pattern.compile(item.replace("*", ".*"));
+        String storageName =
+          parsedUri.getHost() != null ? parsedUri.getHost() : parsedUri.getAuthority();
+        List<String> dataItemList = loadDataItems(storageName, subPath);
+        for (String dataItemName : dataItemList) {
+          if (namePattern.matcher(dataItemName).matches()) {
+            String uriItem = uri.replace(item, dataItemName);
+            processDataItemURI(uriItem);
+          }
+        }
       }
+    }
+  }
+
+  /**
+   *
+   * @param storage : storage name
+   * @param subPath : sub path if applicable for the data type.
+   * @return a list of all data items that persists in the give storage and sub directory(if any)
+   *         Example 1 storage : local (local is file storage that points to /tmp directory) subPath
+   *         : /lcm return : all the files located in /tmp/lcm will be returned
+   *
+   *         storage : local-hive (local-hive is hive storage that points to 'lcm' database) subPath
+   *         : null - it will be ignored no matter of the value return : all the tables in 'lcm'
+   *         database will be returned.
+   *
+   *         Note: subPath is not applicable for all dataTypes. For example hive storage could not
+   *         have sub path.
+   */
+  protected abstract List<String> loadDataItems(String storageName, String subPath);
+
+  private void processDataItemURI(String uri) {
+    String key = getURIHasKey(uri);
+    if (key == null) {
+      key = generateKey();
+      DataItemsDescriptor dynamicDataDescriptor =
+          new DataItemsDescriptor(metaDataWrapper.getMetaData(), key);
+      dynamicDataDescriptor.setURI(uri);
+      metaDataWrapper.getDynamicData().addDynamicDataDescriptors(key,
+          dynamicDataDescriptor.getMap());
     }
   }
 

@@ -38,15 +38,15 @@ import java.io.InputStream;
  *
  * @author shristov
  */
-public class S3Adapter implements FileAdapter {
+public class S3FileAdapter implements FileAdapter {
   private static final org.slf4j.Logger LOGGER =
-      LoggerFactory.getLogger(S3Adapter.class.getName());
+      LoggerFactory.getLogger(S3FileAdapter.class.getName());
   private String bucketName;
 
   private AmazonS3 s3Client;
   private String fileName;
 
-  public S3Adapter(S3FileStorage s3Storage, String fileName) {
+  public S3FileAdapter(S3FileStorage s3Storage, String fileName) {
     String secretAcccessKey;
     secretAcccessKey = s3Storage.getAwsSecretAccessKey();
 

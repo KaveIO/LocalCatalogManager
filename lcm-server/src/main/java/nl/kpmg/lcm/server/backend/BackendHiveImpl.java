@@ -42,7 +42,10 @@ import org.slf4j.LoggerFactory;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Date;
+import java.util.List;
 
 /**
  *
@@ -166,6 +169,11 @@ public class BackendHiveImpl extends AbstractBackend {
     String tableName = getTableName(dataURI);
 
     Schema database = dataContext.getSchemaByName(hiveStorage.getDatabase());
+    if(database == null) {
+        throw new LcmException("Error, can not store the data! Database: \"" + hiveStorage.getDatabase()
+          + "\" does not exist!");
+    }
+
     Table table = database.getTableByName(tableName);
 
     if (table != null && !transferSettings.isForceOverwrite()) {
@@ -258,5 +266,19 @@ public class BackendHiveImpl extends AbstractBackend {
   public void setProgressIndicationFactory(ProgressIndicationFactory progressIndicationFactory) {
     this.progressIndicationFactory = progressIndicationFactory;
 
+  }
+
+  @Override
+  protected List loadDataItems(String storageName, String subPath) {
+    Storage storage = storageService.findByName(storageName);
+    HiveStorage hiveStorage = new HiveStorage(storage);
+    JdbcDataContext dataContext = getDataContext(hiveStorage);
+
+    Schema schema = dataContext.getSchemaByName(hiveStorage.getDatabase());
+    if (schema == null) {
+      return null;
+    }
+
+    return new ArrayList(Arrays.asList(schema.getTableNames()));
   }
 }

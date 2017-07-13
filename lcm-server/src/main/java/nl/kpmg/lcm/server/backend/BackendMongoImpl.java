@@ -42,7 +42,10 @@ import org.apache.metamodel.schema.Table;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Date;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -246,4 +249,19 @@ public class BackendMongoImpl extends AbstractBackend {
     this.progressIndicationFactory = progressIndicationFactory;
 
   }
+
+    @Override
+    protected List loadDataItems(String storageName, String subPath) {
+        Storage storage = storageService.findByName(storageName);
+        MongoStorage mongoStorage = new MongoStorage(storage);
+
+    UpdateableDataContext dataContext = getDataContext(mongoStorage);
+
+    Schema database = dataContext.getSchemaByName(mongoStorage.getDatabase());
+    if (database == null) {
+      return null;
+    }
+
+    return new ArrayList(Arrays.asList(database.getTableNames()));
+    }
 }

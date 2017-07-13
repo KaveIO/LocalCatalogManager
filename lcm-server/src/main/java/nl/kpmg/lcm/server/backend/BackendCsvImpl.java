@@ -48,6 +48,8 @@ import java.io.Writer;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.Date;
+import java.util.LinkedList;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -275,8 +277,7 @@ public class BackendCsvImpl extends AbstractBackend {
     Table table = schema.getTables()[0];
     DataSet result = dataContext.query().from(table).selectAll().execute();
     csvMetaData.getTableDescription(key).setColumns(table.getColumns());
-    
-    String uri = metaDataWrapper.getDynamicData().getDynamicDataDescriptor(key).getURI();
+
     return new IterativeData(new DataSetContentIterator(result));
   }
 
@@ -288,5 +289,28 @@ public class BackendCsvImpl extends AbstractBackend {
   @Override
   public void free() {
 
+  }
+
+  @Override
+  protected List loadDataItems(String storageName, String subPath) {
+
+    Storage storage = storageService.findByName(storageName);
+    LocalFileStorage fileStorage = new LocalFileStorage(storage);
+    String storagePath = fileStorage.getStoragePath();
+    File dataSourceDir = new File(storagePath + subPath);
+
+    if (!dataSourceDir.exists() || !dataSourceDir.isDirectory()) {
+      throw new LcmException("The storage is pointing non existing directory");
+    }
+
+    File[] files = dataSourceDir.listFiles();
+    List<String> fileNameList = new LinkedList();
+    for (File file : files) {
+      if (file.isFile()) {
+        fileNameList.add(file.getName());
+      }
+    }
+
+    return fileNameList;
   }
 }
