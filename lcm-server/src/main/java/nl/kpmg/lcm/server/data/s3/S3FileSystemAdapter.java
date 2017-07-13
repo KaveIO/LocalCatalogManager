@@ -12,6 +12,7 @@ import com.amazonaws.services.s3.model.S3ObjectSummary;
 import nl.kpmg.lcm.server.backend.storage.S3FileStorage;
 import nl.kpmg.lcm.server.data.FileSystemAdapter;
 
+import org.apache.commons.lang3.StringUtils;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
@@ -62,6 +63,10 @@ private static final org.slf4j.Logger LOGGER =
   @Override
   public List listFileNames(String subPath) throws IOException {
 
+    if(subPath.charAt(subPath.length() -1) != '/') {
+        subPath =  subPath + '/';
+    }
+
     LinkedList<String> fileNameList = new LinkedList();
     ObjectListing listing;
     do {
@@ -69,9 +74,12 @@ private static final org.slf4j.Logger LOGGER =
       List<S3ObjectSummary> objectSummaryList = listing.getObjectSummaries();
 
       for (S3ObjectSummary objectSummary : objectSummaryList) {
-        fileNameList.add(objectSummary.getKey());
+        String key = objectSummary.getKey();
+        int index = StringUtils.lastIndexOf(key, "/");
+        String itemName = key.substring(index);
+        fileNameList.add(itemName);
       }
-    } while (!listing.isTruncated());
+    } while (listing.isTruncated());
 
     return fileNameList;
   }

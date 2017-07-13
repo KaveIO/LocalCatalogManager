@@ -40,7 +40,7 @@ public class LocalFileSystemAdapter implements FileSystemAdapter{
    @Override
    public List listFileNames(String subPath) throws IOException {
     String storagePath = storage.getStoragePath();
-    File dataSourceDir = new File(storagePath + subPath);
+    File dataSourceDir = new File(storagePath + "/" + subPath);
 
     if (!dataSourceDir.exists() || !dataSourceDir.isDirectory()) {
       return null;

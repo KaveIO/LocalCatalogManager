@@ -64,6 +64,8 @@ public class DataFetchTriggerService {
   private static final Logger LOGGER = LoggerFactory.getLogger(DataFetchTriggerService.class
       .getName());
 
+  private static final String SLASH_REPLACEMENT = "_s_";
+
   @Autowired
   private MetaDataService metaDataService;
   @Autowired
@@ -162,6 +164,7 @@ public class DataFetchTriggerService {
         descriptor.getDetailsDescriptor().setState("DETACHED");
       }
     }
+
     for (String key : metaDataWrapper.getDynamicData().getAllDynamicDataDescriptors().keySet()) {
 
       DataItemsDescriptor dynamicDataDescriptor =
@@ -214,6 +217,17 @@ public class DataFetchTriggerService {
 
     if (destinationDataFormat.equals(DataFormat.JSON)) {
       newItemName = newItemName + ".json";
+    }
+
+    //When the source is file based data item  i.e csv or json and the destination
+    //is DB(Hive, Mongo) and the file path contains  folders
+    // then transformation must be
+    if ((originalDataFormat.equals(DataFormat.CSV) || originalDataFormat.equals(DataFormat.JSON))
+            && (destinationDataFormat.equals(DataFormat.HIVE) || destinationDataFormat.equals(DataFormat.MONGO))) {
+
+        newItemName = newItemName.substring(1);
+        newItemName = newItemName.replaceAll("/", SLASH_REPLACEMENT);
+        newItemName = "/" + newItemName;
     }
 
     return newItemName;

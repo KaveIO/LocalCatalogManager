@@ -297,7 +297,7 @@ public class BackendCsvImpl extends AbstractBackend {
     Storage storage = storageService.findByName(storageName);
     LocalFileStorage fileStorage = new LocalFileStorage(storage);
     String storagePath = fileStorage.getStoragePath();
-    File dataSourceDir = new File(storagePath + subPath);
+    File dataSourceDir = new File(storagePath + "/" + subPath);
 
     if (!dataSourceDir.exists() || !dataSourceDir.isDirectory()) {
       throw new LcmException("The storage is pointing non existing directory");

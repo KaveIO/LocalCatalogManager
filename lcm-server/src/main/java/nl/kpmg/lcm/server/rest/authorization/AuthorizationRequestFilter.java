@@ -89,7 +89,7 @@ public class AuthorizationRequestFilter implements ContainerRequestFilter {
     String userName =
         securityContext.getUserPrincipal() != null ? "User "
             + securityContext.getUserPrincipal().getName() : "Unknown user";
-    AUTHORIZATION_LOGGER.info(userName + " was successfuly authorized to access: " + path);
+    AUTHORIZATION_LOGGER.info(userName + " was successfully authorized to access: " + path);
 
   }
 }

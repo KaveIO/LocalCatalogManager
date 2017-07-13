@@ -110,6 +110,8 @@ public class DataFetchTask extends EnrichmentTask {
           return TaskResult.FAILURE;
         }
     }
+
+    metaDataService.enrichMetadata(metadata, EnrichmentProperties.createDefaultEnrichmentProperties());
     return TaskResult.SUCCESS;
   }
 
@@ -164,7 +166,6 @@ public class DataFetchTask extends EnrichmentTask {
       }
 
       backend.store(data, key,transferSettings);
-      metaDataService.enrichMetadata(metaDataWrapper, EnrichmentProperties.createDefaultEnrichmentProperties());
     } catch (Exception ex) {
       LOGGER.error(ex.getMessage());
 

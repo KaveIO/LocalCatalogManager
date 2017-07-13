@@ -108,8 +108,16 @@ abstract class AbstractBackend implements Backend {
           continue;
         }
         String path = parsedUri.getPath();
+        //remove '/' in fron of the path
+        if(path.charAt(0) == '/') {
+            path =  path.substring(1);
+        }
+
+        String subPath = "";
         int index = StringUtils.lastIndexOf(path, "/");
-        String subPath = path.substring(0, index);
+        if (index != -1) {
+            subPath = path.substring(0, index);
+        }
         if (subPath.contains("*")) {
           LOGGER.error("Error! URI has invalid syntax. Wildcard symbol is used in the path:" + uri);
           continue;
