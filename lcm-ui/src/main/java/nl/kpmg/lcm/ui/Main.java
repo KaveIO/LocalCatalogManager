@@ -27,7 +27,7 @@ import java.io.IOException;
  */
 public class Main {
 
-  private static final Logger LOG = LoggerFactory.getLogger(Main.class.getName());
+  private static final Logger LOG = LoggerFactory.getLogger("sout");
 
   /**
    * Main method.

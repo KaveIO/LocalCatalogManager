@@ -25,7 +25,7 @@ import java.io.IOException;
  */
 public class Main {
 
-  private static final Logger LOG = LoggerFactory.getLogger(Main.class.getName());
+  private static final Logger LOG = LoggerFactory.getLogger("sout");
 
   /**
    * Main method.
@@ -36,7 +36,7 @@ public class Main {
   public static void main(String[] args) throws IOException {
 
     try {
-      LOG.info( "Starting LCM UI");
+      LOG.info( "Starting LCM Server");
       final Server server = new Server();
       server.start();
 
