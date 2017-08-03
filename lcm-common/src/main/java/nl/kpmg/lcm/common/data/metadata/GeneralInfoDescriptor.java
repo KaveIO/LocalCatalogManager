@@ -59,13 +59,15 @@ public class GeneralInfoDescriptor extends AbstractMetaDataDescriptor {
 
   @Override
   public void validate(Notification notification) {
-    if (getMap() == null) {
-      notification.addError("Error: Section \"" + getSectionName()
-          + "\" is not found in the metadata!");
-      return;
+    if (getMap() != null) {
+        validateField("owner", notification);
+        if(!(getMap().get("owner") instanceof String)){
+            notification.addError("Error: Invalid owner of metadata.");
+        }
+        validateField("description", notification);
+        if(!(getMap().get("description") instanceof String)){
+            notification.addError("Error: Invalid description of metadata.");
+        }
     }
-
-    validateField("owner", notification);
-    validateField("description", notification);
   }
 }
