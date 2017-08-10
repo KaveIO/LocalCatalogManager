@@ -105,7 +105,7 @@ public class BackendFileImpl extends AbstractBackend {
   public void store(Data data, String key, TransferSettings transferSettings) {
 
     if (!(data instanceof StreamingData)) {
-      throw new LcmException("Unable to storeiterative data directly to file.");
+      throw new LcmException("Unable to store iterative data directly to file.");
     }
 
     Long size =
@@ -118,15 +118,34 @@ public class BackendFileImpl extends AbstractBackend {
 
     try {
       if (fileAdapter.exists() && !transferSettings.isForceOverwrite()) {
+        if (progressIndicationFactory != null) {
+            String message = "The file: " + filePath + " is already attached, won't overwrite.";
+            progressIndicationFactory.writeIndication(message);
+        }
         throw new LcmException("Data set is already attached, won't overwrite. Data item: "
             + dataURI);
       }
+
+      if (progressIndicationFactory != null) {
+        String message = "Start transfer. File: " + filePath;
+        progressIndicationFactory.writeIndication(message);
+      }
+
       StreamingData streamingData = (StreamingData) data;
       InputStream in = streamingData.getInputStream();
 
       fileAdapter.write(in, size);
+
+      if (progressIndicationFactory != null) {
+        String message = "The file: " + filePath + " was transfered successfully.";
+        progressIndicationFactory.writeIndication(message);
+      }
     } catch (IOException ex) {
-      LOGGER.error("Unable to read file: " + filePath + ". Error message:" + ex.getMessage());
+      LOGGER.error("Unable to write file: " + filePath + ". Error message:" + ex.getMessage());
+      if (progressIndicationFactory != null) {
+        String message = "Transfer of the file: " + filePath +  " failed. Error message: " + ex.getMessage();
+        progressIndicationFactory.writeIndication(message);
+      }
     }
   }
 

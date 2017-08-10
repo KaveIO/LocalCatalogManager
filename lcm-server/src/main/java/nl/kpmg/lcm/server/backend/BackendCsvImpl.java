@@ -179,6 +179,11 @@ public class BackendCsvImpl extends AbstractBackend {
     ContentIterator content = ((IterativeData) data).getIterator();
     File dataSourceFile = constructDatasourceFile(key);
     if (dataSourceFile.exists() && !transferSettings.isForceOverwrite()) {
+      if (progressIndicationFactory != null) {
+        String message = "The file: " + dataSourceFile.getPath()
+                + " is already attached, won't overwrite.";
+        progressIndicationFactory.writeIndication(message);
+      }
       throw new LcmException("Data set is already attached, won't overwrite. Data item: " + key);
     }
 
@@ -189,7 +194,7 @@ public class BackendCsvImpl extends AbstractBackend {
       CsvWriter csvWriter = new CsvWriter(configuration);
 
       if (progressIndicationFactory != null) {
-        String message = "Start transfer. File: " + dataSourceFile.getName();
+        String message = "Start transfer. File: " + dataSourceFile.getPath();
         progressIndicationFactory.writeIndication(message);
       }
       while (content.hasNext()) {

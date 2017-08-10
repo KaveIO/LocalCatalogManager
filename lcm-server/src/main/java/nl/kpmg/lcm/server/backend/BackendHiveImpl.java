@@ -150,6 +150,10 @@ public class BackendHiveImpl extends AbstractBackend {
 
     Schema database = dataContext.getSchemaByName(hiveStorage.getDatabase());
     if(database == null) {
+        if (progressIndicationFactory != null) {
+            String message = "Database: \"" + hiveStorage.getDatabase() + "\" does not exist!";
+            progressIndicationFactory.writeIndication(message);
+        }
         throw new LcmException("Error, can not store the data! Database: \"" + hiveStorage.getDatabase()
           + "\" does not exist!");
     }
@@ -157,8 +161,13 @@ public class BackendHiveImpl extends AbstractBackend {
     Table table = database.getTableByName(tableName);
 
     if (table != null && !transferSettings.isForceOverwrite()) {
+      if (progressIndicationFactory != null) {
+        String message = "Table: \"" + tableName
+                + "\" already exists and storing is started without overwriting!";
+        progressIndicationFactory.writeIndication(message);
+      }
       throw new LcmException("Error, can not store the data! Table: \"" + tableName
-          + "\" already exists and storing is started without overwriting!");
+              + "\" already exists and storing is started without overwriting!");
     }
 
     if (table != null && transferSettings.isForceOverwrite()) {
@@ -179,7 +188,6 @@ public class BackendHiveImpl extends AbstractBackend {
       hiveWriter.setProgressIndicationFactory(progressIndicationFactory);
 
       hiveWriter.write(content, transferSettings.getMaximumInsertedRecordsPerQuery());
-
     } catch (SQLException ex) {
       throw new LcmException("Unable to stora the data: ", ex);
     }
