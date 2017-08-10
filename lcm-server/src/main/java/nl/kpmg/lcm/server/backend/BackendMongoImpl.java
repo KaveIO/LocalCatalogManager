@@ -162,16 +162,25 @@ public class BackendMongoImpl extends AbstractBackend {
         String message = "Start transfer. Mongo table: " + tableName;
         progressIndicationFactory.writeIndication(message);
     }
-    InsertInto insert = new InsertInto(table);
+
     Map<String, ColumnDescription> columns = mongoMetaData.getTableDescription(key).getColumns();
     String[] columnNames = (String[]) columns.keySet().toArray(new String[] {});
+    int rowNumber = 0;
     while (content.hasNext()) {
+      InsertInto insert = new InsertInto(table);
       Map row = content.next();
       for (String columnName : columnNames) {
         insert = insert.value(columnName, row.get(columnName));
       }
+      rowNumber++;
+      dataContext.executeUpdate(insert);
+      if (progressIndicationFactory != null
+              && rowNumber % transferSettings.getMaximumInsertedRecordsPerQuery() == 0) {
+          String message = "Written " + rowNumber + " records!";
+          progressIndicationFactory.writeIndication(message);
+      }
     }
-    dataContext.executeUpdate(insert);
+
     if (progressIndicationFactory != null) {
         String message = "Written successfully all the records: " + rowNumber;
         progressIndicationFactory.writeIndication(message);
