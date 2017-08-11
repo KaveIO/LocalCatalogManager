@@ -24,6 +24,7 @@ import nl.kpmg.lcm.common.data.metadata.MetaData;
 import nl.kpmg.lcm.common.exception.LcmException;
 import nl.kpmg.lcm.common.exception.LcmValidationException;
 import nl.kpmg.lcm.common.validation.Notification;
+import nl.kpmg.lcm.server.backend.storage.AzureStorage;
 import nl.kpmg.lcm.server.backend.storage.HdfsFileStorage;
 import nl.kpmg.lcm.server.backend.storage.LocalFileStorage;
 import nl.kpmg.lcm.server.backend.storage.S3FileStorage;
@@ -31,6 +32,7 @@ import nl.kpmg.lcm.server.data.FileAdapter;
 import nl.kpmg.lcm.server.data.FileSystemAdapter;
 import nl.kpmg.lcm.server.data.LocalFileAdapter;
 import nl.kpmg.lcm.server.data.LocalFileSystemAdapter;
+import nl.kpmg.lcm.server.data.azure.AzureFileAdapter;
 import nl.kpmg.lcm.server.data.hdfs.HdfsFileAdapter;
 import nl.kpmg.lcm.server.data.hdfs.HdfsFileSystemAdapter;
 import nl.kpmg.lcm.server.data.s3.S3FileAdapter;
@@ -47,7 +49,8 @@ import java.util.List;
  * 
  * @author shristov
  */
-@BackendSource(type = {DataFormat.FILE, DataFormat.S3FILE, DataFormat.HDFSFILE})
+@BackendSource(type = {DataFormat.FILE, DataFormat.S3FILE, DataFormat.HDFSFILE,
+    DataFormat.AZUREFILE})
 public class BackendFileImpl extends AbstractBackend {
   private static final org.slf4j.Logger LOGGER = LoggerFactory.getLogger(BackendFileImpl.class
       .getName());
@@ -66,6 +69,8 @@ public class BackendFileImpl extends AbstractBackend {
       fileAdapter = new LocalFileAdapter(new LocalFileStorage(storage), filePath);
     } else if (HdfsFileStorage.getSupportedStorageTypes().contains(storage.getType())) {
       fileAdapter = new HdfsFileAdapter(new HdfsFileStorage(storage), filePath);
+    } else if (AzureStorage.getSupportedStorageTypes().contains(storage.getType())) {
+      fileAdapter = new AzureFileAdapter(new AzureStorage(storage), filePath);
     } else {
       LOGGER.warn("Improper storage object is passed to BackendFileImpl. Storage id: "
           + storage.getId());
@@ -116,11 +121,12 @@ public class BackendFileImpl extends AbstractBackend {
     Storage storage = storageService.getStorageByUri(dataURI);
     FileAdapter fileAdapter = getFileAdapter(storage, filePath);
 
+    InputStream in = null;
     try {
       if (fileAdapter.exists() && !transferSettings.isForceOverwrite()) {
         if (progressIndicationFactory != null) {
-            String message = "The file: " + filePath + " is already attached, won't overwrite.";
-            progressIndicationFactory.writeIndication(message);
+          String message = "The file: " + filePath + " is already attached, won't overwrite.";
+          progressIndicationFactory.writeIndication(message);
         }
         throw new LcmException("Data set is already attached, won't overwrite. Data item: "
             + dataURI);
@@ -132,7 +138,7 @@ public class BackendFileImpl extends AbstractBackend {
       }
 
       StreamingData streamingData = (StreamingData) data;
-      InputStream in = streamingData.getInputStream();
+      in = streamingData.getInputStream();
 
       fileAdapter.write(in, size);
 
@@ -143,8 +149,17 @@ public class BackendFileImpl extends AbstractBackend {
     } catch (IOException ex) {
       LOGGER.error("Unable to write file: " + filePath + ". Error message:" + ex.getMessage());
       if (progressIndicationFactory != null) {
-        String message = "Transfer of the file: " + filePath +  " failed. Error message: " + ex.getMessage();
+        String message =
+            "Transfer of the file: " + filePath + " failed. Error message: " + ex.getMessage();
         progressIndicationFactory.writeIndication(message);
+      }
+    } finally {
+      if (in != null) {
+        try {
+          in.close();
+        } catch (IOException ex) {
+          // nothing to do
+        }
       }
     }
   }

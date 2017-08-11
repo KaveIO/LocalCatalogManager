@@ -13,44 +13,62 @@
  */
 package nl.kpmg.lcm.server.backend.storage;
 
+import nl.kpmg.lcm.common.data.DataFormat;
 import nl.kpmg.lcm.common.data.Storage;
 import nl.kpmg.lcm.common.validation.Notification;
+
+import java.util.HashSet;
+import java.util.Set;
 
 /**
  *
  * @author shristov
  */
-public class AzureStorage extends AbstractStorageContainer{
+public class AzureStorage extends AbstractStorageContainer {
 
-    private String accountFQDN;
-    private String clientId;
-    private String authTokenEndpoint;
-    private String clientKey;
+  private String accountFQDN;
+  private String clientId;
+  private String authTokenEndpoint;
+  private String clientKey;
 
-    public AzureStorage(Storage storage){
-        super(storage);
-    }
+  public AzureStorage(Storage storage) {
+    super(storage);
+  }
 
-    public String getAccountFQDN() {
-        return accountFQDN;
-    }
+  public String getAccountFQDN() {
+    return accountFQDN;
+  }
 
-    public String getClientId() {
-        return clientId;
-    }
+  public String getClientId() {
+    return clientId;
+  }
 
-    public String getAuthTokenEndpoint() {
-        return authTokenEndpoint;
-    }
+  public String getAuthTokenEndpoint() {
+    return authTokenEndpoint;
+  }
 
-    public String getClientKey() {
-        return clientKey;
-    }
+  public String getClientKey() {
+    return clientKey;
+  }
+
+  public String getPath() {
+    return (String) storage.getOptions().get("path");
+  }
 
 
-    @Override
-    protected void validate(Storage storage, Notification notification) {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
-    }
+  @Override
+  protected void validate(Storage storage, Notification notification) {
+    throw new UnsupportedOperationException("Not supported yet.");
+  }
 
+  /**
+   *
+   * @return a set with supported storages. i.e if the type of the pure storage object is csv then
+   *         it could not be passed to HDFS wrapper(HdfsStorage)
+   */
+  public static Set<String> getSupportedStorageTypes() {
+    Set result = new HashSet();
+    result.add(DataFormat.AZUREFILE);
+    return result;
+  }
 }

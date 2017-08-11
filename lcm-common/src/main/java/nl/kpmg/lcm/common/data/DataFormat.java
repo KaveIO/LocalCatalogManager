@@ -18,11 +18,12 @@ package nl.kpmg.lcm.common.data;
  * @author shristov
  */
 public class DataFormat {
-    public static final String S3FILE = "s3file";
-    public static final String FILE = "file";
-    public static final String CSV = "csv";
-    public static final String JSON = "json";
-    public static final String HIVE = "hive";
-    public static final String HDFSFILE = "hdfsfile";
-    public static final String MONGO = "mongo";
+  public static final String S3FILE = "s3file";
+  public static final String FILE = "file";
+  public static final String CSV = "csv";
+  public static final String JSON = "json";
+  public static final String HIVE = "hive";
+  public static final String HDFSFILE = "hdfsfile";
+  public static final String AZUREFILE = "azurefile";
+  public static final String MONGO = "mongo";
 }
