@@ -30,6 +30,7 @@ import nl.kpmg.lcm.server.data.dao.RemoteLcmDao;
 import nl.kpmg.lcm.server.data.metadata.DataItemsDescriptor;
 import nl.kpmg.lcm.server.data.metadata.MetaData;
 import nl.kpmg.lcm.server.data.metadata.MetaDataWrapper;
+import nl.kpmg.lcm.server.exception.LcmException;
 import nl.kpmg.lcm.server.rest.client.version0.HttpResponseHandler;
 import nl.kpmg.lcm.server.task.enrichment.DataFetchTask;
 
@@ -95,6 +96,12 @@ public class DataFetchTriggerService {
     RemoteLcm lcm = dao.findOneById(lcmId);
     if (lcm == null) {
       throw new NotFoundException(String.format("Remote LCM with id: %s is not found", lcmId));
+    }
+
+    MetaData existing = metaDataService.findById(metadataId);
+    if (existing != null && !transferSettings.isForceOverwrite()) {
+      throw new LcmException(
+          "This metadata already exists! To enable the transfer enable the overwriting of existing data.");
     }
 
     MetaDataWrapper metaDataWrapper = getMetadata(metadataId, lcm);

@@ -48,7 +48,9 @@ import java.io.File;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.ArrayList;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 
 import javax.ws.rs.client.Entity;
 import javax.ws.rs.client.Invocation;
@@ -120,8 +122,13 @@ public class DataFetchTriggerContollerTest extends LcmBaseServerTest {
 
   @Test
   public void testTrigger() throws ServerException, IOException {
+    // Client finds the id of the remote lcm that contains the data she wants
+    RemoteLcm lcm = getLCMId();
+    Storage csvStorage = addStorageIfDoesNotExists(StorageMocker.createCsvStorage());
+    MetaDataWrapper md = postMetadata();
+
     // Sends a request to local lcm to fetch the data and metadata
-    postTrigger(lcm.getId(), md.getId(), csvStorage.getId(), "test", 200);
+    postTrigger(lcm.getId(), md.getId(), csvStorage.getId(), 200);
 
     // In the end we should have a task scheduled
     List<TaskDescription> tdList = taskDescriptionService.findAll();
@@ -132,23 +139,62 @@ public class DataFetchTriggerContollerTest extends LcmBaseServerTest {
 
   @Test
   public void testNonExistingLcm() throws ServerException, IOException {
+    // Client disovers after metadata id from the remote lcm
+
+    Storage csvStorage = addStorageIfDoesNotExists(StorageMocker.createCsvStorage());
+    MetaDataWrapper md = postMetadata();
     // Sends a request to local lcm to fetch the data and metadata
-    postTrigger("non-existing-lcm", md.getId(), csvStorage.getId(), "test", 404);
+    postTrigger("non-existing-lcm", md.getId(), csvStorage.getId(), 404);
   }
 
   @Test
   public void testNonExistingMetadata() throws ServerException, IOException {
+    RemoteLcm lcm = getLCMId();
+    Storage csvStorage = addStorageIfDoesNotExists(StorageMocker.createCsvStorage());
     // Sends a request to local lcm to fetch the data and metadata
-    postTrigger(lcm.getId(), "non-existing-metadata", csvStorage.getId(), "test", 404);
+    postTrigger(lcm.getId(), "non-existing-metadata", csvStorage.getId(), 404);
   }
+
+  private Storage addStorageIfDoesNotExists(Storage csvStorage) {
+    Storage savedCsvStorage = storageService.findByName(csvStorage.getName());
+    if (savedCsvStorage == null) {
+      savedCsvStorage = storageService.add(csvStorage);
+    }
+
+    return savedCsvStorage;
+  }
+
 
   @Test
   public void testNonExistingStorage() throws ServerException, IOException {
+    RemoteLcm lcm = getLCMId();
+    MetaDataWrapper md = postMetadata();
     // Sends a request to local lcm to fetch the data and metadata
-    postTrigger(lcm.getId(), md.getId(), "non-existing-storage", "test", 404);
+    postTrigger(lcm.getId(), md.getId(), "non-existing-storage", 404);
   }
 
-  private MetaDataWrapper createStorageAndPostMetadata(Storage csvStorage) throws IOException,
+  private MetaDataWrapper postMetadata() throws IOException, ServerException {
+
+    MetaDataWrapper metadataWrapper = MetaDataMocker.getCsvMetaDataWrapper();
+    List<String> uriList = new ArrayList();
+    uriList.add(CSV_STORAGE_URI);
+    String key = MetaDataMocker.getTestKey();
+    metadataWrapper.getDynamicData().getDynamicDataDescriptor(key).setURI(uriList.get(0));
+    metadataWrapper.getData().setUri(uriList);
+
+    Backend backend = storageService.getBackend(metadataWrapper);
+
+    generateCsvTestFile(CSV_FILE);
+
+
+    IterativeData data = (IterativeData) backend.read(key);
+    assertNotNull(data);
+    postMeadata(metadataWrapper, 200);
+    metadataWrapper = new MetaDataWrapper(getMetadata(200).get(0).getItem());
+    return metadataWrapper;
+  }
+
+   private MetaDataWrapper createStorageAndPostMetadata(Storage csvStorage) throws IOException,
       ServerException {
 
     MetaDataWrapper metadataWrapper = MetaDataMocker.getCsvMetaDataWrapper();
@@ -181,11 +227,12 @@ public class DataFetchTriggerContollerTest extends LcmBaseServerTest {
     assertEquals(expected, resp.getStatus());
   }
 
-  private void postTrigger(String lcmId, String metadataId, String storageId, String namespace,
-      int expected) throws ServerException {
-    String payload =
-        "{\"local-storage-id\" : \"" + storageId + "\", \"namespace-path\": \"" + namespace + "\"}";
-    Entity<String> entity = Entity.entity(payload, "application/json");
+  private void postTrigger(String lcmId, String metadataId, String storageId, int expected)
+      throws ServerException {
+    Map payload = new LinkedHashMap();
+    payload.put("local-storage-id", storageId);
+    payload.put("transfer-settings", "{\"forceOverwrite\": \"true\"}");
+    Entity<Map> entity = Entity.entity(payload, "application/json");
     Response resp =
         getWebTarget().path(TRIGGER_PATH).path(lcmId).path("metadata").path(metadataId).request()
             .header(AUTH_USER_HEADER, "admin")
