@@ -14,6 +14,8 @@
 
 package nl.kpmg.lcm.server.data;
 
+import nl.kpmg.lcm.common.data.ContentIterator;
+
 import com.google.gson.Gson;
 import com.google.gson.stream.JsonReader;
 

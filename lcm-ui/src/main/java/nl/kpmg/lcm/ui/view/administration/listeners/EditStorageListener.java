@@ -18,8 +18,8 @@ import com.vaadin.ui.Button;
 import com.vaadin.ui.UI;
 import com.vaadin.ui.Window;
 
-import nl.kpmg.lcm.rest.types.StorageRepresentation;
-import nl.kpmg.lcm.server.data.Storage;
+import nl.kpmg.lcm.common.rest.types.StorageRepresentation;
+import nl.kpmg.lcm.common.data.Storage;
 import nl.kpmg.lcm.ui.rest.RestClientService;
 import nl.kpmg.lcm.ui.view.administration.DynamicDataContainer;
 import nl.kpmg.lcm.ui.view.administration.components.StorageCreateWindow;

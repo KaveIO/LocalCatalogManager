@@ -18,9 +18,9 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
 import nl.kpmg.lcm.server.LcmBaseTest;
-import nl.kpmg.lcm.server.data.User;
+import nl.kpmg.lcm.common.data.User;
 import nl.kpmg.lcm.server.data.dao.UserDao;
-import nl.kpmg.lcm.server.rest.authentication.UserPasswordHashException;
+import nl.kpmg.lcm.common.rest.authentication.UserPasswordHashException;
 
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;

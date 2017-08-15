@@ -21,7 +21,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 
 import nl.kpmg.lcm.server.LcmBaseServerTest;
 import nl.kpmg.lcm.server.LoginException;
-import nl.kpmg.lcm.server.ServerException;
+import nl.kpmg.lcm.common.ServerException;
 import nl.kpmg.lcm.server.rest.authentication.BasicAuthenticationManager;
 
 import org.junit.Test;

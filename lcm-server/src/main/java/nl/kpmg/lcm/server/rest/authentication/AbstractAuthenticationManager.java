@@ -13,8 +13,9 @@
  */
 package nl.kpmg.lcm.server.rest.authentication;
 
+import nl.kpmg.lcm.common.rest.authentication.UserPasswordHashException;
 import nl.kpmg.lcm.server.LoginException;
-import nl.kpmg.lcm.server.data.User;
+import nl.kpmg.lcm.common.data.User;
 import nl.kpmg.lcm.server.data.service.UserService;
 
 import org.slf4j.Logger;

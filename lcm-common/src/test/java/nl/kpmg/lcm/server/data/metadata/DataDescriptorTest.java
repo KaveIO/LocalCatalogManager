@@ -13,13 +13,16 @@
  */
 package nl.kpmg.lcm.server.data.metadata;
 
+import nl.kpmg.lcm.common.data.metadata.DataDescriptor;
+import nl.kpmg.lcm.common.data.metadata.MetaData;
+
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 
-import nl.kpmg.lcm.validation.Notification;
+import nl.kpmg.lcm.common.validation.Notification;
 
 import org.junit.Test;
 

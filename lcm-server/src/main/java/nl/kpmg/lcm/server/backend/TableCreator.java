@@ -15,8 +15,8 @@
 package nl.kpmg.lcm.server.backend;
 
 import nl.kpmg.lcm.server.backend.metadata.ColumnDescription;
-import nl.kpmg.lcm.server.data.TransferSettings;
-import nl.kpmg.lcm.server.exception.LcmException;
+import nl.kpmg.lcm.common.data.TransferSettings;
+import nl.kpmg.lcm.common.exception.LcmException;
 
 import org.apache.metamodel.UpdateableDataContext;
 import org.apache.metamodel.create.CreateTable;

@@ -16,10 +16,10 @@ package nl.kpmg.lcm.server.test.mock;
 import nl.kpmg.lcm.server.backend.metadata.ColumnDescription;
 import nl.kpmg.lcm.server.backend.metadata.CsvMetaData;
 import nl.kpmg.lcm.server.backend.metadata.TabularMetaData;
-import nl.kpmg.lcm.server.data.metadata.DataDescriptor;
-import nl.kpmg.lcm.server.data.metadata.GeneralInfoDescriptor;
-import nl.kpmg.lcm.server.data.metadata.MetaData;
-import nl.kpmg.lcm.server.data.metadata.MetaDataWrapper;
+import nl.kpmg.lcm.common.data.metadata.DataDescriptor;
+import nl.kpmg.lcm.common.data.metadata.GeneralInfoDescriptor;
+import nl.kpmg.lcm.common.data.metadata.MetaData;
+import nl.kpmg.lcm.common.data.metadata.MetaDataWrapper;
 
 import org.apache.metamodel.schema.ColumnType;
 

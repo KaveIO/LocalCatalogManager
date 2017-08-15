@@ -20,11 +20,11 @@ import com.vaadin.ui.Panel;
 import com.vaadin.ui.Table;
 import com.vaadin.ui.VerticalLayout;
 
-import nl.kpmg.lcm.rest.types.TaskDescriptionRepresentation;
-import nl.kpmg.lcm.rest.types.TaskDescriptionsRepresentation;
-import nl.kpmg.lcm.rest.types.TaskScheduleRepresentation;
-import nl.kpmg.lcm.server.data.TaskDescription;
-import nl.kpmg.lcm.server.data.TaskSchedule;
+import nl.kpmg.lcm.common.rest.types.TaskDescriptionRepresentation;
+import nl.kpmg.lcm.common.rest.types.TaskDescriptionsRepresentation;
+import nl.kpmg.lcm.common.rest.types.TaskScheduleRepresentation;
+import nl.kpmg.lcm.common.data.TaskDescription;
+import nl.kpmg.lcm.common.data.TaskSchedule;
 
 import java.util.Date;
 import java.util.ListIterator;

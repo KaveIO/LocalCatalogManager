@@ -14,12 +14,12 @@
 
 package nl.kpmg.lcm.server.backend;
 
-import nl.kpmg.lcm.server.data.ContentIterator;
-import nl.kpmg.lcm.server.data.Data;
-import nl.kpmg.lcm.server.data.EnrichmentProperties;
+import nl.kpmg.lcm.common.data.ContentIterator;
+import nl.kpmg.lcm.common.data.Data;
+import nl.kpmg.lcm.common.data.EnrichmentProperties;
 import nl.kpmg.lcm.server.data.ProgressIndicationFactory;
-import nl.kpmg.lcm.server.data.TransferSettings;
-import nl.kpmg.lcm.server.data.metadata.MetaData;
+import nl.kpmg.lcm.common.data.TransferSettings;
+import nl.kpmg.lcm.common.data.metadata.MetaData;
 
 import org.apache.metamodel.data.DataSet;
 

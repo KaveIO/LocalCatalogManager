@@ -16,17 +16,17 @@ package nl.kpmg.lcm.server.backend;
 
 import nl.kpmg.lcm.server.backend.metadata.TabularMetaData;
 import nl.kpmg.lcm.server.backend.storage.HiveStorage;
-import nl.kpmg.lcm.server.data.ContentIterator;
-import nl.kpmg.lcm.server.data.Data;
-import nl.kpmg.lcm.server.data.DataFormat;
-import nl.kpmg.lcm.server.data.EnrichmentProperties;
-import nl.kpmg.lcm.server.data.IterativeData;
+import nl.kpmg.lcm.common.data.ContentIterator;
+import nl.kpmg.lcm.common.data.Data;
+import nl.kpmg.lcm.common.data.DataFormat;
+import nl.kpmg.lcm.common.data.EnrichmentProperties;
+import nl.kpmg.lcm.common.data.IterativeData;
 import nl.kpmg.lcm.server.data.ProgressIndicationFactory;
-import nl.kpmg.lcm.server.data.Storage;
-import nl.kpmg.lcm.server.data.TransferSettings;
-import nl.kpmg.lcm.server.data.metadata.MetaData;
+import nl.kpmg.lcm.common.data.Storage;
+import nl.kpmg.lcm.common.data.TransferSettings;
+import nl.kpmg.lcm.common.data.metadata.MetaData;
 import nl.kpmg.lcm.server.data.service.StorageService;
-import nl.kpmg.lcm.server.exception.LcmException;
+import nl.kpmg.lcm.common.exception.LcmException;
 
 import org.apache.metamodel.MetaModelHelper;
 import org.apache.metamodel.data.DataSet;

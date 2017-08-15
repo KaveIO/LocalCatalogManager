@@ -14,8 +14,8 @@
 
 package nl.kpmg.lcm.server.task.enrichment;
 
-import nl.kpmg.lcm.server.data.EnrichmentProperties;
-import nl.kpmg.lcm.server.data.metadata.MetaDataWrapper;
+import nl.kpmg.lcm.common.data.EnrichmentProperties;
+import nl.kpmg.lcm.common.data.metadata.MetaDataWrapper;
 import nl.kpmg.lcm.server.data.service.MetaDataService;
 import nl.kpmg.lcm.server.task.EnrichmentTask;
 import nl.kpmg.lcm.server.task.TaskException;

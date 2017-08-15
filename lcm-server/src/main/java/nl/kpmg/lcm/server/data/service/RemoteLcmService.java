@@ -16,7 +16,7 @@ package nl.kpmg.lcm.server.data.service;
 
 import jersey.repackaged.com.google.common.collect.Lists;
 
-import nl.kpmg.lcm.server.data.RemoteLcm;
+import nl.kpmg.lcm.common.data.RemoteLcm;
 import nl.kpmg.lcm.server.data.dao.RemoteLcmDao;
 
 import org.springframework.beans.factory.annotation.Autowired;

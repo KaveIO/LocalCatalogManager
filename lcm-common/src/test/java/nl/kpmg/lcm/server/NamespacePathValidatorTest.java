@@ -13,11 +13,13 @@
  */
 package nl.kpmg.lcm.server;
 
+import nl.kpmg.lcm.common.NamespacePathValidator;
+
 import com.tngtech.java.junit.dataprovider.DataProvider;
 import com.tngtech.java.junit.dataprovider.DataProviderRunner;
 import com.tngtech.java.junit.dataprovider.UseDataProvider;
 
-import nl.kpmg.lcm.validation.Notification;
+import nl.kpmg.lcm.common.validation.Notification;
 
 import org.junit.Assert;
 import org.junit.Test;

@@ -14,8 +14,9 @@
 
 package nl.kpmg.lcm.server.data.dao.mongo;
 
-import nl.kpmg.lcm.server.data.TaskDescription;
+import nl.kpmg.lcm.common.data.TaskDescription;
 import nl.kpmg.lcm.server.data.dao.TaskDescriptionDao;
+
 import org.springframework.data.mongodb.repository.MongoRepository;
 
 public interface MongoTaskDescriptionDao

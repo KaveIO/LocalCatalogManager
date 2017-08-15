@@ -14,6 +14,8 @@
 
 package nl.kpmg.lcm.server;
 
+import nl.kpmg.lcm.common.ServerException;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

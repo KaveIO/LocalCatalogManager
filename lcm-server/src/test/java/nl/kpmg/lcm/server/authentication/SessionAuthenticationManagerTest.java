@@ -22,7 +22,7 @@ import static org.junit.Assert.fail;
 import nl.kpmg.lcm.server.LcmBaseTest;
 import nl.kpmg.lcm.server.LoginException;
 import nl.kpmg.lcm.server.LogoutException;
-import nl.kpmg.lcm.server.data.User;
+import nl.kpmg.lcm.common.data.User;
 import nl.kpmg.lcm.server.data.service.UserService;
 import nl.kpmg.lcm.server.rest.authentication.SessionAuthenticationManager;
 

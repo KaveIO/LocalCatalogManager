@@ -15,16 +15,16 @@
 package nl.kpmg.lcm.server.rest.client.version0;
 
 
-import nl.kpmg.lcm.rest.types.RemoteLcmRepresentation;
-import nl.kpmg.lcm.rest.types.RemoteLcmsRepresentation;
-import nl.kpmg.lcm.server.data.RemoteLcm;
+import nl.kpmg.lcm.common.rest.types.RemoteLcmRepresentation;
+import nl.kpmg.lcm.common.rest.types.RemoteLcmsRepresentation;
+import nl.kpmg.lcm.common.data.RemoteLcm;
 import nl.kpmg.lcm.server.data.dao.RemoteLcmDao;
 import nl.kpmg.lcm.server.data.service.RemoteLcmService;
-import nl.kpmg.lcm.server.exception.LcmValidationException;
+import nl.kpmg.lcm.common.exception.LcmValidationException;
 import nl.kpmg.lcm.server.rest.authentication.Roles;
 import nl.kpmg.lcm.server.rest.client.version0.types.ConcreteRemoteLcmRepresentation;
 import nl.kpmg.lcm.server.rest.client.version0.types.ConcreteRemoteLcmsRepresentation;
-import nl.kpmg.lcm.validation.Notification;
+import nl.kpmg.lcm.common.validation.Notification;
 
 import org.springframework.beans.factory.annotation.Autowired;
 

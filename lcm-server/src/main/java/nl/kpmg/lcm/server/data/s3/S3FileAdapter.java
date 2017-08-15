@@ -27,7 +27,7 @@ import com.amazonaws.services.s3.model.S3Object;
 
 import nl.kpmg.lcm.server.backend.storage.S3FileStorage;
 import nl.kpmg.lcm.server.data.FileAdapter;
-import nl.kpmg.lcm.server.exception.LcmException;
+import nl.kpmg.lcm.common.exception.LcmException;
 
 import org.slf4j.LoggerFactory;
 

@@ -14,23 +14,23 @@
 
 package nl.kpmg.lcm.server.data.service;
 
-import nl.kpmg.lcm.client.HttpsClientFactory;
-import nl.kpmg.lcm.configuration.ClientConfiguration;
-import nl.kpmg.lcm.rest.types.FetchEndpointRepresentation;
-import nl.kpmg.lcm.rest.types.MetaDataRepresentation;
-import nl.kpmg.lcm.server.ServerException;
-import nl.kpmg.lcm.server.data.DataFormat;
-import nl.kpmg.lcm.server.data.FetchEndpoint;
-import nl.kpmg.lcm.server.data.RemoteLcm;
-import nl.kpmg.lcm.server.data.Storage;
-import nl.kpmg.lcm.server.data.TaskDescription;
-import nl.kpmg.lcm.server.data.TaskType;
-import nl.kpmg.lcm.server.data.TransferSettings;
+import nl.kpmg.lcm.common.client.HttpsClientFactory;
+import nl.kpmg.lcm.common.configuration.ClientConfiguration;
+import nl.kpmg.lcm.common.rest.types.FetchEndpointRepresentation;
+import nl.kpmg.lcm.common.rest.types.MetaDataRepresentation;
+import nl.kpmg.lcm.common.ServerException;
+import nl.kpmg.lcm.common.data.DataFormat;
+import nl.kpmg.lcm.common.data.FetchEndpoint;
+import nl.kpmg.lcm.common.data.RemoteLcm;
+import nl.kpmg.lcm.common.data.Storage;
+import nl.kpmg.lcm.common.data.TaskDescription;
+import nl.kpmg.lcm.common.data.TaskType;
+import nl.kpmg.lcm.common.data.TransferSettings;
 import nl.kpmg.lcm.server.data.dao.RemoteLcmDao;
-import nl.kpmg.lcm.server.data.metadata.DataItemsDescriptor;
-import nl.kpmg.lcm.server.data.metadata.MetaData;
-import nl.kpmg.lcm.server.data.metadata.MetaDataWrapper;
-import nl.kpmg.lcm.server.exception.LcmException;
+import nl.kpmg.lcm.common.data.metadata.DataItemsDescriptor;
+import nl.kpmg.lcm.common.data.metadata.MetaData;
+import nl.kpmg.lcm.common.data.metadata.MetaDataWrapper;
+import nl.kpmg.lcm.common.exception.LcmException;
 import nl.kpmg.lcm.server.rest.client.version0.HttpResponseHandler;
 import nl.kpmg.lcm.server.task.enrichment.DataFetchTask;
 

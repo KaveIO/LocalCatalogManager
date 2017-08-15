@@ -18,7 +18,7 @@ import com.mongodb.DBObject;
 import nl.kpmg.lcm.server.backend.storage.HiveStorage;
 import nl.kpmg.lcm.server.backend.storage.MongoStorage;
 import nl.kpmg.lcm.server.backend.storage.S3FileStorage;
-import nl.kpmg.lcm.server.data.Storage;
+import nl.kpmg.lcm.common.data.Storage;
 import nl.kpmg.lcm.server.security.EncryptionException;
 import nl.kpmg.lcm.server.security.SecurityEngine;
 

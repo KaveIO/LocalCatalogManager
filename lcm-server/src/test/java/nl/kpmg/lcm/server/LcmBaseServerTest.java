@@ -14,8 +14,9 @@
 
 package nl.kpmg.lcm.server;
 
-import nl.kpmg.lcm.client.HttpsClientFactory;
-import nl.kpmg.lcm.configuration.ClientConfiguration;
+import nl.kpmg.lcm.common.ServerException;
+import nl.kpmg.lcm.common.client.HttpsClientFactory;
+import nl.kpmg.lcm.common.configuration.ClientConfiguration;
 
 import org.junit.AfterClass;
 import org.junit.BeforeClass;

@@ -14,7 +14,7 @@
 
 package nl.kpmg.lcm.rest.types;
 
-import nl.kpmg.lcm.server.data.AbstractModel;
+import nl.kpmg.lcm.common.data.AbstractModel;
 
 /**
  *

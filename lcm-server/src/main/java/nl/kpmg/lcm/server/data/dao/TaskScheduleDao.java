@@ -14,7 +14,8 @@
 
 package nl.kpmg.lcm.server.data.dao;
 
-import nl.kpmg.lcm.server.data.TaskSchedule;
+import nl.kpmg.lcm.common.data.TaskSchedule;
+
 import org.springframework.data.repository.PagingAndSortingRepository;
 
 /**

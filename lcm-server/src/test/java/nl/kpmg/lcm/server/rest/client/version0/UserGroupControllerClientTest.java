@@ -18,8 +18,8 @@ import static org.junit.Assert.assertEquals;
 
 import nl.kpmg.lcm.server.LcmBaseServerTest;
 import nl.kpmg.lcm.server.LoginException;
-import nl.kpmg.lcm.server.ServerException;
-import nl.kpmg.lcm.server.data.UserGroup;
+import nl.kpmg.lcm.common.ServerException;
+import nl.kpmg.lcm.common.data.UserGroup;
 import nl.kpmg.lcm.server.data.dao.UserGroupDao;
 import nl.kpmg.lcm.server.data.service.UserGroupService;
 import nl.kpmg.lcm.server.rest.client.types.LoginRequest;

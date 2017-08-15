@@ -13,6 +13,7 @@
  */
 package nl.kpmg.lcm.server.data;
 
+import nl.kpmg.lcm.common.data.ProgressIndication;
 import nl.kpmg.lcm.server.data.service.TaskDescriptionService;
 
 import org.slf4j.Logger;

@@ -25,10 +25,10 @@ import com.vaadin.ui.TextArea;
 import com.vaadin.ui.VerticalLayout;
 import com.vaadin.ui.Window;
 
-import nl.kpmg.lcm.rest.types.MetaDataRepresentation;
-import nl.kpmg.lcm.server.ServerException;
-import nl.kpmg.lcm.server.data.metadata.MetaData;
-import nl.kpmg.lcm.server.data.metadata.MetaDataWrapper;
+import nl.kpmg.lcm.common.rest.types.MetaDataRepresentation;
+import nl.kpmg.lcm.common.ServerException;
+import nl.kpmg.lcm.common.data.metadata.MetaData;
+import nl.kpmg.lcm.common.data.metadata.MetaDataWrapper;
 import nl.kpmg.lcm.ui.component.DefinedLabel;
 import nl.kpmg.lcm.ui.rest.AuthenticationException;
 import nl.kpmg.lcm.ui.rest.DataCreationException;

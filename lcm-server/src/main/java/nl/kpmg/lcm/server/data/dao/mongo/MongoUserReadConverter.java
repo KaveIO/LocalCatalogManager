@@ -16,8 +16,8 @@ package nl.kpmg.lcm.server.data.dao.mongo;
 
 import com.mongodb.DBObject;
 
-import nl.kpmg.lcm.server.data.User;
-import nl.kpmg.lcm.server.rest.authentication.UserPasswordHashException;
+import nl.kpmg.lcm.common.data.User;
+import nl.kpmg.lcm.common.rest.authentication.UserPasswordHashException;
 
 import org.slf4j.LoggerFactory;
 import org.springframework.core.convert.converter.Converter;

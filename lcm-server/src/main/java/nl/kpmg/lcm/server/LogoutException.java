@@ -14,6 +14,8 @@
 
 package nl.kpmg.lcm.server;
 
+import nl.kpmg.lcm.common.ServerException;
+
 /**
  *
  * @author mhoekstra

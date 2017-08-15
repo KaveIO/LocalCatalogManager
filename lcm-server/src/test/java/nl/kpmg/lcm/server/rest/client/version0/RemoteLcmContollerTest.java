@@ -18,11 +18,11 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 
-import nl.kpmg.lcm.rest.types.RemoteLcmRepresentation;
-import nl.kpmg.lcm.rest.types.RemoteLcmsRepresentation;
+import nl.kpmg.lcm.common.rest.types.RemoteLcmRepresentation;
+import nl.kpmg.lcm.common.rest.types.RemoteLcmsRepresentation;
 import nl.kpmg.lcm.server.LcmBaseServerTest;
-import nl.kpmg.lcm.server.ServerException;
-import nl.kpmg.lcm.server.data.RemoteLcm;
+import nl.kpmg.lcm.common.ServerException;
+import nl.kpmg.lcm.common.data.RemoteLcm;
 import nl.kpmg.lcm.server.data.service.RemoteLcmService;
 import nl.kpmg.lcm.server.rest.authentication.BasicAuthenticationManager;
 

@@ -18,9 +18,9 @@ import static org.quartz.CronScheduleBuilder.cronSchedule;
 import static org.quartz.JobBuilder.newJob;
 import static org.quartz.TriggerBuilder.newTrigger;
 
-import nl.kpmg.lcm.server.data.TaskSchedule;
-import nl.kpmg.lcm.server.data.TaskSchedule.TaskScheduleItem;
-import nl.kpmg.lcm.server.data.TaskType;
+import nl.kpmg.lcm.common.data.TaskSchedule;
+import nl.kpmg.lcm.common.data.TaskSchedule.TaskScheduleItem;
+import nl.kpmg.lcm.common.data.TaskType;
 import nl.kpmg.lcm.server.data.service.TaskScheduleService;
 import nl.kpmg.lcm.server.task.CoreTask;
 import nl.kpmg.lcm.server.task.EnrichmentTask;

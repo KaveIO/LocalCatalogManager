@@ -13,7 +13,7 @@
  */
 package nl.kpmg.lcm.server.backend.metadata;
 
-import nl.kpmg.lcm.server.data.metadata.MetaData;
+import nl.kpmg.lcm.common.data.metadata.MetaData;
 
 import org.apache.metamodel.schema.ColumnType;
 import org.junit.Assert;

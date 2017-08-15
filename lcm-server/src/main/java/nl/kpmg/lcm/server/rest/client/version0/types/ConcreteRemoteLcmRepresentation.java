@@ -16,9 +16,9 @@ package nl.kpmg.lcm.server.rest.client.version0.types;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 
-import nl.kpmg.lcm.rest.types.LinkInjectable;
-import nl.kpmg.lcm.rest.types.RemoteLcmRepresentation;
-import nl.kpmg.lcm.server.data.RemoteLcm;
+import nl.kpmg.lcm.common.rest.types.LinkInjectable;
+import nl.kpmg.lcm.common.rest.types.RemoteLcmRepresentation;
+import nl.kpmg.lcm.common.data.RemoteLcm;
 import nl.kpmg.lcm.server.rest.client.version0.RemoteLcmController;
 
 import org.glassfish.jersey.linking.Binding;

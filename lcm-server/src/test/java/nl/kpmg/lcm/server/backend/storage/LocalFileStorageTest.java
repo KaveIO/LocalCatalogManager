@@ -14,9 +14,9 @@
 
 package nl.kpmg.lcm.server.backend.storage;
 
-import nl.kpmg.lcm.server.data.DataFormat;
-import nl.kpmg.lcm.server.data.Storage;
-import nl.kpmg.lcm.server.exception.LcmValidationException;
+import nl.kpmg.lcm.common.data.DataFormat;
+import nl.kpmg.lcm.common.data.Storage;
+import nl.kpmg.lcm.common.exception.LcmValidationException;
 
 import org.junit.Assert;
 import org.junit.Test;

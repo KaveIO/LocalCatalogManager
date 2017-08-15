@@ -16,7 +16,7 @@ package nl.kpmg.lcm.server.rest.client.types;
 
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 
-import nl.kpmg.lcm.server.LinksSerializer;
+import nl.kpmg.lcm.common.LinksSerializer;
 import nl.kpmg.lcm.server.rest.Client;
 import nl.kpmg.lcm.server.rest.client.Version0;
 

@@ -16,15 +16,15 @@ package nl.kpmg.lcm.server.rest.client.version0;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 
-import nl.kpmg.lcm.client.ClientException;
-import nl.kpmg.lcm.rest.types.MetaDatasRepresentation;
-import nl.kpmg.lcm.server.ServerException;
-import nl.kpmg.lcm.server.data.TransferSettings;
+import nl.kpmg.lcm.common.client.ClientException;
+import nl.kpmg.lcm.common.rest.types.MetaDatasRepresentation;
+import nl.kpmg.lcm.common.ServerException;
+import nl.kpmg.lcm.common.data.TransferSettings;
 import nl.kpmg.lcm.server.data.service.DataFetchTriggerService;
 import nl.kpmg.lcm.server.data.service.RemoteMetaDataService;
-import nl.kpmg.lcm.server.exception.LcmValidationException;
+import nl.kpmg.lcm.common.exception.LcmValidationException;
 import nl.kpmg.lcm.server.rest.authentication.Roles;
-import nl.kpmg.lcm.validation.Notification;
+import nl.kpmg.lcm.common.validation.Notification;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

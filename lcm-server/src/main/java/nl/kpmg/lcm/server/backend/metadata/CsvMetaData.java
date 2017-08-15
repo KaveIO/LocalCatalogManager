@@ -14,8 +14,8 @@
 
 package nl.kpmg.lcm.server.backend.metadata;
 
-import nl.kpmg.lcm.server.data.metadata.MetaData;
-import nl.kpmg.lcm.server.data.metadata.Wrapper;
+import nl.kpmg.lcm.common.data.metadata.MetaData;
+import nl.kpmg.lcm.common.data.metadata.Wrapper;
 
 import org.apache.metamodel.csv.CsvConfiguration;
 import org.apache.metamodel.util.FileHelper;

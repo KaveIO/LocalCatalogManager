@@ -18,8 +18,8 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotSame;
 import static org.junit.Assert.assertTrue;
 
-import nl.kpmg.lcm.server.rest.authentication.PasswordHash;
-import nl.kpmg.lcm.server.rest.authentication.UserPasswordHashException;
+import nl.kpmg.lcm.common.rest.authentication.PasswordHash;
+import nl.kpmg.lcm.common.rest.authentication.UserPasswordHashException;
 
 import org.junit.Test;
 

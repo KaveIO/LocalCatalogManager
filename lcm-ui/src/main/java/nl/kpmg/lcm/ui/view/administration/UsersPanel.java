@@ -19,8 +19,8 @@ import com.vaadin.ui.Label;
 import com.vaadin.ui.Panel;
 import com.vaadin.ui.VerticalLayout;
 
-import nl.kpmg.lcm.rest.types.UserGroupsRepresentation;
-import nl.kpmg.lcm.rest.types.UsersRepresentation;
+import nl.kpmg.lcm.common.rest.types.UserGroupsRepresentation;
+import nl.kpmg.lcm.common.rest.types.UsersRepresentation;
 
 /**
  *

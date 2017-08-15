@@ -13,8 +13,9 @@
  */
 package nl.kpmg.lcm;
 
+import nl.kpmg.lcm.common.InvalidArgumentsException;
 import nl.kpmg.lcm.server.Server;
-import nl.kpmg.lcm.server.ServerException;
+import nl.kpmg.lcm.common.ServerException;
 import nl.kpmg.lcm.ui.UI;
 
 import org.apache.commons.lang.ArrayUtils;

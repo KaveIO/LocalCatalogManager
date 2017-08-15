@@ -14,10 +14,10 @@
 
 package nl.kpmg.lcm.server.backend.storage;
 
-import nl.kpmg.lcm.server.data.EnrichmentProperties;
-import nl.kpmg.lcm.server.data.Storage;
-import nl.kpmg.lcm.server.exception.LcmValidationException;
-import nl.kpmg.lcm.validation.Notification;
+import nl.kpmg.lcm.common.data.EnrichmentProperties;
+import nl.kpmg.lcm.common.data.Storage;
+import nl.kpmg.lcm.common.exception.LcmValidationException;
+import nl.kpmg.lcm.common.validation.Notification;
 
 /**
  * This class is designed for superclass. It should be inherited by implementation

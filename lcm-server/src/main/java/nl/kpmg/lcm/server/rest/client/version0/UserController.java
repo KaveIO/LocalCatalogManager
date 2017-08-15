@@ -14,12 +14,12 @@
 
 package nl.kpmg.lcm.server.rest.client.version0;
 
-import nl.kpmg.lcm.rest.types.UsersRepresentation;
-import nl.kpmg.lcm.server.data.User;
+import nl.kpmg.lcm.common.rest.types.UsersRepresentation;
+import nl.kpmg.lcm.common.data.User;
 import nl.kpmg.lcm.server.data.dao.UserDao;
 import nl.kpmg.lcm.server.data.service.UserService;
 import nl.kpmg.lcm.server.rest.authentication.Roles;
-import nl.kpmg.lcm.server.rest.authentication.UserPasswordHashException;
+import nl.kpmg.lcm.common.rest.authentication.UserPasswordHashException;
 import nl.kpmg.lcm.server.rest.client.version0.types.ConcreteUserRepresentation;
 import nl.kpmg.lcm.server.rest.client.version0.types.ConcreteUsersRepresentation;
 

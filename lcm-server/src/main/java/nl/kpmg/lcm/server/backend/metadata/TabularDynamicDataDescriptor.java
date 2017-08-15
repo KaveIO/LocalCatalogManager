@@ -13,8 +13,8 @@
  */
 package nl.kpmg.lcm.server.backend.metadata;
 
-import nl.kpmg.lcm.server.data.metadata.DataItemsDescriptor;
-import nl.kpmg.lcm.server.data.metadata.MetaData;
+import nl.kpmg.lcm.common.data.metadata.DataItemsDescriptor;
+import nl.kpmg.lcm.common.data.metadata.MetaData;
 
 /**
  *

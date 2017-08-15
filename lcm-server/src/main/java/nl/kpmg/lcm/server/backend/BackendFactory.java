@@ -14,12 +14,12 @@
 
 package nl.kpmg.lcm.server.backend;
 
-import nl.kpmg.lcm.server.data.metadata.MetaData;
-import nl.kpmg.lcm.server.data.metadata.MetaDataWrapper;
+import nl.kpmg.lcm.common.data.metadata.MetaData;
+import nl.kpmg.lcm.common.data.metadata.MetaDataWrapper;
 import nl.kpmg.lcm.server.data.service.StorageService;
-import nl.kpmg.lcm.server.exception.LcmException;
-import nl.kpmg.lcm.server.exception.LcmValidationException;
-import nl.kpmg.lcm.validation.Notification;
+import nl.kpmg.lcm.common.exception.LcmException;
+import nl.kpmg.lcm.common.exception.LcmValidationException;
+import nl.kpmg.lcm.common.validation.Notification;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

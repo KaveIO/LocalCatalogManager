@@ -14,7 +14,7 @@
 
 package nl.kpmg.lcm.ui;
 
-import nl.kpmg.lcm.server.ServerException;
+import nl.kpmg.lcm.common.ServerException;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

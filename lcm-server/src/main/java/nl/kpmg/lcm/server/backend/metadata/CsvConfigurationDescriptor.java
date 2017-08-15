@@ -15,8 +15,8 @@ package nl.kpmg.lcm.server.backend.metadata;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 
-import nl.kpmg.lcm.server.data.metadata.MetaData;
-import nl.kpmg.lcm.validation.Notification;
+import nl.kpmg.lcm.common.data.metadata.MetaData;
+import nl.kpmg.lcm.common.validation.Notification;
 
 /**
  *

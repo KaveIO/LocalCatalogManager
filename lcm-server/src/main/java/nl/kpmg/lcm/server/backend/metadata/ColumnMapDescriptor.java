@@ -15,7 +15,7 @@ package nl.kpmg.lcm.server.backend.metadata;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 
-import nl.kpmg.lcm.validation.Notification;
+import nl.kpmg.lcm.common.validation.Notification;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

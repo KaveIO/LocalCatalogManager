@@ -21,7 +21,7 @@ import com.vaadin.ui.HorizontalLayout;
 import com.vaadin.ui.TabSheet;
 import com.vaadin.ui.VerticalLayout;
 
-import nl.kpmg.lcm.rest.types.RemoteLcmsRepresentation;
+import nl.kpmg.lcm.common.rest.types.RemoteLcmsRepresentation;
 import nl.kpmg.lcm.ui.rest.RestClientService;
 import nl.kpmg.lcm.ui.view.transfer.MonitorPanel;
 import nl.kpmg.lcm.ui.view.transfer.SchedulePanel;

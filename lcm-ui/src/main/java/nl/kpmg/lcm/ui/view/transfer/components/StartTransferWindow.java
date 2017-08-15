@@ -25,13 +25,13 @@ import com.vaadin.ui.TabSheet;
 import com.vaadin.ui.TextField;
 import com.vaadin.ui.Window;
 
-import nl.kpmg.lcm.client.ClientException;
-import nl.kpmg.lcm.rest.types.StorageRepresentation;
-import nl.kpmg.lcm.rest.types.StoragesRepresentation;
-import nl.kpmg.lcm.server.NamespacePathValidator;
-import nl.kpmg.lcm.server.ServerException;
-import nl.kpmg.lcm.server.data.Storage;
-import nl.kpmg.lcm.server.data.TransferSettings;
+import nl.kpmg.lcm.common.client.ClientException;
+import nl.kpmg.lcm.common.rest.types.StorageRepresentation;
+import nl.kpmg.lcm.common.rest.types.StoragesRepresentation;
+import nl.kpmg.lcm.common.NamespacePathValidator;
+import nl.kpmg.lcm.common.ServerException;
+import nl.kpmg.lcm.common.data.Storage;
+import nl.kpmg.lcm.common.data.TransferSettings;
 import nl.kpmg.lcm.ui.rest.AuthenticationException;
 import nl.kpmg.lcm.ui.rest.DataCreationException;
 import nl.kpmg.lcm.ui.rest.RestClientService;
@@ -189,7 +189,7 @@ public class StartTransferWindow extends Window implements Button.ClickListener 
   @Override
   public void buttonClick(Button.ClickEvent event) {
     if (event.getSource() == startButton) {
-      nl.kpmg.lcm.validation.Notification notification = new nl.kpmg.lcm.validation.Notification();
+      nl.kpmg.lcm.common.validation.Notification notification = new nl.kpmg.lcm.common.validation.Notification();
 
       validate(notification);
 
@@ -253,7 +253,7 @@ public class StartTransferWindow extends Window implements Button.ClickListener 
     return settings;
   }
 
-  private void validate(nl.kpmg.lcm.validation.Notification notification) {
+  private void validate(nl.kpmg.lcm.common.validation.Notification notification) {
     String selection = (String) storageListComboBox.getValue();
     if (selection == null || selection.isEmpty()) {
       notification.addError("You must select storage!");

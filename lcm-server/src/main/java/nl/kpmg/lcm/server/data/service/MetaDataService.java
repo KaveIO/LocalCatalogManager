@@ -16,14 +16,14 @@ package nl.kpmg.lcm.server.data.service;
 
 import jersey.repackaged.com.google.common.collect.Lists;
 
-import nl.kpmg.lcm.server.Constants;
+import nl.kpmg.lcm.common.Constants;
 import nl.kpmg.lcm.server.backend.Backend;
-import nl.kpmg.lcm.server.data.EnrichmentProperties;
+import nl.kpmg.lcm.common.data.EnrichmentProperties;
 import nl.kpmg.lcm.server.data.dao.MetaDataDao;
-import nl.kpmg.lcm.server.data.metadata.MetaData;
-import nl.kpmg.lcm.server.data.metadata.MetaDataWrapper;
-import nl.kpmg.lcm.server.exception.LcmException;
-import nl.kpmg.lcm.server.exception.LcmValidationException;
+import nl.kpmg.lcm.common.data.metadata.MetaData;
+import nl.kpmg.lcm.common.data.metadata.MetaDataWrapper;
+import nl.kpmg.lcm.common.exception.LcmException;
+import nl.kpmg.lcm.common.exception.LcmValidationException;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

@@ -14,7 +14,8 @@
 
 package nl.kpmg.lcm.server.data.dao;
 
-import nl.kpmg.lcm.server.data.Storage;
+import nl.kpmg.lcm.common.data.Storage;
+
 import org.springframework.data.repository.PagingAndSortingRepository;
 
 /**

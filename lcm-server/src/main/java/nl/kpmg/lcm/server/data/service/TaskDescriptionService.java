@@ -16,8 +16,8 @@ package nl.kpmg.lcm.server.data.service;
 
 import jersey.repackaged.com.google.common.collect.Lists;
 
-import nl.kpmg.lcm.server.data.ProgressIndication;
-import nl.kpmg.lcm.server.data.TaskDescription;
+import nl.kpmg.lcm.common.data.ProgressIndication;
+import nl.kpmg.lcm.common.data.TaskDescription;
 import nl.kpmg.lcm.server.data.dao.TaskDescriptionDao;
 
 import org.slf4j.Logger;

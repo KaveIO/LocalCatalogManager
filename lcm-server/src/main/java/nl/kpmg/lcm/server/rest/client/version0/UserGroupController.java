@@ -14,8 +14,8 @@
 
 package nl.kpmg.lcm.server.rest.client.version0;
 
-import nl.kpmg.lcm.rest.types.UserGroupsRepresentation;
-import nl.kpmg.lcm.server.data.UserGroup;
+import nl.kpmg.lcm.common.rest.types.UserGroupsRepresentation;
+import nl.kpmg.lcm.common.data.UserGroup;
 import nl.kpmg.lcm.server.data.dao.UserGroupDao;
 import nl.kpmg.lcm.server.data.service.UserGroupService;
 import nl.kpmg.lcm.server.rest.authentication.Roles;

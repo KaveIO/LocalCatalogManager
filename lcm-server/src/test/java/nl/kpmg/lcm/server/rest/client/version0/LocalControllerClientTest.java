@@ -18,7 +18,7 @@ import static org.junit.Assert.assertEquals;
 
 import nl.kpmg.lcm.server.LcmBaseServerTest;
 import nl.kpmg.lcm.server.LoginException;
-import nl.kpmg.lcm.server.ServerException;
+import nl.kpmg.lcm.common.ServerException;
 import nl.kpmg.lcm.server.rest.authentication.BasicAuthenticationManager;
 
 import org.junit.Test;

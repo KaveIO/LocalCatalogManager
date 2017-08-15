@@ -17,9 +17,9 @@ package nl.kpmg.lcm.server.backend;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.Mockito.mock;
 
-import nl.kpmg.lcm.server.data.DataFormat;
-import nl.kpmg.lcm.server.data.Storage;
-import nl.kpmg.lcm.server.data.metadata.MetaDataWrapper;
+import nl.kpmg.lcm.common.data.DataFormat;
+import nl.kpmg.lcm.common.data.Storage;
+import nl.kpmg.lcm.common.data.metadata.MetaDataWrapper;
 import nl.kpmg.lcm.server.data.service.StorageService;
 import nl.kpmg.lcm.server.test.mock.MetaDataMocker;
 import nl.kpmg.lcm.server.test.mock.StorageMocker;

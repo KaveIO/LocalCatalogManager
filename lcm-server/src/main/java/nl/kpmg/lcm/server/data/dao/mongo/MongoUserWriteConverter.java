@@ -17,9 +17,9 @@ package nl.kpmg.lcm.server.data.dao.mongo;
 import com.mongodb.BasicDBObject;
 import com.mongodb.DBObject;
 
-import nl.kpmg.lcm.server.data.User;
-import nl.kpmg.lcm.server.rest.authentication.PasswordHash;
-import nl.kpmg.lcm.server.rest.authentication.UserPasswordHashException;
+import nl.kpmg.lcm.common.data.User;
+import nl.kpmg.lcm.common.rest.authentication.PasswordHash;
+import nl.kpmg.lcm.common.rest.authentication.UserPasswordHashException;
 
 import org.bson.types.ObjectId;
 import org.slf4j.LoggerFactory;

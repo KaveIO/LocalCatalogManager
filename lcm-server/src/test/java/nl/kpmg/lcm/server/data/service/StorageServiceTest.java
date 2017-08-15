@@ -20,11 +20,11 @@ import static org.mockito.BDDMockito.given;
 import nl.kpmg.lcm.server.backend.Backend;
 import nl.kpmg.lcm.server.backend.BackendCsvImpl;
 import nl.kpmg.lcm.server.backend.BackendFactory;
-import nl.kpmg.lcm.server.data.DataFormat;
-import nl.kpmg.lcm.server.data.Storage;
+import nl.kpmg.lcm.common.data.DataFormat;
+import nl.kpmg.lcm.common.data.Storage;
 import nl.kpmg.lcm.server.data.dao.StorageDao;
-import nl.kpmg.lcm.server.data.metadata.MetaDataWrapper;
-import nl.kpmg.lcm.server.exception.LcmException;
+import nl.kpmg.lcm.common.data.metadata.MetaDataWrapper;
+import nl.kpmg.lcm.common.exception.LcmException;
 import nl.kpmg.lcm.server.test.mock.MetaDataMocker;
 import nl.kpmg.lcm.server.test.mock.StorageMocker;
 

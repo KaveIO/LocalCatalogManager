@@ -14,8 +14,9 @@
 
 package nl.kpmg.lcm.server.data.dao.mongo;
 
-import nl.kpmg.lcm.server.data.Storage;
+import nl.kpmg.lcm.common.data.Storage;
 import nl.kpmg.lcm.server.data.dao.StorageDao;
+
 import org.springframework.data.mongodb.repository.MongoRepository;
 
 public interface MongoStorageDao extends MongoRepository<Storage, String>, StorageDao {

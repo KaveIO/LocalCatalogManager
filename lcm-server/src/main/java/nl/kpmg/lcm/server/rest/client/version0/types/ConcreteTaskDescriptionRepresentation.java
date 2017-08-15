@@ -16,9 +16,9 @@ package nl.kpmg.lcm.server.rest.client.version0.types;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 
-import nl.kpmg.lcm.rest.types.LinkInjectable;
-import nl.kpmg.lcm.rest.types.TaskDescriptionRepresentation;
-import nl.kpmg.lcm.server.data.TaskDescription;
+import nl.kpmg.lcm.common.rest.types.LinkInjectable;
+import nl.kpmg.lcm.common.rest.types.TaskDescriptionRepresentation;
+import nl.kpmg.lcm.common.data.TaskDescription;
 import nl.kpmg.lcm.server.rest.client.version0.TaskDescriptionController;
 
 import org.glassfish.jersey.linking.Binding;

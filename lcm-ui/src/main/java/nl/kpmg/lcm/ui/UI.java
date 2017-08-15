@@ -16,12 +16,12 @@ package nl.kpmg.lcm.ui;
 
 import com.vaadin.spring.server.SpringVaadinServlet;
 
-import nl.kpmg.lcm.HttpsServerProvider;
-import nl.kpmg.lcm.HttpsServerWrapper;
-import nl.kpmg.lcm.SslConfigurationException;
-import nl.kpmg.lcm.configuration.UiConfiguration;
-import nl.kpmg.lcm.server.GeneralExceptionMapper;
-import nl.kpmg.lcm.server.ServerException;
+import nl.kpmg.lcm.common.HttpsServerProvider;
+import nl.kpmg.lcm.common.HttpsServerWrapper;
+import nl.kpmg.lcm.common.SslConfigurationException;
+import nl.kpmg.lcm.common.configuration.UiConfiguration;
+import nl.kpmg.lcm.common.GeneralExceptionMapper;
+import nl.kpmg.lcm.common.ServerException;
 
 import org.glassfish.grizzly.servlet.ServletRegistration;
 import org.glassfish.grizzly.servlet.WebappContext;

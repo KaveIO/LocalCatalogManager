@@ -15,7 +15,7 @@ package nl.kpmg.lcm.server.data.service;
 
 import static org.junit.Assert.assertTrue;
 
-import nl.kpmg.lcm.server.data.DataFormat;
+import nl.kpmg.lcm.common.data.DataFormat;
 
 import org.junit.Test;
 

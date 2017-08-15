@@ -18,16 +18,16 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 
-import nl.kpmg.lcm.rest.types.UserRepresentation;
-import nl.kpmg.lcm.rest.types.UsersRepresentation;
+import nl.kpmg.lcm.common.rest.types.UserRepresentation;
+import nl.kpmg.lcm.common.rest.types.UsersRepresentation;
 import nl.kpmg.lcm.server.LcmBaseServerTest;
 import nl.kpmg.lcm.server.LoginException;
-import nl.kpmg.lcm.server.ServerException;
-import nl.kpmg.lcm.server.data.User;
+import nl.kpmg.lcm.common.ServerException;
+import nl.kpmg.lcm.common.data.User;
 import nl.kpmg.lcm.server.data.dao.UserDao;
 import nl.kpmg.lcm.server.data.service.UserService;
 import nl.kpmg.lcm.server.rest.authentication.SessionAuthenticationManager;
-import nl.kpmg.lcm.server.rest.authentication.UserPasswordHashException;
+import nl.kpmg.lcm.common.rest.authentication.UserPasswordHashException;
 import nl.kpmg.lcm.server.rest.client.types.LoginRequest;
 
 import org.junit.After;

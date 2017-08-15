@@ -14,9 +14,9 @@
 
 package nl.kpmg.lcm.server.rest.client.version0;
 
-import nl.kpmg.lcm.rest.types.StorageRepresentation;
-import nl.kpmg.lcm.rest.types.StoragesRepresentation;
-import nl.kpmg.lcm.server.data.Storage;
+import nl.kpmg.lcm.common.rest.types.StorageRepresentation;
+import nl.kpmg.lcm.common.rest.types.StoragesRepresentation;
+import nl.kpmg.lcm.common.data.Storage;
 import nl.kpmg.lcm.server.data.service.StorageService;
 import nl.kpmg.lcm.server.rest.authentication.Roles;
 import nl.kpmg.lcm.server.rest.client.version0.types.ConcreteStorageRepresentation;

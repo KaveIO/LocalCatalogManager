@@ -13,7 +13,7 @@
  */
 package nl.kpmg.lcm.server.data.service;
 
-import nl.kpmg.lcm.server.data.metadata.Wrapper;
+import nl.kpmg.lcm.common.data.metadata.Wrapper;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

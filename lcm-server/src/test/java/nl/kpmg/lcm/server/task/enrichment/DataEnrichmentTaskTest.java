@@ -15,11 +15,11 @@
 package nl.kpmg.lcm.server.task.enrichment;
 
 import nl.kpmg.lcm.server.LcmBaseTest;
-import nl.kpmg.lcm.server.data.Storage;
-import nl.kpmg.lcm.server.data.TaskDescription;
+import nl.kpmg.lcm.common.data.Storage;
+import nl.kpmg.lcm.common.data.TaskDescription;
 import nl.kpmg.lcm.server.data.dao.MetaDataDao;
 import nl.kpmg.lcm.server.data.dao.StorageDao;
-import nl.kpmg.lcm.server.data.metadata.MetaDataWrapper;
+import nl.kpmg.lcm.common.data.metadata.MetaDataWrapper;
 import nl.kpmg.lcm.server.task.TaskException;
 import nl.kpmg.lcm.server.test.mock.StorageMocker;
 

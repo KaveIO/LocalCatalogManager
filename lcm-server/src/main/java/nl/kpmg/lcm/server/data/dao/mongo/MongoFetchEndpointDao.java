@@ -14,7 +14,7 @@
 
 package nl.kpmg.lcm.server.data.dao.mongo;
 
-import nl.kpmg.lcm.server.data.FetchEndpoint;
+import nl.kpmg.lcm.common.data.FetchEndpoint;
 import nl.kpmg.lcm.server.data.dao.FetchEndpointDao;
 
 import org.springframework.data.mongodb.repository.MongoRepository;

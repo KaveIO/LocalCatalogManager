@@ -18,19 +18,19 @@ import com.google.gson.Gson;
 import com.google.gson.stream.JsonWriter;
 
 import nl.kpmg.lcm.server.backend.Backend;
-import nl.kpmg.lcm.server.data.ContentIterator;
-import nl.kpmg.lcm.server.data.Data;
-import nl.kpmg.lcm.server.data.EnrichmentProperties;
-import nl.kpmg.lcm.server.data.FetchEndpoint;
-import nl.kpmg.lcm.server.data.IterativeData;
-import nl.kpmg.lcm.server.data.StreamingData;
+import nl.kpmg.lcm.common.data.ContentIterator;
+import nl.kpmg.lcm.common.data.Data;
+import nl.kpmg.lcm.common.data.EnrichmentProperties;
+import nl.kpmg.lcm.common.data.FetchEndpoint;
+import nl.kpmg.lcm.common.data.IterativeData;
+import nl.kpmg.lcm.common.data.StreamingData;
 import nl.kpmg.lcm.server.data.dao.FetchEndpointDao;
-import nl.kpmg.lcm.server.data.metadata.MetaData;
-import nl.kpmg.lcm.server.data.metadata.MetaDataWrapper;
+import nl.kpmg.lcm.common.data.metadata.MetaData;
+import nl.kpmg.lcm.common.data.metadata.MetaDataWrapper;
 import nl.kpmg.lcm.server.data.service.FetchEndpointService;
 import nl.kpmg.lcm.server.data.service.MetaDataService;
 import nl.kpmg.lcm.server.data.service.StorageService;
-import nl.kpmg.lcm.server.exception.LcmException;
+import nl.kpmg.lcm.common.exception.LcmException;
 import nl.kpmg.lcm.server.rest.authentication.Roles;
 
 import org.springframework.beans.factory.annotation.Autowired;

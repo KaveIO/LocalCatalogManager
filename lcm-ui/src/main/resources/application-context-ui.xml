@@ -26,7 +26,7 @@
         </property>
     </bean>
 
-    <bean id="uiConfiguration" class="nl.kpmg.lcm.configuration.UiConfiguration">
+    <bean id="uiConfiguration" class="nl.kpmg.lcm.common.configuration.UiConfiguration">
         <property name="serviceName" value="${lcm.client.name}" />
         <property name="servicePort" value="${lcm.client.port}" />
         <property name="secureServicePort" value="${lcm.client.securePort}" />
@@ -41,7 +41,7 @@
         <property name="unsafe" value="${lcm.client.unsafe}" />
     </bean>
     
-    <bean id="clientConfiguration" class="nl.kpmg.lcm.configuration.ClientConfiguration">
+    <bean id="clientConfiguration" class="nl.kpmg.lcm.common.configuration.ClientConfiguration">
         <property name="keystore" value="${lcm.client.security.keystore}" />
         <property name="keystoreType" value="${lcm.client.security.keystoreType}" />
         <property name="keystorePassword" value="${lcm.client.security.keystorePassword}" />
@@ -56,7 +56,7 @@
         <property name="unsafe" value="${lcm.server.unsafe}" />
     </bean>
     
-    <bean id="httpsClientFactory" class="nl.kpmg.lcm.client.HttpsClientFactory" />
+    <bean id="httpsClientFactory" class="nl.kpmg.lcm.common.client.HttpsClientFactory" />
     
     <context:component-scan base-package="nl.kpmg.lcm.ui" />
 </beans>

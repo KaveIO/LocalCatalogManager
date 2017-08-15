@@ -13,13 +13,13 @@
  */
 package nl.kpmg.lcm.server.data.service;
 
-import nl.kpmg.lcm.server.data.EnrichmentProperties;
-import nl.kpmg.lcm.server.data.Storage;
-import nl.kpmg.lcm.server.data.TaskSchedule;
-import nl.kpmg.lcm.server.data.TaskType;
+import nl.kpmg.lcm.common.data.EnrichmentProperties;
+import nl.kpmg.lcm.common.data.Storage;
+import nl.kpmg.lcm.common.data.TaskSchedule;
+import nl.kpmg.lcm.common.data.TaskType;
 import nl.kpmg.lcm.server.data.dao.TaskScheduleDao;
-import nl.kpmg.lcm.server.data.metadata.MetaData;
-import nl.kpmg.lcm.server.data.metadata.MetaDataWrapper;
+import nl.kpmg.lcm.common.data.metadata.MetaData;
+import nl.kpmg.lcm.common.data.metadata.MetaDataWrapper;
 import nl.kpmg.lcm.server.task.enrichment.DataEnrichmentTask;
 
 import org.springframework.beans.factory.annotation.Autowired;

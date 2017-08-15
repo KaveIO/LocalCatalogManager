@@ -13,7 +13,7 @@
  */
 package nl.kpmg.lcm.server.backend.metadata;
 
-import nl.kpmg.lcm.server.data.metadata.MetaData;
+import nl.kpmg.lcm.common.data.metadata.MetaData;
 import nl.kpmg.lcm.server.test.mock.MetaDataMocker;
 
 import org.apache.metamodel.csv.CsvConfiguration;

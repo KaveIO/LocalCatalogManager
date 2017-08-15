@@ -18,8 +18,8 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 
-import nl.kpmg.lcm.server.data.metadata.MetaData;
-import nl.kpmg.lcm.validation.Notification;
+import nl.kpmg.lcm.common.data.metadata.MetaData;
+import nl.kpmg.lcm.common.validation.Notification;
 
 import org.apache.metamodel.util.FileHelper;
 import org.junit.Test;

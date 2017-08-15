@@ -17,7 +17,7 @@ package nl.kpmg.lcm.server.backend.metadata;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 
-import nl.kpmg.lcm.server.data.metadata.MetaData;
+import nl.kpmg.lcm.common.data.metadata.MetaData;
 import nl.kpmg.lcm.server.test.mock.MetaDataMocker;
 
 import org.apache.metamodel.schema.ColumnType;

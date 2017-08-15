@@ -14,10 +14,10 @@
 
 package nl.kpmg.lcm.server.backend.storage;
 
-import nl.kpmg.lcm.server.data.DataFormat;
-import nl.kpmg.lcm.server.data.Storage;
+import nl.kpmg.lcm.common.data.DataFormat;
+import nl.kpmg.lcm.common.data.Storage;
 import nl.kpmg.lcm.server.security.EncryptionException;
-import nl.kpmg.lcm.validation.Notification;
+import nl.kpmg.lcm.common.validation.Notification;
 
 import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;

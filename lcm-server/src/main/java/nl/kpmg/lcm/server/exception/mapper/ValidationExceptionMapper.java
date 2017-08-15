@@ -13,8 +13,8 @@
  */
 package nl.kpmg.lcm.server.exception.mapper;
 
-import nl.kpmg.lcm.server.GeneralExceptionMapper;
-import nl.kpmg.lcm.server.exception.LcmValidationException;
+import nl.kpmg.lcm.common.GeneralExceptionMapper;
+import nl.kpmg.lcm.common.exception.LcmValidationException;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

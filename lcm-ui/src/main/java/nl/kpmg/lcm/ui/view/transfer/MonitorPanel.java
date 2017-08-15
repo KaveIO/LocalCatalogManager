@@ -25,14 +25,14 @@ import com.vaadin.ui.Table;
 import com.vaadin.ui.TextField;
 import com.vaadin.ui.VerticalLayout;
 
-import nl.kpmg.lcm.client.ClientException;
-import nl.kpmg.lcm.rest.types.TaskDescriptionRepresentation;
-import nl.kpmg.lcm.rest.types.TaskDescriptionsRepresentation;
-import nl.kpmg.lcm.server.ServerException;
-import nl.kpmg.lcm.server.data.ProgressIndication;
-import nl.kpmg.lcm.server.data.TaskDescription;
-import nl.kpmg.lcm.server.data.TaskDescription.TaskStatus;
-import nl.kpmg.lcm.server.data.TaskType;
+import nl.kpmg.lcm.common.client.ClientException;
+import nl.kpmg.lcm.common.rest.types.TaskDescriptionRepresentation;
+import nl.kpmg.lcm.common.rest.types.TaskDescriptionsRepresentation;
+import nl.kpmg.lcm.common.ServerException;
+import nl.kpmg.lcm.common.data.ProgressIndication;
+import nl.kpmg.lcm.common.data.TaskDescription;
+import nl.kpmg.lcm.common.data.TaskDescription.TaskStatus;
+import nl.kpmg.lcm.common.data.TaskType;
 import nl.kpmg.lcm.ui.rest.AuthenticationException;
 import nl.kpmg.lcm.ui.rest.RestClientService;
 

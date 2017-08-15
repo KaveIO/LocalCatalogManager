@@ -22,12 +22,12 @@ import com.vaadin.ui.TabSheet;
 import com.vaadin.ui.UI;
 import com.vaadin.ui.VerticalLayout;
 
-import nl.kpmg.lcm.client.ClientException;
-import nl.kpmg.lcm.rest.types.TaskDescriptionsRepresentation;
-import nl.kpmg.lcm.rest.types.TaskScheduleRepresentation;
-import nl.kpmg.lcm.rest.types.UserGroupsRepresentation;
-import nl.kpmg.lcm.rest.types.UsersRepresentation;
-import nl.kpmg.lcm.server.ServerException;
+import nl.kpmg.lcm.common.client.ClientException;
+import nl.kpmg.lcm.common.rest.types.TaskDescriptionsRepresentation;
+import nl.kpmg.lcm.common.rest.types.TaskScheduleRepresentation;
+import nl.kpmg.lcm.common.rest.types.UserGroupsRepresentation;
+import nl.kpmg.lcm.common.rest.types.UsersRepresentation;
+import nl.kpmg.lcm.common.ServerException;
 import nl.kpmg.lcm.ui.rest.AuthenticationException;
 import nl.kpmg.lcm.ui.rest.RestClientService;
 import nl.kpmg.lcm.ui.view.administration.RemoteLcmPanel;

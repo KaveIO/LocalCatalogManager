@@ -13,6 +13,8 @@
  */
 package nl.kpmg.lcm.rest.types;
 
+import nl.kpmg.lcm.common.rest.types.AbstractDatasRepresentation;
+
 /**
  *
  * @author mhoekstra

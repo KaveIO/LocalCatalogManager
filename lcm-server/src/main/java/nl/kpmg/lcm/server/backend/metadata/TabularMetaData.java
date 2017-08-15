@@ -13,12 +13,12 @@
  */
 package nl.kpmg.lcm.server.backend.metadata;
 
-import nl.kpmg.lcm.server.data.metadata.DataItemsDescriptor;
-import nl.kpmg.lcm.server.data.metadata.MetaData;
-import nl.kpmg.lcm.server.data.metadata.MetaDataWrapper;
-import nl.kpmg.lcm.server.data.metadata.Wrapper;
-import nl.kpmg.lcm.server.exception.LcmValidationException;
-import nl.kpmg.lcm.validation.Notification;
+import nl.kpmg.lcm.common.data.metadata.DataItemsDescriptor;
+import nl.kpmg.lcm.common.data.metadata.MetaData;
+import nl.kpmg.lcm.common.data.metadata.MetaDataWrapper;
+import nl.kpmg.lcm.common.data.metadata.Wrapper;
+import nl.kpmg.lcm.common.exception.LcmValidationException;
+import nl.kpmg.lcm.common.validation.Notification;
 
 import java.util.Map;
 

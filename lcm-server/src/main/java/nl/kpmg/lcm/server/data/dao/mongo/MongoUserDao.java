@@ -14,8 +14,9 @@
 
 package nl.kpmg.lcm.server.data.dao.mongo;
 
-import nl.kpmg.lcm.server.data.User;
+import nl.kpmg.lcm.common.data.User;
 import nl.kpmg.lcm.server.data.dao.UserDao;
+
 import org.springframework.data.mongodb.repository.MongoRepository;
 
 public interface MongoUserDao extends MongoRepository<User, String>, UserDao {

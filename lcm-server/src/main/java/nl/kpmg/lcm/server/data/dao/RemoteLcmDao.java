@@ -16,7 +16,8 @@
 
 package nl.kpmg.lcm.server.data.dao;
 
-import nl.kpmg.lcm.server.data.RemoteLcm;
+import nl.kpmg.lcm.common.data.RemoteLcm;
+
 import org.springframework.data.repository.PagingAndSortingRepository;
 
 /**

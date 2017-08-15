@@ -14,8 +14,8 @@
 
 package nl.kpmg.lcm.server.backend.storage;
 
-import nl.kpmg.lcm.server.data.Storage;
-import nl.kpmg.lcm.server.exception.LcmValidationException;
+import nl.kpmg.lcm.common.data.Storage;
+import nl.kpmg.lcm.common.exception.LcmValidationException;
 import nl.kpmg.lcm.server.test.mock.StorageMocker;
 
 import org.junit.Assert;

@@ -17,9 +17,9 @@ package nl.kpmg.lcm.server.data.dao.mongo;
 import static org.junit.Assert.assertEquals;
 
 import nl.kpmg.lcm.server.LcmBaseTest;
-import nl.kpmg.lcm.server.data.TaskSchedule;
+import nl.kpmg.lcm.common.data.TaskSchedule;
 import nl.kpmg.lcm.server.data.dao.TaskScheduleDao;
-import nl.kpmg.lcm.server.rest.authentication.UserPasswordHashException;
+import nl.kpmg.lcm.common.rest.authentication.UserPasswordHashException;
 
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;

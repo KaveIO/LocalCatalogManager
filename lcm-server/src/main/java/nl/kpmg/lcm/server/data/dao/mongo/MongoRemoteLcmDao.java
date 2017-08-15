@@ -14,7 +14,7 @@
 
 package nl.kpmg.lcm.server.data.dao.mongo;
 
-import nl.kpmg.lcm.server.data.RemoteLcm;
+import nl.kpmg.lcm.common.data.RemoteLcm;
 import nl.kpmg.lcm.server.data.dao.RemoteLcmDao;
 
 import org.springframework.data.mongodb.repository.MongoRepository;

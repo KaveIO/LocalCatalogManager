@@ -27,8 +27,8 @@ import com.vaadin.ui.Notification;
 import com.vaadin.ui.TextField;
 import com.vaadin.ui.Window;
 
-import nl.kpmg.lcm.server.ServerException;
-import nl.kpmg.lcm.server.data.RemoteLcm;
+import nl.kpmg.lcm.common.ServerException;
+import nl.kpmg.lcm.common.data.RemoteLcm;
 import nl.kpmg.lcm.ui.rest.AuthenticationException;
 import nl.kpmg.lcm.ui.rest.DataCreationException;
 import nl.kpmg.lcm.ui.rest.RestClientService;
@@ -139,7 +139,7 @@ public class RemoteLcmCreateWindow extends Window implements Button.ClickListene
   @Override
   public void buttonClick(Button.ClickEvent event) {
     if (event.getSource() == saveButton) {
-      nl.kpmg.lcm.validation.Notification notification = new nl.kpmg.lcm.validation.Notification();
+      nl.kpmg.lcm.common.validation.Notification notification = new nl.kpmg.lcm.common.validation.Notification();
 
       validate(notification);
       ObjectMapper mapper = new ObjectMapper();
@@ -172,7 +172,7 @@ public class RemoteLcmCreateWindow extends Window implements Button.ClickListene
     }
   }
 
-  private void validate(nl.kpmg.lcm.validation.Notification notification) {
+  private void validate(nl.kpmg.lcm.common.validation.Notification notification) {
     validateField(nameField, notification);
     validateField(addressField, notification);
     validateField(portField, notification);
@@ -187,7 +187,7 @@ public class RemoteLcmCreateWindow extends Window implements Button.ClickListene
     }
   }
 
-  private void validateField(TextField field, nl.kpmg.lcm.validation.Notification notification) {
+  private void validateField(TextField field, nl.kpmg.lcm.common.validation.Notification notification) {
     if (field.getValue().isEmpty()) {
       notification.addError(field.getCaption() + " can not be empty");
     }

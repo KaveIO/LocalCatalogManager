@@ -59,6 +59,6 @@
         <constructor-arg name="mongoConverter" ref="mappingConverter"/>
     </bean>
     
-    <bean id="httpsClientFactory" class="nl.kpmg.lcm.client.HttpsClientFactory" />
+    <bean id="httpsClientFactory" class="nl.kpmg.lcm.common.client.HttpsClientFactory" />
     <mongo:repositories base-package="nl.kpmg.lcm.server.data.dao.mongo" mongo-template-ref="mongoTemplate"/>
 </beans>

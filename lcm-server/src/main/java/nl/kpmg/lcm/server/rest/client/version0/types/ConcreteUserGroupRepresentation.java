@@ -16,9 +16,9 @@ package nl.kpmg.lcm.server.rest.client.version0.types;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 
-import nl.kpmg.lcm.rest.types.LinkInjectable;
-import nl.kpmg.lcm.rest.types.UserGroupRepresentation;
-import nl.kpmg.lcm.server.data.UserGroup;
+import nl.kpmg.lcm.common.rest.types.LinkInjectable;
+import nl.kpmg.lcm.common.rest.types.UserGroupRepresentation;
+import nl.kpmg.lcm.common.data.UserGroup;
 import nl.kpmg.lcm.server.rest.client.version0.UserGroupController;
 
 import org.glassfish.jersey.linking.Binding;

@@ -14,7 +14,7 @@
 
 package nl.kpmg.lcm.server.data.dao;
 
-import nl.kpmg.lcm.server.data.metadata.MetaData;
+import nl.kpmg.lcm.common.data.metadata.MetaData;
 
 import org.springframework.data.repository.PagingAndSortingRepository;
 

@@ -13,8 +13,8 @@
  */
 package nl.kpmg.lcm.server.test.mock;
 
-import nl.kpmg.lcm.server.data.DataFormat;
-import nl.kpmg.lcm.server.data.Storage;
+import nl.kpmg.lcm.common.data.DataFormat;
+import nl.kpmg.lcm.common.data.Storage;
 
 import java.util.HashMap;
 import java.util.Map;

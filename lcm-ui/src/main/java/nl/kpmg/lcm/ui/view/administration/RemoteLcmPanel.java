@@ -24,11 +24,11 @@ import com.vaadin.ui.UI;
 import com.vaadin.ui.VerticalLayout;
 import com.vaadin.ui.Window;
 
-import nl.kpmg.lcm.client.ClientException;
-import nl.kpmg.lcm.rest.types.RemoteLcmRepresentation;
-import nl.kpmg.lcm.rest.types.RemoteLcmsRepresentation;
-import nl.kpmg.lcm.server.ServerException;
-import nl.kpmg.lcm.server.data.RemoteLcm;
+import nl.kpmg.lcm.common.client.ClientException;
+import nl.kpmg.lcm.common.rest.types.RemoteLcmRepresentation;
+import nl.kpmg.lcm.common.rest.types.RemoteLcmsRepresentation;
+import nl.kpmg.lcm.common.ServerException;
+import nl.kpmg.lcm.common.data.RemoteLcm;
 import nl.kpmg.lcm.ui.component.DefinedLabel;
 import nl.kpmg.lcm.ui.rest.AuthenticationException;
 import nl.kpmg.lcm.ui.rest.RestClientService;

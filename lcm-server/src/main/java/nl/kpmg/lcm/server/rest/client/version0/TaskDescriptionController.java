@@ -14,9 +14,9 @@
 
 package nl.kpmg.lcm.server.rest.client.version0;
 
-import nl.kpmg.lcm.rest.types.TaskDescriptionStatusFilter;
-import nl.kpmg.lcm.rest.types.TaskDescriptionsRepresentation;
-import nl.kpmg.lcm.server.data.TaskDescription;
+import nl.kpmg.lcm.common.rest.types.TaskDescriptionStatusFilter;
+import nl.kpmg.lcm.common.rest.types.TaskDescriptionsRepresentation;
+import nl.kpmg.lcm.common.data.TaskDescription;
 import nl.kpmg.lcm.server.data.service.TaskDescriptionService;
 import nl.kpmg.lcm.server.rest.authentication.Roles;
 import nl.kpmg.lcm.server.rest.client.version0.types.ConcreteTaskDescriptionRepresentation;

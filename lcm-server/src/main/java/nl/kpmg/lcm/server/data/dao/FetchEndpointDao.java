@@ -14,7 +14,8 @@
 
 package nl.kpmg.lcm.server.data.dao;
 
-import nl.kpmg.lcm.server.data.FetchEndpoint;
+import nl.kpmg.lcm.common.data.FetchEndpoint;
+
 import org.springframework.data.repository.PagingAndSortingRepository;
 
 /**

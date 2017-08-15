@@ -14,8 +14,9 @@
 
 package nl.kpmg.lcm.server.data.dao.mongo;
 
-import nl.kpmg.lcm.server.data.TaskSchedule;
+import nl.kpmg.lcm.common.data.TaskSchedule;
 import nl.kpmg.lcm.server.data.dao.TaskScheduleDao;
+
 import org.springframework.data.mongodb.repository.MongoRepository;
 
 public interface MongoTaskScheduleDao

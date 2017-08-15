@@ -14,7 +14,7 @@
 
 package nl.kpmg.lcm.server.rest.client;
 
-import nl.kpmg.lcm.rest.types.Version0Representation;
+import nl.kpmg.lcm.common.rest.types.Version0Representation;
 import nl.kpmg.lcm.server.rest.authentication.Roles;
 import nl.kpmg.lcm.server.rest.client.version0.types.ConcreteVersion0Representation;
 

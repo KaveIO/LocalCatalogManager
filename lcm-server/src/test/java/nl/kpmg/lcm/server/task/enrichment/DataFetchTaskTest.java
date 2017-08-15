@@ -14,7 +14,7 @@
 
 package nl.kpmg.lcm.server.task.enrichment;
 
-import nl.kpmg.lcm.server.data.metadata.MetaDataWrapper;
+import nl.kpmg.lcm.common.data.metadata.MetaDataWrapper;
 import nl.kpmg.lcm.server.task.TaskException;
 
 import org.junit.Test;

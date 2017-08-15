@@ -16,7 +16,7 @@ package nl.kpmg.lcm.server.task.core;
 
 import static org.quartz.JobBuilder.newJob;
 
-import nl.kpmg.lcm.server.data.TaskDescription;
+import nl.kpmg.lcm.common.data.TaskDescription;
 import nl.kpmg.lcm.server.data.service.TaskDescriptionService;
 import nl.kpmg.lcm.server.task.CoreTask;
 import nl.kpmg.lcm.server.task.EnrichmentTask;

@@ -29,7 +29,7 @@
         </property>
     </bean>
 
-    <bean id="serverConfiguration" class="nl.kpmg.lcm.configuration.ServerConfiguration">
+    <bean id="serverConfiguration" class="nl.kpmg.lcm.common.configuration.ServerConfiguration">
         <property name="serviceName" value="${lcm.server.name}" />
         <property name="servicePort" value="${lcm.server.port}" />
         <property name="secureServicePort" value="${lcm.server.securePort}" />
@@ -45,7 +45,7 @@
         <property name="unsafe" value="${lcm.server.unsafe}" />
     </bean>
     
-    <bean id="clientConfiguration" class="nl.kpmg.lcm.configuration.ClientConfiguration">
+    <bean id="clientConfiguration" class="nl.kpmg.lcm.common.configuration.ClientConfiguration">
         <property name="keystore" value="${lcm.client.security.keystore}" />
         <property name="keystoreType" value="${lcm.client.security.keystoreType}" />
         <property name="keystorePassword" value="${lcm.client.security.keystorePassword}" />

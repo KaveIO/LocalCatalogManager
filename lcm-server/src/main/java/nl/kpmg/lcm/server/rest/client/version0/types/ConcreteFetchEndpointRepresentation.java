@@ -16,9 +16,9 @@ package nl.kpmg.lcm.server.rest.client.version0.types;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 
-import nl.kpmg.lcm.rest.types.FetchEndpointRepresentation;
-import nl.kpmg.lcm.rest.types.LinkInjectable;
-import nl.kpmg.lcm.server.data.FetchEndpoint;
+import nl.kpmg.lcm.common.rest.types.FetchEndpointRepresentation;
+import nl.kpmg.lcm.common.rest.types.LinkInjectable;
+import nl.kpmg.lcm.common.data.FetchEndpoint;
 import nl.kpmg.lcm.server.rest.client.version0.FetchEndpointController;
 
 import org.glassfish.jersey.linking.InjectLink;
