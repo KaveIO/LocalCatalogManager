@@ -33,6 +33,7 @@ import nl.kpmg.lcm.server.data.FileSystemAdapter;
 import nl.kpmg.lcm.server.data.LocalFileAdapter;
 import nl.kpmg.lcm.server.data.LocalFileSystemAdapter;
 import nl.kpmg.lcm.server.data.azure.AzureFileAdapter;
+import nl.kpmg.lcm.server.data.azure.AzureFileSystemAdapter;
 import nl.kpmg.lcm.server.data.hdfs.HdfsFileAdapter;
 import nl.kpmg.lcm.server.data.hdfs.HdfsFileSystemAdapter;
 import nl.kpmg.lcm.server.data.s3.S3FileAdapter;
@@ -60,8 +61,17 @@ public class BackendFileImpl extends AbstractBackend {
 
   }
 
-  private FileAdapter getFileAdapter(Storage storage, String filePath) {
+  private FileAdapter getFileAdapter(String key) {
     FileAdapter fileAdapter = null;
+
+    String storageName = getStorageName(key);
+    Storage storage = storageService.findByName(storageName);
+    if (storage == null) {
+      LOGGER.error("Storage with name: " + storageName + " does not exists!");
+      return null;
+    }
+
+    String filePath = getFilePath(key);
 
     if (S3FileStorage.getSupportedStorageTypes().contains(storage.getType())) {
       fileAdapter = new S3FileAdapter(new S3FileStorage(storage), filePath);
@@ -87,10 +97,7 @@ public class BackendFileImpl extends AbstractBackend {
   protected void enrichMetadataItem(EnrichmentProperties properties, String key) throws IOException {
     DataItemsDescriptor dynamicDataDescriptor =
         metaDataWrapper.getDynamicData().getDynamicDataDescriptor(key);
-    String dataURI = dynamicDataDescriptor.getURI();
-    String filePath = storageService.getStorageItemName(dataURI);
-    Storage storage = storageService.getStorageByUri(dataURI);
-    FileAdapter fileAdapter = getFileAdapter(storage, filePath);
+    FileAdapter fileAdapter = getFileAdapter(key);
     if (properties.getAccessibility()) {
       String state = fileAdapter.exists() ? "ATTACHED" : "DETACHED";
       dynamicDataDescriptor.getDetailsDescriptor().setState(state);
@@ -116,24 +123,23 @@ public class BackendFileImpl extends AbstractBackend {
     Long size =
         metaDataWrapper.getDynamicData().getDynamicDataDescriptor(key).getDetailsDescriptor()
             .getSize();
-    String dataURI = metaDataWrapper.getDynamicData().getDynamicDataDescriptor(key).getURI();
-    String filePath = storageService.getStorageItemName(dataURI);
-    Storage storage = storageService.getStorageByUri(dataURI);
-    FileAdapter fileAdapter = getFileAdapter(storage, filePath);
+
+    FileAdapter fileAdapter = getFileAdapter(key);
 
     InputStream in = null;
     try {
       if (fileAdapter.exists() && !transferSettings.isForceOverwrite()) {
         if (progressIndicationFactory != null) {
-          String message = "The file: " + filePath + " is already attached, won't overwrite.";
+          String message =
+              "The file: " + getFilePath(key) + " is already attached, won't overwrite.";
           progressIndicationFactory.writeIndication(message);
         }
         throw new LcmException("Data set is already attached, won't overwrite. Data item: "
-            + dataURI);
+            + getFilePath(key));
       }
 
       if (progressIndicationFactory != null) {
-        String message = "Start transfer. File: " + filePath;
+        String message = "Start transfer. File: " + getFilePath(key);
         progressIndicationFactory.writeIndication(message);
       }
 
@@ -143,14 +149,16 @@ public class BackendFileImpl extends AbstractBackend {
       fileAdapter.write(in, size);
 
       if (progressIndicationFactory != null) {
-        String message = "The file: " + filePath + " was transfered successfully.";
+        String message = "The file: " + getFilePath(key) + " was transfered successfully.";
         progressIndicationFactory.writeIndication(message);
       }
     } catch (IOException ex) {
-      LOGGER.error("Unable to write file: " + filePath + ". Error message:" + ex.getMessage());
+      LOGGER.error("Unable to write file: " + getFilePath(key) + ". Error message:"
+          + ex.getMessage());
       if (progressIndicationFactory != null) {
         String message =
-            "Transfer of the file: " + filePath + " failed. Error message: " + ex.getMessage();
+            "Transfer of the file: " + getFilePath(key) + " failed. Error message: "
+                + ex.getMessage();
         progressIndicationFactory.writeIndication(message);
       }
     } finally {
@@ -167,10 +175,7 @@ public class BackendFileImpl extends AbstractBackend {
 
   @Override
   public Data read(String key) {
-    String dataURI = metaDataWrapper.getDynamicData().getDynamicDataDescriptor(key).getURI();
-    String filePath = storageService.getStorageItemName(dataURI);
-    Storage storage = storageService.getStorageByUri(dataURI);
-    FileAdapter fileAdapter = getFileAdapter(storage, filePath);
+    FileAdapter fileAdapter = getFileAdapter(key);
     InputStream in;
     try {
       in = fileAdapter.read();
@@ -178,7 +183,8 @@ public class BackendFileImpl extends AbstractBackend {
         return new StreamingData(in);
       }
     } catch (IOException ex) {
-      LOGGER.error("Unable to read file: " + filePath + ". Error message:" + ex.getMessage());
+      LOGGER.error("Unable to read file: " + getFilePath(key) + ". Error message:"
+          + ex.getMessage());
     }
 
     return null;
@@ -216,6 +222,8 @@ public class BackendFileImpl extends AbstractBackend {
       fileSystemAdapter = new LocalFileSystemAdapter(new LocalFileStorage(storage));
     } else if (HdfsFileStorage.getSupportedStorageTypes().contains(storage.getType())) {
       fileSystemAdapter = new HdfsFileSystemAdapter(new HdfsFileStorage(storage));
+    } else if (AzureStorage.getSupportedStorageTypes().contains(storage.getType())) {
+      fileSystemAdapter = new AzureFileSystemAdapter(new AzureStorage(storage));
     } else {
       LOGGER.warn("Improper storage object is passed to BackendFileImpl. Storage id: "
           + storage.getId());

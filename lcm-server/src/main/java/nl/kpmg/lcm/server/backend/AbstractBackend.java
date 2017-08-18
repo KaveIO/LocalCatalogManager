@@ -109,8 +109,8 @@ abstract class AbstractBackend implements Backend {
           metaDataWrapper.getDynamicData().getDynamicDataDescriptor(key);
       long start = System.currentTimeMillis();
       try {
-          dynamicDataDescriptor.clearDetailsDescriptor();
-          enrichMetadataItem(properties, key);
+        dynamicDataDescriptor.clearDetailsDescriptor();
+        enrichMetadataItem(properties, key);
       } catch (Exception ex) {
         String message =
             "Unable to enrich medatadata : " + metaDataWrapper.getId() + " key: " + key
@@ -124,11 +124,12 @@ abstract class AbstractBackend implements Backend {
       }
     }
 
-    //in case that there are dynami data items exists.
+    // in case that there are dynami data items exists.
     return metaDataWrapper.getMetaData();
   }
 
-  protected abstract void enrichMetadataItem(EnrichmentProperties properties, String itemKey) throws IOException;
+  protected abstract void enrichMetadataItem(EnrichmentProperties properties, String itemKey)
+      throws IOException;
 
   protected void expandDataURISection() {
     List<String> uriList = metaDataWrapper.getData().getUri();
@@ -144,15 +145,15 @@ abstract class AbstractBackend implements Backend {
           continue;
         }
         String path = parsedUri.getPath();
-        //remove '/' in fron of the path
-        if(path.charAt(0) == '/') {
-            path =  path.substring(1);
+        // remove '/' in fron of the path
+        if (path.charAt(0) == '/') {
+          path = path.substring(1);
         }
 
         String subPath = "";
         int index = StringUtils.lastIndexOf(path, "/");
         if (index != -1) {
-            subPath = path.substring(0, index);
+          subPath = path.substring(0, index);
         }
         if (subPath.contains("*")) {
           LOGGER.error("Error! URI has invalid syntax. Wildcard symbol is used in the path:" + uri);
@@ -162,7 +163,7 @@ abstract class AbstractBackend implements Backend {
         String item = path.substring(index + 1, path.length());
         Pattern namePattern = Pattern.compile(item.replace("*", ".*"));
         String storageName =
-          parsedUri.getHost() != null ? parsedUri.getHost() : parsedUri.getAuthority();
+            parsedUri.getHost() != null ? parsedUri.getHost() : parsedUri.getAuthority();
         List<String> dataItemList = loadDataItems(storageName, subPath);
         for (String dataItemName : dataItemList) {
           if (namePattern.matcher(dataItemName).matches()) {
@@ -238,6 +239,40 @@ abstract class AbstractBackend implements Backend {
   @Override
   public void setProgressIndicationFactory(ProgressIndicationFactory progressIndicationFactory) {
     this.progressIndicationFactory = progressIndicationFactory;
+  }
+
+  protected String getStorageName(String key) {
+    DataItemsDescriptor dynamicDataDescriptor =
+        metaDataWrapper.getDynamicData().getDynamicDataDescriptor(key);
+    String unparesURI = dynamicDataDescriptor.getURI();
+    URI parsedUri;
+    try {
+      parsedUri = new URI(unparesURI);
+    } catch (URISyntaxException ex) {
+      LOGGER.error("unable to parse uri " + unparesURI + " for key:" + key);
+      return null;
+    }
+
+    String storageName =
+        parsedUri.getHost() != null ? parsedUri.getHost() : parsedUri.getAuthority();
+
+    return storageName;
+  }
+
+  protected String getFilePath(String key) {
+    DataItemsDescriptor dynamicDataDescriptor =
+        metaDataWrapper.getDynamicData().getDynamicDataDescriptor(key);
+    String unparesURI = dynamicDataDescriptor.getURI();
+    URI parsedUri;
+    try {
+      parsedUri = new URI(unparesURI);
+    } catch (URISyntaxException ex) {
+      LOGGER.error("unable to parse uri " + unparesURI + " for key:" + key);
+      return null;
+    }
+
+    return parsedUri.getPath();
+
   }
 
 }
