@@ -25,13 +25,16 @@ import com.vaadin.ui.TabSheet;
 import com.vaadin.ui.TextField;
 import com.vaadin.ui.Window;
 
-import nl.kpmg.lcm.common.client.ClientException;
-import nl.kpmg.lcm.common.rest.types.StorageRepresentation;
-import nl.kpmg.lcm.common.rest.types.StoragesRepresentation;
 import nl.kpmg.lcm.common.NamespacePathValidator;
 import nl.kpmg.lcm.common.ServerException;
+import nl.kpmg.lcm.common.client.ClientException;
 import nl.kpmg.lcm.common.data.Storage;
 import nl.kpmg.lcm.common.data.TransferSettings;
+import nl.kpmg.lcm.common.data.TransferValidation;
+import nl.kpmg.lcm.common.data.metadata.MetaData;
+import nl.kpmg.lcm.common.data.metadata.MetaDataWrapper;
+import nl.kpmg.lcm.common.rest.types.StorageRepresentation;
+import nl.kpmg.lcm.common.rest.types.StoragesRepresentation;
 import nl.kpmg.lcm.ui.rest.AuthenticationException;
 import nl.kpmg.lcm.ui.rest.DataCreationException;
 import nl.kpmg.lcm.ui.rest.RestClientService;
@@ -39,6 +42,7 @@ import nl.kpmg.lcm.ui.rest.RestClientService;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
+import java.util.List;
 
 /**
  *
@@ -68,7 +72,7 @@ public class StartTransferWindow extends Window implements Button.ClickListener 
   private ComboBox storageListComboBox;
   private String remoteLcmId;
   private String remoteLcmUrl;
-  private String remoteMetadataId;
+  private MetaDataWrapper remoteMetadata;
   private TextField metadataNameSpaceField;
   private final Button startButton = new Button("Start");
 
@@ -79,16 +83,16 @@ public class StartTransferWindow extends Window implements Button.ClickListener 
   private final TabSheet tabsheet = new TabSheet();
 
   public StartTransferWindow(RestClientService restClientService, String remoteLcmId,
-      String remoteLcmUrl, String metadataId, String metadataName) {
+      String remoteLcmUrl, MetaData remoteMetadata) {
     super(TITLE);
     this.restClientService = restClientService;
     this.remoteLcmId = remoteLcmId;
-    this.remoteMetadataId = metadataId;
-    init(remoteLcmUrl, metadataId, metadataName);
+    this.remoteMetadata = new MetaDataWrapper(remoteMetadata);
+    init(remoteLcmUrl, remoteMetadata.getId(), remoteMetadata.getName());
   }
 
-  private void init(String remoteLcmUrl, String metadataId, String metadataName) {
-    FormLayout commonContentPanel = initCommonContentPanel(metadataId, metadataName);
+  private void init(String remoteLcmUrl, String remoteMetadataId, String remoteMetadataName) {
+    FormLayout commonContentPanel = initCommonContentPanel(remoteMetadataId, remoteMetadataName);
     tabsheet.addTab(commonContentPanel, "Common");
 
     FormLayout settingsContent = initSettingsPanel();
@@ -155,16 +159,19 @@ public class StartTransferWindow extends Window implements Button.ClickListener 
 
   private ComboBox initStorageListComboBox() throws UnsupportedOperationException {
     ComboBox storageListComboBox = new ComboBox("Local Storage");
+    List<String> validStorageTypes =
+        TransferValidation.getValidStorageTypes(remoteMetadata.getSourceType());
     StoragesRepresentation storages;
     try {
       storages = restClientService.getStorage();
 
       for (StorageRepresentation item : storages.getItems()) {
         Storage storage = item.getItem();
-
-        String name = storage.getName() + " (" + storage.getType() + ")";
-        storageListComboBox.addItem(storage.getId());
-        storageListComboBox.setItemCaption(storage.getId(), name);
+        if (validStorageTypes.contains(storage.getType())) {
+          String name = storage.getName() + " (" + storage.getType() + ")";
+          storageListComboBox.addItem(storage.getId());
+          storageListComboBox.setItemCaption(storage.getId(), name);
+        }
       }
     } catch (AuthenticationException | ServerException | ClientException ex) {
       LOGGER.error("Unable to load remote LCMs! Message:" + ex.getMessage());
@@ -189,7 +196,8 @@ public class StartTransferWindow extends Window implements Button.ClickListener 
   @Override
   public void buttonClick(Button.ClickEvent event) {
     if (event.getSource() == startButton) {
-      nl.kpmg.lcm.common.validation.Notification notification = new nl.kpmg.lcm.common.validation.Notification();
+      nl.kpmg.lcm.common.validation.Notification notification =
+          new nl.kpmg.lcm.common.validation.Notification();
 
       validate(notification);
 
@@ -201,7 +209,7 @@ public class StartTransferWindow extends Window implements Button.ClickListener 
 
       ObjectNode payload = createPayload();
       try {
-        restClientService.triggerTransfer(remoteLcmId, remoteMetadataId, payload.toString());
+        restClientService.triggerTransfer(remoteLcmId, remoteMetadata.getId(), payload.toString());
         Notification.show("Transfer was scheduled successfully.");
         this.close();
       } catch (ServerException | DataCreationException | AuthenticationException | IOException ex) {
@@ -264,7 +272,7 @@ public class StartTransferWindow extends Window implements Button.ClickListener 
       notification.addError("You must enter namespace path!");
     }
 
-    NamespacePathValidator validator  =  new NamespacePathValidator();
+    NamespacePathValidator validator = new NamespacePathValidator();
     validator.validate(namespaceSelection, notification);
   }
 }

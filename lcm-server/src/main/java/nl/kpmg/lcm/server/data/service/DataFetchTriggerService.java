@@ -14,11 +14,9 @@
 
 package nl.kpmg.lcm.server.data.service;
 
+import nl.kpmg.lcm.common.ServerException;
 import nl.kpmg.lcm.common.client.HttpsClientFactory;
 import nl.kpmg.lcm.common.configuration.ClientConfiguration;
-import nl.kpmg.lcm.common.rest.types.FetchEndpointRepresentation;
-import nl.kpmg.lcm.common.rest.types.MetaDataRepresentation;
-import nl.kpmg.lcm.common.ServerException;
 import nl.kpmg.lcm.common.data.DataFormat;
 import nl.kpmg.lcm.common.data.FetchEndpoint;
 import nl.kpmg.lcm.common.data.RemoteLcm;
@@ -26,11 +24,14 @@ import nl.kpmg.lcm.common.data.Storage;
 import nl.kpmg.lcm.common.data.TaskDescription;
 import nl.kpmg.lcm.common.data.TaskType;
 import nl.kpmg.lcm.common.data.TransferSettings;
-import nl.kpmg.lcm.server.data.dao.RemoteLcmDao;
+import nl.kpmg.lcm.common.data.TransferValidation;
 import nl.kpmg.lcm.common.data.metadata.DataItemsDescriptor;
 import nl.kpmg.lcm.common.data.metadata.MetaData;
 import nl.kpmg.lcm.common.data.metadata.MetaDataWrapper;
 import nl.kpmg.lcm.common.exception.LcmException;
+import nl.kpmg.lcm.common.rest.types.FetchEndpointRepresentation;
+import nl.kpmg.lcm.common.rest.types.MetaDataRepresentation;
+import nl.kpmg.lcm.server.data.dao.RemoteLcmDao;
 import nl.kpmg.lcm.server.rest.client.version0.HttpResponseHandler;
 import nl.kpmg.lcm.server.task.enrichment.DataFetchTask;
 
@@ -111,6 +112,11 @@ public class DataFetchTriggerService {
     Storage localStorage = storageService.findById(localStorageId);
     if (localStorage == null) {
       throw new NotFoundException(String.format("Storage with id: %s is not found", localStorageId));
+    }
+    if (!TransferValidation.validateTransfer(metaDataWrapper.getSourceType(),
+        localStorage.getType())) {
+      throw new LcmException("Unable to transfer " + metaDataWrapper.getSourceType() + " to "
+          + localStorage.getType() + " storage.");
     }
 
     updateMetaData(metaDataWrapper, localStorage, namespacePath);
@@ -222,19 +228,22 @@ public class DataFetchTriggerService {
       newItemName = newItemName + ".csv";
     }
 
-    if (destinationDataFormat.equals(DataFormat.JSON)) {
+    if (destinationDataFormat.equals(DataFormat.JSON)
+        || (originalDataFormat.equals(DataFormat.JSON) && TransferValidation
+            .isUnstructuredDataFormat(destinationDataFormat))) {
       newItemName = newItemName + ".json";
     }
 
-    //When the source is file based data item  i.e csv or json and the destination
-    //is DB(Hive, Mongo) and the file path contains  folders
+    // When the source is file based data item i.e csv or json and the destination
+    // is DB(Hive, Mongo) and the file path contains folders
     // then transformation must be
     if ((originalDataFormat.equals(DataFormat.CSV) || originalDataFormat.equals(DataFormat.JSON))
-            && (destinationDataFormat.equals(DataFormat.HIVE) || destinationDataFormat.equals(DataFormat.MONGO))) {
+        && (destinationDataFormat.equals(DataFormat.HIVE) || destinationDataFormat
+            .equals(DataFormat.MONGO))) {
 
-        newItemName = newItemName.substring(1);
-        newItemName = newItemName.replaceAll("/", SLASH_REPLACEMENT);
-        newItemName = "/" + newItemName;
+      newItemName = newItemName.substring(1);
+      newItemName = newItemName.replaceAll("/", SLASH_REPLACEMENT);
+      newItemName = "/" + newItemName;
     }
 
     return newItemName;

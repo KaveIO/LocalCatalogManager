@@ -188,8 +188,7 @@ public class SchedulePanel extends CustomComponent {
         String id = (String) remoteLcmListComboBox.getValue();
         String url = remoteLcmUrlMap.get(id);
         StartTransferWindow storageCreateWindow =
-            new StartTransferWindow(restClientService, id, url, data.getItem().getId(), data
-                .getItem().getName());
+            new StartTransferWindow(restClientService, id, url, data.getItem());
         UI.getCurrent().addWindow(storageCreateWindow);
       }
     });
