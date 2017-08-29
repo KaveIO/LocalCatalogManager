@@ -18,6 +18,7 @@ import nl.kpmg.lcm.common.data.Storage;
 import nl.kpmg.lcm.common.data.TestResult;
 import nl.kpmg.lcm.server.data.FileSystemAdapter;
 import nl.kpmg.lcm.server.data.LocalFileSystemAdapter;
+import nl.kpmg.lcm.server.data.azure.AzureFileSystemAdapter;
 import nl.kpmg.lcm.server.data.hdfs.HdfsFileSystemAdapter;
 import nl.kpmg.lcm.server.data.s3.S3FileSystemAdapter;
 
@@ -65,6 +66,12 @@ public class StorageTester {
             DriverManager.getConnection(hiveStorage.getUrl(), hiveStorage.getUsername(),
                 hiveStorage.getPassword());
         return new TestResult("OK", TestResult.TestCode.ACCESIBLE);
+      }  else if (DataFormat.AZUREFILE.equals(storage.getType()) ||
+              DataFormat.AZUREFILE.equals(storage.getType())) {
+
+          AzureStorage fileStorage = new AzureStorage(storage);
+          AzureFileSystemAdapter adapter = new AzureFileSystemAdapter(fileStorage);
+          return adapter.testConnection();
       }
     } catch (Exception e) {
       return new TestResult(e.getMessage(), TestResult.TestCode.INACCESSIBLE);

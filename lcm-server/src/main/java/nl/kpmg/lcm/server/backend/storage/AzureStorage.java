@@ -26,39 +26,80 @@ import java.util.Set;
  */
 public class AzureStorage extends AbstractStorageContainer {
 
-  private String accountFQDN;
-  private String clientId;
-  private String authTokenEndpoint;
-  private String clientKey;
-
   public AzureStorage(Storage storage) {
     super(storage);
   }
 
   public String getAccountFQDN() {
-    return accountFQDN;
+    return (String) storage.getCredentials().get("account-FQDN");
+  }
+
+  public void setAccountFQDN(String accountFQDN) {
+    storage.getCredentials().put("account-FQDN", accountFQDN);
   }
 
   public String getClientId() {
-    return clientId;
+    return (String) storage.getCredentials().get("client-id");
+  }
+
+  public void setClientId(String clientId) {
+    storage.getCredentials().put("client-id", clientId);
   }
 
   public String getAuthTokenEndpoint() {
-    return authTokenEndpoint;
+    return (String) storage.getCredentials().get("auth-token-endpoint");
+  }
+
+  public void setAuthTokenEndpoint(String authTokenEndpoint) {
+    storage.getCredentials().put("auth-token-endpoint", authTokenEndpoint);
   }
 
   public String getClientKey() {
-    return clientKey;
+    return (String) storage.getCredentials().get("client-key");
+  }
+
+  public void setClientKey(String clientKey) {
+    storage.getCredentials().put("client-key", clientKey);
   }
 
   public String getPath() {
     return (String) storage.getOptions().get("path");
   }
 
+  public void setPath(String path) {
+      storage.getOptions().put("path",  path);
+  }
 
   @Override
   protected void validate(Storage storage, Notification notification) {
-    throw new UnsupportedOperationException("Not supported yet.");
+    if (!getSupportedStorageTypes().contains(storage.getType())) {
+      notification.addError("Storage validation: storage type does not match!");
+    }
+
+    validateCredentials(notification);
+  }
+
+  public void validateCredentials(Notification notification) {
+    if (storage.getCredentials() == null) {
+      notification.addError("Credentials does not exists!");
+      return;
+    }
+
+    if (getAccountFQDN() == null) {
+      notification.addError("Storage validation: \"account-FQDN\" is missing!", null);
+    }
+
+    if (getClientId() == null) {
+      notification.addError("Storage validation: \"client-id\" is missing!", null);
+    }
+
+    if (getClientKey() == null) {
+      notification.addError("Storage validation: \"client-key\" is missing!", null);
+    }
+
+    if (getAuthTokenEndpoint() == null) {
+      notification.addError("Storage validation: \"auth-token-endpoint\" is missing!", null);
+    }
   }
 
   /**
@@ -69,6 +110,21 @@ public class AzureStorage extends AbstractStorageContainer {
   public static Set<String> getSupportedStorageTypes() {
     Set result = new HashSet();
     result.add(DataFormat.AZUREFILE);
+    result.add(DataFormat.AZURECSV);
     return result;
   }
+
+  /**
+   * @return a set with credentials fields that needs to be encrypted for this storage type
+   */
+  public static Set<String> getEncryptedCredentialsFields() {
+    Set result = new HashSet();
+    result.add("client-key");
+    result.add("auth-token-endpoint");
+    result.add("client-id");
+    result.add("account-FQDN");
+
+    return result;
+  }
+
 }

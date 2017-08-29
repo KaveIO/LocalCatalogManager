@@ -24,7 +24,7 @@ import nl.kpmg.lcm.common.data.Storage;
 import nl.kpmg.lcm.common.data.TaskDescription;
 import nl.kpmg.lcm.common.data.TaskType;
 import nl.kpmg.lcm.common.data.TransferSettings;
-import nl.kpmg.lcm.common.data.TransferValidation;
+import nl.kpmg.lcm.common.data.TransferValidator;
 import nl.kpmg.lcm.common.data.metadata.DataItemsDescriptor;
 import nl.kpmg.lcm.common.data.metadata.MetaData;
 import nl.kpmg.lcm.common.data.metadata.MetaDataWrapper;
@@ -113,7 +113,7 @@ public class DataFetchTriggerService {
     if (localStorage == null) {
       throw new NotFoundException(String.format("Storage with id: %s is not found", localStorageId));
     }
-    if (!TransferValidation.validateTransfer(metaDataWrapper.getSourceType(),
+    if (!TransferValidator.validateTransfer(metaDataWrapper.getSourceType(),
         localStorage.getType())) {
       throw new LcmException("Unable to transfer " + metaDataWrapper.getSourceType() + " to "
           + localStorage.getType() + " storage.");
@@ -229,7 +229,7 @@ public class DataFetchTriggerService {
     }
 
     if (destinationDataFormat.equals(DataFormat.JSON)
-        || (originalDataFormat.equals(DataFormat.JSON) && TransferValidation
+        || (originalDataFormat.equals(DataFormat.JSON) && TransferValidator
             .isUnstructuredDataFormat(destinationDataFormat))) {
       newItemName = newItemName + ".json";
     }

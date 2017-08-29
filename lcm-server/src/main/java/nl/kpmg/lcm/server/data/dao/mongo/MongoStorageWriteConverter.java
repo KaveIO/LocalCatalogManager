@@ -17,6 +17,7 @@ import com.mongodb.BasicDBObject;
 import com.mongodb.DBObject;
 
 import nl.kpmg.lcm.common.data.Storage;
+import nl.kpmg.lcm.server.backend.storage.AzureStorage;
 import nl.kpmg.lcm.server.backend.storage.HiveStorage;
 import nl.kpmg.lcm.server.backend.storage.MongoStorage;
 import nl.kpmg.lcm.server.backend.storage.S3FileStorage;
@@ -81,6 +82,8 @@ public class MongoStorageWriteConverter implements Converter<Storage, DBObject> 
       encryptedFields = MongoStorage.getEncryptedCredentialsFields();
     } else if (S3FileStorage.getSupportedStorageTypes().contains(storage.getType())) {
       encryptedFields = S3FileStorage.getEncryptedCredentialsFields();
+    } else if (AzureStorage.getSupportedStorageTypes().contains(storage.getType())) {
+      encryptedFields = AzureStorage.getEncryptedCredentialsFields();
     }
 
     if (encryptedFields == null) {
