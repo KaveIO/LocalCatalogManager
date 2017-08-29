@@ -40,7 +40,7 @@ public class AzureCsvAdapter implements CsvAdapter {
     AccessTokenProvider provider =
         new ClientCredsTokenProvider(azureStorage.getAuthTokenEndpoint(),
             azureStorage.getClientId(), azureStorage.getClientKey());
-    ADLStoreClient client = ADLStoreClient.createClient(azureStorage.getAccountFQDN(), provider);
+    client = ADLStoreClient.createClient(azureStorage.getAccountFQDN(), provider);
 
     storageBasePath = "/" + azureStorage.getPath();
     storagePath = "/" + azureStorage.getPath() + "/" + filename;

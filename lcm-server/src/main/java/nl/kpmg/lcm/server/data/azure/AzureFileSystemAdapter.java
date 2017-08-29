@@ -39,7 +39,7 @@ public class AzureFileSystemAdapter implements FileSystemAdapter {
     AccessTokenProvider provider =
         new ClientCredsTokenProvider(storage.getAuthTokenEndpoint(), storage.getClientId(),
             storage.getClientKey());
-    ADLStoreClient client = ADLStoreClient.createClient(storage.getAccountFQDN(), provider);
+    client = ADLStoreClient.createClient(storage.getAccountFQDN(), provider);
 
     this.storage = storage;
   }
