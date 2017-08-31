@@ -64,6 +64,7 @@ public class LoginViewImpl extends LoginForm implements View, LoginListener {
 
     layout.addComponent(new Label("Login"));
     userNameField.setWidth(20, Unit.EM);
+    passwordField.setWidth(20, Unit.EM);
     layout.addComponent(userNameField);
     layout.addComponent(passwordField);
     layout.addComponent(loginButton);
