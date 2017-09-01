@@ -67,7 +67,7 @@ public class StorageTester {
                 hiveStorage.getPassword());
         return new TestResult("OK", TestResult.TestCode.ACCESIBLE);
       }  else if (DataFormat.AZUREFILE.equals(storage.getType()) ||
-              DataFormat.AZUREFILE.equals(storage.getType())) {
+              DataFormat.AZURECSV.equals(storage.getType())) {
 
           AzureStorage fileStorage = new AzureStorage(storage);
           AzureFileSystemAdapter adapter = new AzureFileSystemAdapter(fileStorage);

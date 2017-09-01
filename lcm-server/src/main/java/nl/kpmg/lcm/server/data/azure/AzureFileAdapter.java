@@ -36,7 +36,7 @@ public class AzureFileAdapter implements FileAdapter {
 
   private ADLStoreClient client;
   private String storageBasePath;
-  private String storagePath;
+  private String filePath;
 
   public AzureFileAdapter(AzureStorage azureStorage, String filename) {
     AccessTokenProvider provider =
@@ -45,7 +45,7 @@ public class AzureFileAdapter implements FileAdapter {
     client = ADLStoreClient.createClient(azureStorage.getAccountFQDN(), provider);
 
     storageBasePath = "/" + azureStorage.getPath();
-    storagePath = "/" + azureStorage.getPath() + "/" + filename;
+    filePath = "/" + azureStorage.getPath() + "/" + filename;
   }
 
   @Override
@@ -58,7 +58,7 @@ public class AzureFileAdapter implements FileAdapter {
       return;
     }
 
-    OutputStream os = client.createFile(storagePath, IfExists.OVERWRITE);
+    OutputStream os = client.createFile(filePath, IfExists.OVERWRITE);
     try {
       IOUtils.copyLarge(stream, os);
     } finally {
@@ -70,32 +70,36 @@ public class AzureFileAdapter implements FileAdapter {
 
   @Override
   public InputStream read() throws IOException {
-    return client.getReadStream(storagePath);
+    return client.getReadStream(filePath);
   }
 
   @Override
   public boolean exists() throws IOException {
-    return client.checkExists(storagePath);
+    return client.checkExists(filePath);
   }
 
   @Override
   public long length() throws IOException {
-    return client.getDirectoryEntry(storagePath).length;
+    return client.getDirectoryEntry(filePath).length;
   }
 
   @Override
   public long lastModified() throws IOException {
-    return client.getDirectoryEntry(storagePath).lastModifiedTime.getTime();
+    return client.getDirectoryEntry(filePath).lastModifiedTime.getTime();
   }
 
   @Override
   public void validatePaths() {
     try {
-      // in case '../' exists in the 'storageBasePath' then 'new Path()' will eliminate them.
-      String filePath = client.getDirectoryEntry(storagePath).fullName;
-      if (!filePath.startsWith(storageBasePath)) {
+      if (exists()) {
+        String filePathx = client.getDirectoryEntry(filePath).fullName;
+        if (!filePathx.startsWith(storageBasePath)) {
+          throw new LcmValidationException(
+              "Metadata path is probably is wrong. Data uri can not contains \"..\\\"!");
+        }
+      } else if (filePath.contains("../")) {
         throw new LcmValidationException(
-            "Metadata path is probably is wrong. Data uri can not contains \"..\\\"!");
+            "Metadata path is probbably wrong. Data uri can not contains \"..\\\"!");
       }
     } catch (IOException ex) {
       throw new LcmValidationException("Unable to validate metadata path!");

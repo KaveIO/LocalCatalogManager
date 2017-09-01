@@ -42,6 +42,7 @@ public class StreamingData extends Data {
     result.add(DataFormat.S3FILE);
     result.add(DataFormat.FILE);
     result.add(DataFormat.HDFSFILE);
+    result.add(DataFormat.AZUREFILE);
     return result;
   }
 

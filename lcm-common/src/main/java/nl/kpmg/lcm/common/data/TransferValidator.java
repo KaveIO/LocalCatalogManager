@@ -41,6 +41,9 @@ public class TransferValidator {
       return true;
     } else if (dataFormat.equals(DataFormat.JSON) && isUnstructuredDataFormat(storageFormat)) {
       return true;
+    } else  if((dataFormat.equals(DataFormat.AZUREFILE) || dataFormat.equals(DataFormat.AZURECSV))
+            && (storageFormat.equals(DataFormat.AZUREFILE) || storageFormat.equals(DataFormat.AZURECSV))) {
+        return true;
     }
     return false;
   }
