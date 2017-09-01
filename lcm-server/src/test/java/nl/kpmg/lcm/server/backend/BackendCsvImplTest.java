@@ -37,12 +37,8 @@ import java.util.Set;
  */
 public class BackendCsvImplTest {
 
-  private static final String TEST_STORAGE_PATH = "temp_test/";
-  private static final String TEST_BACKEND_NAME = "test";
-
-
-    @Mock
-    private StorageService storageService = mock(StorageService.class);
+  @Mock
+  private StorageService storageService = mock(StorageService.class);
 
   /**
    * Common access tool for all backends.
@@ -57,7 +53,7 @@ public class BackendCsvImplTest {
   }
 
   /**
-   * Test to check if "csv" URI scheme is supported by getSupportedUriSchema() method.
+   * Test to check if "csv" or "azurecsv" URI scheme is supported by getSupportedUriSchema() method.
    */
   @Test
   public final void testGetSupportedUriSchema() {
@@ -65,5 +61,6 @@ public class BackendCsvImplTest {
     BackendCsvImpl testBackend = new BackendCsvImpl(metaDataWrapper.getMetaData(), storageService);
     Set<String> testSchema = testBackend.getSupportedUriSchema();
     assertTrue(testSchema.contains(DataFormat.CSV));
+    assertTrue(testSchema.contains(DataFormat.AZURECSV));
   }
 }

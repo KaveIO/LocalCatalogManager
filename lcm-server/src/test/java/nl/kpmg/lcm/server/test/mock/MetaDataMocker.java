@@ -13,13 +13,13 @@
  */
 package nl.kpmg.lcm.server.test.mock;
 
-import nl.kpmg.lcm.server.backend.metadata.ColumnDescription;
-import nl.kpmg.lcm.server.backend.metadata.CsvMetaData;
-import nl.kpmg.lcm.server.backend.metadata.TabularMetaData;
 import nl.kpmg.lcm.common.data.metadata.DataDescriptor;
 import nl.kpmg.lcm.common.data.metadata.GeneralInfoDescriptor;
 import nl.kpmg.lcm.common.data.metadata.MetaData;
 import nl.kpmg.lcm.common.data.metadata.MetaDataWrapper;
+import nl.kpmg.lcm.server.backend.metadata.ColumnDescription;
+import nl.kpmg.lcm.server.backend.metadata.CsvMetaData;
+import nl.kpmg.lcm.server.backend.metadata.TabularMetaData;
 
 import org.apache.metamodel.schema.ColumnType;
 
@@ -31,16 +31,48 @@ import java.util.List;
  * @author shristov
  */
 public class MetaDataMocker {
- 
+
   public static String getTestKey() {
-      return "1283245748395bvbx";
+    return "1283245748395bvbx";
   }
-    
+
+  public static MetaData getMetaData() {
+    MetaData metaData = new MetaData();
+    metaData.setName("metadata");
+    metaData.setId("585a57136d31212d0ad5fca6");
+    DataDescriptor data = new DataDescriptor(metaData);
+    List uriList = new ArrayList();
+    uriList.add("csv://test/temp.csv");
+    data.setUri(uriList);
+    data.setPath("kpmg/lcm/test");
+    metaData.set(data.getSectionName(), data.getMap());
+
+    GeneralInfoDescriptor generalInfo = new GeneralInfoDescriptor(metaData);
+    generalInfo.setOwner("KPMG");
+    generalInfo.setDescription("Sample description");
+    metaData.set(generalInfo.getSectionName(), generalInfo.getMap());
+
+    return metaData;
+  }
+
+  public static MetaDataWrapper getFileMetaDataWrapper() {
+    MetaDataWrapper fileMetaDataWrapper = new MetaDataWrapper();
+    fileMetaDataWrapper.setName("File-metadata");
+    fileMetaDataWrapper.setId("598857877b0c2518a02592c9");
+    List<String> uriList = new ArrayList();
+    uriList.add("file://localFile/test.txt");
+    fileMetaDataWrapper.getData().setUri(uriList);
+    fileMetaDataWrapper.getData().setPath("kpmg");
+
+    return fileMetaDataWrapper;
+  }
+
+
   public static MetaDataWrapper getCsvMetaDataWrapper() {
     CsvMetaData csvMetaData = new CsvMetaData();
     csvMetaData.setName("CSV-metadata");
     csvMetaData.setId("585a57136d31212d0ad5fca6");
-    List<String> uriList =  new ArrayList();
+    List<String> uriList = new ArrayList();
     uriList.add("csv://test/temp.csv");
     csvMetaData.getData().setUri(uriList);
     csvMetaData.getData().setPath("kpmg/lcm/test");
@@ -56,30 +88,11 @@ public class MetaDataMocker {
     return csvMetaData;
   }
 
-  public static MetaData getMetaData() {
-    MetaData metaData = new MetaData();
-    metaData.setName("metadata");
-    metaData.setId("585a57136d31212d0ad5fca6");
-    DataDescriptor data = new DataDescriptor(metaData);
-    List uriList =  new ArrayList();
-    uriList.add("csv://test/temp.csv");
-    data.setUri(uriList);
-    data.setPath("kpmg/lcm/test");
-    metaData.set(data.getSectionName(), data.getMap());
-
-    GeneralInfoDescriptor generalInfo = new GeneralInfoDescriptor(metaData);
-    generalInfo.setOwner("KPMG");
-    generalInfo.setDescription("Sample description");
-    metaData.set(generalInfo.getSectionName(), generalInfo.getMap());
-
-    return metaData;
-  }
-
   public static MetaDataWrapper getHiveMetaDataWrapper() {
     TabularMetaData tabularMetaData = new TabularMetaData();
     tabularMetaData.setName("Hive-metadata");
     tabularMetaData.setId("585a57236d31212d0ad5fca6");
-    List uriList =  new ArrayList();
+    List uriList = new ArrayList();
     uriList.add("hive://remote-hive-foodmart/product");
     tabularMetaData.getData().setUri(uriList);
     tabularMetaData.getData().setPath("kpmg/lcm/test");
@@ -98,7 +111,7 @@ public class MetaDataMocker {
     TabularMetaData tabularMetaData = new TabularMetaData();
     tabularMetaData.setName("Mongo-metadata");
     tabularMetaData.setId("585a57236d31212d0ad5fca6");
-    List uriList =  new ArrayList();
+    List uriList = new ArrayList();
     uriList.add("mongo://mongoStorage/mock");
     tabularMetaData.getData().setUri(uriList);
     tabularMetaData.getData().setPath("kpmg/lcm/test");
