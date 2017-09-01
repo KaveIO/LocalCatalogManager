@@ -13,12 +13,8 @@
  */
 package nl.kpmg.lcm.server.data.azure;
 
-import com.microsoft.azure.datalake.store.ADLStoreClient;
 import com.microsoft.azure.datalake.store.IfExists;
-import com.microsoft.azure.datalake.store.oauth2.AccessTokenProvider;
-import com.microsoft.azure.datalake.store.oauth2.ClientCredsTokenProvider;
 
-import nl.kpmg.lcm.common.exception.LcmValidationException;
 import nl.kpmg.lcm.server.backend.storage.AzureStorage;
 import nl.kpmg.lcm.server.data.FileAdapter;
 
@@ -32,20 +28,9 @@ import java.io.OutputStream;
  *
  * @author shristov
  */
-public class AzureFileAdapter implements FileAdapter {
-
-  private ADLStoreClient client;
-  private String storageBasePath;
-  private String filePath;
-
+public class AzureFileAdapter extends BasicAzureAdapter implements FileAdapter {
   public AzureFileAdapter(AzureStorage azureStorage, String filename) {
-    AccessTokenProvider provider =
-        new ClientCredsTokenProvider(azureStorage.getAuthTokenEndpoint(),
-            azureStorage.getClientId(), azureStorage.getClientKey());
-    client = ADLStoreClient.createClient(azureStorage.getAccountFQDN(), provider);
-
-    storageBasePath = "/" + azureStorage.getPath();
-    filePath = "/" + azureStorage.getPath() + "/" + filename;
+    super(azureStorage, filename);
   }
 
   @Override
@@ -72,38 +57,4 @@ public class AzureFileAdapter implements FileAdapter {
   public InputStream read() throws IOException {
     return client.getReadStream(filePath);
   }
-
-  @Override
-  public boolean exists() throws IOException {
-    return client.checkExists(filePath);
-  }
-
-  @Override
-  public long length() throws IOException {
-    return client.getDirectoryEntry(filePath).length;
-  }
-
-  @Override
-  public long lastModified() throws IOException {
-    return client.getDirectoryEntry(filePath).lastModifiedTime.getTime();
-  }
-
-  @Override
-  public void validatePaths() {
-    try {
-      if (exists()) {
-        String filePathx = client.getDirectoryEntry(filePath).fullName;
-        if (!filePathx.startsWith(storageBasePath)) {
-          throw new LcmValidationException(
-              "Metadata path is probably is wrong. Data uri can not contains \"..\\\"!");
-        }
-      } else if (filePath.contains("../")) {
-        throw new LcmValidationException(
-            "Metadata path is probbably wrong. Data uri can not contains \"..\\\"!");
-      }
-    } catch (IOException ex) {
-      throw new LcmValidationException("Unable to validate metadata path!");
-    }
-  }
-
 }

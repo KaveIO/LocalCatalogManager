@@ -13,12 +13,8 @@
  */
 package nl.kpmg.lcm.server.data.azure;
 
-import com.microsoft.azure.datalake.store.ADLStoreClient;
 import com.microsoft.azure.datalake.store.IfExists;
-import com.microsoft.azure.datalake.store.oauth2.AccessTokenProvider;
-import com.microsoft.azure.datalake.store.oauth2.ClientCredsTokenProvider;
 
-import nl.kpmg.lcm.common.exception.LcmValidationException;
 import nl.kpmg.lcm.server.backend.storage.AzureStorage;
 import nl.kpmg.lcm.server.data.CsvAdapter;
 
@@ -30,60 +26,19 @@ import java.io.OutputStream;
  *
  * @author shristov
  */
-public class AzureCsvAdapter implements CsvAdapter {
-
-  private ADLStoreClient client;
-  private String storageBasePath;
-  private String storagePath;
-
+public class AzureCsvAdapter extends BasicAzureAdapter implements CsvAdapter {
   public AzureCsvAdapter(AzureStorage azureStorage, String filename) {
-    AccessTokenProvider provider =
-        new ClientCredsTokenProvider(azureStorage.getAuthTokenEndpoint(),
-            azureStorage.getClientId(), azureStorage.getClientKey());
-    client = ADLStoreClient.createClient(azureStorage.getAccountFQDN(), provider);
-
-    storageBasePath = "/" + azureStorage.getPath();
-    storagePath = "/" + azureStorage.getPath() + "/" + filename;
+    super(azureStorage, filename);
   }
 
   @Override
   public OutputStream getOutputStream() throws IOException {
-    OutputStream out = client.createFile(storagePath, IfExists.OVERWRITE);
+    OutputStream out = client.createFile(filePath, IfExists.OVERWRITE);
     return out;
   }
 
   @Override
   public InputStream getInputStream() throws IOException {
-    return client.getReadStream(storagePath);
+    return client.getReadStream(filePath);
   }
-
-  @Override
-  public boolean exists() throws IOException {
-    return client.checkExists(storagePath);
-  }
-
-  @Override
-  public long length() throws IOException {
-    return client.getDirectoryEntry(storagePath).length;
-  }
-
-  @Override
-  public long lastModified() throws IOException {
-    return client.getDirectoryEntry(storagePath).lastModifiedTime.getTime();
-  }
-
-  @Override
-  public void validatePaths() {
-    try {
-      // in case '../' exists in the 'storageBasePath' then 'new Path()' will eliminate them.
-      String filePath = client.getDirectoryEntry(storagePath).fullName;
-      if (!filePath.startsWith(storageBasePath)) {
-        throw new LcmValidationException(
-            "Metadata path is probably is wrong. Data uri can not contains \"..\\\"!");
-      }
-    } catch (IOException ex) {
-      throw new LcmValidationException("Unable to validate metadata path!");
-    }
-  }
-
 }
