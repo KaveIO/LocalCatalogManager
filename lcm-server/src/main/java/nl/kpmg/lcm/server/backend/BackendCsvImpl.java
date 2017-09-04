@@ -30,8 +30,11 @@ import nl.kpmg.lcm.server.backend.metadata.CsvMetaData;
 import nl.kpmg.lcm.server.backend.storage.AzureStorage;
 import nl.kpmg.lcm.server.backend.storage.LocalFileStorage;
 import nl.kpmg.lcm.server.data.CsvAdapter;
+import nl.kpmg.lcm.server.data.FileSystemAdapter;
 import nl.kpmg.lcm.server.data.LocalCsvAdapter;
+import nl.kpmg.lcm.server.data.LocalFileSystemAdapter;
 import nl.kpmg.lcm.server.data.azure.AzureCsvAdapter;
+import nl.kpmg.lcm.server.data.azure.AzureFileSystemAdapter;
 import nl.kpmg.lcm.server.data.service.StorageService;
 
 import org.apache.metamodel.DataContextFactory;
@@ -45,12 +48,10 @@ import org.apache.metamodel.schema.Table;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.Date;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
@@ -234,29 +235,34 @@ public class BackendCsvImpl extends AbstractBackend {
 
   @Override
   protected List loadDataItems(String storageName, String subPath) {
-
     Storage storage = storageService.findByName(storageName);
-    LocalFileStorage fileStorage = new LocalFileStorage(storage);
-    String storagePath = fileStorage.getStoragePath();
-    File dataSourceDir = new File(storagePath + "/" + subPath);
-
-    if (!dataSourceDir.exists() || !dataSourceDir.isDirectory()) {
-      String message =
-          String.format("The storage %s is pointing non existing directory %s", storageName,
-              subPath);
-      throw new LcmException(message);
+    FileSystemAdapter fileSystem = getFileSystemAdapter(storage);
+    try {
+      return fileSystem.listFileNames(subPath);
+    } catch (IOException ex) {
+      LOGGER.error("Unable to laod data items");
+      return null;
     }
-
-    File[] files = dataSourceDir.listFiles();
-    List<String> fileNameList = new LinkedList();
-    for (File file : files) {
-      if (file.isFile()) {
-        fileNameList.add(file.getName());
-      }
-    }
-
-    return fileNameList;
   }
+
+  private FileSystemAdapter getFileSystemAdapter(Storage storage) {
+    FileSystemAdapter fileSystemAdapter = null;
+    Notification notification = new Notification();
+    if (AzureStorage.getSupportedStorageTypes().contains(storage.getType())) {
+      fileSystemAdapter = new AzureFileSystemAdapter(new AzureStorage(storage));
+    } else if (LocalFileStorage.getSupportedStorageTypes().contains(storage.getType())) {
+      fileSystemAdapter = new LocalFileSystemAdapter(new LocalFileStorage(storage));
+    } else {
+      LOGGER.warn("Improper storage object is passed to BackendCsvImpl. Storage id: "
+          + storage.getId());
+      notification.addError("Improper storage object is passed to BackendCsvImpl.");
+      throw new LcmValidationException(notification);
+    }
+
+
+    return fileSystemAdapter;
+  }
+
 
   private CsvAdapter getCsvAdapter(String key) {
     CsvAdapter csvAdapter = null;

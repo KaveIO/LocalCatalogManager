@@ -58,7 +58,7 @@ public class AzureFileSystemAdapter implements FileSystemAdapter {
     List<String> fileNameList = new LinkedList();
     for (DirectoryEntry object : content) {
       if (object.type == DirectoryEntryType.FILE) {
-        fileNameList.add(object.fullName);
+        fileNameList.add(object.name);
       }
     }
 
