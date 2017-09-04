@@ -29,6 +29,8 @@ import java.io.OutputStream;
  * @author shristov
  */
 public class AzureFileAdapter extends BasicAzureAdapter implements FileAdapter {
+  private final String PERMISSIONS = "755";
+
   public AzureFileAdapter(AzureStorage azureStorage, String filename) {
     super(azureStorage, filename);
   }
@@ -42,8 +44,7 @@ public class AzureFileAdapter extends BasicAzureAdapter implements FileAdapter {
     if (stream == null) {
       return;
     }
-
-    OutputStream os = client.createFile(filePath, IfExists.OVERWRITE);
+    OutputStream os = client.createFile(filePath, IfExists.OVERWRITE, PERMISSIONS, true);
     try {
       IOUtils.copyLarge(stream, os);
     } finally {
