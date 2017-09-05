@@ -14,6 +14,7 @@
 package nl.kpmg.lcm.server.data.azure;
 
 import com.microsoft.azure.datalake.store.ADLStoreClient;
+import com.microsoft.azure.datalake.store.IfExists;
 import com.microsoft.azure.datalake.store.oauth2.AccessTokenProvider;
 import com.microsoft.azure.datalake.store.oauth2.ClientCredsTokenProvider;
 
@@ -21,6 +22,8 @@ import nl.kpmg.lcm.common.exception.LcmValidationException;
 import nl.kpmg.lcm.server.backend.storage.AzureStorage;
 
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
 
 /**
  *
@@ -30,6 +33,7 @@ public class BasicAzureAdapter {
   protected ADLStoreClient client;
   protected String storageBasePath;
   protected String filePath;
+  private final String PERMISSIONS = "755";
 
   public BasicAzureAdapter(AzureStorage azureStorage, String filename) {
     AccessTokenProvider provider =
@@ -68,5 +72,14 @@ public class BasicAzureAdapter {
     } catch (IOException ex) {
       throw new LcmValidationException("Unable to validate metadata path!");
     }
+  }
+
+  public OutputStream getOutputStream() throws IOException {
+    OutputStream out = client.createFile(filePath, IfExists.OVERWRITE, PERMISSIONS, true);
+    return out;
+  }
+
+  public InputStream getInputStream() throws IOException {
+    return client.getReadStream(filePath);
   }
 }

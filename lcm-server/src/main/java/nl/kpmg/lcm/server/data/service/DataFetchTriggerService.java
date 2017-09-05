@@ -208,7 +208,7 @@ public class DataFetchTriggerService {
     }
 
     String newItemName = originalItemName;
-    if (originalDataFormat.equals(DataFormat.CSV)) {
+    if (originalDataFormat.equals(DataFormat.CSV) || originalDataFormat.equals(DataFormat.AZURECSV)) {
       if (originalItemName.indexOf(".csv") == originalItemName.length() - 4) {
         newItemName = originalItemName.substring(0, originalItemName.length() - 4);
       } else {
@@ -224,7 +224,7 @@ public class DataFetchTriggerService {
       }
     }
 
-    if (destinationDataFormat.equals(DataFormat.CSV)) {
+    if (destinationDataFormat.equals(DataFormat.CSV) || destinationDataFormat.equals(DataFormat.AZURECSV)) {
       newItemName = newItemName + ".csv";
     }
 
@@ -237,7 +237,8 @@ public class DataFetchTriggerService {
     // When the source is file based data item i.e csv or json and the destination
     // is DB(Hive, Mongo) and the file path contains folders
     // then transformation must be
-    if ((originalDataFormat.equals(DataFormat.CSV) || originalDataFormat.equals(DataFormat.JSON))
+    if ((originalDataFormat.equals(DataFormat.CSV) || originalDataFormat.equals(DataFormat.AZURECSV)
+            || originalDataFormat.equals(DataFormat.JSON))
         && (destinationDataFormat.equals(DataFormat.HIVE) || destinationDataFormat
             .equals(DataFormat.MONGO))) {
 

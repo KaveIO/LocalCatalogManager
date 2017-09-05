@@ -13,8 +13,6 @@
  */
 package nl.kpmg.lcm.server.data.azure;
 
-import com.microsoft.azure.datalake.store.IfExists;
-
 import nl.kpmg.lcm.server.backend.storage.AzureStorage;
 import nl.kpmg.lcm.server.data.FileAdapter;
 
@@ -29,7 +27,6 @@ import java.io.OutputStream;
  * @author shristov
  */
 public class AzureFileAdapter extends BasicAzureAdapter implements FileAdapter {
-  private final String PERMISSIONS = "755";
 
   public AzureFileAdapter(AzureStorage azureStorage, String filename) {
     super(azureStorage, filename);
@@ -44,7 +41,8 @@ public class AzureFileAdapter extends BasicAzureAdapter implements FileAdapter {
     if (stream == null) {
       return;
     }
-    OutputStream os = client.createFile(filePath, IfExists.OVERWRITE, PERMISSIONS, true);
+
+    OutputStream os = getOutputStream();
     try {
       IOUtils.copyLarge(stream, os);
     } finally {
@@ -56,6 +54,6 @@ public class AzureFileAdapter extends BasicAzureAdapter implements FileAdapter {
 
   @Override
   public InputStream read() throws IOException {
-    return client.getReadStream(filePath);
+    return getInputStream();
   }
 }

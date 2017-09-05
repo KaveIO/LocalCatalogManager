@@ -13,14 +13,8 @@
  */
 package nl.kpmg.lcm.server.data.azure;
 
-import com.microsoft.azure.datalake.store.IfExists;
-
 import nl.kpmg.lcm.server.backend.storage.AzureStorage;
 import nl.kpmg.lcm.server.data.CsvAdapter;
-
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
 
 /**
  *
@@ -29,16 +23,5 @@ import java.io.OutputStream;
 public class AzureCsvAdapter extends BasicAzureAdapter implements CsvAdapter {
   public AzureCsvAdapter(AzureStorage azureStorage, String filename) {
     super(azureStorage, filename);
-  }
-
-  @Override
-  public OutputStream getOutputStream() throws IOException {
-    OutputStream out = client.createFile(filePath, IfExists.OVERWRITE);
-    return out;
-  }
-
-  @Override
-  public InputStream getInputStream() throws IOException {
-    return client.getReadStream(filePath);
   }
 }
