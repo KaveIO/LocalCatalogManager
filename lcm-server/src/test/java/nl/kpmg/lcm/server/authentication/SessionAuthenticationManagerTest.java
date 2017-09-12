@@ -19,10 +19,10 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
+import nl.kpmg.lcm.common.data.User;
 import nl.kpmg.lcm.server.LcmBaseTest;
 import nl.kpmg.lcm.server.LoginException;
 import nl.kpmg.lcm.server.LogoutException;
-import nl.kpmg.lcm.common.data.User;
 import nl.kpmg.lcm.server.data.service.UserService;
 import nl.kpmg.lcm.server.rest.authentication.SessionAuthenticationManager;
 
@@ -105,7 +105,7 @@ public class SessionAuthenticationManagerTest extends LcmBaseTest {
     User user = new User();
     user.setName("testUser");
     user.setPassword("testPassword");
-    userService.getUserDao().save(user);
+    userService.save(user);
 
     String authenticationToken =
         authenticationManager.getAuthenticationToken("testUser", "testPassword");
@@ -117,7 +117,7 @@ public class SessionAuthenticationManagerTest extends LcmBaseTest {
     User user = new User();
     user.setName("admin");
     user.setPassword("testPassword");
-    userService.getUserDao().save(user);
+    userService.save(user);
 
     String authenticationToken = authenticationManager.getAuthenticationToken("admin", "admin");
     assertNotNull(authenticationToken);

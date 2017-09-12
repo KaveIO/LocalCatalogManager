@@ -17,8 +17,8 @@ package nl.kpmg.lcm.server.data.service;
 import jersey.repackaged.com.google.common.collect.Lists;
 
 import nl.kpmg.lcm.common.data.User;
-import nl.kpmg.lcm.server.data.dao.UserDao;
 import nl.kpmg.lcm.common.rest.authentication.UserPasswordHashException;
+import nl.kpmg.lcm.server.data.dao.UserDao;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -35,12 +35,24 @@ public class UserService {
   @Autowired
   private UserDao userDao;
 
-  public List<User> findAll() {
-    return Lists.newLinkedList(userDao.findAll());
+  public User findById(String userId){
+      return  userDao.findOne(userId);
   }
 
-  public UserDao getUserDao() {
-    return userDao;
+  public User findOneByName(String userId){
+      return  userDao.findOneByName(userId);
+  }
+
+  public void delete(User user){
+      userDao.delete(user);
+  }
+
+  public User save(User user){
+     return userDao.save(user);
+  }
+
+  public List<User> findAll() {
+    return Lists.newLinkedList(userDao.findAll());
   }
 
   public void updateUser(String userId, User modifiedUser) throws UserPasswordHashException {
