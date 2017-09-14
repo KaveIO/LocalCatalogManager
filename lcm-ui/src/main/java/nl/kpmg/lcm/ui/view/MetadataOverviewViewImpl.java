@@ -1,11 +1,11 @@
 /*
  * Copyright 2016 KPMG N.V. (unless otherwise stated).
- *
+ * 
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except
  * in compliance with the License. You may obtain a copy of the License at
- *
+ * 
  * http://www.apache.org/licenses/LICENSE-2.0
- *
+ * 
  * Unless required by applicable law or agreed to in writing, software distributed under the License
  * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
  * or implied. See the License for the specific language governing permissions and limitations under
@@ -23,13 +23,13 @@ import com.vaadin.ui.TreeTable;
 import com.vaadin.ui.UI;
 import com.vaadin.ui.VerticalLayout;
 
-import nl.kpmg.lcm.common.client.ClientException;
-import nl.kpmg.lcm.common.rest.types.MetaDataRepresentation;
-import nl.kpmg.lcm.common.rest.types.MetaDatasRepresentation;
 import nl.kpmg.lcm.common.Constants;
 import nl.kpmg.lcm.common.ServerException;
+import nl.kpmg.lcm.common.client.ClientException;
 import nl.kpmg.lcm.common.data.metadata.MetaDataWrapper;
 import nl.kpmg.lcm.common.exception.LcmValidationException;
+import nl.kpmg.lcm.common.rest.types.MetaDataRepresentation;
+import nl.kpmg.lcm.common.rest.types.MetaDatasRepresentation;
 import nl.kpmg.lcm.ui.rest.AuthenticationException;
 import nl.kpmg.lcm.ui.rest.RestClientService;
 import nl.kpmg.lcm.ui.view.metadata.MetadataCreateWindow;
@@ -51,10 +51,10 @@ import javax.annotation.PostConstruct;
  */
 @Component
 @SpringView(name = MetadataOverviewViewImpl.VIEW_NAME)
-public class MetadataOverviewViewImpl extends VerticalLayout
-    implements MetadataOverviewView, Button.ClickListener {
-  private static final Logger LOGGER =
-      LoggerFactory.getLogger(MetadataOverviewViewImpl.class.getName());
+public class MetadataOverviewViewImpl extends VerticalLayout implements MetadataOverviewView,
+    Button.ClickListener {
+  private static final Logger LOGGER = LoggerFactory.getLogger(MetadataOverviewViewImpl.class
+      .getName());
 
   /**
    * The linkable name of this view.
@@ -110,7 +110,7 @@ public class MetadataOverviewViewImpl extends VerticalLayout
 
     table.addContainerProperty("Name", String.class, null);
     table.addContainerProperty("Location", ArrayList.class, null);
-    table.addContainerProperty("Actions", Button.class, null);
+    table.addContainerProperty("Actions", HorizontalLayout.class, null);
 
     table.setWidth("100%");
     table.setHeight("100%");
@@ -159,15 +159,26 @@ public class MetadataOverviewViewImpl extends VerticalLayout
           LOGGER.warn("Unable to create wrapper around metadata. Message: " + lve.getMessage());
           continue;
         }
+
+        HorizontalLayout actionsLayout = new HorizontalLayout();
+
         Button viewButton = new Button("view");
         viewButton.setData(item);
         viewButton.addClickListener(new ViewButtonClickListener());
         viewButton.addStyleName("link");
 
+        Button enrichButton = new Button("enrich");
+        enrichButton.setData(item);
+        enrichButton.addClickListener(new EnrichButtonClickListener());
+        enrichButton.addStyleName("link");
+
+        actionsLayout.addComponent(viewButton);
+        actionsLayout.addComponent(enrichButton);
+
         addPathToTable(metaDataWrapper.getData().getPath());
 
         table.addItem(new Object[] {metaDataWrapper.getName(), metaDataWrapper.getData().getUri(),
-            viewButton}, metaDataWrapper.getId());
+            actionsLayout}, metaDataWrapper.getId());
         table.setChildrenAllowed(metaDataWrapper.getId(), false);
         table.setParent(metaDataWrapper.getId(), metaDataWrapper.getData().getPath());
       }
@@ -197,8 +208,9 @@ public class MetadataOverviewViewImpl extends VerticalLayout
     table.addItem(new Object[] {split[split.length - 1], null, null}, path);
 
     if (split.length > 1) {
-      String parent = String.join(Constants.NAMESPACE_SEPARATOR,
-          Arrays.copyOfRange(split, 0, split.length - 1));
+      String parent =
+          String
+              .join(Constants.NAMESPACE_SEPARATOR, Arrays.copyOfRange(split, 0, split.length - 1));
       addPathToTable(parent);
       table.setParent(path, parent);
     }
@@ -210,9 +222,28 @@ public class MetadataOverviewViewImpl extends VerticalLayout
 
     @Override
     public void buttonClick(Button.ClickEvent event) {
-      MetadataEditWindow metadataEditWindow = new MetadataEditWindow(restClientService,
-          (MetaDataRepresentation) event.getButton().getData());
+      MetadataEditWindow metadataEditWindow =
+          new MetadataEditWindow(restClientService, (MetaDataRepresentation) event.getButton()
+              .getData());
       UI.getCurrent().addWindow(metadataEditWindow);
+    }
+  }
+
+  private class EnrichButtonClickListener implements Button.ClickListener {
+
+    public EnrichButtonClickListener() {}
+
+    @Override
+    public void buttonClick(Button.ClickEvent event) {
+      MetaDataRepresentation metaDataRepresentation =
+          (MetaDataRepresentation) event.getButton().getData();
+      try {
+        restClientService.enrichMetadata(metaDataRepresentation.getItem().getId());
+      } catch (Exception ex) {
+        Notification.show("Unable to start the enrichment! Message: " + ex.getMessage());
+        return;
+      }
+      Notification.show("Enrichment started successfully!");
     }
   }
 }
