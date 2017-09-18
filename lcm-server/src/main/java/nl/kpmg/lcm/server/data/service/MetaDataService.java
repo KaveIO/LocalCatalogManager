@@ -51,6 +51,9 @@ public class MetaDataService {
   @Autowired
   private StorageService storageService;
 
+  @Autowired
+  private TaskScheduleService taskScheduleService;
+
   public List<MetaData> findAll() {
     return Lists.newLinkedList(metaDataDao.findAll());
   }
@@ -68,6 +71,7 @@ public class MetaDataService {
   }
 
   public void delete(MetaData metadata) {
+    taskScheduleService.removeMetadataFromTaskSchedule(metadata);
     metaDataDao.delete(metadata);
   }
 
@@ -75,8 +79,8 @@ public class MetaDataService {
     List<MetaData> metadataList = findAll();
     HashMap<String, MetaData> targets = new HashMap();
     for (MetaData metadata : metadataList) {
-        List<String> storages = new MetaDataWrapper(metadata).getStorageName();
-      for(String storage :  storages) {
+      List<String> storages = new MetaDataWrapper(metadata).getStorageName();
+      for (String storage : storages) {
         if (storage.equals(storageName)) {
           targets.put(metadata.getId(), metadata);
           break; // Once this metadata is added it is not needed to ad it again
@@ -135,7 +139,7 @@ public class MetaDataService {
   /**
    * 
    * @param namespace base namespace path
-   * @param recursive  when true returns and the metadatas of sub namespaces.
+   * @param recursive when true returns and the metadatas of sub namespaces.
    * @return List of metadatas that belongs to @namespace
    */
   public List<MetaData> findAllByNamespace(String namespace, boolean recursive) {
@@ -155,7 +159,7 @@ public class MetaDataService {
    * @param metadata which is check
    * @param namespace must be in format "section1/section2"
    * @param recursive check recursively i.e. if the metadata belongs to subsection
-   * @return true if @metadata belongs to @namespace 
+   * @return true if @metadata belongs to @namespace
    */
   public boolean doesMetadataBelongsToNamespace(MetaData metadata, String namespace,
       boolean recursive) {

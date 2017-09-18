@@ -54,6 +54,9 @@ public class StorageService {
   @Autowired
   private BackendFactory backendFactory;
 
+  @Autowired
+  private TaskScheduleService taskScheduleService;
+
   public List<Storage> findAll() {
     return Lists.newLinkedList(storageDao.findAll());
   }
@@ -67,6 +70,7 @@ public class StorageService {
   }
 
   public void delete(Storage storage) {
+    taskScheduleService.removeStorageFromTaskSchedule(storage);
     storageDao.delete(storage);
   }
 
