@@ -101,6 +101,10 @@ public class UserController {
   @Consumes({"application/nl.kpmg.lcm.server.data.User+json"})
   @RolesAllowed({Roles.ADMINISTRATOR})
   public final Response createNewUser(final User user) {
+    if (user.getOrigin() == null) {
+      user.setOrigin(User.LOCAL_ORIGIN);
+    }
+
     userService.save(user);
     return Response.ok().build();
   }

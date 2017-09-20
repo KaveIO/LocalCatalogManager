@@ -43,6 +43,8 @@ public class MongoUserWriteConverter implements Converter<User, DBObject> {
       }
       dbo.put("name", source.getName());
       dbo.put("role", source.getRole());
+      dbo.put("pathList", source.getAllowedPathList());
+      dbo.put("metadataList", source.getAllowedMetadataList());
 
       if (source.getNewPassword() != null) {
         dbo.put("password", PasswordHash.createHash(source.getNewPassword()));

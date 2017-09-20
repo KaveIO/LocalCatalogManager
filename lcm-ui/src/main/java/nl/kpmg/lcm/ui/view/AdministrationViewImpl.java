@@ -33,7 +33,7 @@ import nl.kpmg.lcm.ui.rest.RestClientService;
 import nl.kpmg.lcm.ui.view.administration.RemoteLcmPanel;
 import nl.kpmg.lcm.ui.view.administration.StoragePanel;
 import nl.kpmg.lcm.ui.view.administration.TasksPanel;
-import nl.kpmg.lcm.ui.view.administration.UsersPanel;
+import nl.kpmg.lcm.ui.view.administration.UserPanel;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
@@ -77,7 +77,7 @@ public class AdministrationViewImpl extends VerticalLayout implements Administra
   private TasksPanel tasksPanel;
   private StoragePanel storagePanel;
   private RemoteLcmPanel remoteLcmPanel;
-  private UsersPanel usersPanel;
+  private UserPanel usersPanel;
 
   /**
    * Builds the interface.
@@ -99,7 +99,7 @@ public class AdministrationViewImpl extends VerticalLayout implements Administra
     tasksPanel = new TasksPanel();
     tabsheet.addTab(tasksPanel, "Tasks");
 
-    usersPanel = new UsersPanel();
+    usersPanel = new UserPanel(restClientService);
     tabsheet.addTab(usersPanel, "Users");
 
     tabsheet.setHeight("100%");
@@ -124,8 +124,6 @@ public class AdministrationViewImpl extends VerticalLayout implements Administra
       tasksPanel.setTasks(tasks);
       tasksPanel.setTaskSchedule(taskSchedule);
 
-      usersPanel.setUsers(users);
-      usersPanel.setUserGroups(userGroups);
     } catch (AuthenticationException ex) {
       getUI().getNavigator().navigateTo("");
     } catch (ServerException se) {

@@ -16,11 +16,14 @@ package nl.kpmg.lcm.common.data;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.fasterxml.jackson.annotation.JsonProperty;
 
 import nl.kpmg.lcm.common.rest.authentication.PasswordHash;
 import nl.kpmg.lcm.common.rest.authentication.UserPasswordHashException;
 
 import org.springframework.data.mongodb.core.mapping.Document;
+
+import java.util.List;
 
 import javax.persistence.Transient;
 
@@ -31,6 +34,7 @@ import javax.persistence.Transient;
 @JsonIgnoreProperties({"hashed", "password"})
 @Document(collection = "user")
 public class User extends AbstractModel {
+  public final static String LOCAL_ORIGIN = "local";
 
   private String name;
 
@@ -45,6 +49,12 @@ public class User extends AbstractModel {
   @Transient
   private String newPassword;
 
+  private String origin;
+
+  private List<String> allowedMetadataList;
+
+  private List<String> allowedPathList;
+
   public String getName() {
     return name;
   }
@@ -57,6 +67,7 @@ public class User extends AbstractModel {
     this.setPassword(password, false);
   }
 
+  @JsonProperty
   public void setPassword(String password, boolean hashPassword) throws UserPasswordHashException {
     if (hashPassword) {
       this.password = PasswordHash.createHash(password);
@@ -74,6 +85,7 @@ public class User extends AbstractModel {
    *
    * @return the password of the user.
    */
+  @JsonIgnore
   public String getPassword() {
     return password;
   }
@@ -111,5 +123,47 @@ public class User extends AbstractModel {
 
   public void setRole(String role) {
     this.role = role;
+  }
+
+  /**
+   * @return the origin
+   */
+  public String getOrigin() {
+    return origin;
+  }
+
+  /**
+   * @param origin the origin to set
+   */
+  public void setOrigin(String origin) {
+    this.origin = origin;
+  }
+
+  /**
+   * @return the allowedMetadataList
+   */
+  public List<String> getAllowedMetadataList() {
+    return allowedMetadataList;
+  }
+
+  /**
+   * @param allowedMetadataList the allowedMetadataList to set
+   */
+  public void setAllowedMetadataList(List<String> allowedMetadataList) {
+    this.allowedMetadataList = allowedMetadataList;
+  }
+
+  /**
+   * @return the allowedPathList
+   */
+  public List<String> getAllowedPathList() {
+    return allowedPathList;
+  }
+
+  /**
+   * @param allowedPathList the allowedPathList to set
+   */
+  public void setAllowedPathList(List<String> allowedPathList) {
+    this.allowedPathList = allowedPathList;
   }
 }
