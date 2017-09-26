@@ -55,9 +55,9 @@ public class ImportUsersFromRemoteLcmListener extends AbstractListener {
           public void onClose(ConfirmDialog dialog) {
             if (dialog.isConfirmed()) {
               try {
-                importUsers(item.getId());
+                String resultMessage = importUsers(item.getId());
                 dataContainer.updateContent();
-                com.vaadin.ui.Notification.show("The import completed sucessfully.");
+                com.vaadin.ui.Notification.show("The import completed. Result: " + resultMessage);
               } catch (Exception e) {
                 LOGGER.error(String.format("Unable to import users from %s . Error message: %s",
                     item.getName(), e.getMessage()));
@@ -76,8 +76,8 @@ public class ImportUsersFromRemoteLcmListener extends AbstractListener {
     return "remote LCM";
   }
 
-  protected void importUsers(String id) throws AuthenticationException, ServerException,
+  protected String importUsers(String id) throws AuthenticationException, ServerException,
       ClientException, DataCreationException {
-    restClientService.importUsersFromRemoteLcm(id);
+    return restClientService.importUsersFromRemoteLcm(id);
   }
 }

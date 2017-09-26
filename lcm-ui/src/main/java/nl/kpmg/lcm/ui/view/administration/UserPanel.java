@@ -151,7 +151,7 @@ public class UserPanel extends CustomComponent implements DynamicDataContainer {
     table.setWidth("100%");
     table.addContainerProperty("Name", String.class, null);
     table.addContainerProperty("Role", String.class, null);
-    /*table.addContainerProperty("origin", String.class, null);*/
+    table.addContainerProperty("Origin", String.class, null);
     table.addContainerProperty("Actions", HorizontalLayout.class, null);
 
     return table;
@@ -174,7 +174,7 @@ public class UserPanel extends CustomComponent implements DynamicDataContainer {
         User user = item.getItem();
 
         HorizontalLayout actionsLayout = createActionsLayout(item);
-        userTable.addItem(new Object[] {user.getName(), user.getRole(), /*origin,*/
+        userTable.addItem(new Object[] {user.getName(), user.getRole(), user.getOrigin(),
             actionsLayout}, user.getId());
       }
     }
