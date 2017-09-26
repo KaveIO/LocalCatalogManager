@@ -57,6 +57,7 @@ public class ImportUsersFromRemoteLcmListener extends AbstractListener {
               try {
                 importUsers(item.getId());
                 dataContainer.updateContent();
+                com.vaadin.ui.Notification.show("The import completed sucessfully.");
               } catch (Exception e) {
                 LOGGER.error(String.format("Unable to import users from %s . Error message: %s",
                     item.getName(), e.getMessage()));

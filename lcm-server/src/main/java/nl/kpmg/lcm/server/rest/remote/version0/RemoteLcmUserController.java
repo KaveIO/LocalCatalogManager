@@ -45,7 +45,7 @@ public class RemoteLcmUserController {
   @GET
   @Produces({"application/nl.kpmg.lcm.rest.types.UsersRepresentation+json"})
   @Path("/username-list")
-  @RolesAllowed({Roles.REMOTE_USER})
+  @RolesAllowed({Roles.ADMINISTRATOR, Roles.REMOTE_USER})
   public final List<String> getUsernames() {
     List<User> users = userService.findAll();
     List<String> usernameList = new LinkedList();

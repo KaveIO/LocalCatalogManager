@@ -85,7 +85,7 @@ public class RemoteLcmService {
     RemoteLcm remoteLcm = dao.findOne(id);
     configuration.setTargetHost(remoteLcm.getDomain());
     configuration.setTargetPort(remoteLcm.getPort().toString());
-    String fetchUrl = buildRemoteUrl(remoteLcm) + "remote/v0/core/id";
+    String fetchUrl = buildRemoteUrl(remoteLcm) + "/remote/v0/test";
 
     HttpAuthenticationFeature credentials =
         HttpAuthenticationFeature.basicBuilder().credentials(adminUser, adminPassword).build();
@@ -131,10 +131,10 @@ public class RemoteLcmService {
     String fetchUrl = buildRemoteUrl(remoteLcm) + "/remote/v0/users/username-list";
     Response response = null;
     try {
-      response = clientFactory.createWebTarget(fetchUrl).request().post(null);
-       if (response.getStatus() != Response.Status.OK.getStatusCode()) {
-      return false;
-    }
+      response = clientFactory.createWebTarget(fetchUrl).request().get();
+      if (response.getStatus() != Response.Status.OK.getStatusCode()) {
+        return false;
+      }
        List<String> usernames = response.readEntity(List.class);
        for(String username: usernames) {
            User user =  new User();
