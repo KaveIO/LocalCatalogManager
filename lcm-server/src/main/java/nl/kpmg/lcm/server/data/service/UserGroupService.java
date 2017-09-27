@@ -34,6 +34,18 @@ public class UserGroupService {
   @Autowired
   private UserGroupDao userGroupDao;
 
+  public UserGroup findOne(String userGroupId) {
+    return userGroupDao.findOne(userGroupId);
+  }
+
+  public void delete(UserGroup userGroup) {
+    userGroupDao.delete(userGroup);
+  }
+
+  public UserGroup save(UserGroup userGroup) {
+    return userGroupDao.save(userGroup);
+  }
+
   public List<UserGroup> findAll() {
     return Lists.newLinkedList(userGroupDao.findAll());
   }

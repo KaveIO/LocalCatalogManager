@@ -34,6 +34,18 @@ public class UserGroup extends AbstractModel {
 
   private List<String> users;
 
+  private List<String> allowedMetadataList;
+
+  private List<String> allowedPathList;
+
+  public boolean addUser(String userName) {
+    return users.add(userName);
+  }
+
+  public boolean removeUser(String userName) {
+    return users.remove(userName);
+  }
+
   public String getName() {
     return name;
   }
@@ -48,5 +60,21 @@ public class UserGroup extends AbstractModel {
 
   public void setUsers(List<String> users) {
     this.users = users;
+  }
+
+  public List<String> getAllowedMetadataList() {
+    return allowedMetadataList;
+  }
+
+  public void setAllowedMetadataList(List<String> allowedMetadataList) {
+    this.allowedMetadataList = allowedMetadataList;
+  }
+
+  public List<String> getAllowedPathList() {
+    return allowedPathList;
+  }
+
+  public void setAllowedPathList(List<String> allowedPathList) {
+    this.allowedPathList = allowedPathList;
   }
 }
