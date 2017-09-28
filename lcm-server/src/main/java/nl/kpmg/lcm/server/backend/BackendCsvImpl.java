@@ -38,6 +38,7 @@ import nl.kpmg.lcm.server.data.azure.AzureFileSystemAdapter;
 import nl.kpmg.lcm.server.data.service.StorageService;
 
 import org.apache.metamodel.DataContextFactory;
+import org.apache.metamodel.MetaModelException;
 import org.apache.metamodel.UpdateableDataContext;
 import org.apache.metamodel.csv.CsvConfiguration;
 import org.apache.metamodel.csv.CsvDataContext;
@@ -92,12 +93,20 @@ public class BackendCsvImpl extends AbstractBackend {
       }
       if (properties.getStructure()) {
         UpdateableDataContext dataContext = createDataContext(csvAdapter.getInputStream(), key);
-        Schema schema = dataContext.getDefaultSchema();
-        if (schema.getTableCount() == 0) {
-          return;
+
+        try {
+          Schema schema = dataContext.getDefaultSchema();
+          if (schema.getTableCount() == 0) {
+            return;
+          }
+          Table table = schema.getTables()[0];
+          csvMetaData.getTableDescription(key).setColumns(table.getColumns());
+        } catch (MetaModelException mme) {
+          String state = "DETACHED";
+          dynamicDataDescriptor.getDetailsDescriptor().setState(state);
+          LOGGER.warn("The metadata with id: " + csvMetaData.getId()
+              + " describes invalid data. Invalid data key: " + key);
         }
-        Table table = schema.getTables()[0];
-        csvMetaData.getTableDescription(key).setColumns(table.getColumns());
       }
       Long dataUpdateTime = new Date(csvAdapter.lastModified()).getTime();
       dynamicDataDescriptor.getDetailsDescriptor().setDataUpdateTimestamp(dataUpdateTime);
