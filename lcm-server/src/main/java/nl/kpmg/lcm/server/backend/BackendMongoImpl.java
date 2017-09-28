@@ -17,6 +17,7 @@ package nl.kpmg.lcm.server.backend;
 import nl.kpmg.lcm.common.data.ContentIterator;
 import nl.kpmg.lcm.common.data.Data;
 import nl.kpmg.lcm.common.data.DataFormat;
+import nl.kpmg.lcm.common.data.DataState;
 import nl.kpmg.lcm.common.data.EnrichmentProperties;
 import nl.kpmg.lcm.common.data.IterativeData;
 import nl.kpmg.lcm.common.data.Storage;
@@ -83,19 +84,19 @@ public class BackendMongoImpl extends AbstractBackend {
       Schema database = dataContext.getSchemaByName(mongoStorage.getDatabase());
       if (database == null && properties.getAccessibility()) {
         mongoMetaData.getDynamicData().getDynamicDataDescriptor(key).getDetailsDescriptor()
-            .setState("DETACHED");
+            .setState(DataState.DETACHED);
         return;
       }
       Table table = database.getTableByName(getTableName(dataURI));
       if (table == null && properties.getAccessibility()) {
         mongoMetaData.getDynamicData().getDynamicDataDescriptor(key).getDetailsDescriptor()
-            .setState("DETACHED");
+            .setState(DataState.DETACHED);
         return;
       }
 
       if (properties.getAccessibility()) {
         mongoMetaData.getDynamicData().getDynamicDataDescriptor(key).getDetailsDescriptor()
-            .setState("ATTACHED");
+            .setState(DataState.ATTACHED);
       }
 
       if (properties.getItemsCount()) {

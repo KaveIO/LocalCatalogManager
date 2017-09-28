@@ -15,6 +15,7 @@ package nl.kpmg.lcm.server.backend;
 
 import nl.kpmg.lcm.common.data.Data;
 import nl.kpmg.lcm.common.data.DataFormat;
+import nl.kpmg.lcm.common.data.DataState;
 import nl.kpmg.lcm.common.data.EnrichmentProperties;
 import nl.kpmg.lcm.common.data.Storage;
 import nl.kpmg.lcm.common.data.StreamingData;
@@ -99,7 +100,7 @@ public class BackendFileImpl extends AbstractBackend {
         metaDataWrapper.getDynamicData().getDynamicDataDescriptor(key);
     FileAdapter fileAdapter = getFileAdapter(key);
     if (properties.getAccessibility()) {
-      String state = fileAdapter.exists() ? "ATTACHED" : "DETACHED";
+      String state = fileAdapter.exists() ? DataState.ATTACHED : DataState.DETACHED;
       dynamicDataDescriptor.getDetailsDescriptor().setState(state);
     }
 
