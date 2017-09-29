@@ -18,11 +18,11 @@ import com.vaadin.ui.Button;
 import com.vaadin.ui.UI;
 import com.vaadin.ui.Window;
 
-import nl.kpmg.lcm.common.data.User;
-import nl.kpmg.lcm.common.rest.types.UserRepresentation;
+import nl.kpmg.lcm.common.data.UserGroup;
+import nl.kpmg.lcm.common.rest.types.UserGroupRepresentation;
 import nl.kpmg.lcm.ui.rest.RestClientService;
 import nl.kpmg.lcm.ui.view.administration.DynamicDataContainer;
-import nl.kpmg.lcm.ui.view.administration.components.UserCreateWindow;
+import nl.kpmg.lcm.ui.view.administration.components.UserGroupCreateWindow;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -35,13 +35,13 @@ import org.slf4j.LoggerFactory;
 /**
  * Edit listener for changing the storage object.
  */
-public class EditUserListener extends AbstractListener {
-  private static final Logger LOGGER = LoggerFactory.getLogger(EditUserListener.class.getName());
+public class EditUserGroupListener extends AbstractListener {
+  private static final Logger LOGGER = LoggerFactory.getLogger(EditUserGroupListener.class.getName());
 
   /**
    * @param dataContainer parent view.
    */
-  public EditUserListener(final DynamicDataContainer dataContainer,
+  public EditUserGroupListener(final DynamicDataContainer dataContainer,
       final RestClientService restClientService) {
      super(dataContainer, restClientService);
   }
@@ -49,17 +49,17 @@ public class EditUserListener extends AbstractListener {
   @Override
   public void buttonClick(final Button.ClickEvent event) {
 
-    UserRepresentation data = (UserRepresentation) event.getButton().getData();
-    User user = data.getItem();
+    UserGroupRepresentation data = (UserGroupRepresentation) event.getButton().getData();
+    UserGroup userGroup = data.getItem();
     try {
-      UserCreateWindow userCreateWindow = new UserCreateWindow(restClientService, user);
-      userCreateWindow.addCloseListener(new Window.CloseListener() {
+      UserGroupCreateWindow userGroupCreateWindow = new UserGroupCreateWindow(restClientService, userGroup);
+      userGroupCreateWindow.addCloseListener(new Window.CloseListener() {
         @Override
         public void windowClose(Window.CloseEvent e) {
           dataContainer.updateContent();
         }
       });
-      UI.getCurrent().addWindow(userCreateWindow);
+      UI.getCurrent().addWindow(userGroupCreateWindow);
 
     } catch (JsonProcessingException ex) {
       LOGGER.error("Unable to parse user. Error message: " + ex.getMessage());

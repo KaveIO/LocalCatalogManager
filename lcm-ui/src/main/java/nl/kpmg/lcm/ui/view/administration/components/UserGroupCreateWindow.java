@@ -25,7 +25,7 @@ import com.vaadin.ui.TextField;
 import com.vaadin.ui.Window;
 
 import nl.kpmg.lcm.common.ServerException;
-import nl.kpmg.lcm.common.data.User;
+import nl.kpmg.lcm.common.data.UserGroup;
 import nl.kpmg.lcm.ui.rest.AuthenticationException;
 import nl.kpmg.lcm.ui.rest.DataCreationException;
 import nl.kpmg.lcm.ui.rest.RestClientService;
@@ -38,9 +38,9 @@ import java.io.IOException;
  *
  * @author mhoekstra
  */
-public class UserCreateWindow extends Window implements Button.ClickListener {
+public class UserGroupCreateWindow extends Window implements Button.ClickListener {
 
-  private static final org.slf4j.Logger LOGGER = LoggerFactory.getLogger(UserCreateWindow.class
+  private static final org.slf4j.Logger LOGGER = LoggerFactory.getLogger(UserGroupCreateWindow.class
       .getName());
   /**
    * The default size of the side panels of this view.
@@ -55,38 +55,37 @@ public class UserCreateWindow extends Window implements Button.ClickListener {
 
   private RestClientService restClientService;
   private final TextField nameField = new TextField("Name");
-  private final TextField roleField = new TextField("Role");
-  private final TextField pField = new TextField("Password");
+  private final TextArea userGroupListArea = new TextArea("Users");
   private final TextArea pathListArea = new TextArea("Accessible paths");
   private final TextArea metadataListArea = new TextArea("Accessible metadatas");
   private final Button saveButton = new Button("Save");
-  private User user;
+  private final UserGroup userGroup = null;
   private final static int MAX_LENGTH = 128;
   private final static int MIN_PASSWORD_LENGTH = 5;
 
   private final String LIST_DELIMITER = ";";
   private boolean isCreateOpereration;
 
-  public UserCreateWindow(RestClientService restClientService) {
+  public UserGroupCreateWindow(RestClientService restClientService) {
     super(CREATE_TITLE);
     isCreateOpereration = true;
     this.restClientService = restClientService;
     init();
+    userGroupListArea.setDescription("Each user that is part of the group terminated by: " + LIST_DELIMITER);
     pathListArea.setDescription("Each path must be terminated by: " + LIST_DELIMITER);
     metadataListArea.setDescription("Each metadata Id must be terminated by: " + LIST_DELIMITER);
   }
 
-  public UserCreateWindow(RestClientService restClientService, User user)
+  public UserGroupCreateWindow(RestClientService restClientService, UserGroup userGroup)
       throws JsonProcessingException {
     super(EDIT_TITLE);
     isCreateOpereration = false;
     this.restClientService = restClientService;
-    nameField.setValue(user.getName());
+    nameField.setValue(userGroup.getName());
     nameField.setEnabled(false);
-    roleField.setValue(user.getRole());
     StringBuilder pathList = new StringBuilder();
-    if (user.getAllowedPathList() != null) {
-      for (String path : user.getAllowedPathList()) {
+    if (userGroup.getAllowedPathList() != null) {
+      for (String path : userGroup.getAllowedPathList()) {
         pathList.append(path + LIST_DELIMITER);
       }
     }
@@ -96,8 +95,8 @@ public class UserCreateWindow extends Window implements Button.ClickListener {
     }
 
     StringBuilder metadataList = new StringBuilder();
-    if (user.getAllowedPathList() != null) {
-      for (String metadataId : user.getAllowedMetadataList()) {
+    if (userGroup.getAllowedPathList() != null) {
+      for (String metadataId : userGroup.getAllowedMetadataList()) {
         metadataList.append(metadataId + LIST_DELIMITER);
       }
     }
@@ -115,17 +114,15 @@ public class UserCreateWindow extends Window implements Button.ClickListener {
     FormLayout panelContent = new FormLayout();
     panelContent.setMargin(true);
     nameField.setRequired(true);
-    roleField.setRequired(true);
-    pField.setRequired(true);
-    pField.setId("userp");
+    userGroupListArea.setWidth("100%");
+    userGroupListArea.setHeight("100%");
     pathListArea.setWidth("100%");
     pathListArea.setHeight("100%");
     metadataListArea.setWidth("100%");
     metadataListArea.setHeight("100%");
 
     panelContent.addComponent(nameField);
-    panelContent.addComponent(roleField);
-    panelContent.addComponent(pField);
+    panelContent.addComponent(userGroupListArea);
     panelContent.addComponent(pathListArea);
     panelContent.addComponent(metadataListArea);
     panelContent.addComponent(saveButton);
@@ -153,11 +150,11 @@ public class UserCreateWindow extends Window implements Button.ClickListener {
       ObjectNode rootNode = createJsonNode();
 
       try {
-        if (user != null) {
-          restClientService.updateUser(rootNode.toString());
+        if (userGroup != null) {
+          restClientService.updateUserGroup(rootNode.toString());
           Notification.show("Update was successful.");
         } else {
-          restClientService.createUser(rootNode.toString());
+          restClientService.createUserGroup(rootNode.toString());
           Notification.show("Creation of user was successful.");
         }
         this.close();
@@ -172,8 +169,15 @@ public class UserCreateWindow extends Window implements Button.ClickListener {
     ObjectMapper mapper = new ObjectMapper();
     ObjectNode rootNode = mapper.createObjectNode();
     rootNode.put("name", nameField.getValue());
-    rootNode.put("role", roleField.getValue());
-    rootNode.put("newPassword", pField.getValue());
+
+    ArrayNode userArrayNode = mapper.createArrayNode();
+    String[] users = userGroupListArea.getValue().split(LIST_DELIMITER);
+    for (String path : users) {
+      if (path.length() > 0) {
+        userArrayNode.add(path);
+      }
+    }
+
     ArrayNode pathArrayNode = mapper.createArrayNode();
     String[] allowedPaths = pathListArea.getValue().split(LIST_DELIMITER);
     for (String path : allowedPaths) {
@@ -196,27 +200,14 @@ public class UserCreateWindow extends Window implements Button.ClickListener {
     if (allowedMetadatas.length > 0) {
       rootNode.set("allowedMetadataList", metadataArrayNode);
     }
-    if (user != null) {
-      rootNode.put("id", user.getId());
+    if (userGroup != null) {
+      rootNode.put("id", userGroup.getId());
     }
     return rootNode;
   }
 
   private void validate(nl.kpmg.lcm.common.validation.Notification notification) {
     validateText(nameField, notification);
-    validateText(roleField, notification);
-    if (pField.getValue().isEmpty()) {
-      notification.addError(pField.getCaption() + " can not be empty");
-    }
-    if (pField.getValue().length() < MIN_PASSWORD_LENGTH) {
-      notification.addError(pField.getCaption() + " can not less then "
-          + MIN_PASSWORD_LENGTH + " symbols");
-    }
-
-    if (pField.getValue().length() > MAX_LENGTH) {
-      notification
-          .addError(pField.getCaption() + " is too long! Max length : " + MAX_LENGTH);
-    }
   }
 
   private void validateText(TextField field, nl.kpmg.lcm.common.validation.Notification notification) {

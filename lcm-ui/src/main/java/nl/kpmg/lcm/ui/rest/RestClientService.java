@@ -324,6 +324,49 @@ public class RestClientService {
     return getDatasRepresentation("client/v0/userGroups", UserGroupsRepresentation.class);
   }
 
+  public void createUserGroup(String userGroup) throws ServerException, DataCreationException,
+      AuthenticationException, JsonProcessingException {
+    Entity<String> payload =
+        Entity.entity(userGroup, "application/nl.kpmg.lcm.server.data.UserGroup+json");
+
+    Invocation.Builder client = getClient("client/v0/userGroups");
+    Response post = client.post(payload);
+
+    Response.StatusType statusInfo = post.getStatusInfo();
+    if (statusInfo.getFamily() != Response.Status.Family.SUCCESSFUL) {
+      throw new DataCreationException(String.format("%s - %s", statusInfo.getStatusCode(),
+          statusInfo.getReasonPhrase()));
+    }
+  }
+
+  public void updateUserGroup(String userGroup) throws ServerException, DataCreationException,
+      AuthenticationException, JsonProcessingException {
+    Entity<String> payload =
+        Entity.entity(userGroup, "application/nl.kpmg.lcm.server.data.UserGroup+json");
+
+    Invocation.Builder client = getClient("client/v0/userGroups");
+    Response put = client.put(payload);
+
+    Response.StatusType statusInfo = put.getStatusInfo();
+    if (statusInfo.getFamily() != Response.Status.Family.SUCCESSFUL) {
+      throw new DataCreationException(String.format("%s - %s", statusInfo.getStatusCode(),
+          statusInfo.getReasonPhrase()));
+    }
+  }
+
+  public void deleteUserGroup(String userGroupId) throws AuthenticationException, ServerException,
+      ClientException, DataCreationException {
+
+    Invocation.Builder client = getClient(String.format("client/v0/userGroups/%s", userGroupId));
+    Response delete = client.delete();
+
+    Response.StatusType statusInfo = delete.getStatusInfo();
+    if (statusInfo.getFamily() != Response.Status.Family.SUCCESSFUL) {
+      throw new DataCreationException(String.format("%s - %s", statusInfo.getStatusCode(),
+          statusInfo.getReasonPhrase()));
+    }
+  }
+
   public void createRemoteLcm(String storage) throws ServerException, DataCreationException,
       AuthenticationException, JsonProcessingException {
     Entity<String> payload =
