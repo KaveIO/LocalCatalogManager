@@ -40,8 +40,8 @@ import java.io.IOException;
  */
 public class UserGroupCreateWindow extends Window implements Button.ClickListener {
 
-  private static final org.slf4j.Logger LOGGER = LoggerFactory.getLogger(UserGroupCreateWindow.class
-      .getName());
+  private static final org.slf4j.Logger LOGGER = LoggerFactory
+      .getLogger(UserGroupCreateWindow.class.getName());
   /**
    * The default size of the side panels of this view.
    */
@@ -55,11 +55,11 @@ public class UserGroupCreateWindow extends Window implements Button.ClickListene
 
   private RestClientService restClientService;
   private final TextField nameField = new TextField("Name");
-  private final TextArea userGroupListArea = new TextArea("Users");
+  private final TextArea userListArea = new TextArea("Users");
   private final TextArea pathListArea = new TextArea("Accessible paths");
   private final TextArea metadataListArea = new TextArea("Accessible metadatas");
   private final Button saveButton = new Button("Save");
-  private final UserGroup userGroup = null;
+  private UserGroup userGroup;
   private final static int MAX_LENGTH = 128;
   private final static int MIN_PASSWORD_LENGTH = 5;
 
@@ -71,7 +71,8 @@ public class UserGroupCreateWindow extends Window implements Button.ClickListene
     isCreateOpereration = true;
     this.restClientService = restClientService;
     init();
-    userGroupListArea.setDescription("Each user that is part of the group terminated by: " + LIST_DELIMITER);
+    userListArea.setDescription("Each user that is part of the group terminated by: "
+        + LIST_DELIMITER);
     pathListArea.setDescription("Each path must be terminated by: " + LIST_DELIMITER);
     metadataListArea.setDescription("Each metadata Id must be terminated by: " + LIST_DELIMITER);
   }
@@ -83,6 +84,18 @@ public class UserGroupCreateWindow extends Window implements Button.ClickListene
     this.restClientService = restClientService;
     nameField.setValue(userGroup.getName());
     nameField.setEnabled(false);
+
+    StringBuilder userList = new StringBuilder();
+    if (userGroup.getUsers() != null) {
+      for (String user : userGroup.getUsers()) {
+        userList.append(user + LIST_DELIMITER);
+      }
+    }
+
+    if (userList.length() > 0) {
+      userListArea.setValue(userList.toString());
+    }
+
     StringBuilder pathList = new StringBuilder();
     if (userGroup.getAllowedPathList() != null) {
       for (String path : userGroup.getAllowedPathList()) {
@@ -105,6 +118,7 @@ public class UserGroupCreateWindow extends Window implements Button.ClickListene
       metadataListArea.setValue(metadataList.toString());
     }
 
+    this.userGroup = userGroup;
     init();
   }
 
@@ -114,15 +128,15 @@ public class UserGroupCreateWindow extends Window implements Button.ClickListene
     FormLayout panelContent = new FormLayout();
     panelContent.setMargin(true);
     nameField.setRequired(true);
-    userGroupListArea.setWidth("100%");
-    userGroupListArea.setHeight("100%");
+    userListArea.setWidth("100%");
+    userListArea.setHeight("100%");
     pathListArea.setWidth("100%");
     pathListArea.setHeight("100%");
     metadataListArea.setWidth("100%");
     metadataListArea.setHeight("100%");
 
     panelContent.addComponent(nameField);
-    panelContent.addComponent(userGroupListArea);
+    panelContent.addComponent(userListArea);
     panelContent.addComponent(pathListArea);
     panelContent.addComponent(metadataListArea);
     panelContent.addComponent(saveButton);
@@ -150,7 +164,10 @@ public class UserGroupCreateWindow extends Window implements Button.ClickListene
       ObjectNode rootNode = createJsonNode();
 
       try {
-        if (userGroup != null) {
+        if (!isCreateOpereration) {
+          if (userGroup != null) {
+            rootNode.put("id", userGroup.getId());
+          }
           restClientService.updateUserGroup(rootNode.toString());
           Notification.show("Update was successful.");
         } else {
@@ -171,11 +188,14 @@ public class UserGroupCreateWindow extends Window implements Button.ClickListene
     rootNode.put("name", nameField.getValue());
 
     ArrayNode userArrayNode = mapper.createArrayNode();
-    String[] users = userGroupListArea.getValue().split(LIST_DELIMITER);
+    String[] users = userListArea.getValue().split(LIST_DELIMITER);
     for (String path : users) {
       if (path.length() > 0) {
         userArrayNode.add(path);
       }
+    }
+    if (users.length > 0) {
+      rootNode.set("users", userArrayNode);
     }
 
     ArrayNode pathArrayNode = mapper.createArrayNode();

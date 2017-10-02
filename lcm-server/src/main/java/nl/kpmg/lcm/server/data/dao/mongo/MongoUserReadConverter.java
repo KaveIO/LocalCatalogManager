@@ -42,6 +42,7 @@ public class MongoUserReadConverter implements Converter<DBObject, User> {
       user.setName((String) source.get("name"));
       user.setPassword((String) source.get("password"), false);
       user.setRole((String) source.get("role"));
+      user.setOrigin((String) source.get("origin"));
       user.setAllowedPathList((List) source.get("pathList"));
       user.setAllowedMetadataList((List) source.get("metadataList"));
       user.setHashed(true);

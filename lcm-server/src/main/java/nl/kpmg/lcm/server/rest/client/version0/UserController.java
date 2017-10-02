@@ -110,13 +110,13 @@ public class UserController {
   }
 
   @PUT
-  @Path("/{user_id}")
+  @Path("/")
   @Consumes({"application/nl.kpmg.lcm.server.data.User+json"})
   @RolesAllowed({Roles.ADMINISTRATOR})
-  public final Response modifyUser(@PathParam("user_id") final String userId, final User user) {
+  public final Response modifyUser(final User user) {
 
     try {
-      userService.updateUser(userId, user);
+      userService.updateUser(user);
       return Response.ok().build();
     } catch (UserPasswordHashException ex) {
       LOGGER.error("Password hashing failed during user modification", ex);

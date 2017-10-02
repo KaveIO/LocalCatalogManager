@@ -86,11 +86,9 @@ public class UserGroupController {
   }
 
   @PUT
-  @Path("/{user_group_id}")
   @Consumes({"application/nl.kpmg.lcm.server.data.UserGroup+json"})
   @RolesAllowed({Roles.ADMINISTRATOR})
-  public final Response modifyUserGroup(@PathParam("user_group_id") final String userGroupId,
-      final UserGroup userGroup) {
+  public final Response modifyUserGroup(final UserGroup userGroup) {
     userGroupService.save(userGroup);
     return Response.ok().build();
   }

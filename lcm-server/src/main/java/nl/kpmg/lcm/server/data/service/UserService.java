@@ -55,8 +55,8 @@ public class UserService {
     return Lists.newLinkedList(userDao.findAll());
   }
 
-  public void updateUser(String userId, User modifiedUser) throws UserPasswordHashException {
-    User user = userDao.findOne(userId);
+  public void updateUser(User modifiedUser) throws UserPasswordHashException {
+    User user = userDao.findOne(modifiedUser.getId());
 
     if (modifiedUser.getName() != null) {
       user.setName(modifiedUser.getName());

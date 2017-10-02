@@ -38,10 +38,6 @@ import nl.kpmg.lcm.ui.view.administration.listeners.EditUserGroupListener;
 
 import org.slf4j.LoggerFactory;
 
-import java.util.List;
-
-import javax.ws.rs.core.Link;
-
 /**
  *
  * @author mhoekstra
@@ -172,8 +168,8 @@ public class UserGroupPanel extends CustomComponent implements DynamicDataContai
         UserGroup userGroup = item.getItem();
 
         HorizontalLayout actionsLayout = createActionsLayout(item);
-        userGroupTable.addItem(new Object[] {userGroup.getName(),
-            actionsLayout}, userGroup.getId());
+        userGroupTable
+            .addItem(new Object[] {userGroup.getName(), actionsLayout}, userGroup.getId());
       }
     }
   }
@@ -216,14 +212,25 @@ public class UserGroupPanel extends CustomComponent implements DynamicDataContai
     VerticalLayout panelContent = new VerticalLayout();
 
     UserGroup item = selectedUserGroup.getItem();
-    List<Link> links = selectedUserGroup.getLinks();
     panelContent.addComponent(new DefinedLabel("Username: ", item.getName()));
 
+    String usersList = "";
+    if (item.getUsers() != null && item.getUsers().size() > 0) {
+      usersList = item.getUsers().toString();
+    }
+    panelContent.addComponent(new DefinedLabel("Users: ", usersList));
+
     String allowedPathList = "";
-    if(item.getAllowedPathList() !=  null) {
-        allowedPathList = item.getAllowedPathList().toString();
+    if (item.getAllowedPathList() != null && item.getAllowedPathList().size() > 0) {
+      allowedPathList = item.getAllowedPathList().toString();
     }
     panelContent.addComponent(new DefinedLabel("Allowed paths: ", allowedPathList));
+
+    String allowedMetadataList = "";
+    if (item.getAllowedMetadataList() != null && item.getAllowedMetadataList().size() > 0) {
+      allowedMetadataList = item.getAllowedMetadataList().toString();
+    }
+    panelContent.addComponent(new DefinedLabel("Allowed metadatas: ", allowedMetadataList));
 
     panelContent.setMargin(true);
 

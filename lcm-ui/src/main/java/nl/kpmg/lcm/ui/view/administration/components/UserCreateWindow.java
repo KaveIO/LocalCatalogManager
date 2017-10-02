@@ -85,7 +85,7 @@ public class UserCreateWindow extends Window implements Button.ClickListener {
     nameField.setEnabled(false);
     roleField.setValue(user.getRole());
     StringBuilder pathList = new StringBuilder();
-    if (user.getAllowedPathList() != null) {
+    if (user.getAllowedPathList() != null && user.getAllowedPathList().size() > 0) {
       for (String path : user.getAllowedPathList()) {
         pathList.append(path + LIST_DELIMITER);
       }
@@ -96,7 +96,7 @@ public class UserCreateWindow extends Window implements Button.ClickListener {
     }
 
     StringBuilder metadataList = new StringBuilder();
-    if (user.getAllowedPathList() != null) {
+    if (user.getAllowedMetadataList() != null && user.getAllowedMetadataList().size() > 0) {
       for (String metadataId : user.getAllowedMetadataList()) {
         metadataList.append(metadataId + LIST_DELIMITER);
       }
@@ -106,6 +106,7 @@ public class UserCreateWindow extends Window implements Button.ClickListener {
       metadataListArea.setValue(metadataList.toString());
     }
 
+    this.user = user;
     init();
   }
 
@@ -153,7 +154,10 @@ public class UserCreateWindow extends Window implements Button.ClickListener {
       ObjectNode rootNode = createJsonNode();
 
       try {
-        if (user != null) {
+        if (!isCreateOpereration) {
+          if(user != null) {
+            rootNode.put("id", user.getId());
+          }
           restClientService.updateUser(rootNode.toString());
           Notification.show("Update was successful.");
         } else {
@@ -205,10 +209,11 @@ public class UserCreateWindow extends Window implements Button.ClickListener {
   private void validate(nl.kpmg.lcm.common.validation.Notification notification) {
     validateText(nameField, notification);
     validateText(roleField, notification);
-    if (pField.getValue().isEmpty()) {
+    if (isCreateOpereration && pField.getValue().isEmpty()) {
       notification.addError(pField.getCaption() + " can not be empty");
     }
-    if (pField.getValue().length() < MIN_PASSWORD_LENGTH) {
+    if (pField.getValue().length() > 0 && pField.getValue().length() < MIN_PASSWORD_LENGTH
+            ) {
       notification.addError(pField.getCaption() + " can not less then "
           + MIN_PASSWORD_LENGTH + " symbols");
     }

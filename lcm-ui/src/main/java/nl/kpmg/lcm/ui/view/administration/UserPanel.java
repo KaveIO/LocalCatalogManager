@@ -46,10 +46,9 @@ import javax.ws.rs.core.Link;
  *
  * @author mhoekstra
  */
-
 public class UserPanel extends CustomComponent implements DynamicDataContainer {
-  private static final org.slf4j.Logger LOGGER = LoggerFactory.getLogger(UserPanel.class
-      .getName());
+
+  private static final org.slf4j.Logger LOGGER = LoggerFactory.getLogger(UserPanel.class.getName());
   /**
    * The default size of the side panels of this view.
    */
@@ -220,6 +219,7 @@ public class UserPanel extends CustomComponent implements DynamicDataContainer {
     User item = selectedUser.getItem();
     List<Link> links = selectedUser.getLinks();
 
+    panelContent.addComponent(new DefinedLabel("Id: ", item.getId()));
 
     panelContent.addComponent(new DefinedLabel("Username: ", item.getName()));
 
@@ -228,10 +228,16 @@ public class UserPanel extends CustomComponent implements DynamicDataContainer {
     panelContent.addComponent(new DefinedLabel("Origin: ", item.getOrigin()));
 
     String allowedPathList = "";
-    if(item.getAllowedPathList() !=  null) {
-        allowedPathList = item.getAllowedPathList().toString();
+    if (item.getAllowedPathList() != null) {
+      allowedPathList = item.getAllowedPathList().toString();
     }
     panelContent.addComponent(new DefinedLabel("Allowed paths: ", allowedPathList));
+
+    String allowedMetadataList = "";
+    if (item.getAllowedMetadataList() != null) {
+      allowedMetadataList = item.getAllowedMetadataList().toString();
+    }
+    panelContent.addComponent(new DefinedLabel("Allowed metadatas: ", allowedMetadataList));
 
     panelContent.setMargin(true);
 
