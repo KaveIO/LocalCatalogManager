@@ -96,7 +96,16 @@ public class BackendHiveImpl extends AbstractBackend {
       String dataURI = metaDataWrapper.getDynamicData().getDynamicDataDescriptor(key).getURI();
       Storage storage = storageService.getStorageByUri(dataURI);
       HiveStorage hiveStorage = new HiveStorage(storage);
-      JdbcDataContext dataContext = getDataContext(hiveStorage);
+      JdbcDataContext dataContext = null;
+      try {
+        dataContext = getDataContext(hiveStorage);
+      } catch (LcmException ex) {
+        hiveMetaData.getDynamicData().getDynamicDataDescriptor(key).getDetailsDescriptor()
+            .setState(DataState.DETACHED);
+        LOGGER.warn("The metadata with id: " + metaDataWrapper.getId()
+            + " has problems with the connection. " + ex.getMessage());
+        return;
+      }
 
       Schema database = dataContext.getSchemaByName(hiveStorage.getDatabase());
       if (database == null && properties.getAccessibility()) {

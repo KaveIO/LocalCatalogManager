@@ -76,6 +76,11 @@ public class AzureStorage extends AbstractStorageContainer {
       notification.addError("Storage validation: storage type does not match!");
     }
 
+    String storagePath = (String) storage.getOptions().get("path");
+    if (storagePath == null || storagePath.isEmpty()) {
+      notification.addError("Storage path is missing or is empty!", null);
+    }
+
     validateCredentials(notification);
   }
 

@@ -144,42 +144,80 @@ abstract class AbstractBackend implements Backend {
     for (String uri : uriList) {
       if (!uri.contains("*")) {
         processDataItemURI(uri);
-      } else {// something like 'csv://local/test*.csv'
-        URI parsedUri = null;
-        try {
-          parsedUri = new URI(uri);
-        } catch (URISyntaxException ex) {
-          LOGGER.error("Error! URI can not be parsed:" + uri);
-          continue;
-        }
-        String path = parsedUri.getPath();
-        // remove '/' in front of the path
-        if (path.charAt(0) == '/') {
-          path = path.substring(1);
-        }
-
-        String subPath = "";
-        int index = StringUtils.lastIndexOf(path, "/");
-        if (index != -1) {
-          subPath = path.substring(0, index);
-        }
-        if (subPath.contains("*")) {
-          LOGGER.error("Error! URI has invalid syntax. Wildcard symbol is used in the path:" + uri);
+      } else {
+        List<String> dataItemList = getDataItems(uri);
+        if (dataItemList == null) {
           continue;
         }
 
-        String item = path.substring(index + 1, path.length());
-        Pattern namePattern = Pattern.compile(item.replace("*", ".*"));
-        String storageName =
-            parsedUri.getHost() != null ? parsedUri.getHost() : parsedUri.getAuthority();
-        List<String> dataItemList = loadDataItems(storageName, subPath);
-        for (String dataItemName : dataItemList) {
-          if (namePattern.matcher(dataItemName).matches()) {
-            String uriItem = uri.replace(item, dataItemName);
-            processDataItemURI(uriItem);
-          }
-        }
+        processDataItemList(uri, dataItemList);
       }
+    }
+  }
+
+  private void processDataItemList(String uri, List<String> dataItemList) {
+    URI parsedUri = parseUri(uri);
+    String path = processPath(parsedUri);
+    int index = StringUtils.lastIndexOf(path, "/");
+    String item = path.substring(index + 1, path.length());
+    Pattern namePattern = Pattern.compile(item.replace("*", ".*"));
+    for (String dataItemName : dataItemList) {
+      if (namePattern.matcher(dataItemName).matches()) {
+        String uriItem = uri.replace(item, dataItemName);
+        processDataItemURI(uriItem);
+      }
+    }
+  }
+
+  private URI parseUri(String uri) {
+    // something like 'csv://local/test*.csv'
+    URI parsedUri = null;
+    try {
+      parsedUri = new URI(uri);
+    } catch (URISyntaxException ex) {
+      LOGGER.error("Error! URI can not be parsed:" + uri);
+      return null;
+    }
+    return parsedUri;
+  }
+
+  private String processPath(URI parsedUri) {
+    String path = parsedUri.getPath();
+    // remove '/' in front of the path
+    if (path.charAt(0) == '/') {
+      path = path.substring(1);
+    }
+    return path;
+  }
+
+  private List getDataItems(String uri) {
+    URI parsedUri = parseUri(uri);
+
+    if (parsedUri == null) {
+      return null;
+    }
+
+    String path = processPath(parsedUri);
+    String subPath = "";
+    int index = StringUtils.lastIndexOf(path, "/");
+    if (index != -1) {
+      subPath = path.substring(0, index);
+    }
+    if (subPath.contains("*")) {
+      LOGGER.error("Error! URI has invalid syntax. Wildcard symbol is used in the path:"
+          + parsedUri.toString());
+      return null;
+    }
+
+    String storageName =
+        parsedUri.getHost() != null ? parsedUri.getHost() : parsedUri.getAuthority();
+
+    try {
+      return loadDataItems(storageName, subPath);
+    } catch (Exception ex) {
+      LOGGER.warn("Unable to load data items for storage: " + storageName + " and subPath: "
+          + subPath + ". Error message: " + ex.getMessage());
+      return null;
     }
   }
 

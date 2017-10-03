@@ -105,40 +105,75 @@ public class BackendJsonImpl extends AbstractBackend {
 
   @Override
   protected void enrichMetadataItem(EnrichmentProperties properties, String key) throws IOException {
-    File dataSourceFile = createDataSourceFile(key);
+    File dataSourceFile = null;
+    try {
+      dataSourceFile = createDataSourceFile(key);
+    } catch (LcmValidationException ex) {
+      String state = DataState.DETACHED;
+      jsonMetaData.getDynamicData().getDynamicDataDescriptor(key).getDetailsDescriptor()
+          .setState(state);
+      LOGGER.warn("The metadata with id: " + jsonMetaData.getId()
+          + " has problems with storage validation. " + ex.getNotification().errorMessage());
+      return;
+    } catch (Exception ex) {
+      String state = DataState.DETACHED;
+      jsonMetaData.getDynamicData().getDynamicDataDescriptor(key).getDetailsDescriptor()
+          .setState(state);
+      LOGGER
+          .warn("Metadata id: " + metaDataWrapper.getId() + ". Error message: " + ex.getMessage());
+      return;
+    }
     jsonMetaData.getDynamicData().getDynamicDataDescriptor(key).clearDetailsDescriptor();
+
+    try {
+      if (!dataSourceFile.exists()) {
+        String state = DataState.DETACHED;
+        jsonMetaData.getDynamicData().getDynamicDataDescriptor(key).getDetailsDescriptor()
+            .setState(state);
+        LOGGER.warn("The metadata with id: " + jsonMetaData.getId()
+            + " has storage directory which does not exist.");
+        return;
+      }
+    } catch (Exception ex) {
+      String state = DataState.DETACHED;
+      jsonMetaData.getDynamicData().getDynamicDataDescriptor(key).getDetailsDescriptor()
+          .setState(state);
+      LOGGER
+          .warn("Metadata id: " + metaDataWrapper.getId() + ". Error message: " + ex.getMessage());
+      return;
+    }
+
     if (properties.getAccessibility()) {
       String state = dataSourceFile.exists() ? DataState.ATTACHED : DataState.DETACHED;
       jsonMetaData.getDynamicData().getDynamicDataDescriptor(key).getDetailsDescriptor()
           .setState(state);
     }
 
-    if (dataSourceFile.exists()) {
-      if (properties.getSize()) {
-        jsonMetaData.getDynamicData().getDynamicDataDescriptor(key).getDetailsDescriptor()
-            .setSize(dataSourceFile.length());
-      }
-      if (properties.getStructure()) {
-        JsonDataContext dataContext = createDataContext(dataSourceFile);
-        try {
-          Schema schema = dataContext.getDefaultSchema();
-          if (schema.getTableCount() == 0) {
-            return;
-          }
-          Table table = schema.getTables()[0];
-          jsonMetaData.getTableDescription(key).setColumns(table.getColumns());
-        } catch (MetaModelException mme) {
-          String state = DataState.INVALID;
-          jsonMetaData.getDynamicData().getDynamicDataDescriptor(key).getDetailsDescriptor()
-              .setState(state);
-          LOGGER.warn("The metadata with id: " + jsonMetaData.getId()
-              + " describes invalid data. Invalid data key: " + key);
-        }
-      }
-      Long dataUpdateTime = new Date(dataSourceFile.lastModified()).getTime();
+
+    if (properties.getSize()) {
       jsonMetaData.getDynamicData().getDynamicDataDescriptor(key).getDetailsDescriptor()
-          .setDataUpdateTimestamp(dataUpdateTime);
+          .setSize(dataSourceFile.length());
     }
+    if (properties.getStructure()) {
+      JsonDataContext dataContext = createDataContext(dataSourceFile);
+      try {
+        Schema schema = dataContext.getDefaultSchema();
+        if (schema.getTableCount() == 0) {
+          return;
+        }
+        Table table = schema.getTables()[0];
+        jsonMetaData.getTableDescription(key).setColumns(table.getColumns());
+      } catch (MetaModelException mme) {
+        String state = DataState.INVALID;
+        jsonMetaData.getDynamicData().getDynamicDataDescriptor(key).getDetailsDescriptor()
+            .setState(state);
+        LOGGER.warn("The metadata with id: " + jsonMetaData.getId()
+            + " describes invalid data. Invalid data key: " + key);
+      }
+    }
+    Long dataUpdateTime = new Date(dataSourceFile.lastModified()).getTime();
+    jsonMetaData.getDynamicData().getDynamicDataDescriptor(key).getDetailsDescriptor()
+        .setDataUpdateTimestamp(dataUpdateTime);
   }
 
   /**
