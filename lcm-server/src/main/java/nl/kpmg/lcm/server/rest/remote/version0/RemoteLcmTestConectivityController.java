@@ -35,7 +35,7 @@ public class RemoteLcmTestConectivityController {
 
   @GET
   @Produces({"application/nl.kpmg.lcm.rest.types.MetaDataRepresentation+json"})
-  @RolesAllowed({Roles.ADMINISTRATOR, Roles.REMOTE_USER})
+  @RolesAllowed({Roles.ANY_USER})
   public final String testConnectivity() {
 
     return "OK";

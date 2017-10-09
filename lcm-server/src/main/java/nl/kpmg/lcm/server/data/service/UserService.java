@@ -43,6 +43,11 @@ public class UserService {
       return  userDao.findOneByName(userId);
   }
 
+    public User findOneByNameAndOrigin(String userId, String origin){
+      return  userDao.findOneByNameAndOrigin(userId, origin);
+  }
+
+  
   public void delete(User user){
       userDao.delete(user);
   }
@@ -70,5 +75,9 @@ public class UserService {
     }
 
     userDao.save(user);
+  }
+  
+  public void removeAll(){
+      userDao.deleteAll();
   }
 }

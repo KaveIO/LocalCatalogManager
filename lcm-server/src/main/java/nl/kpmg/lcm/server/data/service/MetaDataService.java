@@ -214,4 +214,9 @@ public class MetaDataService {
     }
     return namespaceSet;
   }
+  
+  public void removeAll(){
+      metaDataDao.deleteAll();
+  }
+  
 }
