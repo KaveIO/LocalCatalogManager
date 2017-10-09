@@ -48,6 +48,7 @@ public class AzureFileSystemAdapter implements FileSystemAdapter {
   public List listFileNames(String subPath) throws IOException {
     String storagePath = storage.getPath();
     String dataSourceDir = storagePath + "/" + subPath;
+    dataSourceDir = dataSourceDir.replaceAll("//", "/");
 
     if (!client.checkExists(dataSourceDir)
         || client.getDirectoryEntry(dataSourceDir).type != DirectoryEntryType.DIRECTORY) {
