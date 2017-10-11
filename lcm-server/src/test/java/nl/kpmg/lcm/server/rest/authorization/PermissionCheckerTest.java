@@ -252,6 +252,27 @@ public class PermissionCheckerTest extends LcmBaseServerTest {
   
   
   /**
+   * Test case in which the user is admin. The admin user
+   * can access all the metadata.
+   */
+  @Test
+  public void testAdminAccess() {
+    MetaData metaData = MetaDataMocker.getMetaData();
+    MetaDataWrapper wrapper = new MetaDataWrapper(metaData);
+    metaDataService.create(wrapper.getMetaData());
+
+    User user = UserMocker.createAdminUser();
+    user.setName("adminUser");
+    user = userService.save(user);
+
+    Session session =
+        new Session(user.getName(), user.getRole(), UserOrigin.LOCAL, user.getOrigin());
+    UserSecurityContext securityContext = new UserSecurityContext(session);
+    boolean result = simpleChecker.check(securityContext, metaData.getId());
+    assertTrue(result);
+  }
+
+  /**
    * Test case in which the user is  part of usergroup  and the usergroup is permitted 
    * to access path A. Successful access to metadata  from the path A is tested.
    */
