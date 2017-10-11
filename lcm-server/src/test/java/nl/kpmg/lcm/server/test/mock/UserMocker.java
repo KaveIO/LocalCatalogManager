@@ -26,6 +26,23 @@ import java.util.List;
  */
 public class UserMocker {
 
+  public static User createAdminUser() {
+    User user = new User();
+    user.setName("admin-user");
+    user.setRole(Roles.ADMINISTRATOR);
+    try {
+      user.setPassword("testPassword");
+    } catch (UserPasswordHashException ex) {
+      return null;
+    }
+
+    user.setAllowedMetadataList(new ArrayList<String>());
+    user.setAllowedPathList(new ArrayList<String>());
+
+    return user;
+  }
+
+
   public static User createRemoteUser(List<String> metadataList, List<String> pathList) {
     User user = new User();
     user.setName("remote-user");
@@ -42,14 +59,14 @@ public class UserMocker {
   }
 
   public static User createUnauthorizedRemoteUser() {
-    return createRemoteUser(new ArrayList<String>(),  new ArrayList<String>());
+    return createRemoteUser(new ArrayList<String>(), new ArrayList<String>());
   }
 
   public static User createRemoteDirectlyAuthorizedUser(List<String> metadataList) {
-    return createRemoteUser(metadataList,  new ArrayList<String>());
+    return createRemoteUser(metadataList, new ArrayList<String>());
   }
-  
+
   public static User createRemoteUserAuthorizedByPath(List<String> pathList) {
-    return createRemoteUser( new ArrayList<String>(), pathList);
+    return createRemoteUser(new ArrayList<String>(), pathList);
   }
 }

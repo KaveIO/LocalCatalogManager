@@ -23,6 +23,7 @@ import nl.kpmg.lcm.common.rest.authentication.UserPasswordHashException;
 
 import org.springframework.data.mongodb.core.mapping.Document;
 
+import java.security.Principal;
 import java.util.List;
 
 import javax.persistence.Transient;
@@ -33,7 +34,7 @@ import javax.persistence.Transient;
  */
 @JsonIgnoreProperties({"hashed", "password"})
 @Document(collection = "user")
-public class User extends AbstractModel {
+public class User extends AbstractModel implements Principal{
   public final static String LOCAL_ORIGIN = "local";
 
   private String name;
@@ -55,6 +56,7 @@ public class User extends AbstractModel {
 
   private List<String> allowedPathList;
 
+  @Override
   public String getName() {
     return name;
   }

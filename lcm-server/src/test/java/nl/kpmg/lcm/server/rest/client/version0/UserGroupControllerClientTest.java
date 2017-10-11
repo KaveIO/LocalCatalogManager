@@ -16,10 +16,11 @@ package nl.kpmg.lcm.server.rest.client.version0;
 
 import static org.junit.Assert.assertEquals;
 
+import nl.kpmg.lcm.common.ServerException;
+import nl.kpmg.lcm.common.data.User;
+import nl.kpmg.lcm.common.data.UserGroup;
 import nl.kpmg.lcm.server.LcmBaseServerTest;
 import nl.kpmg.lcm.server.LoginException;
-import nl.kpmg.lcm.common.ServerException;
-import nl.kpmg.lcm.common.data.UserGroup;
 import nl.kpmg.lcm.server.data.dao.UserGroupDao;
 import nl.kpmg.lcm.server.data.service.UserGroupService;
 import nl.kpmg.lcm.server.rest.client.types.LoginRequest;
@@ -49,7 +50,7 @@ public class UserGroupControllerClientTest extends LcmBaseServerTest {
     // Due to a Spring configuration error we can't login in this thread. We
     // have to create a actuall login call.
     LoginRequest loginRequest = new LoginRequest();
-    loginRequest.setUsername("admin");
+    loginRequest.setUsername("admin"+ "@" + User.LOCAL_ORIGIN);
     loginRequest.setPassword("admin");
     Entity<LoginRequest> entity = Entity.entity(loginRequest,
         "application/nl.kpmg.lcm.server.rest.client.types.LoginRequest+json");
@@ -99,7 +100,7 @@ public class UserGroupControllerClientTest extends LcmBaseServerTest {
 
     Entity<UserGroup> entity =
         Entity.entity(userGroup, "application/nl.kpmg.lcm.server.data.UserGroup+json");
-    Response res1 = getWebTarget().path("client/v0/userGroups/testUserGroup").request()
+    Response res1 = getWebTarget().path("client/v0/userGroups/").request()
         .header("LCM-Authentication-User", "admin")
         .header("LCM-Authentication-Token", authenticationToken).put(entity);
 
@@ -118,7 +119,7 @@ public class UserGroupControllerClientTest extends LcmBaseServerTest {
 
     Entity<UserGroup> entity =
         Entity.entity(userGroup, "application/nl.kpmg.lcm.server.data.UserGroup+json");
-    Response res1 = getWebTarget().path("client/v0/userGroups/testUserGroup").request()
+    Response res1 = getWebTarget().path("client/v0/userGroups/").request()
         .header("LCM-Authentication-User", "admin")
         .header("LCM-Authentication-Token", authenticationToken).put(entity);
 

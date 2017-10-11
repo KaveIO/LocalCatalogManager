@@ -225,6 +225,10 @@ public class PermissionCheckerTest extends LcmBaseServerTest {
     assertTrue(result);
   }
 
+  /**
+   * Test case in which the user is authorized to access metadata A.
+   * Successful access to metadata A is tested.
+   */
   @Test
   public void testDirectlyAutorizedAccess() {
     MetaData metaData = MetaDataMocker.getMetaData();
@@ -248,7 +252,8 @@ public class PermissionCheckerTest extends LcmBaseServerTest {
   
   
   /**
-   * Test case in which the metadata is not added to the allowed list but the path list exists.
+   * Test case in which the user is  part of usergroup  and the usergroup is permitted 
+   * to access path A. Successful access to metadata  from the path A is tested.
    */
   @Test
   public void testGroupPathAutorizedAccess() {
@@ -274,11 +279,13 @@ public class PermissionCheckerTest extends LcmBaseServerTest {
     boolean result = simpleChecker.check(securityContext, metaData.getId());
     assertTrue(result);
   }
-/**
-   * The there is authorized path but it is different
+
+   /**
+   * Test case in which the user is  part of usergroup  and the usergroup is permitted
+   * to access path A. Unsuccessful access to metadata from path B is tested.
    */
   @Test
-  public void testUnauthorizedGroupAccess() {
+  public void testUnauthorizedGroupPathAccess() {
 
     MetaData metaData = MetaDataMocker.getMetaData();
     MetaDataWrapper wrapper = new MetaDataWrapper(metaData);
@@ -302,6 +309,10 @@ public class PermissionCheckerTest extends LcmBaseServerTest {
     assertFalse(result);
   }
 
+   /**
+   * Test case in which the user is  part of usergroup  and the usergroup is permitted 
+   * to access metadata A. Successful access to metadata A is tested.
+   */
   @Test
   public void testGroupAuthorizedAccess() {
     MetaData metaData = MetaDataMocker.getMetaData();
@@ -325,5 +336,37 @@ public class PermissionCheckerTest extends LcmBaseServerTest {
     UserSecurityContext securityContext = new UserSecurityContext(session);
     boolean result = simpleChecker.check(securityContext, metaData.getId());
     assertTrue(result);
+  }
+  
+   /**
+   * Test case in which the user is  part of usergroup  and the usergroup is permitted 
+   * to access metadata A . Unsuccessful access to the metadata B is tested.
+   */
+  @Test
+  public void testUnautorizedGroupAccess() {
+    MetaData metaData = MetaDataMocker.getMetaData();
+    MetaDataWrapper wrapper = new MetaDataWrapper(metaData);
+    metaDataService.create(wrapper.getMetaData());
+
+    User user = UserMocker.createUnauthorizedRemoteUser();
+    user.setName("authorizedGroupUser");
+    user = userService.save(user);
+    UserGroup userGroup = new UserGroup();
+    userGroup.addUser(user.getId());
+    
+    MetaData metaData2 = MetaDataMocker.getMetaData();
+    metaData2.setId("598857877b0c2518a02592c9");
+    metaDataService.create(metaData2);
+    List permittedMetadataList = new ArrayList<String>();
+    permittedMetadataList.add(metaData2.getId());
+    userGroup.setAllowedMetadataList(permittedMetadataList);
+    
+    userGroupService.save(userGroup);
+
+    Session session =
+        new Session(user.getName(), user.getRole(), UserOrigin.LOCAL, user.getOrigin());
+    UserSecurityContext securityContext = new UserSecurityContext(session);
+    boolean result = simpleChecker.check(securityContext, metaData.getId());
+    assertFalse(result);
   }
 }

@@ -64,7 +64,9 @@ public abstract class AbstractAuthenticationManager implements AuthenticationMan
     this.adminPassword = adminPassword;
   }
 
-  protected boolean isUsernamePasswordValid(final String username, final String password) {
+  protected boolean isUsernamePasswordValid(String username, final String password) {
+    //TODO refactor this when implementing the auhtentication
+    username  =  (username.split("@"))[0];
     if (username.equals(adminUser)) {
       LOGGER.info("Caught login attempt for admin user");
       if (password.equals(adminPassword)) {
@@ -96,7 +98,7 @@ public abstract class AbstractAuthenticationManager implements AuthenticationMan
       remoteLcmUID = splitted[1];
     }
 
-    if (remoteLcmUID != null && username.equals(adminUser)) {
+    if (remoteLcmUID !=  null && !remoteLcmUID.equals(User.LOCAL_ORIGIN) && username.equals(adminUser)) {
       throw new LoginException("Remote user is trying to login "
           + "with preconfiguredadmin user! User: " + username + " and lcmUID: " + remoteLcmUID);
     }

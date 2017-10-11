@@ -55,7 +55,7 @@ public class UserControllerClientTest extends LcmBaseServerTest {
     // Due to a Spring configuration error we can't login in this thread. We
     // have to create a actuall login call.
     LoginRequest loginRequest = new LoginRequest();
-    loginRequest.setUsername("admin");
+    loginRequest.setUsername("admin" + "@" + User.LOCAL_ORIGIN);
     loginRequest.setPassword("admin");
     Entity<LoginRequest> entity = Entity.entity(loginRequest,
         "application/nl.kpmg.lcm.server.rest.client.types.LoginRequest+json");
