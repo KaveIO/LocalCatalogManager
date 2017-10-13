@@ -16,9 +16,9 @@ package nl.kpmg.lcm.server.rest.client.version0.types;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 
+import nl.kpmg.lcm.common.rest.types.AuthorizedLcmsRepresentation;
 import nl.kpmg.lcm.common.rest.types.LinkInjectable;
-import nl.kpmg.lcm.common.rest.types.StoragesRepresentation;
-import nl.kpmg.lcm.server.rest.client.version0.StorageController;
+import nl.kpmg.lcm.server.rest.client.version0.AuthorizedLcmController;
 
 import org.glassfish.jersey.linking.InjectLink;
 import org.glassfish.jersey.linking.InjectLinks;
@@ -27,14 +27,14 @@ import java.util.List;
 
 import javax.ws.rs.core.Link;
 
-public class ConcreteAuthorizedLcmsRepresentation extends StoragesRepresentation
+public class ConcreteAuthorizedLcmsRepresentation extends AuthorizedLcmsRepresentation
     implements LinkInjectable {
 
   @InjectLinks({
-      @InjectLink(resource = StorageController.class, style = InjectLink.Style.ABSOLUTE,
-          rel = "storage.overview"),
-      @InjectLink(resource = StorageController.class, method = "createNewStorage",
-          style = InjectLink.Style.ABSOLUTE, rel = "storage.create",
+      @InjectLink(resource = AuthorizedLcmController.class, style = InjectLink.Style.ABSOLUTE,
+          rel = "authorizedLcm.overview"),
+      @InjectLink(resource = AuthorizedLcmController.class, method = "createNewStorage",
+          style = InjectLink.Style.ABSOLUTE, rel = "authorizedLcm.create",
           type = "application/nl.kpmg.lcm.server.data.Backend+json")})
   @JsonIgnore
   private List<Link> injectedLinks;

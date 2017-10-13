@@ -61,7 +61,7 @@ public class MongoAuthorizedLcmReadConverter implements Converter<DBObject, Auth
       SecurityEngine security = new SecurityEngine(initVector);
       try {
         String decrypted = security.decrypt(securityKey, encrypted);
-        source.put(applicationKeyString, decrypted);
+        authorizedLcm.setApplicationKey(decrypted);
       } catch (EncryptionException ex) {
         String message = "Error! Unable to read storage. The decryption failed!";
         throw new IllegalStateException(message);

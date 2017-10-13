@@ -42,7 +42,6 @@ public class UserMocker {
     return user;
   }
 
-
   public static User createRemoteUser(List<String> metadataList, List<String> pathList) {
     User user = new User();
     user.setName("remote-user");

@@ -17,7 +17,6 @@
 package nl.kpmg.lcm.server.data.dao;
 
 import nl.kpmg.lcm.common.data.AuthorizedLcm;
-import nl.kpmg.lcm.common.data.RemoteLcm;
 
 import org.springframework.data.repository.PagingAndSortingRepository;
 
@@ -27,5 +26,5 @@ import org.springframework.data.repository.PagingAndSortingRepository;
  */
 public interface AuthorizedLcmDao extends PagingAndSortingRepository<AuthorizedLcm, String> {
 
-  public RemoteLcm findOneById(String id);
+  public AuthorizedLcm findOneById(String id);
 }
