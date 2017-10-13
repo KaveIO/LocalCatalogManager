@@ -41,6 +41,7 @@ import javax.ws.rs.core.Response;
  */
 @Path("client/v0/authorizedlcm")
 public class AuthorizedLcmController {
+  private final int MAX_FIELD_LENTH = 128;
 
   @Autowired
   private AuthorizedLcmService authorizedLcmService;
@@ -48,19 +49,22 @@ public class AuthorizedLcmController {
   @GET
   @Path("{lcm_id}")
   @Produces({"application/nl.kpmg.lcm.common.rest.types.AuthorizedLcmRepresentation+json"})
-  @RolesAllowed({Roles.ADMINISTRATOR, Roles.API_USER})
+  @RolesAllowed({Roles.ADMINISTRATOR})
   public AuthorizedLcmRepresentation getAuthorizedLcm(@PathParam("lcm_id") String authorizedLcmId) {
+    if (authorizedLcmId == null || authorizedLcmId.length() > MAX_FIELD_LENTH || authorizedLcmId.isEmpty()) {
+
+      return null;
+    }
+
     AuthorizedLcm authroizedLcm = authorizedLcmService.findOneById(authorizedLcmId);
 
     return new ConcreteAuthorizedLcmRepresentation(authroizedLcm);
   }
 
   @GET
-  @Path("{lcm_id}")
   @Produces({"application/nl.kpmg.lcm.common.rest.types.AuthorizedLcmRepresentation+json"})
-  @RolesAllowed({Roles.ADMINISTRATOR, Roles.API_USER})
-  public AuthorizedLcmsRepresentation getAuthorizedLcmList(
-      @PathParam("lcm_id") String authorizedLcmId) {
+  @RolesAllowed({Roles.ADMINISTRATOR})
+  public AuthorizedLcmsRepresentation getAuthorizedLcmList() {
     List authroizedLcmList = authorizedLcmService.findAll();
 
     ConcreteAuthorizedLcmsRepresentation concreteAuthorizedLcmsRepresentation =
@@ -75,6 +79,10 @@ public class AuthorizedLcmController {
   @Path("{lcm_id}")
   @RolesAllowed({Roles.ADMINISTRATOR})
   public Response deleteAuthorizedLcmHandler(final @PathParam("lcm_id") String authorizedLcmId) {
+    if (authorizedLcmId == null || authorizedLcmId.length() > MAX_FIELD_LENTH || authorizedLcmId.isEmpty()) {
+
+      return null;
+    }
 
     AuthorizedLcm authorizedLcm = authorizedLcmService.findOneById(authorizedLcmId);
     if (authorizedLcm != null) {
@@ -88,13 +96,29 @@ public class AuthorizedLcmController {
   @POST
   @Consumes({"application/nl.kpmg.lcm.common.rest.types.AuthorizedLcmRepresentation+json"})
   @RolesAllowed({Roles.ADMINISTRATOR})
-  public Response createNewStorage(final AuthorizedLcm authorizedLcm) {
+  public Response createNewAuthorizedLcm(final AuthorizedLcm authorizedLcm) {
+    if (authorizedLcm.getApplicationId() == null || authorizedLcm.getApplicationId().isEmpty()
+        || authorizedLcm.getApplicationId().length() > MAX_FIELD_LENTH) {
 
-    // TODO validate authorizedLcm
+      return Response.status(Response.Status.BAD_REQUEST)
+          .entity("Application Key could not be null or empty.").build();
+    }
+
+    if (authorizedLcm.getApplicationKey() == null || authorizedLcm.getApplicationKey().isEmpty()
+        || authorizedLcm.getApplicationKey().length() > MAX_FIELD_LENTH) {
+
+      return Response.status(Response.Status.BAD_REQUEST)
+          .entity("Application Key could not be null or empty.").build();
+    }
+
+    if (authorizedLcm.getUniqueId() == null || authorizedLcm.getUniqueId().isEmpty()
+        || authorizedLcm.getUniqueId().length() > MAX_FIELD_LENTH) {
+
+      return Response.status(Response.Status.BAD_REQUEST)
+          .entity("LCM unique ID could not be null or empty.").build();
+    }
+
     authorizedLcmService.create(authorizedLcm);
     return Response.ok().build();
   }
-
-
-
 }
