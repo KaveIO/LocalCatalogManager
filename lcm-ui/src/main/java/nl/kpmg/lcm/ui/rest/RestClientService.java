@@ -28,6 +28,7 @@ import nl.kpmg.lcm.common.configuration.ClientConfiguration;
 import nl.kpmg.lcm.common.data.TaskType;
 import nl.kpmg.lcm.common.data.TestResult;
 import nl.kpmg.lcm.common.rest.types.AbstractRepresentation;
+import nl.kpmg.lcm.common.rest.types.LcmIdRepresentation;
 import nl.kpmg.lcm.common.rest.types.MetaDatasRepresentation;
 import nl.kpmg.lcm.common.rest.types.RemoteLcmsRepresentation;
 import nl.kpmg.lcm.common.rest.types.StoragesRepresentation;
@@ -319,8 +320,8 @@ public class RestClientService {
     return getDatasRepresentation("client/v0/users", UsersRepresentation.class);
   }
 
-  public UserGroupsRepresentation getUserGroups()
-      throws AuthenticationException, ServerException, ClientException {
+  public UserGroupsRepresentation getUserGroups() throws AuthenticationException, ServerException,
+      ClientException {
     return getDatasRepresentation("client/v0/userGroups", UserGroupsRepresentation.class);
   }
 
@@ -365,6 +366,12 @@ public class RestClientService {
       throw new DataCreationException(String.format("%s - %s", statusInfo.getStatusCode(),
           statusInfo.getReasonPhrase()));
     }
+  }
+
+  public LcmIdRepresentation getLcmId() throws AuthenticationException, ServerException,
+      ClientException {
+    return getDatasRepresentation("client/v0/lcmId", LcmIdRepresentation.class);
+
   }
 
   public void createRemoteLcm(String storage) throws ServerException, DataCreationException,

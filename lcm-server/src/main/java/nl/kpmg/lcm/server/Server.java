@@ -135,6 +135,8 @@ public class Server {
     try {
       restServer = startRestInterface();
       taskManager = startTaskManager();
+      LcmIdService lcmIdService = context.getBean(LcmIdService.class);
+      lcmIdService.create();
     } catch (SslConfigurationException ex) {
       LOGGER.error(
           "Failed starting the LocalCatalogManager due to invalid SSL configuration", ex);
