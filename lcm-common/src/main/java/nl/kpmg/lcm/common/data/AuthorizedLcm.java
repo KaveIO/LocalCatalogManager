@@ -15,6 +15,7 @@
 package nl.kpmg.lcm.common.data;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonProperty;
 
 import org.springframework.data.mongodb.core.mapping.Document;
 
@@ -90,6 +91,7 @@ public class AuthorizedLcm extends AbstractModel {
   /**
    * @param applicationKey the applicationKey to set
    */
+  @JsonProperty
   public void setApplicationKey(String applicationKey) {
     this.applicationKey = applicationKey;
   }

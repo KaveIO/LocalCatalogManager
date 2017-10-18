@@ -30,6 +30,7 @@ import javax.ws.rs.Consumes;
 import javax.ws.rs.DELETE;
 import javax.ws.rs.GET;
 import javax.ws.rs.POST;
+import javax.ws.rs.PUT;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
@@ -121,4 +122,27 @@ public class AuthorizedLcmController {
     authorizedLcmService.create(authorizedLcm);
     return Response.ok().build();
   }
+
+  @PUT
+  @Consumes({"application/nl.kpmg.lcm.common.rest.types.AuthorizedLcmRepresentation+json"})
+  @RolesAllowed({Roles.ADMINISTRATOR})
+  public Response overwriteAuthorizedLcm(final AuthorizedLcm authorizedLcm) {
+    if (authorizedLcm.getApplicationId() == null || authorizedLcm.getApplicationId().isEmpty()
+        || authorizedLcm.getApplicationId().length() > MAX_FIELD_LENTH) {
+
+      return Response.status(Response.Status.BAD_REQUEST)
+          .entity("Application Key could not be null or empty.").build();
+    }
+
+    if (authorizedLcm.getUniqueId() == null || authorizedLcm.getUniqueId().isEmpty()
+        || authorizedLcm.getUniqueId().length() > MAX_FIELD_LENTH) {
+
+      return Response.status(Response.Status.BAD_REQUEST)
+          .entity("LCM unique ID could not be null or empty.").build();
+    }
+    authorizedLcmService.update(authorizedLcm);
+    return Response.ok().build();
+  }
+
+
 }

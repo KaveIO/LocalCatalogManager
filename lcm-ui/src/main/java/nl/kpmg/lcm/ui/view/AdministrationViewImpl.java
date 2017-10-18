@@ -31,6 +31,7 @@ import nl.kpmg.lcm.common.rest.types.UserGroupsRepresentation;
 import nl.kpmg.lcm.common.rest.types.UsersRepresentation;
 import nl.kpmg.lcm.ui.rest.AuthenticationException;
 import nl.kpmg.lcm.ui.rest.RestClientService;
+import nl.kpmg.lcm.ui.view.administration.AuthorizedLcmPanel;
 import nl.kpmg.lcm.ui.view.administration.LcmIdPanel;
 import nl.kpmg.lcm.ui.view.administration.RemoteLcmPanel;
 import nl.kpmg.lcm.ui.view.administration.StoragePanel;
@@ -83,6 +84,7 @@ public class AdministrationViewImpl extends VerticalLayout implements Administra
   private RemoteLcmPanel remoteLcmPanel;
   private UserPanel usersPanel;
   private UserGroupPanel userGroupsPanel;
+  private AuthorizedLcmPanel authorizedLcmPanel;
 
   private LcmIdPanel lcmIdPanel;
 
@@ -112,8 +114,12 @@ public class AdministrationViewImpl extends VerticalLayout implements Administra
     userGroupsPanel = new UserGroupPanel(restClientService);
     tabsheet.addTab(userGroupsPanel, "User groups");
 
+    authorizedLcmPanel = new AuthorizedLcmPanel(restClientService);
+    tabsheet.addTab(authorizedLcmPanel, "Authorized LCMs");
+
     lcmIdPanel = new LcmIdPanel();
     tabsheet.addTab(lcmIdPanel, "Local LCM id");
+
 
 
     tabsheet.setHeight("100%");

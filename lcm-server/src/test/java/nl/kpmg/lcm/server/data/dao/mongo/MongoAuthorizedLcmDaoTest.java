@@ -27,23 +27,23 @@ import org.springframework.beans.factory.annotation.Autowired;
  */
 public class MongoAuthorizedLcmDaoTest extends LcmBaseTest {
 
-    @Autowired
-    MongoAuthorizedLcmDao dao;
+  @Autowired
+  MongoAuthorizedLcmDao dao;
 
-    @Test
-    public void testReadWrite(){
-       AuthorizedLcm originalLcm = new AuthorizedLcm();
-       originalLcm.setApplicationId("applicationId");
-       originalLcm.setApplicationKey("applicationKey");
-       originalLcm.setName("name");
-       originalLcm.setUniqueId("uniqueId");
+  @Test
+  public void testReadWrite() {
+    AuthorizedLcm originalLcm = new AuthorizedLcm();
+    originalLcm.setApplicationId("applicationId");
+    originalLcm.setApplicationKey("applicationKey");
+    originalLcm.setName("name");
+    originalLcm.setUniqueId("uniqueId");
 
-       originalLcm = dao.save(originalLcm);
-       AuthorizedLcm  readLcm =  dao.findOneById(originalLcm.getId());
+    originalLcm = dao.save(originalLcm);
+    AuthorizedLcm readLcm = dao.findOneById(originalLcm.getId());
 
-        assertEquals(readLcm.getApplicationId(), originalLcm.getApplicationId());
-        assertEquals(readLcm.getApplicationKey(), originalLcm.getApplicationKey());
-        assertEquals(readLcm.getName(), originalLcm.getName());
-        assertEquals(readLcm.getUniqueId(), originalLcm.getUniqueId());
-    }
+    assertEquals(readLcm.getApplicationId(), originalLcm.getApplicationId());
+    assertEquals(readLcm.getApplicationKey(), originalLcm.getApplicationKey());
+    assertEquals(readLcm.getName(), originalLcm.getName());
+    assertEquals(readLcm.getUniqueId(), originalLcm.getUniqueId());
+  }
 }
