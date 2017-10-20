@@ -14,6 +14,8 @@
 
 package nl.kpmg.lcm.server.data.service;
 
+import static nl.kpmg.lcm.common.rest.authentication.AuthorizationConstants.LCM_AUTHENTICATION_ORIGIN_HEADER;
+
 import nl.kpmg.lcm.common.client.HttpsClientFactory;
 import nl.kpmg.lcm.common.configuration.ClientConfiguration;
 import nl.kpmg.lcm.common.data.RemoteLcm;
@@ -52,6 +54,8 @@ public class RemoteMetaDataService {
   @Autowired
   private RemoteLcmService remoteLcmService;
 
+  @Autowired
+  private LcmIdService lcmIdService;
   // TODO once the Authorization/Auhtenticaion model is implemented this part must be refactored
   // After the refactoring ther emust be used a user which is used only for remote calls
   private String adminUser;
@@ -79,7 +83,9 @@ public class RemoteMetaDataService {
 
     Response response = null;
     try {
-      response = clientFactory.createWebTarget(fetchUrl).request().get();
+      String self = lcmIdService.getLcmIdObject().getLcmId();
+      response = clientFactory.createWebTarget(fetchUrl).request()
+              .header(LCM_AUTHENTICATION_ORIGIN_HEADER, self).get();
       if (response.getStatusInfo().getFamily() == Response.Status.Family.SUCCESSFUL) {
         MetaDatasRepresentation datasRepresentation =
             response.readEntity(MetaDatasRepresentation.class);

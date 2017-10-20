@@ -45,6 +45,10 @@ public class AuthorizedLcmService {
     return dao.findOne(id);
   }
 
+  public AuthorizedLcm  findOneByUniqueId(String lcmUniqueId){
+      return dao.findOneByUniqueId(lcmUniqueId);
+  }
+
   /**
    *
    * @param authorizedLcm :  valid AuthorizedLcm class. all the fields are mandatory

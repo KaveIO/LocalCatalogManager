@@ -14,6 +14,8 @@
 
 package nl.kpmg.lcm.server.data.service;
 
+import static nl.kpmg.lcm.common.rest.authentication.AuthorizationConstants.LCM_AUTHENTICATION_ORIGIN_HEADER;
+
 import jersey.repackaged.com.google.common.collect.Lists;
 
 import nl.kpmg.lcm.common.ServerException;
@@ -52,6 +54,9 @@ public class RemoteLcmService {
 
   @Autowired
   private ClientConfiguration configuration;
+
+  @Autowired
+  private LcmIdService lcmIdService;
 
   // TODO once the Authorization/Auhtenticaion model is implemented this part must be refactored
   // After the refactoring ther emust be used a user which is used only for remote calls
@@ -107,7 +112,9 @@ public class RemoteLcmService {
     Response response = null;
     TestResult result;
     try {
-      response = clientFactory.createWebTarget(fetchUrl).request().get();
+      String self = lcmIdService.getLcmIdObject().getLcmId();
+      response = clientFactory.createWebTarget(fetchUrl).request()
+              .header(LCM_AUTHENTICATION_ORIGIN_HEADER, self).get();
       if (response.getStatusInfo().getFamily() == Response.Status.Family.SUCCESSFUL) {
         String message = response.readEntity(String.class);
         result = new TestResult(message, TestResult.TestCode.ACCESIBLE);
@@ -143,7 +150,9 @@ public class RemoteLcmService {
     String fetchUrl = buildRemoteUrl(remoteLcm) + "/remote/v0/users/username-list";
     Response response = null;
     try {
-      response = clientFactory.createWebTarget(fetchUrl).request().get();
+      String self = lcmIdService.getLcmIdObject().getLcmId();
+      response = clientFactory.createWebTarget(fetchUrl).request()
+              .header(LCM_AUTHENTICATION_ORIGIN_HEADER, self).get();
       if (response.getStatus() != Response.Status.OK.getStatusCode()) {
         return false;
       }

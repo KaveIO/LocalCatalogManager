@@ -14,6 +14,8 @@
 
 package nl.kpmg.lcm.server.data.service;
 
+import static nl.kpmg.lcm.common.rest.authentication.AuthorizationConstants.LCM_AUTHENTICATION_ORIGIN_HEADER;
+
 import nl.kpmg.lcm.common.ServerException;
 import nl.kpmg.lcm.common.client.HttpsClientFactory;
 import nl.kpmg.lcm.common.configuration.ClientConfiguration;
@@ -76,6 +78,10 @@ public class DataFetchTriggerService {
   private RemoteLcmService lcmService;
   @Autowired
   private TaskDescriptionService taskDescriptionService;
+
+  @Autowired
+  private LcmIdService lcmIdService;
+
   @Autowired
   @Value("${lcm.server.adminUser}")
   private String adminUser;
@@ -263,7 +269,9 @@ public class DataFetchTriggerService {
     WebTarget webTarget =
         getWebTarget(lcm).path(METADATA_PATH).path(metadataId).queryParam("update", Boolean.TRUE);
     Invocation.Builder req = webTarget.request();
-    Response response = req.get();
+    String self =  lcmIdService.getLcmIdObject().getLcmId();
+    Response response = req
+             .header(LCM_AUTHENTICATION_ORIGIN_HEADER, self).get();
     try {
       HttpResponseHandler.handleResponse(response);
     } catch (ClientErrorException ex) {

@@ -14,6 +14,7 @@
 
 package nl.kpmg.lcm.ui.rest;
 
+import static nl.kpmg.lcm.common.rest.authentication.AuthorizationConstants.LCM_AUTHENTICATION_ORIGIN_HEADER;
 import static nl.kpmg.lcm.common.rest.authentication.AuthorizationConstants.LCM_AUTHENTICATION_TOKEN_HEADER;
 import static nl.kpmg.lcm.common.rest.authentication.AuthorizationConstants.LCM_AUTHENTICATION_USER_HEADER;
 
@@ -27,6 +28,7 @@ import nl.kpmg.lcm.common.client.HttpsClientFactory;
 import nl.kpmg.lcm.common.configuration.ClientConfiguration;
 import nl.kpmg.lcm.common.data.TaskType;
 import nl.kpmg.lcm.common.data.TestResult;
+import nl.kpmg.lcm.common.data.User;
 import nl.kpmg.lcm.common.rest.types.AbstractRepresentation;
 import nl.kpmg.lcm.common.rest.types.AuthorizedLcmsRepresentation;
 import nl.kpmg.lcm.common.rest.types.LcmIdRepresentation;
@@ -105,7 +107,8 @@ public class RestClientService {
   }
 
   private Response post(String uri, String path, Entity<String> payload) throws ServerException {
-    return clientFactory.createWebTarget(uri).path(path).request().post(payload);
+    return clientFactory.createWebTarget(uri).path(path).request()
+            .header(LCM_AUTHENTICATION_ORIGIN_HEADER, User.LOCAL_ORIGIN).post(payload);
   }
 
   public void authenticate(String username, String password)

@@ -39,12 +39,12 @@ public class UserService {
       return  userDao.findOne(userId);
   }
 
-  public User findOneByName(String userId){
-      return  userDao.findOneByName(userId);
+  public User findOneByName(String name){
+      return  userDao.findOneByName(name);
   }
 
-    public User findOneByNameAndOrigin(String userId, String origin){
-      return  userDao.findOneByNameAndOrigin(userId, origin);
+    public User findOneByNameAndOrigin(String name, String origin){
+      return  userDao.findOneByNameAndOrigin(name, origin);
   }
 
   

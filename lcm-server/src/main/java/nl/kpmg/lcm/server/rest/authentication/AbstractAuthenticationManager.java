@@ -13,9 +13,11 @@
  */
 package nl.kpmg.lcm.server.rest.authentication;
 
+import nl.kpmg.lcm.common.data.AuthorizedLcm;
 import nl.kpmg.lcm.common.data.User;
 import nl.kpmg.lcm.common.rest.authentication.UserPasswordHashException;
 import nl.kpmg.lcm.server.LoginException;
+import nl.kpmg.lcm.server.data.service.AuthorizedLcmService;
 import nl.kpmg.lcm.server.data.service.UserService;
 
 import org.slf4j.Logger;
@@ -38,10 +40,13 @@ public abstract class AbstractAuthenticationManager implements AuthenticationMan
    */
   private final UserService userService;
 
+  @Autowired
+  private AuthorizedLcmService authorizedLcmService;
+
   /**
    * the hard admin username provided by the properties file.
    */
-  private String adminUser;
+  private String hardcodedAdminUser;
 
   /**
    * the hard admin password provided by the properties file.
@@ -56,7 +61,7 @@ public abstract class AbstractAuthenticationManager implements AuthenticationMan
 
   @Value("${lcm.server.adminUser}")
   public final void setAdminUser(final String adminUser) {
-    this.adminUser = adminUser;
+    this.hardcodedAdminUser = adminUser;
   }
 
   @Value("${lcm.server.adminPassword}")
@@ -64,52 +69,66 @@ public abstract class AbstractAuthenticationManager implements AuthenticationMan
     this.adminPassword = adminPassword;
   }
 
-  protected boolean isUsernamePasswordValid(String username, final String password) {
-    //TODO refactor this when implementing the auhtentication
-    username  =  (username.split("@"))[0];
-    if (username.equals(adminUser)) {
-      LOGGER.info("Caught login attempt for admin user");
-      if (password.equals(adminPassword)) {
-        return true;
-      }
-    } else {
-      LOGGER.info("Caught login attempt for regular user");
-      User user = userService.findOneByName(username);
-      try {
-        if (user != null && user.passwordEquals(password)) {
-          return true;
+  protected boolean isUsernamePasswordValid(String origin, String username, final String password) {
+    if(origin == null || username ==  null || password == null){
+        LOGGER.info("Trying to authenticate invalid user! Some of the parameters are null.");
+        return false;
+    }
+
+    if(origin.equals(User.LOCAL_ORIGIN)){
+        if (hardcodedAdminUser !=  null && hardcodedAdminUser.length()> 0
+                && username.equals(hardcodedAdminUser)) {
+          LOGGER.info("Caught login attempt for admin user");
+          if (adminPassword !=  null && password.length()> 0
+                  && password.equals(adminPassword)) {
+            return true;
+          }
+        } else {
+          LOGGER.info("Caught login attempt for regular user");
+          User user = userService.findOneByName(username);
+          try {
+            if (user != null && user.passwordEquals(password)) {
+              return true;
+            }
+          } catch (UserPasswordHashException ex) {
+            LOGGER.error("Something went wrong with the password hashing algorithm", ex);
+          }
         }
-      } catch (UserPasswordHashException ex) {
-        LOGGER.error("Something went wrong with the password hashing algorithm", ex);
-      }
+    } else {
+        AuthorizedLcm lcm = authorizedLcmService.findOneByUniqueId(origin);
+        if(lcm ==  null) {
+            LOGGER.info("Request is not authenticated. Lcm with id : " + origin + " is not found!");
+            return false;
+        }
+
+        if(lcm.getApplicationId().equals(username) && lcm.getApplicationKey().equals(password)){
+            LOGGER.info("Request is authenticated sucessfully. Lcm id : " + origin);
+            return true;
+        }
+
+        LOGGER.info("Request is not authenticated. Lcm with id : " + origin + " is found,  but credentials are wrong! Passed  applicationId: " + username);
+        return false;
+
     }
     return false;
   }
 
-  protected Session createSessionForUser(String complexUsername) throws LoginException {
-    String username = complexUsername;
-    String remoteLcmUID = null;
-    //TODO there must be more secure way to determinate remote users!
-    //If the remote user does not add '@LCM_ID' then it will be treate as local user
-    // and will have permissions as local
-    if (complexUsername.contains("@")) {
-      String[] splitted = complexUsername.split("@");
-      username = splitted[0];
-      remoteLcmUID = splitted[1];
-    }
+  protected Session createSessionForUser(String origin, String username) throws LoginException {
+     if(origin ==  null) {
+        throw new LoginException("Session could not be constructed  for user with unknow origin.");
+     }
 
-    if (remoteLcmUID !=  null && !remoteLcmUID.equals(User.LOCAL_ORIGIN) && username.equals(adminUser)) {
-      throw new LoginException("Remote user is trying to login "
-          + "with preconfiguredadmin user! User: " + username + " and lcmUID: " + remoteLcmUID);
-    }
+     if(!origin.equals(User.LOCAL_ORIGIN)){
+        return new Session(username, Roles.REMOTE_USER, UserOrigin.LOCAL, origin);
+     }
 
-    if (username.equals(adminUser)) {
-      return new Session(username, Roles.ADMINISTRATOR, UserOrigin.CONFIGURED, remoteLcmUID);
+    //the origin is local
+    if (username.equals(hardcodedAdminUser)) {
+      return new Session(username, Roles.ADMINISTRATOR, UserOrigin.CONFIGURED, origin);
     } else {
       User user = userService.findOneByName(username);
-      String role = remoteLcmUID != null ? user.getRole() : Roles.REMOTE_USER;
       if (user != null) {
-        return new Session(user.getName(), role, UserOrigin.LOCAL, remoteLcmUID);
+        return new Session(user.getName(), user.getRole(), UserOrigin.LOCAL, origin);
       }
     }
     throw new LoginException("Session could not be constructed after login.");

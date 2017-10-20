@@ -14,30 +14,33 @@
 
 package nl.kpmg.lcm.server.task.enrichment;
 
+import static nl.kpmg.lcm.common.rest.authentication.AuthorizationConstants.LCM_AUTHENTICATION_ORIGIN_HEADER;
+
 import com.google.gson.stream.JsonReader;
 
+import nl.kpmg.lcm.common.ServerException;
 import nl.kpmg.lcm.common.client.HttpsClientFactory;
 import nl.kpmg.lcm.common.configuration.ClientConfiguration;
-import nl.kpmg.lcm.common.ServerException;
-import nl.kpmg.lcm.server.backend.Backend;
 import nl.kpmg.lcm.common.data.ContentIterator;
 import nl.kpmg.lcm.common.data.Data;
 import nl.kpmg.lcm.common.data.EnrichmentProperties;
 import nl.kpmg.lcm.common.data.IterativeData;
-import nl.kpmg.lcm.server.data.JsonReaderContentIterator;
 import nl.kpmg.lcm.common.data.ProgressIndication;
-import nl.kpmg.lcm.server.data.ProgressIndicationFactory;
 import nl.kpmg.lcm.common.data.RemoteLcm;
 import nl.kpmg.lcm.common.data.StreamingData;
 import nl.kpmg.lcm.common.data.TaskDescription;
 import nl.kpmg.lcm.common.data.TransferSettings;
 import nl.kpmg.lcm.common.data.metadata.DataItemsDescriptor;
 import nl.kpmg.lcm.common.data.metadata.MetaDataWrapper;
+import nl.kpmg.lcm.common.validation.Notification;
+import nl.kpmg.lcm.server.backend.Backend;
+import nl.kpmg.lcm.server.data.JsonReaderContentIterator;
+import nl.kpmg.lcm.server.data.ProgressIndicationFactory;
+import nl.kpmg.lcm.server.data.service.LcmIdService;
 import nl.kpmg.lcm.server.data.service.RemoteLcmService;
 import nl.kpmg.lcm.server.task.EnrichmentTask;
 import nl.kpmg.lcm.server.task.TaskException;
 import nl.kpmg.lcm.server.task.TaskResult;
-import nl.kpmg.lcm.common.validation.Notification;
 
 import org.glassfish.jersey.client.authentication.HttpAuthenticationFeature;
 import org.slf4j.Logger;
@@ -61,6 +64,9 @@ public class DataFetchTask extends EnrichmentTask {
 
   @Autowired
   private RemoteLcmService remoteLcmService;
+
+  @Autowired
+  private LcmIdService lcmIdService;
 
   @Autowired
   private ClientConfiguration configuration;
@@ -136,7 +142,9 @@ public class DataFetchTask extends EnrichmentTask {
     Response response = null;
 
     try {
-      response = clientFactory.createWebTarget(fetchUrl).request().get();
+      String self = lcmIdService.getLcmIdObject().getLcmId();
+      response = clientFactory.createWebTarget(fetchUrl).request()
+              .header(LCM_AUTHENTICATION_ORIGIN_HEADER, self).get();
     } catch (ServerException ex) {
       throw new TaskException(ex);
     }

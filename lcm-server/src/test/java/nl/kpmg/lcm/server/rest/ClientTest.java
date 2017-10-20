@@ -14,6 +14,7 @@
 
 package nl.kpmg.lcm.server.rest;
 
+import static nl.kpmg.lcm.common.rest.authentication.AuthorizationConstants.LCM_AUTHENTICATION_ORIGIN_HEADER;
 import static org.junit.Assert.assertEquals;
 
 import nl.kpmg.lcm.common.ServerException;
@@ -39,14 +40,17 @@ public class ClientTest extends LcmBaseServerTest {
     // Due to a Spring configuration error we can't login in this thread. We
     // have to create a actuall login call.
     LoginRequest loginRequest = new LoginRequest();
-    loginRequest.setUsername("admin"+ "@" + User.LOCAL_ORIGIN);
+    loginRequest.setUsername("admin");
     loginRequest.setPassword("admin");
     Entity<LoginRequest> entity = Entity.entity(loginRequest,
         "application/nl.kpmg.lcm.server.rest.client.types.LoginRequest+json");
-    Response res = getWebTarget().path("client/login").request().post(entity);
+    Response res = getWebTarget().path("client/login").request()
+            .header(LCM_AUTHENTICATION_ORIGIN_HEADER, User.LOCAL_ORIGIN).post(entity);
 
     Response result =
-        getWebTarget().path("client").request().header("LCM-Authentication-User", "admin")
+        getWebTarget().path("client").request()
+                .header(LCM_AUTHENTICATION_ORIGIN_HEADER, User.LOCAL_ORIGIN)
+                .header("LCM-Authentication-User", "admin")
             .header("LCM-Authentication-Token", res.readEntity(String.class)).get();
     assertEquals(200, result.getStatus());
   }

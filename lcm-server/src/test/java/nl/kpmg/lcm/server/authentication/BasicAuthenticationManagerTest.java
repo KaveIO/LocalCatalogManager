@@ -15,9 +15,11 @@
 package nl.kpmg.lcm.server.authentication;
 
 import static nl.kpmg.lcm.common.rest.authentication.AuthorizationConstants.BASIC_AUTHENTICATION_HEADER;
+import static nl.kpmg.lcm.common.rest.authentication.AuthorizationConstants.LCM_AUTHENTICATION_ORIGIN_HEADER;
 import static org.junit.Assert.assertEquals;
 
 import nl.kpmg.lcm.common.ServerException;
+import nl.kpmg.lcm.common.data.User;
 import nl.kpmg.lcm.server.LcmBaseServerTest;
 import nl.kpmg.lcm.server.LoginException;
 import nl.kpmg.lcm.server.data.service.UserService;
@@ -43,6 +45,7 @@ public class BasicAuthenticationManagerTest extends LcmBaseServerTest {
   @Test
   public void testGetUserTarget() throws LoginException, ServerException {
     Response res1 = getWebTarget().path("client/v0/users").request()
+        .header(LCM_AUTHENTICATION_ORIGIN_HEADER, User.LOCAL_ORIGIN)
         .header(BASIC_AUTHENTICATION_HEADER, basicAuthTokenAdmin).get();
 
     assertEquals(200, res1.getStatus());
@@ -51,6 +54,7 @@ public class BasicAuthenticationManagerTest extends LcmBaseServerTest {
   @Test
   public void testGetLocalTarget() throws LoginException, ServerException {
     Response res1 = getWebTarget().path("client/v0/local").request()
+        .header(LCM_AUTHENTICATION_ORIGIN_HEADER, User.LOCAL_ORIGIN)
         .header(BASIC_AUTHENTICATION_HEADER, basicAuthTokenAdmin).get();
 
     assertEquals(200, res1.getStatus());

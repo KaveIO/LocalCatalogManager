@@ -15,12 +15,14 @@
 package nl.kpmg.lcm.server.rest.client.version0;
 
 import static nl.kpmg.lcm.common.rest.authentication.AuthorizationConstants.BASIC_AUTHENTICATION_HEADER;
+import static nl.kpmg.lcm.common.rest.authentication.AuthorizationConstants.LCM_AUTHENTICATION_ORIGIN_HEADER;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
 import nl.kpmg.lcm.common.ServerException;
 import nl.kpmg.lcm.common.configuration.ServerConfiguration;
+import nl.kpmg.lcm.common.data.AuthorizedLcm;
 import nl.kpmg.lcm.common.data.DataFormat;
 import nl.kpmg.lcm.common.data.IterativeData;
 import nl.kpmg.lcm.common.data.RemoteLcm;
@@ -33,6 +35,8 @@ import nl.kpmg.lcm.common.rest.types.MetaDataRepresentation;
 import nl.kpmg.lcm.common.rest.types.MetaDatasRepresentation;
 import nl.kpmg.lcm.server.LcmBaseServerTest;
 import nl.kpmg.lcm.server.backend.Backend;
+import nl.kpmg.lcm.server.data.service.AuthorizedLcmService;
+import nl.kpmg.lcm.server.data.service.LcmIdService;
 import nl.kpmg.lcm.server.data.service.StorageService;
 import nl.kpmg.lcm.server.data.service.TaskDescriptionService;
 import nl.kpmg.lcm.server.data.service.UserService;
@@ -93,6 +97,12 @@ public class DataFetchTriggerContollerTest extends LcmBaseServerTest {
   @Autowired
   private ServerConfiguration serverConfiguration;
 
+  @Autowired
+  private LcmIdService lcmIdSerive;
+
+  @Autowired
+  private AuthorizedLcmService authorizedLcmService;
+
   private static MetaDataWrapper md;
   private static Storage csvStorage;
   private static RemoteLcm lcm;
@@ -104,7 +114,9 @@ public class DataFetchTriggerContollerTest extends LcmBaseServerTest {
    */
  // @After
   public void afterTest() throws ServerException {
-    getWebTarget().path("client/logout").request().header(AUTH_USER_HEADER, "admin")
+    getWebTarget().path("client/logout").request()
+            .header(LCM_AUTHENTICATION_ORIGIN_HEADER, User.LOCAL_ORIGIN)
+            .header(AUTH_USER_HEADER, "admin")
         .header(BASIC_AUTHENTICATION_HEADER, basicAuthTokenAdmin).post(null);
     taskDescriptionService.deleteAll();
   }
@@ -117,6 +129,14 @@ public class DataFetchTriggerContollerTest extends LcmBaseServerTest {
       csvStorage = StorageMocker.createCsvStorage();
       md = createStorageAndPostMetadata(csvStorage);
     }
+    String self =  lcmIdSerive.getLcmIdObject().getLcmId();
+    AuthorizedLcm lcm =  new  AuthorizedLcm();
+    lcm.setName("self-test");
+    lcm.setUniqueId(self);
+    lcm.setApplicationId(testAdminUsername);
+    lcm.setApplicationKey(testAdminPassword);
+    authorizedLcmService.create(lcm);
+
   }
 
   //@Test
@@ -222,7 +242,9 @@ public class DataFetchTriggerContollerTest extends LcmBaseServerTest {
     Entity<MetaData> entity = Entity.entity(metadataWrapper.getMetaData(), METADATA_CONTENT_TYPE);
 
     Response resp =
-        getWebTarget().path(METADATA_PATH).request().header(AUTH_USER_HEADER, "admin")
+        getWebTarget().path(METADATA_PATH).request()
+            .header(LCM_AUTHENTICATION_ORIGIN_HEADER, User.LOCAL_ORIGIN)
+            .header(AUTH_USER_HEADER, "admin")
             .header(BASIC_AUTHENTICATION_HEADER, basicAuthTokenAdmin).post(entity);
 
     assertEquals(expected, resp.getStatus());
@@ -240,7 +262,8 @@ public class DataFetchTriggerContollerTest extends LcmBaseServerTest {
     Entity<Map> entity = Entity.entity(payload, "application/json");
     Response resp =
         getWebTarget().path(TRIGGER_PATH).path(lcmId).path("metadata").path(metadataId).request()
-            .header(AUTH_USER_HEADER, admin.getName() + "@" + User.LOCAL_ORIGIN)
+            .header(LCM_AUTHENTICATION_ORIGIN_HEADER, User.LOCAL_ORIGIN)
+            .header(AUTH_USER_HEADER, admin.getName())
             .header(BASIC_AUTHENTICATION_HEADER, basicAuthTokenAdmin).post(entity);
     assertEquals(expected, resp.getStatus());
   }
@@ -263,7 +286,9 @@ public class DataFetchTriggerContollerTest extends LcmBaseServerTest {
   private void postLcm(RemoteLcm lcm, int expected) throws ServerException {
     Entity<RemoteLcm> entity = Entity.entity(lcm, LCM_CONTENT_TYPE);
     Response resp =
-        getWebTarget().path(LCM_PATH).request().header(AUTH_USER_HEADER, "admin")
+        getWebTarget().path(LCM_PATH).request()
+            .header(LCM_AUTHENTICATION_ORIGIN_HEADER, User.LOCAL_ORIGIN)
+            .header(AUTH_USER_HEADER, "admin")
             .header(BASIC_AUTHENTICATION_HEADER, basicAuthTokenAdmin).post(entity);
     assertEquals(expected, resp.getStatus());
   }
@@ -271,7 +296,9 @@ public class DataFetchTriggerContollerTest extends LcmBaseServerTest {
   private List<MetaDataRepresentation> getMetadata(int expected) throws ServerException {
 
     Invocation.Builder req =
-        getWebTarget().path(METADATA_PATH).request().header(AUTH_USER_HEADER, "admin")
+        getWebTarget().path(METADATA_PATH).request()
+            .header(LCM_AUTHENTICATION_ORIGIN_HEADER, User.LOCAL_ORIGIN)
+            .header(AUTH_USER_HEADER, "admin")
             .header(BASIC_AUTHENTICATION_HEADER, basicAuthTokenAdmin);
 
     Response response = req.get();

@@ -136,11 +136,6 @@ public class PermissionChecker {
     return false;
   }
 
-  private void checkSecurityContext(SecurityContext securityContext, String metadataId) {
-
-
-  }
-
   private boolean isUserAuthorizedByUserGroup(User user, MetaDataWrapper metadataWrapper) {
     List<UserGroup> userGroupList = userGroupService.findByUserId(user.getId());
     for (UserGroup group : userGroupList) {

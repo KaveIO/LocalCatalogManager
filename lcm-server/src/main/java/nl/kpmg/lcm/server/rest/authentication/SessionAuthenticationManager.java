@@ -95,11 +95,11 @@ public class SessionAuthenticationManager extends AbstractAuthenticationManager 
    * @return the authentication token
    * @throws LoginException if the authentication fails
    */
-  public final String getAuthenticationToken(final String username, final String password)
+  public final String getAuthenticationToken(final String origin, final String username, final String password)
       throws LoginException {
 
-    if (isUsernamePasswordValid(username, password)) {
-      Session session = createSessionForUser(username);
+    if (isUsernamePasswordValid(origin, username, password)) {
+      Session session = createSessionForUser(origin, username);
       LOGGER.debug("Successfully authenticated user: " + username);
       return createAuthenticationToken(session);
     } else {

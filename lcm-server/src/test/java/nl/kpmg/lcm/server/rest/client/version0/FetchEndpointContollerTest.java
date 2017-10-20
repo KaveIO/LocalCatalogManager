@@ -15,6 +15,7 @@
 package nl.kpmg.lcm.server.rest.client.version0;
 
 import static nl.kpmg.lcm.common.rest.authentication.AuthorizationConstants.BASIC_AUTHENTICATION_HEADER;
+import static nl.kpmg.lcm.common.rest.authentication.AuthorizationConstants.LCM_AUTHENTICATION_ORIGIN_HEADER;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 
@@ -28,6 +29,7 @@ import nl.kpmg.lcm.common.data.FetchEndpoint;
 import nl.kpmg.lcm.common.data.IterativeData;
 import nl.kpmg.lcm.common.data.Storage;
 import nl.kpmg.lcm.common.data.TransferSettings;
+import nl.kpmg.lcm.common.data.User;
 import nl.kpmg.lcm.common.data.metadata.MetaData;
 import nl.kpmg.lcm.common.data.metadata.MetaDataWrapper;
 import nl.kpmg.lcm.common.rest.types.FetchEndpointRepresentation;
@@ -103,7 +105,9 @@ public class FetchEndpointContollerTest extends LcmBaseServerTest {
    */
   @After
   public void afterTest() throws ServerException {
-    getWebTarget().path("client/logout").request().header(AUTH_USER_HEADER, "admin")
+    getWebTarget().path("client/logout").request()
+            .header(LCM_AUTHENTICATION_ORIGIN_HEADER, User.LOCAL_ORIGIN)
+            .header(AUTH_USER_HEADER, "admin")
         .header(BASIC_AUTHENTICATION_HEADER, basicAuthTokenAdmin)
         .post(null);
 
@@ -186,7 +190,9 @@ public class FetchEndpointContollerTest extends LcmBaseServerTest {
   private List<MetaDataRepresentation> getMetadata(int expected) throws ServerException {
 
     Invocation.Builder req =
-        getWebTarget().path(METADATA_PATH).request().header(AUTH_USER_HEADER, "admin")
+        getWebTarget().path(METADATA_PATH).request()
+            .header(LCM_AUTHENTICATION_ORIGIN_HEADER, User.LOCAL_ORIGIN)
+            .header(AUTH_USER_HEADER, "admin")
             .header(BASIC_AUTHENTICATION_HEADER, basicAuthTokenAdmin);
 
     Response response = req.get();
@@ -244,7 +250,9 @@ public class FetchEndpointContollerTest extends LcmBaseServerTest {
   private Response getFetchURL(String id, int expected,  String key) throws ServerException,
       FileNotFoundException, IOException {
     Response response =
-        getWebTarget().path(FETCH_PATH).path(id).queryParam("data_key", key).request().header(AUTH_USER_HEADER, "admin")
+        getWebTarget().path(FETCH_PATH).path(id).queryParam("data_key", key).request()
+            .header(LCM_AUTHENTICATION_ORIGIN_HEADER, User.LOCAL_ORIGIN)
+            .header(AUTH_USER_HEADER, "admin")
             .header(BASIC_AUTHENTICATION_HEADER, basicAuthTokenAdmin)
             .get();
 
@@ -258,7 +266,9 @@ public class FetchEndpointContollerTest extends LcmBaseServerTest {
     Entity<MetaData> entity = Entity.entity(metadata.getMetaData(), METADATA_CONTENT_TYPE);
 
     Response resp =
-        getWebTarget().path(METADATA_PATH).request().header(AUTH_USER_HEADER, "admin")
+        getWebTarget().path(METADATA_PATH).request()
+            .header(LCM_AUTHENTICATION_ORIGIN_HEADER, User.LOCAL_ORIGIN)
+            .header(AUTH_USER_HEADER, "admin")
             .header(BASIC_AUTHENTICATION_HEADER, basicAuthTokenAdmin)
             .post(entity);
 
@@ -268,6 +278,7 @@ public class FetchEndpointContollerTest extends LcmBaseServerTest {
   private FetchEndpoint generateFetchURL(String metadataId, int expected) throws ServerException {
     Response response =
         getWebTarget().path(GENERATE_FETCH_PATH).path(metadataId).path("fetchUrl").request()
+            .header(LCM_AUTHENTICATION_ORIGIN_HEADER, User.LOCAL_ORIGIN)
             .header(AUTH_USER_HEADER, "admin")
             .header(BASIC_AUTHENTICATION_HEADER, basicAuthTokenAdmin)
             .get();
