@@ -14,17 +14,19 @@
 
 package nl.kpmg.lcm.server.rest.client.version0;
 
+import com.amazonaws.services.certificatemanager.model.InvalidStateException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
-import nl.kpmg.lcm.common.client.ClientException;
-import nl.kpmg.lcm.common.rest.types.MetaDatasRepresentation;
 import nl.kpmg.lcm.common.ServerException;
+import nl.kpmg.lcm.common.client.ClientException;
 import nl.kpmg.lcm.common.data.TransferSettings;
+import nl.kpmg.lcm.common.data.User;
+import nl.kpmg.lcm.common.exception.LcmValidationException;
+import nl.kpmg.lcm.common.rest.types.MetaDatasRepresentation;
+import nl.kpmg.lcm.common.validation.Notification;
 import nl.kpmg.lcm.server.data.service.DataFetchTriggerService;
 import nl.kpmg.lcm.server.data.service.RemoteMetaDataService;
-import nl.kpmg.lcm.common.exception.LcmValidationException;
 import nl.kpmg.lcm.server.rest.authentication.Roles;
-import nl.kpmg.lcm.common.validation.Notification;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -42,7 +44,9 @@ import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.QueryParam;
+import javax.ws.rs.core.Context;
 import javax.ws.rs.core.Response;
+import javax.ws.rs.core.SecurityContext;
 
 /**
  *
@@ -64,13 +68,17 @@ public class RemoteMetaDataController {
   @Produces({"text/plain"})
   @Consumes({"application/json"})
   @RolesAllowed({Roles.ADMINISTRATOR, Roles.API_USER})
-  public final Response trigger(@PathParam("lcm_id") final String lcmId,
+  public final Response trigger(@Context SecurityContext securityContext, @PathParam("lcm_id") final String lcmId,
       @PathParam("metadata_id") final String metadataId, Map payload) throws ServerException {
 
     Notification notification = validateTriggerParams(payload, lcmId, metadataId);
 
     if (notification.hasErrors()) {
       throw new LcmValidationException(notification);
+    }
+
+    if(securityContext == null) {
+        throw new InvalidStateException("Security context is null!");
     }
 
     String localStorageId = (String) payload.get("local-storage-id");
@@ -92,9 +100,9 @@ public class RemoteMetaDataController {
         transferSettings = new TransferSettings();
       }
     }
-
+    User principal = (User) securityContext.getUserPrincipal();
     dataFetchTriggerService.scheduleDataFetchTask(lcmId, metadataId, localStorageId,
-        transferSettings, namespacePath);
+        transferSettings, namespacePath, principal.getName());
 
     return Response.ok().build();
   }

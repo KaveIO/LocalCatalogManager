@@ -15,6 +15,7 @@
 package nl.kpmg.lcm.server.data.service;
 
 import static nl.kpmg.lcm.common.rest.authentication.AuthorizationConstants.LCM_AUTHENTICATION_ORIGIN_HEADER;
+import static nl.kpmg.lcm.common.rest.authentication.AuthorizationConstants.LCM_AUTHENTICATION_REMOTE_USER_HEADER;
 
 import nl.kpmg.lcm.common.ServerException;
 import nl.kpmg.lcm.common.client.HttpsClientFactory;
@@ -91,14 +92,14 @@ public class DataFetchTriggerService {
   @Autowired
   private ClientConfiguration configuration;
 
-  private static final String METADATA_PATH = "client/v0/local";
+  private static final String METADATA_PATH = "remote/v0/metadata";
   private static final String FETCH_ENDPOINT_CONTROLLER_PATH = "/remote/v0";
   private static final String GENERATE_FETCH_PATH = FETCH_ENDPOINT_CONTROLLER_PATH + "/metadata";
   private static final String FETCH_DATA_PATH = FETCH_ENDPOINT_CONTROLLER_PATH + "/fetch";
   private HttpAuthenticationFeature credentials;
 
   public void scheduleDataFetchTask(String lcmId, String metadataId, String localStorageId,
-      TransferSettings transferSettings, String namespacePath) throws ServerException {
+      TransferSettings transferSettings, String namespacePath,String username) throws ServerException {
     RemoteLcm lcm = lcmService.findOneById(lcmId);
     if (lcm == null) {
       throw new NotFoundException(String.format("Remote LCM with id: %s is not found", lcmId));
@@ -110,7 +111,7 @@ public class DataFetchTriggerService {
           "This metadata already exists! To enable the transfer enable the overwriting of existing data.");
     }
 
-    MetaDataWrapper metaDataWrapper = getMetadata(metadataId, lcm);
+    MetaDataWrapper metaDataWrapper = getMetadata(metadataId, lcm, username);
     if (metaDataWrapper.isEmpty()) {
       throw new NotFoundException(String.format("Metadata with id: %s is not found", metadataId));
     }
@@ -126,11 +127,11 @@ public class DataFetchTriggerService {
 
     updateMetaData(metaDataWrapper, localStorage, namespacePath);
 
-    createFetchTask(metaDataWrapper, lcmId, lcm, transferSettings);
+    createFetchTask(metaDataWrapper, lcmId, lcm, transferSettings, username);
   }
 
   private void createFetchTask(MetaDataWrapper metaDataWrapper, String lcmId, RemoteLcm lcm,
-      TransferSettings transferSettings) throws ServerException, ClientErrorException {
+      TransferSettings transferSettings, String username) throws ServerException, ClientErrorException {
     TaskDescription dataFetchTaskDescription = new TaskDescription();
     dataFetchTaskDescription.setJob(DataFetchTask.class.getName());
     dataFetchTaskDescription.setType(TaskType.FETCH);
@@ -144,7 +145,7 @@ public class DataFetchTriggerService {
 
     Map<String, String> options = new HashMap();
     options.put("remoteLcm", lcmId);
-    FetchEndpoint fetchURL = generateFetchURL(metaDataWrapper.getId(), lcm);
+    FetchEndpoint fetchURL = generateFetchURL(metaDataWrapper.getId(), lcm,  username);
     options.put("path", FETCH_DATA_PATH + "/" + fetchURL.getId());
 
     dataFetchTaskDescription.setOptions(options);
@@ -264,13 +265,14 @@ public class DataFetchTriggerService {
    * @throws ServerException
    * @throws ClientErrorException
    */
-  private MetaDataWrapper getMetadata(String metadataId, RemoteLcm lcm) throws ServerException,
+  private MetaDataWrapper getMetadata(String metadataId, RemoteLcm lcm, String username) throws ServerException,
       ClientErrorException {
     WebTarget webTarget =
         getWebTarget(lcm).path(METADATA_PATH).path(metadataId).queryParam("update", Boolean.TRUE);
     Invocation.Builder req = webTarget.request();
     String self =  lcmIdService.getLcmIdObject().getLcmId();
     Response response = req
+             .header(LCM_AUTHENTICATION_REMOTE_USER_HEADER, username)
              .header(LCM_AUTHENTICATION_ORIGIN_HEADER, self).get();
     try {
       HttpResponseHandler.handleResponse(response);
@@ -308,11 +310,14 @@ public class DataFetchTriggerService {
    * @param remoteLcmURL
    * @return the FetchEndpoint
    */
-  private FetchEndpoint generateFetchURL(String metadataId, RemoteLcm lcm) throws ServerException,
+  private FetchEndpoint generateFetchURL(String metadataId, RemoteLcm lcm,  String username) throws ServerException,
       ClientErrorException {
     WebTarget webTarget = getWebTarget(lcm);
+    String self =  lcmIdService.getLcmIdObject().getLcmId();
     Response response =
-        webTarget.path(GENERATE_FETCH_PATH).path(metadataId).path("fetchUrl").request().get();
+        webTarget.path(GENERATE_FETCH_PATH).path(metadataId).path("fetchUrl").request()
+             .header(LCM_AUTHENTICATION_REMOTE_USER_HEADER, username)
+             .header(LCM_AUTHENTICATION_ORIGIN_HEADER, self).get();
     try {
       HttpResponseHandler.handleResponse(response);
     } catch (ClientErrorException ex) {

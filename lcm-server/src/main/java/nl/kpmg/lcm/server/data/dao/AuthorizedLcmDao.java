@@ -28,7 +28,7 @@ import org.springframework.data.repository.PagingAndSortingRepository;
 public interface AuthorizedLcmDao extends PagingAndSortingRepository<AuthorizedLcm, String> {
 
   public AuthorizedLcm findOneById(String id);
-
-  @Query(value="{'unique-lcm-id': ?}")
+ 
+  @Query(value="{'unique-lcm-id': ?0}")
   public AuthorizedLcm findOneByUniqueId(String id);
 }

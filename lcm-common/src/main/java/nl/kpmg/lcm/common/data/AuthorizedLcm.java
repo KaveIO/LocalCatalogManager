@@ -18,7 +18,6 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 import org.springframework.data.mongodb.core.mapping.Document;
-import org.springframework.data.mongodb.core.mapping.Field;
 
 @Document(collection = "authorizedLcm")
 public class AuthorizedLcm extends AbstractModel {
@@ -56,7 +55,6 @@ public class AuthorizedLcm extends AbstractModel {
   /**
    * @return the uniqueId
    */
-  @Field("unique-lcm-id")
   public String getUniqueId() {
     return uniqueId;
   }
@@ -64,7 +62,6 @@ public class AuthorizedLcm extends AbstractModel {
   /**
    * @param uniqueId the uniqueId to set
    */
-  @Field("unique-lcm-id")
   public void setUniqueId(String uniqueId) {
     this.uniqueId = uniqueId;
   }

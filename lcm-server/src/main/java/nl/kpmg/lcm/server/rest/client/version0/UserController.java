@@ -15,7 +15,6 @@
 package nl.kpmg.lcm.server.rest.client.version0;
 
 import nl.kpmg.lcm.common.data.User;
-import nl.kpmg.lcm.common.rest.authentication.UserPasswordHashException;
 import nl.kpmg.lcm.common.rest.types.UsersRepresentation;
 import nl.kpmg.lcm.server.data.service.UserService;
 import nl.kpmg.lcm.server.rest.authentication.Roles;
@@ -101,9 +100,7 @@ public class UserController {
   @Consumes({"application/nl.kpmg.lcm.server.data.User+json"})
   @RolesAllowed({Roles.ADMINISTRATOR})
   public final Response createNewUser(final User user) {
-    if (user.getOrigin() == null) {
-      user.setOrigin(User.LOCAL_ORIGIN);
-    }
+      //TODO Validation is needed here
 
     userService.save(user);
     return Response.ok().build();
@@ -114,14 +111,10 @@ public class UserController {
   @Consumes({"application/nl.kpmg.lcm.server.data.User+json"})
   @RolesAllowed({Roles.ADMINISTRATOR})
   public final Response modifyUser(final User user) {
+    //TODO Validation is needed here
+    userService.save(user);
+    return Response.ok().build();
 
-    try {
-      userService.updateUser(user);
-      return Response.ok().build();
-    } catch (UserPasswordHashException ex) {
-      LOGGER.error("Password hashing failed during user modification", ex);
-      return Response.serverError().build();
-    }
   }
 
   @DELETE

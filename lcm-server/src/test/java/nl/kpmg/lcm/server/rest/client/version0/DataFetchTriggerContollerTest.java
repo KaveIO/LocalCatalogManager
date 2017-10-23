@@ -31,6 +31,7 @@ import nl.kpmg.lcm.common.data.TaskDescription;
 import nl.kpmg.lcm.common.data.User;
 import nl.kpmg.lcm.common.data.metadata.MetaData;
 import nl.kpmg.lcm.common.data.metadata.MetaDataWrapper;
+import nl.kpmg.lcm.common.rest.authentication.UserPasswordHashException;
 import nl.kpmg.lcm.common.rest.types.MetaDataRepresentation;
 import nl.kpmg.lcm.common.rest.types.MetaDatasRepresentation;
 import nl.kpmg.lcm.server.LcmBaseServerTest;
@@ -40,6 +41,7 @@ import nl.kpmg.lcm.server.data.service.LcmIdService;
 import nl.kpmg.lcm.server.data.service.StorageService;
 import nl.kpmg.lcm.server.data.service.TaskDescriptionService;
 import nl.kpmg.lcm.server.data.service.UserService;
+import nl.kpmg.lcm.server.rest.authentication.Roles;
 import nl.kpmg.lcm.server.test.mock.MetaDataMocker;
 import nl.kpmg.lcm.server.test.mock.RemoteLcmMocker;
 import nl.kpmg.lcm.server.test.mock.StorageMocker;
@@ -122,7 +124,7 @@ public class DataFetchTriggerContollerTest extends LcmBaseServerTest {
   }
 
  // @Before
-  public void beforeTest() throws ServerException, IOException {
+  public void beforeTest() throws ServerException, IOException, UserPasswordHashException {
     if (csvStorage == null) {
       // Client finds the id of the remote lcm that contains the data she wants
       lcm = getLCMId();
@@ -137,6 +139,13 @@ public class DataFetchTriggerContollerTest extends LcmBaseServerTest {
     lcm.setApplicationKey(testAdminPassword);
     authorizedLcmService.create(lcm);
 
+    User remoteUser =  new User();
+    remoteUser.setName(testAdminUsername);
+    remoteUser.setPassword(testAdminPassword);
+    remoteUser.setOrigin(self);
+    remoteUser.setRole(Roles.REMOTE_USER);
+    userService.save(remoteUser);
+
   }
 
   //@Test
@@ -145,6 +154,12 @@ public class DataFetchTriggerContollerTest extends LcmBaseServerTest {
     RemoteLcm lcm = getLCMId();
     Storage csvStorage = addStorageIfDoesNotExists(StorageMocker.createCsvStorage());
     MetaDataWrapper md = postMetadata();
+    String self =  lcmIdSerive.getLcmIdObject().getLcmId();
+    User user = userService.findOneByNameAndOrigin(testAdminUsername, self);
+    List<String> allowed =  new ArrayList<String>();
+    allowed.add(md.getId());
+    user.setAllowedMetadataList(allowed);
+    userService.save(user);
 
     // Sends a request to local lcm to fetch the data and metadata
     postTrigger(lcm.getId(), md.getId(), csvStorage.getId(), 200);
@@ -258,6 +273,7 @@ public class DataFetchTriggerContollerTest extends LcmBaseServerTest {
 
     Map payload = new LinkedHashMap();
     payload.put("local-storage-id", storageId);
+    payload.put("namespace-path", "kpmg/test");
     payload.put("transfer-settings", "{\"forceOverwrite\": \"true\"}");
     Entity<Map> entity = Entity.entity(payload, "application/json");
     Response resp =

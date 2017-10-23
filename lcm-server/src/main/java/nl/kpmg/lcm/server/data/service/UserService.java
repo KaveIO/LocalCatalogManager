@@ -17,7 +17,6 @@ package nl.kpmg.lcm.server.data.service;
 import jersey.repackaged.com.google.common.collect.Lists;
 
 import nl.kpmg.lcm.common.data.User;
-import nl.kpmg.lcm.common.rest.authentication.UserPasswordHashException;
 import nl.kpmg.lcm.server.data.dao.UserDao;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -40,7 +39,7 @@ public class UserService {
   }
 
   public User findOneByName(String name){
-      return  userDao.findOneByName(name);
+      return  userDao.findOneByNameAndOrigin(name, User.LOCAL_ORIGIN);
   }
 
     public User findOneByNameAndOrigin(String name, String origin){
@@ -53,6 +52,9 @@ public class UserService {
   }
 
   public User save(User user){
+    if (user.getOrigin() == null) {
+      user.setOrigin(User.LOCAL_ORIGIN);
+    }
      return userDao.save(user);
   }
 
@@ -60,23 +62,6 @@ public class UserService {
     return Lists.newLinkedList(userDao.findAll());
   }
 
-  public void updateUser(User modifiedUser) throws UserPasswordHashException {
-    User user = userDao.findOne(modifiedUser.getId());
-
-    if (modifiedUser.getName() != null) {
-      user.setName(modifiedUser.getName());
-    }
-
-    if (modifiedUser.getNewPassword() != null) {
-      user.setNewPassword(modifiedUser.getNewPassword());
-    }
-    if (modifiedUser.getRole() != null) {
-      user.setRole(modifiedUser.getRole());
-    }
-
-    userDao.save(user);
-  }
-  
   public void removeAll(){
       userDao.deleteAll();
   }
