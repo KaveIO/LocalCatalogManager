@@ -77,8 +77,20 @@ public class RemoteLcmService {
     return dao.findOne(id);
   }
 
-  public RemoteLcmDao getDao() {
-    return dao;
+  public RemoteLcm create(RemoteLcm remoteLcm) {
+    return dao.save(remoteLcm);
+  }
+
+  public RemoteLcm update(RemoteLcm remoteLcm) {
+    if(remoteLcm.getApplicationKey() ==  null) {
+        RemoteLcm oldRecord =  dao.findOne(remoteLcm.getId());
+        remoteLcm.setApplicationKey(oldRecord.getApplicationKey());
+    }
+    return dao.save(remoteLcm);
+  }
+
+  public void delete(String  remoteLcmId) {
+      dao.delete(remoteLcmId);
   }
 
   public TestResult testRemoteLcmConnectivity(String id) {

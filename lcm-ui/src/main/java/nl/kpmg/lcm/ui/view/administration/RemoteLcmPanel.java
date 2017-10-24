@@ -195,6 +195,8 @@ public class RemoteLcmPanel extends CustomComponent implements DynamicDataContai
 
     panelContent.setMargin(true);
     panelContent.addComponent(new DefinedLabel("Name", item.getName()));
+    panelContent.addComponent(new DefinedLabel("Unique LCM id", item.getUniqueId()));
+    panelContent.addComponent(new DefinedLabel("Application id", item.getApplicationId()));
     panelContent.addComponent(new DefinedLabel("Protocol", item.getProtocol()));
     panelContent.addComponent(new DefinedLabel("Address", item.getDomain()));
     panelContent.addComponent(new DefinedLabel("Port", item.getPort().toString()));

@@ -102,7 +102,7 @@ public class AuthorizedLcmController {
         || authorizedLcm.getApplicationId().length() > MAX_FIELD_LENTH) {
 
       return Response.status(Response.Status.BAD_REQUEST)
-          .entity("Application Key could not be null or empty.").build();
+          .entity("Application ID could not be null or empty.").build();
     }
 
     if (authorizedLcm.getApplicationKey() == null || authorizedLcm.getApplicationKey().isEmpty()
@@ -131,7 +131,7 @@ public class AuthorizedLcmController {
         || authorizedLcm.getApplicationId().length() > MAX_FIELD_LENTH) {
 
       return Response.status(Response.Status.BAD_REQUEST)
-          .entity("Application Key could not be null or empty.").build();
+          .entity("Application ID could not be null or empty.").build();
     }
 
     if (authorizedLcm.getUniqueId() == null || authorizedLcm.getUniqueId().isEmpty()

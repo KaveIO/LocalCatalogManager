@@ -32,7 +32,6 @@ import nl.kpmg.lcm.common.data.metadata.MetaDataWrapper;
 import nl.kpmg.lcm.common.exception.LcmException;
 import nl.kpmg.lcm.common.rest.types.FetchEndpointRepresentation;
 import nl.kpmg.lcm.common.rest.types.MetaDataRepresentation;
-import nl.kpmg.lcm.server.data.dao.RemoteLcmDao;
 import nl.kpmg.lcm.server.rest.client.version0.HttpResponseHandler;
 import nl.kpmg.lcm.server.task.enrichment.DataFetchTask;
 
@@ -94,8 +93,7 @@ public class DataFetchTriggerService {
 
   public void scheduleDataFetchTask(String lcmId, String metadataId, String localStorageId,
       TransferSettings transferSettings, String namespacePath) throws ServerException {
-    RemoteLcmDao dao = lcmService.getDao();
-    RemoteLcm lcm = dao.findOneById(lcmId);
+    RemoteLcm lcm = lcmService.findOneById(lcmId);
     if (lcm == null) {
       throw new NotFoundException(String.format("Remote LCM with id: %s is not found", lcmId));
     }
