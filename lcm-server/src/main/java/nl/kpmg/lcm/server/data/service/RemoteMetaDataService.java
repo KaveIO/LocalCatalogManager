@@ -28,7 +28,6 @@ import org.glassfish.jersey.client.authentication.HttpAuthenticationFeature;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import java.util.Collections;
@@ -56,28 +55,15 @@ public class RemoteMetaDataService {
 
   @Autowired
   private LcmIdService lcmIdService;
-  // TODO once the Authorization/Auhtenticaion model is implemented this part must be refactored
-  // After the refactoring ther emust be used a user which is used only for remote calls
-  private String adminUser;
-  private String adminPassword;
-
-  @Value("${lcm.server.adminUser}")
-  public final void setAdminUser(final String adminUser) {
-    this.adminUser = adminUser;
-  }
-
-  @Value("${lcm.server.adminPassword}")
-  public final void setAdminPassword(final String adminPassword) {
-    this.adminPassword = adminPassword;
-  }
-
+  
   private MetaDatasRepresentation fetchRemoteLcmMetadata(RemoteLcm remoteLcm, String searchString) {
     configuration.setTargetHost(remoteLcm.getDomain());
     configuration.setTargetPort(remoteLcm.getPort().toString());
     String fetchUrl = buildRemoteUrl(remoteLcm) + "/" + remoteMetaDataPath + searchString;
 
     HttpAuthenticationFeature credentials =
-        HttpAuthenticationFeature.basicBuilder().credentials(adminUser, adminPassword).build();
+        HttpAuthenticationFeature.basicBuilder()
+                .credentials(remoteLcm.getApplicationId(), remoteLcm.getApplicationKey()).build();
 
     HttpsClientFactory clientFactory = new HttpsClientFactory(configuration, credentials);
 

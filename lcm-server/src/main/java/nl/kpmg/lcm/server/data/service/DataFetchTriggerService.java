@@ -42,7 +42,6 @@ import org.glassfish.jersey.client.authentication.HttpAuthenticationFeature;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import java.net.URI;
@@ -56,7 +55,6 @@ import java.util.Map;
 
 import javax.ws.rs.ClientErrorException;
 import javax.ws.rs.NotFoundException;
-import javax.ws.rs.client.Invocation;
 import javax.ws.rs.client.WebTarget;
 import javax.ws.rs.core.Response;
 
@@ -80,15 +78,9 @@ public class DataFetchTriggerService {
   @Autowired
   private TaskDescriptionService taskDescriptionService;
 
-  @Autowired
+  @Autowired 
   private LcmIdService lcmIdService;
 
-  @Autowired
-  @Value("${lcm.server.adminUser}")
-  private String adminUser;
-  @Autowired
-  @Value("${lcm.server.adminPassword}")
-  private String adminPassword;
   @Autowired
   private ClientConfiguration configuration;
 
@@ -269,9 +261,9 @@ public class DataFetchTriggerService {
       ClientErrorException {
     WebTarget webTarget =
         getWebTarget(lcm).path(METADATA_PATH).path(metadataId).queryParam("update", Boolean.TRUE);
-    Invocation.Builder req = webTarget.request();
-    String self =  lcmIdService.getLcmIdObject().getLcmId();
-    Response response = req
+    
+    String self = lcmIdService.getLcmIdObject().getLcmId();
+    Response response =  webTarget.request()
              .header(LCM_AUTHENTICATION_REMOTE_USER_HEADER, username)
              .header(LCM_AUTHENTICATION_ORIGIN_HEADER, self).get();
     try {
@@ -295,7 +287,8 @@ public class DataFetchTriggerService {
   private WebTarget getWebTarget(RemoteLcm lcm) throws ServerException {
     if (credentials == null) {
       credentials =
-          HttpAuthenticationFeature.basicBuilder().credentials(adminUser, adminPassword).build();
+          HttpAuthenticationFeature.basicBuilder()
+                  .credentials(lcm.getApplicationId(), lcm.getApplicationKey()).build();
     }
     HttpsClientFactory clientFactory = new HttpsClientFactory(configuration, credentials);
     configuration.setTargetHost(lcm.getDomain());

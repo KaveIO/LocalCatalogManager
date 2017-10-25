@@ -51,7 +51,7 @@ public abstract class AbstractAuthenticationManager implements AuthenticationMan
   /**
    * the hard admin password provided by the properties file.
    */
-  private String adminPassword;
+  private String hardcodedAdminPassword;
 
 
   @Autowired
@@ -66,63 +66,64 @@ public abstract class AbstractAuthenticationManager implements AuthenticationMan
 
   @Value("${lcm.server.adminPassword}")
   public final void setAdminPassword(final String adminPassword) {
-    this.adminPassword = adminPassword;
+    this.hardcodedAdminPassword = adminPassword;
   }
 
   protected boolean isUsernamePasswordValid(String origin, String username, final String password) {
-    if(origin == null || username ==  null || password == null){
-        LOGGER.info("Trying to authenticate invalid user! Some of the parameters are null.");
-        return false;
+    if (origin == null || username == null || password == null) {
+      LOGGER.info("Trying to authenticate invalid user! Some of the parameters are null.");
+      return false;
     }
 
-    if(origin.equals(User.LOCAL_ORIGIN)){
-        if (hardcodedAdminUser !=  null && hardcodedAdminUser.length()> 0
-                && username.equals(hardcodedAdminUser)) {
-          LOGGER.info("Caught login attempt for admin user");
-          if (adminPassword !=  null && password.length()> 0
-                  && password.equals(adminPassword)) {
+    if (origin.equals(User.LOCAL_ORIGIN)) {
+      if (!userService.isAdminCreated() && hardcodedAdminUser != null
+          && hardcodedAdminUser.length() > 0 && username.equals(hardcodedAdminUser)) {
+        LOGGER.info("Caught login attempt for admin user");
+        if (hardcodedAdminPassword != null && password.length() > 0
+            && password.equals(hardcodedAdminPassword)) {
+          return true;
+        }
+      } else {
+        LOGGER.info("Caught login attempt for regular user");
+        User user = userService.findOneByName(username);
+        try {
+          if (user != null && user.passwordEquals(password)) {
             return true;
           }
-        } else {
-          LOGGER.info("Caught login attempt for regular user");
-          User user = userService.findOneByName(username);
-          try {
-            if (user != null && user.passwordEquals(password)) {
-              return true;
-            }
-          } catch (UserPasswordHashException ex) {
-            LOGGER.error("Something went wrong with the password hashing algorithm", ex);
-          }
+        } catch (UserPasswordHashException ex) {
+          LOGGER.error("Something went wrong with the password hashing algorithm", ex);
         }
+      }
     } else {
-        AuthorizedLcm lcm = authorizedLcmService.findOneByUniqueId(origin);
-        if(lcm ==  null) {
-            LOGGER.info("Request is not authenticated. Lcm with id : " + origin + " is not found!");
-            return false;
-        }
-
-        if(lcm.getApplicationId().equals(username) && lcm.getApplicationKey().equals(password)){
-            LOGGER.info("Request is authenticated sucessfully. Lcm id : " + origin);
-            return true;
-        }
-
-        LOGGER.info("Request is not authenticated. Lcm with id : " + origin + " is found,  but credentials are wrong! Passed  applicationId: " + username);
+      AuthorizedLcm lcm = authorizedLcmService.findOneByUniqueId(origin);
+      if (lcm == null) {
+        LOGGER.info("Request is not authenticated. Lcm with id : " + origin + " is not found!");
         return false;
+      }
+
+      if (lcm.getApplicationId().equals(username) && lcm.getApplicationKey().equals(password)) {
+        LOGGER.info("Request is authenticated sucessfully. Lcm id : " + origin);
+        return true;
+      }
+
+      LOGGER.info("Request is not authenticated. Lcm with id : " + origin
+          + " is found,  but credentials are wrong! Passed  applicationId: " + username);
+      return false;
 
     }
     return false;
   }
 
   protected Session createSessionForUser(String origin, String username) throws LoginException {
-     if(origin ==  null) {
-        throw new LoginException("Session could not be constructed  for user with unknow origin.");
-     }
+    if (origin == null) {
+      throw new LoginException("Session could not be constructed  for user with unknow origin.");
+    }
 
-     if(!origin.equals(User.LOCAL_ORIGIN)){
-        return new Session(username, Roles.REMOTE_USER, UserOrigin.LOCAL, origin);
-     }
+    if (!origin.equals(User.LOCAL_ORIGIN)) {
+      return new Session(username, Roles.REMOTE_USER, UserOrigin.LOCAL, origin);
+    }
 
-    //the origin is local
+    // the origin is local
     if (username.equals(hardcodedAdminUser)) {
       return new Session(username, Roles.ADMINISTRATOR, UserOrigin.CONFIGURED, origin);
     } else {

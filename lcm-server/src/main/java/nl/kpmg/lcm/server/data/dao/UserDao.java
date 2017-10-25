@@ -25,7 +25,7 @@ import org.springframework.data.repository.PagingAndSortingRepository;
  *
  */
 public interface UserDao extends PagingAndSortingRepository<User, String> {
-  public User findOneByName(String name);
-  
   public User findOneByNameAndOrigin(String name, String origin);
+
+  public User findOneByRole(String role);
 }

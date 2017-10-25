@@ -18,6 +18,7 @@ import jersey.repackaged.com.google.common.collect.Lists;
 
 import nl.kpmg.lcm.common.data.User;
 import nl.kpmg.lcm.server.data.dao.UserDao;
+import nl.kpmg.lcm.server.rest.authentication.Roles;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -46,7 +47,10 @@ public class UserService {
       return  userDao.findOneByNameAndOrigin(name, origin);
   }
 
-  
+  public boolean isAdminCreated(){
+      return  userDao.findOneByRole(Roles.ADMINISTRATOR) !=  null;
+  }
+
   public void delete(User user){
       userDao.delete(user);
   }

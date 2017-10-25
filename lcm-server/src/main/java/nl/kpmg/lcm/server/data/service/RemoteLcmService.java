@@ -32,7 +32,6 @@ import org.glassfish.jersey.client.authentication.HttpAuthenticationFeature;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -57,22 +56,6 @@ public class RemoteLcmService {
 
   @Autowired
   private LcmIdService lcmIdService;
-
-  // TODO once the Authorization/Auhtenticaion model is implemented this part must be refactored
-  // After the refactoring ther emust be used a user which is used only for remote calls
-  private String adminUser;
-  private String adminPassword;
-
-
-  @Value("${lcm.server.adminUser}")
-  public final void setAdminUser(final String adminUser) {
-    this.adminUser = adminUser;
-  }
-
-  @Value("${lcm.server.adminPassword}")
-  public final void setAdminPassword(final String adminPassword) {
-    this.adminPassword = adminPassword;
-  }
 
   public List<RemoteLcm> findAll() {
     return Lists.newLinkedList(dao.findAll());
@@ -105,7 +88,8 @@ public class RemoteLcmService {
     String fetchUrl = buildRemoteUrl(remoteLcm) + "/remote/v0/test";
 
     HttpAuthenticationFeature credentials =
-        HttpAuthenticationFeature.basicBuilder().credentials(adminUser, adminPassword).build();
+        HttpAuthenticationFeature.basicBuilder()
+                .credentials(remoteLcm.getApplicationId(), remoteLcm.getApplicationKey()).build();
 
     HttpsClientFactory clientFactory = new HttpsClientFactory(configuration, credentials);
 
@@ -142,11 +126,12 @@ public class RemoteLcmService {
 
   public boolean importUsers(String remoteLcmId) {
 
+    RemoteLcm remoteLcm = dao.findOne(remoteLcmId);
     HttpAuthenticationFeature credentials =
-        HttpAuthenticationFeature.basicBuilder().credentials(adminUser, adminPassword).build();
+        HttpAuthenticationFeature.basicBuilder()
+                .credentials(remoteLcm.getApplicationId(), remoteLcm.getApplicationKey()).build();
 
     HttpsClientFactory clientFactory = new HttpsClientFactory(configuration, credentials);
-    RemoteLcm remoteLcm = dao.findOne(remoteLcmId);
     String fetchUrl = buildRemoteUrl(remoteLcm) + "/remote/v0/users/username-list";
     Response response = null;
     try {
