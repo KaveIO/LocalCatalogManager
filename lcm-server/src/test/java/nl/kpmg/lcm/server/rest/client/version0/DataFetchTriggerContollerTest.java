@@ -38,6 +38,7 @@ import nl.kpmg.lcm.server.LcmBaseServerTest;
 import nl.kpmg.lcm.server.backend.Backend;
 import nl.kpmg.lcm.server.data.service.AuthorizedLcmService;
 import nl.kpmg.lcm.server.data.service.LcmIdService;
+import nl.kpmg.lcm.server.data.service.RemoteLcmService;
 import nl.kpmg.lcm.server.data.service.StorageService;
 import nl.kpmg.lcm.server.data.service.TaskDescriptionService;
 import nl.kpmg.lcm.server.data.service.UserService;
@@ -47,6 +48,8 @@ import nl.kpmg.lcm.server.test.mock.RemoteLcmMocker;
 import nl.kpmg.lcm.server.test.mock.StorageMocker;
 import nl.kpmg.lcm.server.test.mock.UserMocker;
 
+import org.junit.After;
+import org.junit.Before;
 import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -105,6 +108,9 @@ public class DataFetchTriggerContollerTest extends LcmBaseServerTest {
   @Autowired
   private AuthorizedLcmService authorizedLcmService;
 
+  @Autowired
+  private RemoteLcmService remoteLcmService;
+
   private static MetaDataWrapper md;
   private static Storage csvStorage;
   private static RemoteLcm lcm;
@@ -114,7 +120,7 @@ public class DataFetchTriggerContollerTest extends LcmBaseServerTest {
    *
    * @throws ServerException
    */
- // @After
+  @After
   public void afterTest() throws ServerException {
     getWebTarget().path("client/logout").request()
             .header(LCM_AUTHENTICATION_ORIGIN_HEADER, User.LOCAL_ORIGIN)
@@ -123,11 +129,11 @@ public class DataFetchTriggerContollerTest extends LcmBaseServerTest {
     taskDescriptionService.deleteAll();
   }
 
- // @Before
+  @Before
   public void beforeTest() throws ServerException, IOException, UserPasswordHashException {
     if (csvStorage == null) {
       // Client finds the id of the remote lcm that contains the data she wants
-      lcm = getLCMId();
+      lcm = createRemoteLCM();
       csvStorage = StorageMocker.createCsvStorage();
       md = createStorageAndPostMetadata(csvStorage);
     }
@@ -145,13 +151,12 @@ public class DataFetchTriggerContollerTest extends LcmBaseServerTest {
     remoteUser.setOrigin(self);
     remoteUser.setRole(Roles.REMOTE_USER);
     userService.save(remoteUser);
-
   }
 
   //@Test
   public void testTrigger() throws ServerException, IOException {
     // Client finds the id of the remote lcm that contains the data she wants
-    RemoteLcm lcm = getLCMId();
+    RemoteLcm lcm = createRemoteLCM();
     Storage csvStorage = addStorageIfDoesNotExists(StorageMocker.createCsvStorage());
     MetaDataWrapper md = postMetadata();
     String self =  lcmIdSerive.getLcmIdObject().getLcmId();
@@ -183,7 +188,7 @@ public class DataFetchTriggerContollerTest extends LcmBaseServerTest {
 
   //@Test
   public void testNonExistingMetadata() throws ServerException, IOException {
-    RemoteLcm lcm = getLCMId();
+    RemoteLcm lcm = createRemoteLCM();
     Storage csvStorage = addStorageIfDoesNotExists(StorageMocker.createCsvStorage());
     // Sends a request to local lcm to fetch the data and metadata
     postTrigger(lcm.getId(), "non-existing-metadata", csvStorage.getId(), 404);
@@ -204,7 +209,7 @@ public class DataFetchTriggerContollerTest extends LcmBaseServerTest {
    }
   //@Test
   public void testNonExistingStorage() throws ServerException, IOException {
-    RemoteLcm lcm = getLCMId();
+    RemoteLcm lcm = createRemoteLCM();
     MetaDataWrapper md = postMetadata();
     // Sends a request to local lcm to fetch the data and metadata
     postTrigger(lcm.getId(), md.getId(), "non-existing-storage", 404);
@@ -284,7 +289,7 @@ public class DataFetchTriggerContollerTest extends LcmBaseServerTest {
     assertEquals(expected, resp.getStatus());
   }
 
-  private RemoteLcm getLCMId() throws ServerException {
+  private RemoteLcm createRemoteLCM() throws ServerException {
     RemoteLcm lcm = RemoteLcmMocker.createRemoteLcm();
     lcm.setDomain(serverConfiguration.getServiceName());
     if (serverConfiguration.isUnsafe()) {
@@ -294,19 +299,9 @@ public class DataFetchTriggerContollerTest extends LcmBaseServerTest {
       lcm.setPort(serverConfiguration.getSecureServicePort());
       lcm.setProtocol("https");
     }
-    postLcm(lcm, 200);
+    remoteLcmService.create(lcm);
 
     return lcm;
-  }
-
-  private void postLcm(RemoteLcm lcm, int expected) throws ServerException {
-    Entity<RemoteLcm> entity = Entity.entity(lcm, LCM_CONTENT_TYPE);
-    Response resp =
-        getWebTarget().path(LCM_PATH).request()
-            .header(LCM_AUTHENTICATION_ORIGIN_HEADER, User.LOCAL_ORIGIN)
-            .header(AUTH_USER_HEADER, "admin")
-            .header(BASIC_AUTHENTICATION_HEADER, basicAuthTokenAdmin).post(entity);
-    assertEquals(expected, resp.getStatus());
   }
 
   private List<MetaDataRepresentation> getMetadata(int expected) throws ServerException {

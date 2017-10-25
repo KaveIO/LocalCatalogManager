@@ -383,10 +383,10 @@ public class RestClientService {
 
   }
 
-  public void createRemoteLcm(String storage) throws ServerException, DataCreationException,
+  public void createRemoteLcm(String lcm) throws ServerException, DataCreationException,
       AuthenticationException, JsonProcessingException {
     Entity<String> payload =
-        Entity.entity(storage, "application/nl.kpmg.lcm.server.data.RemoteLcm+json");
+        Entity.entity(lcm, "application/nl.kpmg.lcm.server.data.RemoteLcm+json");
 
     Invocation.Builder client = getClient("client/v0/remoteLcm");
     Response post = client.post(payload);

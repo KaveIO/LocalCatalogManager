@@ -20,6 +20,9 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.ObjectNode;
+
 import nl.kpmg.lcm.common.ServerException;
 import nl.kpmg.lcm.common.data.RemoteLcm;
 import nl.kpmg.lcm.common.data.User;
@@ -30,6 +33,7 @@ import nl.kpmg.lcm.server.data.service.RemoteLcmService;
 import nl.kpmg.lcm.server.test.mock.RemoteLcmMocker;
 
 import org.junit.After;
+import org.junit.Assert;
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -72,11 +76,9 @@ public class RemoteLcmContollerTest extends LcmBaseServerTest {
     }
   }
 
-   @Test
-   public void test(){
-   }
- //@Test
-  public void testGetPost() throws ServerException {
+
+ @Test
+  public void testGet() throws ServerException {
     List<RemoteLcmRepresentation> items = getAllItems(200);
     assertEquals("Should be empty", 0, items.size());
 
@@ -89,7 +91,7 @@ public class RemoteLcmContollerTest extends LcmBaseServerTest {
     Map<String, RemoteLcm> map = new HashMap<String, RemoteLcm>();
     for (int i = 0; i < numOfElem; i++) {
       RemoteLcm lcm = RemoteLcmMocker.createRemoteLcm();
-      postLcm(lcm, 200);
+      service.create(lcm);
 
       RemoteLcm retrived = getLcm(lcm.getId(), 200);
       assertEquals(lcm.getId(), retrived.getId());
@@ -120,8 +122,8 @@ public class RemoteLcmContollerTest extends LcmBaseServerTest {
     return url;
   }
 
-  //@Test
-  public void testGetPut() throws ServerException {
+  @Test
+  public void testPutPost() throws ServerException {
     List<RemoteLcmRepresentation> items = getAllItems(200);
     assertEquals("Should be empty", 0, items.size());
 
@@ -135,13 +137,14 @@ public class RemoteLcmContollerTest extends LcmBaseServerTest {
     lcm = RemoteLcmMocker.createRemoteLcm();
     postLcm(lcm, 200);
     //Just cheking if it's there 
-    getLcm(lcm.getId(), 200);
+    RemoteLcm  read = service.findOneById(lcm.getId());
+    Assert.assertNotNull(read);
     lcm.setProtocol("http");
     lcm.setDomain("lcm/new/path");
     putLcm(lcm, 200);
   }
 
-  //@Test
+  @Test
   public void testGetDelete() throws ServerException {
     List<RemoteLcmRepresentation> items = getAllItems(200);
     assertEquals("Should be empty", 0, items.size());
@@ -154,12 +157,24 @@ public class RemoteLcmContollerTest extends LcmBaseServerTest {
     deleteLcm(uid, 404);
 
     RemoteLcm lcm = RemoteLcmMocker.createRemoteLcm();
-    postLcm(lcm, 200);
+    service.create(lcm);
     deleteLcm(lcm.getId(), 200);
   }
 
   private void postLcm(RemoteLcm lcm, int expected) throws ServerException {
-    Entity<RemoteLcm> entity = Entity.entity(lcm, LCM_CONTENT_TYPE);
+      ObjectMapper mapper = new ObjectMapper();
+      ObjectNode rootNode = mapper.createObjectNode();
+      rootNode.put("name", lcm.getName());
+      rootNode.put("uniqueId", lcm.getUniqueId());
+      rootNode.put("applicationId", lcm.getApplicationId());
+      rootNode.put("applicationKey", lcm.getApplicationKey());
+      rootNode.put("protocol", lcm.getProtocol());
+      rootNode.put("domain", lcm.getDomain());
+      rootNode.put("port", lcm.getPort()); 
+      rootNode.put("status", lcm.getStatus());
+      rootNode.put("id", lcm.getId());
+
+    Entity<String> entity = Entity.entity(rootNode.toString(), LCM_CONTENT_TYPE);
     Response resp = getWebTarget()
             .path(PATH).request()
             .header(LCM_AUTHENTICATION_ORIGIN_HEADER, User.LOCAL_ORIGIN)

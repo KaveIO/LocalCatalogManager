@@ -16,7 +16,6 @@ package nl.kpmg.lcm.common.data;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.fasterxml.jackson.annotation.JsonProperty.Access;
 
 import org.springframework.data.mongodb.core.mapping.Document;
 
@@ -159,7 +158,7 @@ public class RemoteLcm extends AbstractModel {
   /**
    * @param applicationKey the applicationKey to set
    */
-  @JsonProperty(access = Access.WRITE_ONLY)
+  @JsonProperty
   public void setApplicationKey(String applicationKey) {
     this.applicationKey = applicationKey;
   }
