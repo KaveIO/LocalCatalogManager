@@ -16,15 +16,10 @@ package nl.kpmg.lcm.server.data.dao.mongo;
 import com.mongodb.DBObject;
 
 import nl.kpmg.lcm.common.data.AuthorizedLcm;
-import nl.kpmg.lcm.server.security.EncryptionException;
-import nl.kpmg.lcm.server.security.SecurityEngine;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.convert.converter.Converter;
-
-import java.util.Map;
 
 /**
  *
@@ -33,8 +28,6 @@ import java.util.Map;
 public class MongoAuthorizedLcmReadConverter implements Converter<DBObject, AuthorizedLcm> {
   private static final Logger LOGGER = LoggerFactory.getLogger(MongoAuthorizedLcmReadConverter.class
       .getName());
-  @Value("${lcm.server.security.encryption.key}")
-  private String securityKey;
 
   @Override
   public AuthorizedLcm convert(DBObject source) {
@@ -43,30 +36,7 @@ public class MongoAuthorizedLcmReadConverter implements Converter<DBObject, Auth
     authorizedLcm.setName((String) source.get("name"));
     authorizedLcm.setUniqueId((String) source.get("unique-lcm-id"));
     authorizedLcm.setApplicationId((String) source.get("application-id"));
-
-    String applicationKeyString = "application-key";
-    Map applicationKeyMap = (Map) source.get(applicationKeyString);
-    if (applicationKeyMap != null) {
-      String encrypted = (String) applicationKeyMap.get("value");
-      if (encrypted == null) {
-        String message = "Error! Unable to read storage. The" + applicationKeyString + "value is null!";
-        throw new IllegalStateException(message);
-      }
-
-      String initVector = (String) applicationKeyMap.get("init-vector");
-      if (initVector == null) {
-        String message = "Error! Unable to read storage. The" + applicationKeyString + "init vector is null!";
-        throw new IllegalStateException(message);
-      }
-      SecurityEngine security = new SecurityEngine(initVector);
-      try {
-        String decrypted = security.decrypt(securityKey, encrypted);
-        authorizedLcm.setApplicationKey(decrypted);
-      } catch (EncryptionException ex) {
-        String message = "Error! Unable to read storage. The decryption failed!";
-        throw new IllegalStateException(message);
-      }
-    }
+    authorizedLcm.setApplicationKey((String) source.get("application-key"));
 
     return authorizedLcm;
   }

@@ -14,8 +14,11 @@
 package nl.kpmg.lcm.server.data.dao.mongo;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 
 import nl.kpmg.lcm.common.data.AuthorizedLcm;
+import nl.kpmg.lcm.common.rest.authentication.PasswordHash;
+import nl.kpmg.lcm.common.rest.authentication.UserPasswordHashException;
 import nl.kpmg.lcm.server.LcmBaseTest;
 
 import org.junit.Test;
@@ -31,7 +34,7 @@ public class MongoAuthorizedLcmDaoTest extends LcmBaseTest {
   MongoAuthorizedLcmDao dao;
 
   @Test
-  public void testReadWrite() {
+  public void testReadWrite() throws UserPasswordHashException {
     AuthorizedLcm originalLcm = new AuthorizedLcm();
     originalLcm.setApplicationId("applicationId");
     originalLcm.setApplicationKey("applicationKey");
@@ -39,11 +42,11 @@ public class MongoAuthorizedLcmDaoTest extends LcmBaseTest {
     originalLcm.setUniqueId("uniqueId");
 
     originalLcm = dao.save(originalLcm);
-    AuthorizedLcm readLcm = dao.findOneById(originalLcm.getId());
-
-    assertEquals(readLcm.getApplicationId(), originalLcm.getApplicationId());
-    assertEquals(readLcm.getApplicationKey(), originalLcm.getApplicationKey());
-    assertEquals(readLcm.getName(), originalLcm.getName());
-    assertEquals(readLcm.getUniqueId(), originalLcm.getUniqueId());
+    AuthorizedLcm retreviedLcm = dao.findOneById(originalLcm.getId());
+  
+    assertEquals(retreviedLcm.getApplicationId(), originalLcm.getApplicationId());
+    assertTrue(PasswordHash.validatePassword("applicationKey", retreviedLcm.getApplicationKey()));
+    assertEquals(retreviedLcm.getName(), originalLcm.getName());
+    assertEquals(retreviedLcm.getUniqueId(), originalLcm.getUniqueId());
   }
 }

@@ -17,17 +17,15 @@ import com.mongodb.BasicDBObject;
 import com.mongodb.DBObject;
 
 import nl.kpmg.lcm.common.data.RemoteLcm;
-import nl.kpmg.lcm.server.security.EncryptionException;
-import nl.kpmg.lcm.server.security.SecurityEngine;
+import nl.kpmg.lcm.common.exception.LcmException;
+import nl.kpmg.lcm.common.rest.authentication.PasswordHash;
+import nl.kpmg.lcm.common.rest.authentication.UserPasswordHashException;
 
 import org.bson.types.ObjectId;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.convert.converter.Converter;
-
-import java.util.HashMap;
-import java.util.Map;
 
 /**
  *
@@ -52,30 +50,22 @@ public class MongoRemoteLcmWriteConverter implements Converter<RemoteLcm, DBObje
     dbo.put("status", source.getStatus());
     dbo.put("unique-lcm-id", source.getUniqueId());
     dbo.put("application-id", source.getApplicationId());
-
     String applicationKey = source.getApplicationKey();
 
-
     if (applicationKey == null) {
-      String message = "Error! Unable to write storage. The application-key is null!";
+      String message = "Error! Unable to write remote lcm. The application-key is null!";
       throw new IllegalStateException(message);
     }
 
-    String initVector = generateInitVector();
-    Map fieldMap = new HashMap();
-    fieldMap.put("init-vector", initVector);
-
     try {
-      SecurityEngine security = new SecurityEngine(initVector);
-      String encryptedFieldValue = security.encrypt(securityKey, applicationKey);
-      fieldMap.put("value", encryptedFieldValue);
-    } catch (EncryptionException ex) {
+      String key = PasswordHash.createHash(applicationKey);
+      dbo.put("application-key", key);
+    } catch (UserPasswordHashException ex) {
       String message =
-          "Error! Unable to write a storage. The encryption failed. Message: " + ex.getMessage();
-      throw new IllegalStateException(message, ex);
+          "Unable to write RemoteLcm  in Mongo! Authorized LCM  name:" + source.getName();
+      LOGGER.error(message);
+      throw new LcmException(message);
     }
-    dbo.put("application-key", fieldMap);
-
 
     return dbo;
   }

@@ -94,6 +94,7 @@ public class RemoteLcmContollerTest extends LcmBaseServerTest {
       service.create(lcm);
 
       RemoteLcm retrived = getLcm(lcm.getId(), 200);
+      assertNull(retrived.getApplicationKey());
       assertEquals(lcm.getId(), retrived.getId());
       assertEquals(getUrl(lcm), getUrl(retrived));
 
