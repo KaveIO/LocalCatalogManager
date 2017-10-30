@@ -34,6 +34,7 @@ import nl.kpmg.lcm.common.data.RemoteLcm;
 import nl.kpmg.lcm.ui.rest.AuthenticationException;
 import nl.kpmg.lcm.ui.rest.DataCreationException;
 import nl.kpmg.lcm.ui.rest.RestClientService;
+import nl.kpmg.lcm.ui.view.administration.DynamicDataContainer;
 
 import org.slf4j.LoggerFactory;
 
@@ -59,6 +60,7 @@ public class RemoteLcmCreateWindow extends Window implements Button.ClickListene
   private static final String EDIT_TITLE = "Edit Remote LCM";
 
   private RestClientService restClientService;
+  private DynamicDataContainer dataContainer;
 
   private TextField nameField = new TextField("Name");
   private TextField uniqueIdField = new TextField("LCM id");
@@ -72,16 +74,19 @@ public class RemoteLcmCreateWindow extends Window implements Button.ClickListene
   private RemoteLcm remoteLcm;
   private final static int MAX_LENGTH = 128;
 
-  public RemoteLcmCreateWindow(RestClientService restClientService) {
+  public RemoteLcmCreateWindow(RestClientService restClientService,
+      DynamicDataContainer dataContainer) {
     super(DEFAULT_TITLE);
     this.restClientService = restClientService;
+    this.dataContainer = dataContainer;
     init();
   }
 
-  public RemoteLcmCreateWindow(RestClientService restClientService, RemoteLcm lcm)
-      throws JsonProcessingException {
+  public RemoteLcmCreateWindow(RestClientService restClientService, RemoteLcm lcm,
+      DynamicDataContainer dataContainer) throws JsonProcessingException {
     super(EDIT_TITLE);
     this.restClientService = restClientService;
+    this.dataContainer = dataContainer;
     init();
     nameField.setValue(lcm.getName());
     uniqueIdField.setValue(lcm.getUniqueId());
@@ -199,6 +204,7 @@ public class RemoteLcmCreateWindow extends Window implements Button.ClickListene
           restClientService.createRemoteLcm(rootNode.toString());
           Notification.show("Creation finished successfully.");
         }
+        dataContainer.updateContent();
         this.close();
       } catch (ServerException | DataCreationException | AuthenticationException | IOException ex) {
         Notification.show("Creation of failed!");

@@ -16,10 +16,9 @@ package nl.kpmg.lcm.ui.view.administration.listeners;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.vaadin.ui.Button;
 import com.vaadin.ui.UI;
-import com.vaadin.ui.Window;
 
-import nl.kpmg.lcm.common.rest.types.StorageRepresentation;
 import nl.kpmg.lcm.common.data.Storage;
+import nl.kpmg.lcm.common.rest.types.StorageRepresentation;
 import nl.kpmg.lcm.ui.rest.RestClientService;
 import nl.kpmg.lcm.ui.view.administration.DynamicDataContainer;
 import nl.kpmg.lcm.ui.view.administration.components.StorageCreateWindow;
@@ -52,13 +51,8 @@ public class EditStorageListener extends AbstractListener {
     StorageRepresentation data = (StorageRepresentation) event.getButton().getData();
     Storage storage = data.getItem();
     try {
-      StorageCreateWindow storageCreateWindow = new StorageCreateWindow(restClientService, storage);
-      storageCreateWindow.addCloseListener(new Window.CloseListener() {
-        @Override
-        public void windowClose(Window.CloseEvent e) {
-          dataContainer.updateContent();
-        }
-      });
+      StorageCreateWindow storageCreateWindow =
+          new StorageCreateWindow(restClientService, storage, dataContainer);
       UI.getCurrent().addWindow(storageCreateWindow);
 
     } catch (JsonProcessingException ex) {

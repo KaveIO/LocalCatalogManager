@@ -16,10 +16,9 @@ package nl.kpmg.lcm.ui.view.administration.listeners;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.vaadin.ui.Button;
 import com.vaadin.ui.UI;
-import com.vaadin.ui.Window;
 
-import nl.kpmg.lcm.common.rest.types.RemoteLcmRepresentation;
 import nl.kpmg.lcm.common.data.RemoteLcm;
+import nl.kpmg.lcm.common.rest.types.RemoteLcmRepresentation;
 import nl.kpmg.lcm.ui.rest.RestClientService;
 import nl.kpmg.lcm.ui.view.administration.DynamicDataContainer;
 import nl.kpmg.lcm.ui.view.administration.components.RemoteLcmCreateWindow;
@@ -51,13 +50,7 @@ public class EditRemoteLcmListener extends AbstractListener {
     RemoteLcm lcm = data.getItem();
     try {
       RemoteLcmCreateWindow remoteLcmCreateWindow =
-          new RemoteLcmCreateWindow(restClientService, lcm);
-      remoteLcmCreateWindow.addCloseListener(new Window.CloseListener() {
-        @Override
-        public void windowClose(Window.CloseEvent e) {
-          dataContainer.updateContent();
-        }
-      });
+          new RemoteLcmCreateWindow(restClientService, lcm, dataContainer);
       UI.getCurrent().addWindow(remoteLcmCreateWindow);
 
     } catch (JsonProcessingException ex) {

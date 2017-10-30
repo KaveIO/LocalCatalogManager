@@ -16,7 +16,6 @@ package nl.kpmg.lcm.ui.view.administration.listeners;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.vaadin.ui.Button;
 import com.vaadin.ui.UI;
-import com.vaadin.ui.Window;
 
 import nl.kpmg.lcm.common.data.User;
 import nl.kpmg.lcm.common.rest.types.UserRepresentation;
@@ -52,13 +51,8 @@ public class EditUserListener extends AbstractListener {
     UserRepresentation data = (UserRepresentation) event.getButton().getData();
     User user = data.getItem();
     try {
-      UserCreateWindow userCreateWindow = new UserCreateWindow(restClientService, user);
-      userCreateWindow.addCloseListener(new Window.CloseListener() {
-        @Override
-        public void windowClose(Window.CloseEvent e) {
-          dataContainer.updateContent();
-        }
-      });
+      UserCreateWindow userCreateWindow =
+          new UserCreateWindow(restClientService, user, dataContainer);
       UI.getCurrent().addWindow(userCreateWindow);
 
     } catch (JsonProcessingException ex) {

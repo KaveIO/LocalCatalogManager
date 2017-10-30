@@ -16,7 +16,6 @@ package nl.kpmg.lcm.ui.view.administration.listeners;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.vaadin.ui.Button;
 import com.vaadin.ui.UI;
-import com.vaadin.ui.Window;
 
 import nl.kpmg.lcm.common.data.UserGroup;
 import nl.kpmg.lcm.common.rest.types.UserGroupRepresentation;
@@ -52,13 +51,8 @@ public class EditUserGroupListener extends AbstractListener {
     UserGroupRepresentation data = (UserGroupRepresentation) event.getButton().getData();
     UserGroup userGroup = data.getItem();
     try {
-      UserGroupCreateWindow userGroupCreateWindow = new UserGroupCreateWindow(restClientService, userGroup);
-      userGroupCreateWindow.addCloseListener(new Window.CloseListener() {
-        @Override
-        public void windowClose(Window.CloseEvent e) {
-          dataContainer.updateContent();
-        }
-      });
+      UserGroupCreateWindow userGroupCreateWindow =
+          new UserGroupCreateWindow(restClientService, userGroup, dataContainer);
       UI.getCurrent().addWindow(userGroupCreateWindow);
 
     } catch (JsonProcessingException ex) {

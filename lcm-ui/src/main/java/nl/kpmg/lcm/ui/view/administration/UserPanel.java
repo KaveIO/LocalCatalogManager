@@ -22,7 +22,6 @@ import com.vaadin.ui.Panel;
 import com.vaadin.ui.Table;
 import com.vaadin.ui.UI;
 import com.vaadin.ui.VerticalLayout;
-import com.vaadin.ui.Window;
 
 import nl.kpmg.lcm.common.ServerException;
 import nl.kpmg.lcm.common.client.ClientException;
@@ -82,7 +81,6 @@ public class UserPanel extends CustomComponent implements DynamicDataContainer {
     root.setExpandRatio(rootVerticalLayout, 1f);
 
     setCompositionRoot(root);
-    updateUserTable();
   }
 
   private HorizontalLayout initDataLayout() throws UnsupportedOperationException {
@@ -131,13 +129,7 @@ public class UserPanel extends CustomComponent implements DynamicDataContainer {
   private Button initCreateButton(RestClientService restClientService1) {
     Button createButton = new Button("Create");
     createButton.addClickListener((Button.ClickEvent event) -> {
-      UserCreateWindow userCreateWindow = new UserCreateWindow(restClientService1);
-      userCreateWindow.addCloseListener(new Window.CloseListener() {
-        @Override
-        public void windowClose(Window.CloseEvent e) {
-          updateUserTable();
-        }
-      });
+      UserCreateWindow userCreateWindow = new UserCreateWindow(restClientService1, this);
       UI.getCurrent().addWindow(userCreateWindow);
     });
     createButton.addStyleName("margin-10");

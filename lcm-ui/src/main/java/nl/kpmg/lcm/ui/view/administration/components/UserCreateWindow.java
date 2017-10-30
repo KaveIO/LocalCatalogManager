@@ -30,6 +30,7 @@ import nl.kpmg.lcm.common.data.User;
 import nl.kpmg.lcm.ui.rest.AuthenticationException;
 import nl.kpmg.lcm.ui.rest.DataCreationException;
 import nl.kpmg.lcm.ui.rest.RestClientService;
+import nl.kpmg.lcm.ui.view.administration.DynamicDataContainer;
 
 import org.slf4j.LoggerFactory;
 
@@ -55,6 +56,7 @@ public class UserCreateWindow extends Window implements Button.ClickListener {
   private static final String EDIT_TITLE = "Edit User";
 
   private RestClientService restClientService;
+  private DynamicDataContainer dataContainer;
   private final TextField nameField = new TextField("Name");
   private final TextField roleField = new TextField("Role");
   private final TextField pField = new TextField("Password");
@@ -68,20 +70,22 @@ public class UserCreateWindow extends Window implements Button.ClickListener {
   private final String LIST_DELIMITER = ";";
   private boolean isCreateOpereration;
 
-  public UserCreateWindow(RestClientService restClientService) {
+  public UserCreateWindow(RestClientService restClientService, DynamicDataContainer dataContainer) {
     super(CREATE_TITLE);
     isCreateOpereration = true;
     this.restClientService = restClientService;
+    this.dataContainer = dataContainer;
     init();
     pathListArea.setDescription("Each path must be terminated by: " + LIST_DELIMITER);
     metadataListArea.setDescription("Each metadata Id must be terminated by: " + LIST_DELIMITER);
   }
 
-  public UserCreateWindow(RestClientService restClientService, User user)
-      throws JsonProcessingException {
+  public UserCreateWindow(RestClientService restClientService, User user,
+      DynamicDataContainer dataContainer) throws JsonProcessingException {
     super(EDIT_TITLE);
     isCreateOpereration = false;
     this.restClientService = restClientService;
+    this.dataContainer = dataContainer;
     nameField.setValue(user.getName());
     nameField.setEnabled(false);
     roleField.setValue(user.getRole());
@@ -173,6 +177,7 @@ public class UserCreateWindow extends Window implements Button.ClickListener {
           restClientService.createUser(rootNode.toString());
           Notification.show("Creation of user was successful.");
         }
+        dataContainer.updateContent();
         this.close();
       } catch (ServerException | DataCreationException | AuthenticationException | IOException ex) {
         Notification.show("Creation of user failed.");

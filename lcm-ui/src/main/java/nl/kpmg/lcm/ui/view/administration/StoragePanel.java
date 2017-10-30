@@ -22,7 +22,6 @@ import com.vaadin.ui.Panel;
 import com.vaadin.ui.Table;
 import com.vaadin.ui.UI;
 import com.vaadin.ui.VerticalLayout;
-import com.vaadin.ui.Window;
 
 import nl.kpmg.lcm.common.ServerException;
 import nl.kpmg.lcm.common.client.ClientException;
@@ -85,7 +84,6 @@ public class StoragePanel extends CustomComponent implements DynamicDataContaine
     root.setExpandRatio(rootVerticalLayout, 1f);
 
     setCompositionRoot(root);
-    updateStorageTable();
   }
 
   private HorizontalLayout initDataLayout() throws UnsupportedOperationException {
@@ -134,13 +132,7 @@ public class StoragePanel extends CustomComponent implements DynamicDataContaine
   private Button initCreateButton(RestClientService restClientService1) {
     Button createButton = new Button("Create");
     createButton.addClickListener((Button.ClickEvent event) -> {
-      StorageCreateWindow storageCreateWindow = new StorageCreateWindow(restClientService1);
-      storageCreateWindow.addCloseListener(new Window.CloseListener() {
-        @Override
-        public void windowClose(Window.CloseEvent e) {
-          updateStorageTable();
-        }
-      });
+      StorageCreateWindow storageCreateWindow = new StorageCreateWindow(restClientService1, this);
       UI.getCurrent().addWindow(storageCreateWindow);
     });
     createButton.addStyleName("margin-10");
