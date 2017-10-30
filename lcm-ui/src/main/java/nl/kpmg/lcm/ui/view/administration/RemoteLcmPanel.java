@@ -237,7 +237,7 @@ public class RemoteLcmPanel extends CustomComponent implements DynamicDataContai
     Button testButton = new Button("test");
     testButton.setData(item);
     testButton.addClickListener(new TestRemoteLcmListener(this, restClientService));
-    //testButton.addStyleName("link");
+    testButton.addStyleName("link");
 
     actionsLayout.addComponent(viewButton);
     actionsLayout.addComponent(editButton);
