@@ -139,7 +139,7 @@ public class MetadataOverviewViewImpl extends VerticalLayout implements Metadata
   @Override
   public void buttonClick(Button.ClickEvent event) {
     if (event.getSource() == createButton) {
-      MetadataCreateWindow metadataCreateWindow = new MetadataCreateWindow(restClientService);
+      MetadataCreateWindow metadataCreateWindow = new MetadataCreateWindow(restClientService, this);
       UI.getCurrent().addWindow(metadataCreateWindow);
     } else if (event.getSource() == refreshButton) {
       refreshMetadataOverview();
@@ -216,6 +216,11 @@ public class MetadataOverviewViewImpl extends VerticalLayout implements Metadata
     }
   }
 
+    @Override
+    public void updateContent() {
+        refreshMetadataOverview();
+    }
+
   private class ViewButtonClickListener implements Button.ClickListener {
 
     public ViewButtonClickListener() {}
@@ -224,7 +229,7 @@ public class MetadataOverviewViewImpl extends VerticalLayout implements Metadata
     public void buttonClick(Button.ClickEvent event) {
       MetadataEditWindow metadataEditWindow =
           new MetadataEditWindow(restClientService, (MetaDataRepresentation) event.getButton()
-              .getData());
+              .getData(), MetadataOverviewViewImpl.this);
       UI.getCurrent().addWindow(metadataEditWindow);
     }
   }

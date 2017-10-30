@@ -37,6 +37,7 @@ import nl.kpmg.lcm.common.exception.LcmValidationException;
 import nl.kpmg.lcm.ui.rest.AuthenticationException;
 import nl.kpmg.lcm.ui.rest.DataCreationException;
 import nl.kpmg.lcm.ui.rest.RestClientService;
+import nl.kpmg.lcm.ui.view.MetadataOverviewView;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -63,6 +64,7 @@ public class MetadataCreateWindow extends Window implements Button.ClickListener
   private static final String DEFAULT_TITLE = "Create Metadata";
 
   private RestClientService restClientService;
+  private MetadataOverviewView metadataOverviewView;
 
   private TextArea rawView;
   private TextArea dataView;
@@ -77,9 +79,11 @@ public class MetadataCreateWindow extends Window implements Button.ClickListener
 
   private Button saveButton;
 
-  public MetadataCreateWindow(RestClientService restClientService) {
+  public MetadataCreateWindow(RestClientService restClientService,
+      MetadataOverviewView metadataOverviewView) {
     super(DEFAULT_TITLE);
     this.restClientService = restClientService;
+    this.metadataOverviewView = metadataOverviewView;
     init();
   }
 
@@ -166,6 +170,7 @@ public class MetadataCreateWindow extends Window implements Button.ClickListener
         new MetaDataWrapper(new MetaData(metadataMap));
         restClientService.postMetadata(metadata);
         Notification.show("Creation of metadata successful.");
+        metadataOverviewView.updateContent();
         this.close();
       } catch (ServerException | DataCreationException | AuthenticationException ex) {
         Notification.show("Creation of metadata failed.");
