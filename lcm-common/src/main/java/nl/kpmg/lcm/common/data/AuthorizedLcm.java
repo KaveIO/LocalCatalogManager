@@ -17,6 +17,7 @@ package nl.kpmg.lcm.common.data;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
+import org.springframework.data.mongodb.core.index.Indexed;
 import org.springframework.data.mongodb.core.mapping.Document;
 
 @Document(collection = "authorizedLcm")
@@ -26,6 +27,7 @@ public class AuthorizedLcm extends AbstractModel {
    */
   private String name;
 
+  @Indexed(unique = true)
   private String uniqueId;
 
   /**

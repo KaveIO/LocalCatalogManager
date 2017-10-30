@@ -27,12 +27,18 @@ import com.vaadin.ui.Window;
 import nl.kpmg.lcm.common.RandomString;
 import nl.kpmg.lcm.common.ServerException;
 import nl.kpmg.lcm.common.data.AuthorizedLcm;
+import nl.kpmg.lcm.common.exception.LcmException;
+import nl.kpmg.lcm.common.rest.authentication.PasswordHash;
+import nl.kpmg.lcm.common.rest.authentication.UserPasswordHashException;
 import nl.kpmg.lcm.ui.rest.AuthenticationException;
 import nl.kpmg.lcm.ui.rest.DataCreationException;
 import nl.kpmg.lcm.ui.rest.RestClientService;
 
 import org.slf4j.LoggerFactory;
 
+import java.awt.Toolkit;
+import java.awt.datatransfer.Clipboard;
+import java.awt.datatransfer.StringSelection;
 import java.io.IOException;
 
 /**
@@ -62,12 +68,14 @@ public class AuthorizedLcmCreateWindow extends Window implements Button.ClickLis
   private final TextField applicationIdField = new TextField("Application id");
   private final TextField applicationKeyField = new TextField("Application key");
   private final Button saveButton = new Button("Save");
-  private final Button generateButton = new Button("Generate");
+  private final Button copyButton = new Button("Copy");
   private AuthorizedLcm authorizedLcm;
   private final static int MAX_LENGTH = 128;
-  private final Label warning = new Label("Note: Remember the key! It will be hidden after creation!");
+  private final Label createWarning = new Label("Note: Remember the key! It will be hidden after creation!");
+  private final Label editWarning = new Label("Note: The key can not be changed ot displayed!");
 
   private boolean isCreateOpereration;
+  private String unhashedKey;
 
   public AuthorizedLcmCreateWindow(RestClientService restClientService) {
     super(CREATE_TITLE);
@@ -86,6 +94,7 @@ public class AuthorizedLcmCreateWindow extends Window implements Button.ClickLis
     applicationIdField.setValue(authorizedLcm.getApplicationId());
     // Application key is never displayed in security reasons
     applicationKeyField.setValue("");
+    applicationKeyField.setEnabled(false);
 
 
     this.authorizedLcm = authorizedLcm;
@@ -94,7 +103,6 @@ public class AuthorizedLcmCreateWindow extends Window implements Button.ClickLis
 
   private void init() {
     saveButton.addClickListener(this);
-    generateButton.addClickListener(this);
 
     VerticalLayout panelContent = new VerticalLayout();
     panelContent.setMargin(true);
@@ -123,21 +131,44 @@ public class AuthorizedLcmCreateWindow extends Window implements Button.ClickLis
     applicationIdLayout.addComponent(applicationIdField);
     panelContent.addComponent(applicationIdLayout);
 
-    warning.addStyleName("application-key-warning");
-    panelContent.addComponent(warning);
+    if(isCreateOpereration) {
+        createWarning.addStyleName("application-key-warning");
+        panelContent.addComponent(createWarning);
+    } else {
+        editWarning.addStyleName("application-key-warning");
+        panelContent.addComponent(editWarning);
+    }
 
     HorizontalLayout passwordLayout = new HorizontalLayout();
+    
     applicationKeyField.setRequired(true);
-    applicationKeyField.setWidth("100%");
-    passwordLayout.setWidth("100%");
 
     passwordLayout.addComponent(applicationKeyField);
-    generateButton.addStyleName("generate-button");
-    passwordLayout.addComponent(generateButton);
-    passwordLayout.addStyleName("margin-top-10");
+    if(isCreateOpereration) {
+      RandomString generator = new RandomString(12, "^_!&@");
+      unhashedKey = generator.nextString();
+      String hashedKey;
+        try {
+            hashedKey = PasswordHash.createHash(unhashedKey);
+        } catch (UserPasswordHashException ex) {
+            LOGGER.error("Unable to create hash! "  +  ex.getMessage());
+            Notification.show("Unable to create authorized LCM!");
+            throw new LcmException("Unable to create hash!", ex);
+        }
+      applicationKeyField.setValue(hashedKey);
+      copyButton.addStyleName("generate-button");
+      copyButton.setWidth("30%");
+      applicationKeyField.setWidth("100%");
+      passwordLayout.addComponent(copyButton);
+    } else {
+      applicationKeyField.setWidth("70%");
+    }
+
+    passwordLayout.setWidth("100%");
     panelContent.addComponent(passwordLayout);
     saveButton.addStyleName("margin-top-20");
     panelContent.addComponent(saveButton);
+    passwordLayout.setWidth("100%");
 
     this.setWidth(PANEL_SIZE);
     this.setModal(true);
@@ -147,9 +178,10 @@ public class AuthorizedLcmCreateWindow extends Window implements Button.ClickLis
 
   @Override
   public void buttonClick(Button.ClickEvent event) {
-    if (event.getSource() == generateButton) {
-      RandomString generator = new RandomString(12, "^_!&@");
-      applicationKeyField.setValue(generator.nextString());
+    if (event.getSource() == copyButton) {
+        StringSelection stringSelection = new StringSelection(applicationKeyField.getValue());
+        Clipboard clipboard = Toolkit.getDefaultToolkit().getSystemClipboard();
+        clipboard.setContents(stringSelection, null);
     } else if (event.getSource() == saveButton) {
       nl.kpmg.lcm.common.validation.Notification notification =
           new nl.kpmg.lcm.common.validation.Notification();
@@ -160,7 +192,7 @@ public class AuthorizedLcmCreateWindow extends Window implements Button.ClickLis
       ObjectNode rootNode = mapper.createObjectNode();
       rootNode.put("name", nameField.getValue());
       rootNode.put("applicationId", applicationIdField.getValue());
-      rootNode.put("applicationKey", applicationKeyField.getValue());
+      rootNode.put("applicationKey", unhashedKey);
       rootNode.put("uniqueId", uniqeLcmIdField.getValue());
 
       try {

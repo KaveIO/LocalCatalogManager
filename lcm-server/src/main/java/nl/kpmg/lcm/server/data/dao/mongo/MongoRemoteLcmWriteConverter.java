@@ -17,9 +17,6 @@ import com.mongodb.BasicDBObject;
 import com.mongodb.DBObject;
 
 import nl.kpmg.lcm.common.data.RemoteLcm;
-import nl.kpmg.lcm.common.exception.LcmException;
-import nl.kpmg.lcm.common.rest.authentication.PasswordHash;
-import nl.kpmg.lcm.common.rest.authentication.UserPasswordHashException;
 
 import org.bson.types.ObjectId;
 import org.slf4j.Logger;
@@ -50,22 +47,7 @@ public class MongoRemoteLcmWriteConverter implements Converter<RemoteLcm, DBObje
     dbo.put("status", source.getStatus());
     dbo.put("unique-lcm-id", source.getUniqueId());
     dbo.put("application-id", source.getApplicationId());
-    String applicationKey = source.getApplicationKey();
-
-    if (applicationKey == null) {
-      String message = "Error! Unable to write remote lcm. The application-key is null!";
-      throw new IllegalStateException(message);
-    }
-
-    try {
-      String key = PasswordHash.createHash(applicationKey);
-      dbo.put("application-key", key);
-    } catch (UserPasswordHashException ex) {
-      String message =
-          "Unable to write RemoteLcm  in Mongo! Authorized LCM  name:" + source.getName();
-      LOGGER.error(message);
-      throw new LcmException(message);
-    }
+    dbo.put("application-key", source.getApplicationKey());
 
     return dbo;
   }

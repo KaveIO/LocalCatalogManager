@@ -23,6 +23,7 @@ import nl.kpmg.lcm.server.LoginException;
 import nl.kpmg.lcm.server.data.service.UserService;
 
 import org.apache.commons.codec.binary.Base64;
+import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -109,7 +110,7 @@ public class BasicAuthenticationManager extends AbstractAuthenticationManager {
     byte[] decodedBytes = Base64.decodeBase64(encodedUserPassword.getBytes());
     usernameAndPassword = new String(decodedBytes);
 
-    String[] split = usernameAndPassword.split(":");
+    String[] split = StringUtils.split(usernameAndPassword, ":", 2);
 
     if (split.length == 2 && !split[0].isEmpty() && !split[1].isEmpty()) {
 

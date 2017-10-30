@@ -16,6 +16,7 @@ package nl.kpmg.lcm.server.data.dao.mongo;
 import static org.junit.Assert.assertEquals;
 
 import nl.kpmg.lcm.common.data.AuthorizedLcm;
+import nl.kpmg.lcm.common.rest.authentication.PasswordHash;
 import nl.kpmg.lcm.common.rest.authentication.UserPasswordHashException;
 import nl.kpmg.lcm.server.LcmBaseTest;
 
@@ -26,7 +27,7 @@ import org.springframework.beans.factory.annotation.Autowired;
  * This is needed because we overwrite the default mongo reader/writer
  * @author shristov
  */
-public class MongoAuthorizedLcmDaoTest extends LcmBaseTest {
+public class MongoRemoteLcmDaoTest extends LcmBaseTest {
 
   @Autowired
   MongoAuthorizedLcmDao dao;
@@ -35,7 +36,9 @@ public class MongoAuthorizedLcmDaoTest extends LcmBaseTest {
   public void testReadWrite() throws UserPasswordHashException {
     AuthorizedLcm originalLcm = new AuthorizedLcm();
     originalLcm.setApplicationId("applicationId");
-    originalLcm.setApplicationKey("applicationKey");
+    String hashedKey = PasswordHash.createHash("applicationKey");
+    originalLcm.setApplicationKey(hashedKey);
+    
     originalLcm.setName("name");
     originalLcm.setUniqueId("uniqueId");
 

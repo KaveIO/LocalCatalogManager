@@ -15,6 +15,7 @@ package nl.kpmg.lcm.server.rest.authentication;
 
 import nl.kpmg.lcm.common.data.AuthorizedLcm;
 import nl.kpmg.lcm.common.data.User;
+import nl.kpmg.lcm.common.rest.authentication.PasswordHash;
 import nl.kpmg.lcm.common.rest.authentication.UserPasswordHashException;
 import nl.kpmg.lcm.server.LoginException;
 import nl.kpmg.lcm.server.data.service.AuthorizedLcmService;
@@ -101,7 +102,7 @@ public abstract class AbstractAuthenticationManager implements AuthenticationMan
         return false;
       }
 
-      if (lcm.getApplicationId().equals(username) && lcm.getApplicationKey().equals(password)) {
+      if (lcm.getApplicationId().equals(username) && isValidatePassword(lcm, password)) {
         LOGGER.info("Request is authenticated sucessfully. Lcm id : " + origin);
         return true;
       }
@@ -112,6 +113,15 @@ public abstract class AbstractAuthenticationManager implements AuthenticationMan
 
     }
     return false;
+  }
+
+  private boolean isValidatePassword(AuthorizedLcm lcm, final String password) {
+    try {
+      return PasswordHash.validatePassword(lcm.getApplicationKey(), password);
+    } catch (UserPasswordHashException ex) {
+      LOGGER.warn("unable to validate  password hash: " + ex.getMessage());
+      return false;
+    }
   }
 
   protected Session createSessionForUser(String origin, String username) throws LoginException {

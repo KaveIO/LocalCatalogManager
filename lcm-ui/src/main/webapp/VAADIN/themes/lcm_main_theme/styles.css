@@ -13023,6 +13023,7 @@ div.v-layout.v-horizontal.v-widget {
 .lcm_main_theme .generate-button {
 	margin-top: 25px;
 	margin-left: 10px;
+	width: 30%;
 }
 
 .lcm_main_theme .width-search-field {
