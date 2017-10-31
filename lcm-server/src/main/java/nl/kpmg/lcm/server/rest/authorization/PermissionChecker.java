@@ -56,6 +56,12 @@ public class PermissionChecker {
     this.authorizationService = authorizationService;
   }
 
+  static private ThreadLocal threadLocal = new ThreadLocal<User>();
+
+  public static ThreadLocal<User> getThreadLocal() {
+    return threadLocal;
+  }
+
   /**
    *
    * @param securityContext

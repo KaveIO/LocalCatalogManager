@@ -85,7 +85,7 @@ public class UserControllerClientTest extends LcmBaseServerTest {
     expected.setName("testUser");
     expected.setPassword("testPassword");
 
-    User saved = userService.save(expected);
+    User saved = userService.create(expected);
 
     Response response = getWebTarget().path("client/v0/users/" + saved.getId()).request()
             .header(LCM_AUTHENTICATION_ORIGIN_HEADER, User.LOCAL_ORIGIN)
@@ -107,7 +107,7 @@ public class UserControllerClientTest extends LcmBaseServerTest {
     User user = new User();
     user.setName("user");
     user.setNewPassword("password");
-    userService.save(user);
+    userService.create(user);
 
     Response res1 =
         getWebTarget().path("client/v0/users").request()
@@ -150,7 +150,7 @@ public class UserControllerClientTest extends LcmBaseServerTest {
     User user = new User();
     user.setName("admin123");
     user.setPassword("admin");
-    User saved = userService.save(user);
+    User saved = userService.create(user);
 
     saved.setNewPassword("admin123");
 
@@ -174,7 +174,7 @@ public class UserControllerClientTest extends LcmBaseServerTest {
     User user = new User();
     user.setName("admin123");
     user.setPassword("admin");
-    User saved = userService.save(user);
+    User saved = userService.create(user);
 
     Response response;
 

@@ -102,17 +102,16 @@ public class UserController {
   public final Response createNewUser(final User user) {
       //TODO Validation is needed here
 
-    userService.save(user);
+    userService.create(user);
     return Response.ok().build();
   }
 
   @PUT
-  @Path("/")
   @Consumes({"application/nl.kpmg.lcm.server.data.User+json"})
   @RolesAllowed({Roles.ADMINISTRATOR})
   public final Response modifyUser(final User user) {
     //TODO Validation is needed here
-    userService.save(user);
+    userService.update(user);
     return Response.ok().build();
 
   }

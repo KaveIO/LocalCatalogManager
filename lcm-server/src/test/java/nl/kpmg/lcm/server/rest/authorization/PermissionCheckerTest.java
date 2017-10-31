@@ -143,7 +143,7 @@ public class PermissionCheckerTest extends LcmBaseServerTest {
     MetaData metaData = MetaDataMocker.getMetaData();
     metaDataService.create(metaData);
     User user = UserMocker.createUnauthorizedRemoteUser();
-    userService.save(user);
+    userService.create(user);
 
     Session session =
         new Session(user.getName(), user.getRole(), UserOrigin.LOCAL, user.getOrigin());
@@ -170,7 +170,7 @@ public class PermissionCheckerTest extends LcmBaseServerTest {
     List permittedMetadataList = new ArrayList<String>();
     permittedMetadataList.add(metaData2.getId());
     user.setAllowedMetadataList(permittedMetadataList);
-    userService.save(user);
+    userService.create(user);
 
     Session session =
         new Session(user.getName(), user.getRole(), UserOrigin.LOCAL, user.getOrigin());
@@ -191,7 +191,7 @@ public class PermissionCheckerTest extends LcmBaseServerTest {
     List permittedPathList = new ArrayList<String>();
     permittedPathList.add("not-existing-path");
     user.setAllowedPathList(permittedPathList);
-    userService.save(user);
+    userService.create(user);
 
     Session session =
         new Session(user.getName(), user.getRole(), UserOrigin.LOCAL, user.getOrigin());
@@ -216,7 +216,7 @@ public class PermissionCheckerTest extends LcmBaseServerTest {
     List permittedPathList = new ArrayList<String>();
     permittedPathList.add("test1");
     user.setAllowedPathList(permittedPathList);
-    user = userService.save(user);
+    user = userService.create(user);
 
     Session session =
         new Session(user.getName(), user.getRole(), UserOrigin.LOCAL, user.getOrigin());
@@ -241,7 +241,7 @@ public class PermissionCheckerTest extends LcmBaseServerTest {
     List permittedMetadataList = new ArrayList<String>();
     permittedMetadataList.add(metaData.getId());
     user.setAllowedMetadataList(permittedMetadataList);
-    user = userService.save(user);
+    user = userService.create(user);
 
     Session session =
         new Session(user.getName(), user.getRole(), UserOrigin.LOCAL, user.getOrigin());
@@ -263,7 +263,7 @@ public class PermissionCheckerTest extends LcmBaseServerTest {
 
     User user = UserMocker.createAdminUser();
     user.setName("adminUser");
-    user = userService.save(user);
+    user = userService.create(user);
 
     Session session =
         new Session(user.getName(), user.getRole(), UserOrigin.LOCAL, user.getOrigin());
@@ -286,7 +286,7 @@ public class PermissionCheckerTest extends LcmBaseServerTest {
 
     User user = UserMocker.createUnauthorizedRemoteUser();
     user.setName("groupPathAuthorizedUser");
-    user = userService.save(user);
+    user = userService.create(user);
         UserGroup userGroup = new UserGroup();
     userGroup.addUser(user.getId());
     List permittedPathList = new ArrayList<String>();
@@ -315,7 +315,7 @@ public class PermissionCheckerTest extends LcmBaseServerTest {
 
     User user = UserMocker.createUnauthorizedRemoteUser();
     user.setName("groupPathAuthorizedUser");
-    user = userService.save(user);
+    user = userService.create(user);
     UserGroup userGroup = new UserGroup();
     userGroup.addUser(user.getId());
     List permittedPathList = new ArrayList<String>();
@@ -343,7 +343,7 @@ public class PermissionCheckerTest extends LcmBaseServerTest {
 
     User user = UserMocker.createUnauthorizedRemoteUser();
     user.setName("authorizedGroupUser");
-    user = userService.save(user);
+    user = userService.create(user);
     UserGroup userGroup = new UserGroup();
     userGroup.addUser(user.getId());
     List permittedMetadataList = new ArrayList<String>();
@@ -371,7 +371,7 @@ public class PermissionCheckerTest extends LcmBaseServerTest {
 
     User user = UserMocker.createUnauthorizedRemoteUser();
     user.setName("authorizedGroupUser");
-    user = userService.save(user);
+    user = userService.create(user);
     UserGroup userGroup = new UserGroup();
     userGroup.addUser(user.getId());
     

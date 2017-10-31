@@ -55,10 +55,14 @@ public class UserService {
       userDao.delete(user);
   }
 
-  public User save(User user){
+  public User create(User user) {
     if (user.getOrigin() == null) {
       user.setOrigin(User.LOCAL_ORIGIN);
     }
+    return userDao.save(user);
+  }
+
+  public User update(User user){
      return userDao.save(user);
   }
 

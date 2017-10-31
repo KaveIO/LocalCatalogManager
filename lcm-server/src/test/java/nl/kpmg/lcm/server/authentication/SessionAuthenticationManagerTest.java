@@ -105,7 +105,7 @@ public class SessionAuthenticationManagerTest extends LcmBaseTest {
     User user = new User();
     user.setName("testUser");
     user.setPassword("testPassword");
-    userService.save(user);
+    userService.create(user);
 
     String authenticationToken =
         authenticationManager.getAuthenticationToken(User.LOCAL_ORIGIN, "testUser", "testPassword");
@@ -117,7 +117,7 @@ public class SessionAuthenticationManagerTest extends LcmBaseTest {
     User user = new User();
     user.setName("admin");
     user.setPassword("testPassword");
-    userService.save(user);
+    userService.create(user);
 
     String authenticationToken = authenticationManager.getAuthenticationToken(User.LOCAL_ORIGIN, "admin", "admin");
     assertNotNull(authenticationToken);

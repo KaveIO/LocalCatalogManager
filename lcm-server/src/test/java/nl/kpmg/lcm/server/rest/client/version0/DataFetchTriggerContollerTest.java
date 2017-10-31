@@ -150,7 +150,7 @@ public class DataFetchTriggerContollerTest extends LcmBaseServerTest {
     remoteUser.setPassword(testAdminPassword);
     remoteUser.setOrigin(self);
     remoteUser.setRole(Roles.REMOTE_USER);
-    userService.save(remoteUser);
+    userService.create(remoteUser);
   }
 
   //@Test
@@ -164,7 +164,7 @@ public class DataFetchTriggerContollerTest extends LcmBaseServerTest {
     List<String> allowed =  new ArrayList<String>();
     allowed.add(md.getId());
     user.setAllowedMetadataList(allowed);
-    userService.save(user);
+    userService.create(user);
 
     // Sends a request to local lcm to fetch the data and metadata
     postTrigger(lcm.getId(), md.getId(), csvStorage.getId(), 200);
@@ -274,7 +274,7 @@ public class DataFetchTriggerContollerTest extends LcmBaseServerTest {
       throws ServerException {
 
     User admin = UserMocker.createAdminUser();
-    userService.save(admin);
+    userService.create(admin);
 
     Map payload = new LinkedHashMap();
     payload.put("local-storage-id", storageId);

@@ -27,7 +27,7 @@ public class AuthorizedLcm extends AbstractModel {
    */
   private String name;
 
-  @Indexed(unique = true)
+  @Indexed(name = "unique-lcm-id", unique = true)
   private String uniqueId;
 
   /**

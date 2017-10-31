@@ -27,6 +27,7 @@ import nl.kpmg.lcm.common.validation.Notification;
 import nl.kpmg.lcm.server.data.service.DataFetchTriggerService;
 import nl.kpmg.lcm.server.data.service.RemoteMetaDataService;
 import nl.kpmg.lcm.server.rest.authentication.Roles;
+import nl.kpmg.lcm.server.rest.authorization.PermissionChecker;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -130,7 +131,7 @@ public class RemoteMetaDataController {
   // TODO Implement the actual custom LCM peer filtering
   @Produces({"application/nl.kpmg.lcm.rest.types.MetaDatasRepresentation+json"})
   @RolesAllowed({Roles.ADMINISTRATOR})
-  public MetaDatasRepresentation searchMetadata(@PathParam("scope") final String scope,
+  public MetaDatasRepresentation searchMetadata(@Context SecurityContext securityContext, @PathParam("scope") final String scope,
       @QueryParam("text") String searchString) throws ServerException, ClientException {
     if (scope == null) {
       Notification notification = new Notification();
@@ -142,6 +143,8 @@ public class RemoteMetaDataController {
       searchString = "";
     }
 
+    User principal = (User) securityContext.getUserPrincipal();
+      PermissionChecker.getThreadLocal().set(principal);
     MetaDatasRepresentation result =
         remoteMetaDataService.getMetaDatasRepresentation(scope, searchString);
 

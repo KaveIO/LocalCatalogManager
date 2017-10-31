@@ -158,6 +158,7 @@ public class AuthorizedLcmCreateWindow extends Window implements Button.ClickLis
       applicationKeyField.setValue(hashedKey);
       copyButton.addStyleName("generate-button");
       copyButton.setWidth("30%");
+      copyButton.addClickListener(this);
       applicationKeyField.setWidth("100%");
       passwordLayout.addComponent(copyButton);
     } else {

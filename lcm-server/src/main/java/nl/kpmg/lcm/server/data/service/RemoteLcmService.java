@@ -70,7 +70,7 @@ public class RemoteLcmService {
   }
 
   public RemoteLcm update(RemoteLcm remoteLcm) {
-    if(remoteLcm.getApplicationKey() ==  null) {
+    if(remoteLcm.getApplicationKey() ==  null || remoteLcm.getApplicationKey().length() == 0) {
         RemoteLcm oldRecord =  dao.findOne(remoteLcm.getId());
         remoteLcm.setApplicationKey(oldRecord.getApplicationKey());
     }
@@ -147,7 +147,7 @@ public class RemoteLcmService {
            user.setName(username);
            user.setRole(Roles.REMOTE_USER);
            user.setOrigin(remoteLcm.getUniqueId());
-           userService.save(user);
+           userService.create(user);
        }
     } catch (ServerException ex) {
       throw new LcmException(ex.getMessage());

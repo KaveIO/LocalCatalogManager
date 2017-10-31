@@ -15,12 +15,14 @@
 package nl.kpmg.lcm.server.data.service;
 
 import static nl.kpmg.lcm.common.rest.authentication.AuthorizationConstants.LCM_AUTHENTICATION_ORIGIN_HEADER;
+import static nl.kpmg.lcm.common.rest.authentication.AuthorizationConstants.LCM_AUTHENTICATION_REMOTE_USER_HEADER;
 
 import nl.kpmg.lcm.common.client.HttpsClientFactory;
 import nl.kpmg.lcm.common.configuration.ClientConfiguration;
 import nl.kpmg.lcm.common.data.RemoteLcm;
 import nl.kpmg.lcm.common.exception.LcmException;
 import nl.kpmg.lcm.common.rest.types.MetaDatasRepresentation;
+import nl.kpmg.lcm.server.rest.authorization.PermissionChecker;
 import nl.kpmg.lcm.server.rest.client.version0.types.ConcreteMetaDataRepresentation;
 import nl.kpmg.lcm.server.rest.client.version0.types.ConcreteMetaDatasRepresentation;
 
@@ -69,8 +71,10 @@ public class RemoteMetaDataService {
 
     Response response = null;
     try {
+      String username = PermissionChecker.getThreadLocal().get().getName();
       String self = lcmIdService.getLcmIdObject().getLcmId();
       response = clientFactory.createWebTarget(fetchUrl).request()
+              .header(LCM_AUTHENTICATION_REMOTE_USER_HEADER, username)
               .header(LCM_AUTHENTICATION_ORIGIN_HEADER, self).get();
       if (response.getStatusInfo().getFamily() == Response.Status.Family.SUCCESSFUL) {
         MetaDatasRepresentation datasRepresentation =

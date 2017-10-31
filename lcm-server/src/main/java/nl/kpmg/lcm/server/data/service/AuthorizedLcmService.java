@@ -66,7 +66,8 @@ public class AuthorizedLcmService {
    * @return saved record.
    */
   public AuthorizedLcm update(AuthorizedLcm authorizedLcm) {
-    if(authorizedLcm.getApplicationKey() ==  null) {
+    if(authorizedLcm.getApplicationKey() ==  null || 
+            authorizedLcm.getApplicationKey().length() == 0) {
         AuthorizedLcm oldRecord =  dao.findOne(authorizedLcm.getId());
         authorizedLcm.setApplicationKey(oldRecord.getApplicationKey());
     }
