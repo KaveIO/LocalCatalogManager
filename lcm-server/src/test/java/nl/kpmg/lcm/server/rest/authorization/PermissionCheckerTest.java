@@ -24,7 +24,7 @@ import nl.kpmg.lcm.server.LcmBaseServerTest;
 import nl.kpmg.lcm.server.data.service.MetaDataService;
 import nl.kpmg.lcm.server.data.service.UserGroupService;
 import nl.kpmg.lcm.server.data.service.UserService;
-import nl.kpmg.lcm.server.rest.authentication.Roles;
+import nl.kpmg.lcm.common.Roles;
 import nl.kpmg.lcm.server.rest.authentication.Session;
 import nl.kpmg.lcm.server.rest.authentication.UserOrigin;
 import nl.kpmg.lcm.server.rest.authentication.UserSecurityContext;

@@ -17,7 +17,7 @@ package nl.kpmg.lcm.server.rest.client.version0;
 import nl.kpmg.lcm.common.rest.types.TaskScheduleRepresentation;
 import nl.kpmg.lcm.common.data.TaskSchedule;
 import nl.kpmg.lcm.server.data.service.TaskScheduleService;
-import nl.kpmg.lcm.server.rest.authentication.Roles;
+import nl.kpmg.lcm.common.Roles;
 import nl.kpmg.lcm.server.rest.client.version0.types.ConcreteTaskScheduleRepresentation;
 
 import org.springframework.beans.factory.annotation.Autowired;

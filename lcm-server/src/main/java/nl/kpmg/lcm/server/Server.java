@@ -27,7 +27,7 @@ import nl.kpmg.lcm.server.exception.mapper.LcmExceptionMapper;
 import nl.kpmg.lcm.server.exception.mapper.ValidationExceptionMapper;
 import nl.kpmg.lcm.server.rest.authentication.AuthenticationRequestFilter;
 import nl.kpmg.lcm.server.rest.authentication.ResponseFilter;
-import nl.kpmg.lcm.server.rest.authentication.Roles;
+import nl.kpmg.lcm.common.Roles;
 import nl.kpmg.lcm.server.rest.authorization.AuthorizationRequestFilter;
 import nl.kpmg.lcm.server.task.TaskManager;
 import nl.kpmg.lcm.server.task.TaskManagerException;

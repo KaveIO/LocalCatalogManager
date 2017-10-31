@@ -16,7 +16,7 @@ package nl.kpmg.lcm.server.rest.client.version0;
 import nl.kpmg.lcm.common.data.LcmId;
 import nl.kpmg.lcm.common.rest.types.LcmIdRepresentation;
 import nl.kpmg.lcm.server.data.service.LcmIdService;
-import nl.kpmg.lcm.server.rest.authentication.Roles;
+import nl.kpmg.lcm.common.Roles;
 import nl.kpmg.lcm.server.rest.client.version0.types.ConcreteLcmIdRepresentation;
 
 import org.springframework.beans.factory.annotation.Autowired;

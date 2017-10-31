@@ -17,7 +17,7 @@ import nl.kpmg.lcm.common.data.AuthorizedLcm;
 import nl.kpmg.lcm.common.rest.types.AuthorizedLcmRepresentation;
 import nl.kpmg.lcm.common.rest.types.AuthorizedLcmsRepresentation;
 import nl.kpmg.lcm.server.data.service.AuthorizedLcmService;
-import nl.kpmg.lcm.server.rest.authentication.Roles;
+import nl.kpmg.lcm.common.Roles;
 import nl.kpmg.lcm.server.rest.client.version0.types.ConcreteAuthorizedLcmRepresentation;
 import nl.kpmg.lcm.server.rest.client.version0.types.ConcreteAuthorizedLcmsRepresentation;
 

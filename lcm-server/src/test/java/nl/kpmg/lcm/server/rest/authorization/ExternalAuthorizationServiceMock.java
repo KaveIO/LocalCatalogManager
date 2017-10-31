@@ -13,7 +13,7 @@
  */
 package nl.kpmg.lcm.server.rest.authorization;
 
-import nl.kpmg.lcm.server.rest.authentication.Roles;
+import nl.kpmg.lcm.common.Roles;
 
 import java.util.ArrayList;
 import java.util.HashMap;

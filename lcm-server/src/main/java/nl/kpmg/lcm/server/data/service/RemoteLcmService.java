@@ -26,7 +26,7 @@ import nl.kpmg.lcm.common.data.TestResult;
 import nl.kpmg.lcm.common.data.User;
 import nl.kpmg.lcm.common.exception.LcmException;
 import nl.kpmg.lcm.server.data.dao.RemoteLcmDao;
-import nl.kpmg.lcm.server.rest.authentication.Roles;
+import nl.kpmg.lcm.common.Roles;
 
 import org.glassfish.jersey.client.authentication.HttpAuthenticationFeature;
 import org.slf4j.Logger;

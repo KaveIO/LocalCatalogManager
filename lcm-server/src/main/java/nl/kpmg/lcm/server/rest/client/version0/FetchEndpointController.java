@@ -31,7 +31,7 @@ import nl.kpmg.lcm.server.data.dao.FetchEndpointDao;
 import nl.kpmg.lcm.server.data.service.FetchEndpointService;
 import nl.kpmg.lcm.server.data.service.MetaDataService;
 import nl.kpmg.lcm.server.data.service.StorageService;
-import nl.kpmg.lcm.server.rest.authentication.Roles;
+import nl.kpmg.lcm.common.Roles;
 import nl.kpmg.lcm.server.rest.authorization.PermissionChecker;
 
 import org.springframework.beans.factory.annotation.Autowired;

@@ -20,7 +20,7 @@ import nl.kpmg.lcm.common.data.User;
 import nl.kpmg.lcm.server.LoginException;
 import nl.kpmg.lcm.server.LogoutException;
 import nl.kpmg.lcm.server.data.service.UserService;
-import nl.kpmg.lcm.server.rest.authentication.Roles;
+import nl.kpmg.lcm.common.Roles;
 import nl.kpmg.lcm.server.rest.authentication.SessionAuthenticationManager;
 import nl.kpmg.lcm.server.rest.client.types.ClientRepresentation;
 import nl.kpmg.lcm.server.rest.client.types.LoginRequest;

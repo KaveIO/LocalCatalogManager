@@ -13,6 +13,7 @@
  */
 package nl.kpmg.lcm.server.rest.authentication;
 
+import nl.kpmg.lcm.common.Roles;
 import nl.kpmg.lcm.common.data.AuthorizedLcm;
 import nl.kpmg.lcm.common.data.User;
 import nl.kpmg.lcm.common.rest.authentication.PasswordHash;

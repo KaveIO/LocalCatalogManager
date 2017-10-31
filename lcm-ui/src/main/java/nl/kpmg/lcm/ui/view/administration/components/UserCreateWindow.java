@@ -24,6 +24,7 @@ import com.vaadin.ui.TextArea;
 import com.vaadin.ui.TextField;
 import com.vaadin.ui.Window;
 
+import nl.kpmg.lcm.common.Roles;
 import nl.kpmg.lcm.common.ServerException;
 import nl.kpmg.lcm.common.data.User;
 import nl.kpmg.lcm.ui.rest.AuthenticationException;
@@ -84,6 +85,14 @@ public class UserCreateWindow extends Window implements Button.ClickListener {
     nameField.setValue(user.getName());
     nameField.setEnabled(false);
     roleField.setValue(user.getRole());
+
+    if(!isCreateOpereration) {
+        if(user.getRole().equals(Roles.REMOTE_USER)) {
+            roleField.setEnabled(false);
+            pField.setEnabled(false);
+        }
+    }
+
     StringBuilder pathList = new StringBuilder();
     if (user.getAllowedPathList() != null && user.getAllowedPathList().size() > 0) {
       for (String path : user.getAllowedPathList()) {
@@ -178,6 +187,8 @@ public class UserCreateWindow extends Window implements Button.ClickListener {
     rootNode.put("name", nameField.getValue());
     rootNode.put("role", roleField.getValue());
     rootNode.put("newPassword", pField.getValue());
+    String origin = user !=  null ? user.getOrigin() : User.LOCAL_ORIGIN;
+    rootNode.put("origin", origin);
     ArrayNode pathArrayNode = mapper.createArrayNode();
     String[] allowedPaths = pathListArea.getValue().split(LIST_DELIMITER);
     for (String path : allowedPaths) {

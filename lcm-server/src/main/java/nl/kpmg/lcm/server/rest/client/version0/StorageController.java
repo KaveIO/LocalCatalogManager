@@ -21,7 +21,7 @@ import nl.kpmg.lcm.common.rest.types.StorageRepresentation;
 import nl.kpmg.lcm.common.rest.types.StoragesRepresentation;
 import nl.kpmg.lcm.common.validation.Notification;
 import nl.kpmg.lcm.server.data.service.StorageService;
-import nl.kpmg.lcm.server.rest.authentication.Roles;
+import nl.kpmg.lcm.common.Roles;
 import nl.kpmg.lcm.server.rest.client.version0.types.ConcreteStorageRepresentation;
 import nl.kpmg.lcm.server.rest.client.version0.types.ConcreteStoragesRepresentation;
 
