@@ -193,7 +193,7 @@ public class UserController {
   private void validateInputString(final String value, final String fieldName,
       Notification notification) {
     if (value == null || value.length() == 0) {
-      notification.addError("The " + fieldName + "could not be null or empty!");
+      notification.addError("The " + fieldName + " could not be null or empty!");
     }
 
     if (value != null && value.length() > MAX_INPUT_VALUE_LENGTH) {

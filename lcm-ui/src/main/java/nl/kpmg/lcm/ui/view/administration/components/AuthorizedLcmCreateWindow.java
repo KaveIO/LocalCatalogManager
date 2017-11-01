@@ -72,7 +72,7 @@ public class AuthorizedLcmCreateWindow extends Window implements Button.ClickLis
   private AuthorizedLcm authorizedLcm;
   private final static int MAX_LENGTH = 128;
   private final Label createWarning = new Label("Note: Remember the key! It will be hidden after creation!");
-  private final Label editWarning = new Label("Note: The key can not be changed ot displayed!");
+  private final Label editWarning = new Label("Note: The key can not be edited or displayed!");
 
   private boolean isCreateOpereration;
   private String unhashedKey;
@@ -95,7 +95,6 @@ public class AuthorizedLcmCreateWindow extends Window implements Button.ClickLis
     // Application key is never displayed in security reasons
     applicationKeyField.setValue("");
     applicationKeyField.setEnabled(false);
-
 
     this.authorizedLcm = authorizedLcm;
     init();

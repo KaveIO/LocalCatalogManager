@@ -19,6 +19,7 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 
+import nl.kpmg.lcm.common.Roles;
 import nl.kpmg.lcm.common.ServerException;
 import nl.kpmg.lcm.common.data.User;
 import nl.kpmg.lcm.common.rest.authentication.UserPasswordHashException;
@@ -131,6 +132,7 @@ public class UserControllerClientTest extends LcmBaseServerTest {
       throws LoginException, UserPasswordHashException, ServerException {
     User user = new User();
     user.setName("admin");
+    user.setRole(Roles.ADMINISTRATOR);
     user.setNewPassword("admin");
     Entity<User> entity = Entity.entity(user, "application/nl.kpmg.lcm.server.data.User+json");
     Response res1 =
