@@ -19,7 +19,7 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import nl.kpmg.lcm.common.data.AuthorizedLcm;
 import nl.kpmg.lcm.common.rest.types.AuthorizedLcmRepresentation;
 import nl.kpmg.lcm.common.rest.types.LinkInjectable;
-import nl.kpmg.lcm.server.rest.client.version0.StorageController;
+import nl.kpmg.lcm.server.rest.client.version0.AuthorizedLcmController;
 
 import org.glassfish.jersey.linking.Binding;
 import org.glassfish.jersey.linking.InjectLink;
@@ -31,9 +31,9 @@ import javax.ws.rs.core.Link;
 
 public class ConcreteAuthorizedLcmRepresentation extends AuthorizedLcmRepresentation implements LinkInjectable {
 
-  @InjectLinks({@InjectLink(resource = StorageController.class, style = InjectLink.Style.ABSOLUTE,
+  @InjectLinks({@InjectLink(resource = AuthorizedLcmController.class, style = InjectLink.Style.ABSOLUTE,
       rel = "self", method = "getAuthorizedLcm",
-      bindings = {@Binding(name = "authorizedLcmId", value = "${instance.item.id}")})})
+      bindings = {@Binding(name = "lcm_id", value = "${instance.item.id}")})})
   @JsonIgnore
   private List<Link> injectedLinks;
 

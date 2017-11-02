@@ -18,7 +18,7 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import nl.kpmg.lcm.common.data.LcmId;
 import nl.kpmg.lcm.common.rest.types.LcmIdRepresentation;
 import nl.kpmg.lcm.common.rest.types.LinkInjectable;
-import nl.kpmg.lcm.server.rest.client.version0.RemoteLcmController;
+import nl.kpmg.lcm.server.rest.client.version0.LcmIdController;
 
 import org.glassfish.jersey.linking.Binding;
 import org.glassfish.jersey.linking.InjectLink;
@@ -35,7 +35,7 @@ import javax.ws.rs.core.Link;
 public class ConcreteLcmIdRepresentation extends LcmIdRepresentation  implements LinkInjectable {
 
 
-  @InjectLinks({@InjectLink(resource = RemoteLcmController.class,
+  @InjectLinks({@InjectLink(resource = LcmIdController.class,
       style = InjectLink.Style.ABSOLUTE, rel = "slef", method = "getOne", bindings = {@Binding(
           name = "id", value = "${instance.item.id}")})})
   @JsonIgnore

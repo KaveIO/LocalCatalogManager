@@ -13,11 +13,11 @@
  */
 package nl.kpmg.lcm.server.rest.client.version0;
 
+import nl.kpmg.lcm.common.Roles;
 import nl.kpmg.lcm.common.data.AuthorizedLcm;
 import nl.kpmg.lcm.common.rest.types.AuthorizedLcmRepresentation;
 import nl.kpmg.lcm.common.rest.types.AuthorizedLcmsRepresentation;
 import nl.kpmg.lcm.server.data.service.AuthorizedLcmService;
-import nl.kpmg.lcm.common.Roles;
 import nl.kpmg.lcm.server.rest.client.version0.types.ConcreteAuthorizedLcmRepresentation;
 import nl.kpmg.lcm.server.rest.client.version0.types.ConcreteAuthorizedLcmsRepresentation;
 
@@ -63,7 +63,7 @@ public class AuthorizedLcmController {
   }
 
   @GET
-  @Produces({"application/nl.kpmg.lcm.common.rest.types.AuthorizedLcmRepresentation+json"})
+  @Produces({"application/nl.kpmg.lcm.common.rest.types.AuthorizedLcmsRepresentation+json"})
   @RolesAllowed({Roles.ADMINISTRATOR})
   public AuthorizedLcmsRepresentation getAuthorizedLcmList() {
     List authroizedLcmList = authorizedLcmService.findAll();
@@ -95,7 +95,7 @@ public class AuthorizedLcmController {
   }
 
   @POST
-  @Consumes({"application/nl.kpmg.lcm.common.rest.types.AuthorizedLcmRepresentation+json"})
+  @Consumes({"application/nl.kpmg.lcm.server.data.AuthorizedLcm+json"})
   @RolesAllowed({Roles.ADMINISTRATOR})
   public Response createNewAuthorizedLcm(final AuthorizedLcm authorizedLcm) {
     if (authorizedLcm.getApplicationId() == null || authorizedLcm.getApplicationId().isEmpty()
@@ -124,7 +124,7 @@ public class AuthorizedLcmController {
   }
 
   @PUT
-  @Consumes({"application/nl.kpmg.lcm.common.rest.types.AuthorizedLcmRepresentation+json"})
+  @Consumes({"application/nl.kpmg.lcm.server.data.AuthorizedLcm+json"})
   @RolesAllowed({Roles.ADMINISTRATOR})
   public Response overwriteAuthorizedLcm(final AuthorizedLcm authorizedLcm) {
     if (authorizedLcm.getApplicationId() == null || authorizedLcm.getApplicationId().isEmpty()

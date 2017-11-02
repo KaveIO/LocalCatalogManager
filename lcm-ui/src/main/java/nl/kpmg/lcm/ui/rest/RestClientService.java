@@ -472,7 +472,7 @@ public class RestClientService {
   public void createAuthorizedLcm(String authorizedLcm) throws ServerException, DataCreationException,
       AuthenticationException, JsonProcessingException {
     Entity<String> payload =
-        Entity.entity(authorizedLcm, "application/nl.kpmg.lcm.common.rest.types.AuthorizedLcmRepresentation+json");
+        Entity.entity(authorizedLcm, "application/nl.kpmg.lcm.server.data.AuthorizedLcm+json");
 
     Invocation.Builder client = getClient("client/v0/authorizedlcm");
     Response post = client.post(payload);
@@ -487,7 +487,7 @@ public class RestClientService {
     public void updateAuthorizedLcm(String authorizedLcm) throws ServerException, DataCreationException,
       AuthenticationException, JsonProcessingException {
     Entity<String> payload =
-        Entity.entity(authorizedLcm, "application/nl.kpmg.lcm.common.rest.types.AuthorizedLcmRepresentation+json");
+        Entity.entity(authorizedLcm, "application/nl.kpmg.lcm.server.data.AuthorizedLcm+json");
 
     Invocation.Builder client = getClient("client/v0/authorizedlcm");
     Response put = client.put(payload);

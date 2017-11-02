@@ -15,6 +15,7 @@
 package nl.kpmg.lcm.server.rest.client.version0;
 
 
+import nl.kpmg.lcm.common.Roles;
 import nl.kpmg.lcm.common.data.RemoteLcm;
 import nl.kpmg.lcm.common.data.TestResult;
 import nl.kpmg.lcm.common.exception.LcmValidationException;
@@ -22,10 +23,11 @@ import nl.kpmg.lcm.common.rest.types.RemoteLcmRepresentation;
 import nl.kpmg.lcm.common.rest.types.RemoteLcmsRepresentation;
 import nl.kpmg.lcm.common.validation.Notification;
 import nl.kpmg.lcm.server.data.service.RemoteLcmService;
-import nl.kpmg.lcm.common.Roles;
 import nl.kpmg.lcm.server.rest.client.version0.types.ConcreteRemoteLcmRepresentation;
 import nl.kpmg.lcm.server.rest.client.version0.types.ConcreteRemoteLcmsRepresentation;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import java.util.List;
@@ -49,6 +51,8 @@ import javax.ws.rs.core.Response;
 @Path("client/v0/remoteLcm")
 public class RemoteLcmController {
   private final int MAX_FIELD_LENTH = 128;
+
+  private static final Logger LOGGER = LoggerFactory.getLogger(RemoteLcmController.class.getName());
 
   @Autowired
   private RemoteLcmService remoteLcmService;
@@ -147,13 +151,14 @@ public class RemoteLcmController {
 
   @GET
   @Path("status/{id}")
-  @Produces({"application/nl.kpmg.lcm.rest.types.MetaDatasRepresentation+json"})
+  @Produces({"application/nl.kpmg.lcm.server.data.TestResult+json"})
   @RolesAllowed({Roles.ADMINISTRATOR, Roles.API_USER})
   public TestResult getRemoteLcmStatus(@PathParam("id") final String remoteLcmId) {
     try {
       validateRemoteLcmField(remoteLcmId, "Remote LCM id");
     } catch (LcmValidationException ex) {
-      // LOGGER
+      LOGGER.warn("Can not test the connectivity of the remote LCM with id: " + remoteLcmId
+          + ". Error message: " + ex.getMessage());
       return null;
     }
     return remoteLcmService.testRemoteLcmConnectivity(remoteLcmId);

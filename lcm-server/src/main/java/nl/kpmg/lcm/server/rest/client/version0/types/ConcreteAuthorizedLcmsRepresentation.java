@@ -33,9 +33,9 @@ public class ConcreteAuthorizedLcmsRepresentation extends AuthorizedLcmsRepresen
   @InjectLinks({
       @InjectLink(resource = AuthorizedLcmController.class, style = InjectLink.Style.ABSOLUTE,
           rel = "authorizedLcm.overview"),
-      @InjectLink(resource = AuthorizedLcmController.class, method = "createNewStorage",
+      @InjectLink(resource = AuthorizedLcmController.class, method = "createNewAuthorizedLcm",
           style = InjectLink.Style.ABSOLUTE, rel = "authorizedLcm.create",
-          type = "application/nl.kpmg.lcm.server.data.Backend+json")})
+          type = "application/nl.kpmg.lcm.server.data.AuthorizedLcm+json")})
   @JsonIgnore
   private List<Link> injectedLinks;
 

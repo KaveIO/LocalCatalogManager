@@ -65,12 +65,12 @@ public class LcmIdGenerator {
     if (applicationName.length() > APPLICATION_NAME_MAX_LENGTH) {
       applicationName = applicationName.substring(0, APPLICATION_NAME_MAX_LENGTH);
     }
-    counter = applicationName.length();
     str.append(applicationName + "-");
+    counter = applicationName.length() + 1;
 
     String unixTimestamp = Long.toString(new Date().getTime());
-    counter = counter + unixTimestamp.length();
     str.append(unixTimestamp + "-");
+    counter = counter + unixTimestamp.length() + 1;
 
     String randomAlphanum = generateRandomAlphanum();
     str.append(randomAlphanum);

@@ -38,7 +38,7 @@ public class MongoAuthorizedLcmWriteConverter implements Converter<AuthorizedLcm
       dbo.put("_id", new ObjectId(source.getId()));
     }
     dbo.put("name", source.getName());
-    dbo.put("unique-lcm-id", source.getUniqueId());
+    dbo.put("uniqueId", source.getUniqueId());
     dbo.put("application-id", source.getApplicationId());
     dbo.put("application-key", source.getApplicationKey());
 
