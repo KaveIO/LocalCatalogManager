@@ -18,7 +18,6 @@ package nl.kpmg.lcm.server.data.dao;
 
 import nl.kpmg.lcm.common.data.AuthorizedLcm;
 
-import org.springframework.data.mongodb.repository.Query;
 import org.springframework.data.repository.PagingAndSortingRepository;
 
 /**
@@ -29,6 +28,5 @@ public interface AuthorizedLcmDao extends PagingAndSortingRepository<AuthorizedL
 
   public AuthorizedLcm findOneById(String id);
  
-  @Query(value="{'unique-lcm-id': ?0}")
   public AuthorizedLcm findOneByUniqueId(String id);
 }
