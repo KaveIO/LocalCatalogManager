@@ -162,7 +162,8 @@ public class RemoteLcmMetaDataController {
     fe.setMetadataId(md.getId());
     User principal = (User) securityContext.getUserPrincipal();
     fe.setUserToConsume(principal.getName());
-    fetchEndpointService.getDao().save(fe);
+    fe.setUserOrigin(principal.getOrigin());
+    fetchEndpointService.create(fe);
 
     return new ConcreteFetchEndpointRepresentation(fe);
   }

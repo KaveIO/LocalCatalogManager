@@ -46,6 +46,11 @@ public class FetchEndpoint extends AbstractModel {
   private String userToConsume;
 
   /**
+   * This is the origin of the username/caller that is allowed to use this fetch url
+   */
+  private String userOrigin;
+
+  /**
    * @return the metadataID
    */
   public String getMetadataId() {
@@ -99,5 +104,19 @@ public class FetchEndpoint extends AbstractModel {
    */
   public void setUserToConsume(String userToConsume) {
     this.userToConsume = userToConsume;
+  }
+
+  /**
+   * @return the userOrigin
+   */
+  public String getUserOrigin() {
+    return userOrigin;
+  }
+
+  /**
+   * @param userOrigin the userOrigin to set
+   */
+  public void setUserOrigin(String userOrigin) {
+    this.userOrigin = userOrigin;
   }
 }

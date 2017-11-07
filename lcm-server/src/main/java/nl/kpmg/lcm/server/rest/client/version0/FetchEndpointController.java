@@ -17,6 +17,7 @@ package nl.kpmg.lcm.server.rest.client.version0;
 import com.google.gson.Gson;
 import com.google.gson.stream.JsonWriter;
 
+import nl.kpmg.lcm.common.Roles;
 import nl.kpmg.lcm.common.data.ContentIterator;
 import nl.kpmg.lcm.common.data.Data;
 import nl.kpmg.lcm.common.data.EnrichmentProperties;
@@ -27,11 +28,9 @@ import nl.kpmg.lcm.common.data.metadata.MetaData;
 import nl.kpmg.lcm.common.data.metadata.MetaDataWrapper;
 import nl.kpmg.lcm.common.exception.LcmException;
 import nl.kpmg.lcm.server.backend.Backend;
-import nl.kpmg.lcm.server.data.dao.FetchEndpointDao;
 import nl.kpmg.lcm.server.data.service.FetchEndpointService;
 import nl.kpmg.lcm.server.data.service.MetaDataService;
 import nl.kpmg.lcm.server.data.service.StorageService;
-import nl.kpmg.lcm.common.Roles;
 import nl.kpmg.lcm.server.rest.authorization.PermissionChecker;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -89,14 +88,13 @@ public class FetchEndpointController {
           @PathParam("id") final String id, @QueryParam("data_key") String dataKey) throws URISyntaxException,
       IOException {
       
-    FetchEndpointDao dao = fetchEndpointService.getDao();
-    FetchEndpoint fe = dao.findOneById(id);
+    FetchEndpoint fe = fetchEndpointService.findOneById(id);
 
     if (fe == null) {
       throw new NotFoundException(String.format("FetchEndpoint %s not found", id));
     }
     if (new Date(System.currentTimeMillis()).after(fe.getTimeToLive())) {
-      fetchEndpointService.getDao().delete(fe);
+      fetchEndpointService.delete(fe);
       throw new LcmException(String.format("FetchEndpoint %s has expired", id),
           Response.Status.BAD_REQUEST);
     }
