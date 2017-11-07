@@ -139,7 +139,7 @@ public class DataFetchTriggerService {
     options.put("remoteLcm", lcmId);
     FetchEndpoint fetchURL = generateFetchURL(metaDataWrapper.getId(), lcm,  username);
     options.put("path", FETCH_DATA_PATH + "/" + fetchURL.getId());
-    options.put("username", username);
+    options.put("username", fetchURL.getUserToConsume());
 
     dataFetchTaskDescription.setOptions(options);
 
