@@ -18,6 +18,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.vaadin.ui.Button;
+import com.vaadin.ui.ComboBox;
 import com.vaadin.ui.FormLayout;
 import com.vaadin.ui.Notification;
 import com.vaadin.ui.TextArea;
@@ -58,7 +59,7 @@ public class UserCreateWindow extends Window implements Button.ClickListener {
   private RestClientService restClientService;
   private DynamicDataContainer dataContainer;
   private final TextField nameField = new TextField("Name");
-  private final TextField roleField = new TextField("Role");
+  private ComboBox rolesListComboBox = new ComboBox("Role");
   private final TextField pField = new TextField("Password");
   private final TextArea pathListArea = new TextArea("Accessible paths");
   private final TextArea metadataListArea = new TextArea("Accessible metadatas");
@@ -86,15 +87,16 @@ public class UserCreateWindow extends Window implements Button.ClickListener {
     isCreateOpereration = false;
     this.restClientService = restClientService;
     this.dataContainer = dataContainer;
+    init();
     nameField.setValue(user.getName());
     nameField.setEnabled(false);
-    roleField.setValue(user.getRole());
+    rolesListComboBox.setValue(user.getRole());
 
     if(!isCreateOpereration) {
         if(user.getRole().equals(Roles.REMOTE_USER)) {
-            roleField.setEnabled(false);
-            pField.setEnabled(false);
-        }
+        rolesListComboBox.setEnabled(false);
+        pField.setEnabled(false);
+      }
     }
 
     StringBuilder pathList = new StringBuilder();
@@ -120,7 +122,6 @@ public class UserCreateWindow extends Window implements Button.ClickListener {
     }
 
     this.user = user;
-    init();
   }
 
   private void init() {
@@ -129,7 +130,7 @@ public class UserCreateWindow extends Window implements Button.ClickListener {
     FormLayout panelContent = new FormLayout();
     panelContent.setMargin(true);
     nameField.setRequired(true);
-    roleField.setRequired(true);
+    rolesListComboBox = initRolesListComboBox();
     pField.setRequired(true);
     pField.setId("userp");
     pathListArea.setWidth("100%");
@@ -138,7 +139,7 @@ public class UserCreateWindow extends Window implements Button.ClickListener {
     metadataListArea.setHeight("100%");
 
     panelContent.addComponent(nameField);
-    panelContent.addComponent(roleField);
+    panelContent.addComponent(rolesListComboBox);
     panelContent.addComponent(pField);
     panelContent.addComponent(pathListArea);
     panelContent.addComponent(metadataListArea);
@@ -148,6 +149,26 @@ public class UserCreateWindow extends Window implements Button.ClickListener {
     this.setModal(true);
 
     this.setContent(panelContent);
+  }
+
+  private ComboBox initRolesListComboBox() {
+    ComboBox rolesListComboBox = new ComboBox("Role");
+
+    rolesListComboBox.addItem(Roles.ADMINISTRATOR);
+    rolesListComboBox.setItemCaption(Roles.ADMINISTRATOR, "Administrator");
+
+    rolesListComboBox.addItem(Roles.REMOTE_USER);
+    rolesListComboBox.setItemCaption(Roles.REMOTE_USER, "Remote user");
+
+    rolesListComboBox.addItem(Roles.API_USER);
+    rolesListComboBox.setItemCaption(Roles.API_USER, "API user");
+
+    rolesListComboBox.setTextInputAllowed(false);
+    rolesListComboBox.setRequired(true);
+    rolesListComboBox.setNullSelectionAllowed(false);
+    rolesListComboBox.setInputPrompt("Please select one");
+
+    return rolesListComboBox;
   }
 
   @Override
@@ -190,7 +211,7 @@ public class UserCreateWindow extends Window implements Button.ClickListener {
     ObjectMapper mapper = new ObjectMapper();
     ObjectNode rootNode = mapper.createObjectNode();
     rootNode.put("name", nameField.getValue());
-    rootNode.put("role", roleField.getValue());
+    rootNode.put("role", (String)rolesListComboBox.getValue());
     rootNode.put("newPassword", pField.getValue());
     String origin = user !=  null ? user.getOrigin() : User.LOCAL_ORIGIN;
     rootNode.put("origin", origin);
@@ -224,7 +245,7 @@ public class UserCreateWindow extends Window implements Button.ClickListener {
 
   private void validate(nl.kpmg.lcm.common.validation.Notification notification) {
     validateText(nameField, notification);
-    validateText(roleField, notification);
+    validateComboBox(rolesListComboBox, notification);
     if (isCreateOpereration && pField.getValue().isEmpty()) {
       notification.addError(pField.getCaption() + " can not be empty");
     }
@@ -251,6 +272,13 @@ public class UserCreateWindow extends Window implements Button.ClickListener {
 
     if (field.getValue().length() > MAX_LENGTH) {
       notification.addError(field.getCaption() + " is too long! Max length : " + MAX_LENGTH);
+    }
+  }
+
+  private void validateComboBox(ComboBox comboBox,
+      nl.kpmg.lcm.common.validation.Notification notification) {
+    if (comboBox.getValue() == null) {
+      notification.addError(comboBox.getCaption() + " can not be null!");
     }
   }
 }
