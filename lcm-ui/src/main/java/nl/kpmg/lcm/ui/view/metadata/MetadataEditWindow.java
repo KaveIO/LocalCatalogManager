@@ -181,7 +181,7 @@ public class MetadataEditWindow extends Window implements Button.ClickListener {
         this.close();
       } catch (ServerException | DataCreationException | AuthenticationException ex) {
         Notification.show("Edit of metadata failed.");
-        LOGGER.warn("Creation of metadata failed.", ex);
+        LOGGER.warn("Edit of metadata failed.", ex.getMessage());
       }
     } else if (event.getSource() == deleteButton) {
       try {
@@ -193,7 +193,7 @@ public class MetadataEditWindow extends Window implements Button.ClickListener {
         this.close();
       } catch (ServerException | DataCreationException | AuthenticationException ex) {
         Notification.show("Edit of metadata failed.");
-        LOGGER.warn("Creation of metadata failed.", ex);
+        LOGGER.warn("Edit of metadata failed.", ex.getMessage());
       }
     }
   }
