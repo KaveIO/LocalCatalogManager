@@ -14,7 +14,11 @@ To work with this we'd defer to their repective manuals and installation instruc
 After this you should be ready to run the integration tests.
 
 ## Working with the tests
-The integration test module relies on Docker. The code uses the latest kave/lcm image on your machine. If you are developing new integrations it is therefore necesssary to rebuild the Docker image on your machine. This can be done by runnign: 
+The integration test module relies on Docker. The code uses the latest kave/lcm image on your machine. If you are developing new integrations it is therefore necessary to rebuild the Docker image on your machine. This can be done by running:
+
+Set up application.properties(docker/application.properties) file:
+Set lcm.server.storage.mongo.host=mongo as lcm-integration-mongo container will be mapped to "mongo".
+Optionally: Set lcm.server.name=server Set lcm.server.name=ui
 
 ```bash
    mvn clean 

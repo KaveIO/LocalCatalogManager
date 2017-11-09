@@ -32,23 +32,24 @@ class IntegrationTestCase(unittest.TestCase):
       'detach': True,
       'ports': {'8081/tcp': 8081},
       'stdin_open':True
-    },
-    'lcm-integration-ui': {
-      'image': 'kave/lcm:latest',
-      'command': 'ui',
-      'hostname': 'ui',
-      'links': {'lcm-integration-server': 'server'},
-      'detach': True,
-      'ports': {'8080/tcp': 8080},
-      'stdin_open': True
+   # UI module is currently not used for tests
+   # },
+   # 'lcm-integration-ui': {
+   #   'image': 'kave/lcm:latest',
+   #   'command': 'ui',
+   #   'hostname': 'ui',
+   #   'links': {'lcm-integration-server': 'server'},
+   #   'detach': True,
+   #   'ports': {'8080/tcp': 8080},
+   #   'stdin_open': True
     }
   }
   fixture = {
     'metadata': [
-      {"name":"example", "general": { "creation_date": "01-21-2016 00:00:00", "owner": "bob", "description": "This is the newly computed train schedule for optimized transport flow."}, "data": { "uri": "csv://local/mock.csv", "options": { "table-description": { "columns" : {"column_a" : {}, "column_b": {}}}}}}
+      {"name":"example", "data": { "uri": ["csv://local/mock.csv"], "path": "kpmg"}}
     ], 
     'storage': [
-      {"name": "local", "type": "csv", "options":{"storagePath":"/data"}}
+      {"name": "local", "type": "csv", "options":{"path":"/data"}}
     ]
   }
 
@@ -92,8 +93,8 @@ class IntegrationTestCase(unittest.TestCase):
       else:
         print('  skipping %s' %  name)
    
-    # Some arbitrarybackoff time to allow the dockers to become alive
-    sleep(5)
+    # Some arbitrary back-off time to allow the dockers to become alive
+    sleep(30)
 
     cls.load_fixture('lcm-integration-mongo', cls.fixture)
 
@@ -130,8 +131,8 @@ class IntegrationTestCase(unittest.TestCase):
   def print_lcm_log(cls, container_id):
     print('Printing for %s ' % container_id)
     container = cls.client.containers.get(container_id)
-    result = container.exec_run('tail -n 100 lcm-complete/logs/lcm.log')
-    print('--------------  Container %s lcm.log  --------------' % container.name)
+    result = container.exec_run('tail -n 100 lcm-complete/logs/lcm-server.log')
+    print('--------------  Container %s lcm-server.log  --------------' % container.name)
     print(result.decode('utf-8').replace('\\n', '\n'))
     print('')
  
@@ -148,7 +149,7 @@ class IntegrationTestCase(unittest.TestCase):
     identity = ('%s:%s' % (username, password)).encode('utf-8') 
     return "Basic %s" % base64.b64encode(identity).decode('utf-8')
 
-  def request(self, url, data=None, content_type="application/json", authorization=None):
+  def request(self, url, data=None, content_type="application/json", authorization=None, origin="local"):
     if url[:7] != 'http://':
       url = '%s/%s' % (self.server_url, url)
 
@@ -160,7 +161,8 @@ class IntegrationTestCase(unittest.TestCase):
 
     req = urllib.request.Request(url, data, {
       'Content-Type': content_type,
-      'Authorization': authorization})
+      'Authorization': authorization,
+      'LCM-Authentication-origin': origin})
 
     return urllib.request.urlopen(req)
 
@@ -168,6 +170,10 @@ class IntegrationTestCase(unittest.TestCase):
     response = self.request(url, **kwargs)
     body = response.read()
     return json.loads(body)
+
+  def request_remote(self, url, origin):
+    response = self.request(url, None, "application/json", None, origin)
+    return response.read()
 
 def main(**kwargs): 
   parser = argparse.ArgumentParser(description='Runs integration tests')
