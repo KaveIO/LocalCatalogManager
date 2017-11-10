@@ -145,11 +145,23 @@ class IntegrationTestCase(unittest.TestCase):
     ctx.verify_mode = ssl.CERT_NONE
     return ctx 
 
+  def get_response_items(self, response):
+    string = response.read().decode('utf-8')
+    json_obj = json.loads(string)
+    if json_obj is None or len(json_obj) == 0:
+      return None
+
+    if json_obj['items'] is None or len(json_obj['items']) == 0:
+      return None
+
+    return json_obj['items']
+
+
   def get_authorization(self, username, password):
     identity = ('%s:%s' % (username, password)).encode('utf-8') 
     return "Basic %s" % base64.b64encode(identity).decode('utf-8')
 
-  def request(self, url, data=None, content_type="application/json", authorization=None, origin="local"):
+  def request(self, url, data=None, content_type="application/json", authorization=None, origin="local",  method='GET'):
     if url[:7] != 'http://':
       url = '%s/%s' % (self.server_url, url)
 
@@ -158,11 +170,12 @@ class IntegrationTestCase(unittest.TestCase):
 
     if type(data) is dict: 
       data = json.dumps(data).encode('utf-8')
+      method = 'POST'
 
     req = urllib.request.Request(url, data, {
       'Content-Type': content_type,
       'Authorization': authorization,
-      'LCM-Authentication-origin': origin})
+      'LCM-Authentication-origin': origin}, method=method)
 
     return urllib.request.urlopen(req)
 
@@ -178,7 +191,7 @@ class IntegrationTestCase(unittest.TestCase):
 def main(**kwargs): 
   parser = argparse.ArgumentParser(description='Runs integration tests')
   parser.add_argument('--retain', 
-    dest='retain', 
+    dest='retain',
     action='store_true',
     help='Retain the dockers booted after test execution')
   parser.add_argument('unittest_args', nargs='*')
