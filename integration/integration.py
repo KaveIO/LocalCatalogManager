@@ -60,6 +60,11 @@ class IntegrationTestCase(unittest.TestCase):
   username = 'admin'
   password = 'admin'
 
+  unique_lcm_id = "test_dev-1509029918655-HYO38o80zAs"
+  application_id = "integration"
+  application_key = "ij8spjd5e4kb"
+  hashed_key = "1000:4332779a128eaf94d3d920c726f360ec10ded9d3f146cc47:a66aa86e154e5ded59b0510fbeeb25e94057c83e563e875c"
+
   @classmethod
   def setUpClass(cls):
     if not cls.retain:
@@ -69,7 +74,7 @@ class IntegrationTestCase(unittest.TestCase):
 
   @classmethod
   def tearDownClass(cls):
-    if not cls.retain: 
+    if not cls.retain:
       cls.tearDownDockers()
 
   @classmethod
@@ -94,7 +99,7 @@ class IntegrationTestCase(unittest.TestCase):
         print('  skipping %s' %  name)
    
     # Some arbitrary back-off time to allow the dockers to become alive
-    sleep(30)
+    sleep(10)
 
     cls.load_fixture('lcm-integration-mongo', cls.fixture)
 
@@ -161,21 +166,28 @@ class IntegrationTestCase(unittest.TestCase):
     identity = ('%s:%s' % (username, password)).encode('utf-8') 
     return "Basic %s" % base64.b64encode(identity).decode('utf-8')
 
-  def request(self, url, data=None, content_type="application/json", authorization=None, origin="local",  method='GET'):
+  def request(self, url, data=None, content_type="application/json",
+              authorization=None, origin="local",  method='GET', remote_user = None):
     if url[:7] != 'http://':
       url = '%s/%s' % (self.server_url, url)
 
     if authorization is None:
-      authorization = self.get_authorization(self.username, self.password)
+      identity = ('%s:%s' % (self.username, self.password)).encode('utf-8')
+      authorization = "Basic %s" % base64.b64encode(identity).decode('utf-8')
 
     if type(data) is dict: 
       data = json.dumps(data).encode('utf-8')
       method = 'POST'
 
-    req = urllib.request.Request(url, data, {
+    headers = {
       'Content-Type': content_type,
       'Authorization': authorization,
-      'LCM-Authentication-origin': origin}, method=method)
+      'LCM-Authentication-origin': origin}
+
+    if remote_user is not None:
+      headers['LCM-Authentication-remote-user'] = remote_user
+
+    req = urllib.request.Request(url, data, headers, method=method)
 
     return urllib.request.urlopen(req)
 

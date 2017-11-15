@@ -24,7 +24,8 @@ WORKDIR /root/workspace
 ADD lcm-packaging/target/lcm-complete-*.tar.gz /root/workspace/
 RUN ln -s lcm-complete-*-SNAPSHOT/ lcm-complete
 
-ADD docker/config/application.properties lcm-complete/config/
+ADD docker/config/application.properties lcm-complete/config/ 
+ADD docker/config/security.properties lcm-complete/config/
 
 COPY docker/entrypoint.sh .
 
