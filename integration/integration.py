@@ -191,6 +191,22 @@ class IntegrationTestCase(unittest.TestCase):
 
     return urllib.request.urlopen(req)
 
+  def request_session_authentication(self, url, authentication_user = None, authentication_token = None):
+    if url[:7] != 'http://':
+      url = '%s/%s' % (self.server_url, url)
+
+    headers = {}
+
+    if authentication_user is not None:
+        headers['LCM-Authentication-user'] = authentication_user
+
+    if authentication_token is not None:
+        headers['LCM-Authentication-token'] = authentication_token
+
+    req = urllib.request.Request(url, None, headers, 'GET')
+
+    return urllib.request.urlopen(req)
+
   def request_to_json(self, url, **kwargs):
     response = self.request(url, **kwargs)
     body = response.read()
