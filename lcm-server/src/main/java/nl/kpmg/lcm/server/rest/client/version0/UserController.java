@@ -159,9 +159,9 @@ public class UserController {
     }
 
     if (Roles.REMOTE_USER.equals(oldUser.getRole()) && user.getNewPassword() != null
-        && user.getNewPassword().length() > 0) {
+        && user.getNewPassword().length() == 0 ) {
 
-      String message = "Remote user's role could not be changed!";
+      String message = "Invalid password!";
       notification.addError(message);
     }
 
