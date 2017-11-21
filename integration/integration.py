@@ -166,18 +166,40 @@ class IntegrationTestCase(unittest.TestCase):
     identity = ('%s:%s' % (username, password)).encode('utf-8') 
     return "Basic %s" % base64.b64encode(identity).decode('utf-8')
 
-  def request(self, url, data=None, content_type="application/json",
+  @classmethod
+  def post_request(cls, url, data=None, content_type="application/json"):
+    return cls.request(url, data , content_type , None,
+                        "local" , 'POST', None )
+
+  @classmethod
+  def put_request(cls, url, data=None, content_type="application/json"):
+    return cls.request(url, data , content_type , None,
+                        "local" , 'PUT', None )
+
+  @classmethod
+  def delete_request(cls, url, data=None, content_type="application/json",
+                     authorization=None):
+    return cls.request(url, data , content_type , authorization,
+                        "local" , 'DELETE', None )
+
+  @classmethod
+  def get_request(cls, url, data=None, content_type="application/json",
+              authorization=None, origin="local", remote_user = None):
+    return cls.request(url, data, content_type,
+              authorization, origin,  'GET', remote_user)
+
+  @classmethod
+  def request(cls, url, data=None, content_type="application/json",
               authorization=None, origin="local",  method='GET', remote_user = None):
     if url[:7] != 'http://':
-      url = '%s/%s' % (self.server_url, url)
+      url = '%s/%s' % (cls.server_url, url)
 
     if authorization is None:
-      identity = ('%s:%s' % (self.username, self.password)).encode('utf-8')
+      identity = ('%s:%s' % (cls.username, cls.password)).encode('utf-8')
       authorization = "Basic %s" % base64.b64encode(identity).decode('utf-8')
 
-    if type(data) is dict: 
+    if type(data) is dict:
       data = json.dumps(data).encode('utf-8')
-      method = 'POST'
 
     headers = {
       'Content-Type': content_type,
