@@ -94,7 +94,7 @@ public class RemoteLcmMetaDataController {
       // TODO Check this!
       if(!permissionChecker.check(securityContext, searchString)){
         throw new LcmException(String.format("Unable to authorize the request.", searchString),
-          Response.Status.BAD_REQUEST);
+          Response.Status.FORBIDDEN);
       }      
       
       MetaData result = metaDataService.findById(searchString);
@@ -127,7 +127,7 @@ public class RemoteLcmMetaDataController {
 
     if (!permissionChecker.check(securityContext, metaDataId)) {
       throw new LcmException(String.format("Unable to authorize the request.", metaDataId),
-          Response.Status.BAD_REQUEST);
+          Response.Status.FORBIDDEN);
     }
 
     return new ConcreteRemoteLcmMetaDataRepresentation(metadata);
@@ -143,7 +143,7 @@ public class RemoteLcmMetaDataController {
     MetaData metadata = metaDataService.findById(metadataId);
     if(!permissionChecker.check(securityContext, metadataId)) {
         throw new LcmException(String.format("Unable to authorize the request.", metadataId),
-          Response.Status.BAD_REQUEST);
+          Response.Status.FORBIDDEN);
     }
 
     MetaData md = metaDataService.findById(metadataId);

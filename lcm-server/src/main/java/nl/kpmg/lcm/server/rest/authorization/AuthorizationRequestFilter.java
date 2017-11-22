@@ -64,7 +64,7 @@ public class AuthorizationRequestFilter implements ContainerRequestFilter {
               + requestContext.getSecurityContext().getUserPrincipal().getName()
               + "\" has just tried.");
 
-      requestContext.abortWith(Response.status(Response.Status.UNAUTHORIZED)
+      requestContext.abortWith(Response.status(Response.Status.FORBIDDEN)
           .entity("You are not authorized to access: " + path).build());
       return;
     }
@@ -81,7 +81,7 @@ public class AuthorizationRequestFilter implements ContainerRequestFilter {
     if (!permissionChecker.check(securityContext, path, annotation.value())) {
       AUTHORIZATION_LOGGER.warn("User: " + securityContext.getUserPrincipal().getName()
           + " tried to access " + path + " but it is not authorized!");
-      requestContext.abortWith(Response.status(Response.Status.UNAUTHORIZED)
+      requestContext.abortWith(Response.status(Response.Status.FORBIDDEN)
           .entity("You are not authorized to access: " + path).build());
       return;
     }
