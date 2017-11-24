@@ -14,7 +14,7 @@
 
 package nl.kpmg.lcm.common;
 
-import nl.kpmg.lcm.common.configuration.BasicConfiguration;
+import nl.kpmg.lcm.common.configuration.ServerConfiguration;
 
 import org.glassfish.grizzly.http.server.HttpHandler;
 import org.glassfish.grizzly.http.server.HttpServer;
@@ -40,7 +40,7 @@ public class HttpsServerProvider {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(HttpsServerProvider.class.getName());
 
-  public static HttpsServerWrapper createHttpsServer(BasicConfiguration configuration,
+  public static HttpsServerWrapper createHttpsServer(ServerConfiguration configuration,
       String baseUri, String baseFallbackUri, ResourceConfig rc)
       throws SslConfigurationException, IOException {
 

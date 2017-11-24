@@ -23,6 +23,52 @@ public class ServerConfiguration extends BasicConfiguration {
   private String serverStorage;
   private String applicationName;
 
+  private String keystore;
+  private String keystoreType;
+  private String keystorePassword;
+  private String keystoreAlias;
+  private String keystoreKeypass;
+
+  public String getKeystore() {
+    return keystore;
+  }
+
+  public void setKeystore(String keystore) {
+    this.keystore = keystore;
+  }
+
+  public String getKeystoreType() {
+    return keystoreType;
+  }
+
+  public void setKeystoreType(String keystoreType) {
+    this.keystoreType = keystoreType;
+  }
+
+  public String getKeystorePassword() {
+    return keystorePassword;
+  }
+
+  public void setKeystorePassword(String keystorePassword) {
+    this.keystorePassword = keystorePassword;
+  }
+
+  public String getKeystoreAlias() {
+    return keystoreAlias;
+  }
+
+  public void setKeystoreAlias(String keystoreAlias) {
+    this.keystoreAlias = keystoreAlias;
+  }
+
+  public String getKeystoreKeypass() {
+    return keystoreKeypass;
+  }
+
+  public void setKeystoreKeypass(String keystoreKeypass) {
+    this.keystoreKeypass = keystoreKeypass;
+  }
+
   public String getServerStorage() {
     return serverStorage;
   }

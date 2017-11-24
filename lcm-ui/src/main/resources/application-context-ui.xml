@@ -37,18 +37,10 @@
         <property name="keystorePassword" value="${lcm.client.security.keystorePassword}" />
         <property name="keystoreAlias" value="${lcm.client.security.keystoreAlias}" />
         <property name="keystoreKeypass" value="${lcm.client.security.keystoreKeypass}" />
-        <property name="truststore" value="${lcm.client.security.truststore}" />
-        <property name="truststoreType" value="${lcm.client.security.truststoreType}" />
-        <property name="truststorePassword" value="${lcm.client.security.truststorePassword}" />
         <property name="unsafe" value="${lcm.client.unsafe}" />
     </bean>
     
     <bean id="clientConfiguration" class="nl.kpmg.lcm.common.configuration.ClientConfiguration">
-        <property name="keystore" value="${lcm.client.security.keystore}" />
-        <property name="keystoreType" value="${lcm.client.security.keystoreType}" />
-        <property name="keystorePassword" value="${lcm.client.security.keystorePassword}" />
-        <property name="keystoreAlias" value="${lcm.client.security.keystoreAlias}" />
-        <property name="keystoreKeypass" value="${lcm.client.security.keystoreKeypass}" />
         <property name="truststore" value="${lcm.client.security.truststore}" />
         <property name="truststoreType" value="${lcm.client.security.truststoreType}" />
         <property name="truststorePassword" value="${lcm.client.security.truststorePassword}" />

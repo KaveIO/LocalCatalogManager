@@ -14,14 +14,15 @@
 
 package nl.kpmg.lcm.common;
 
-import nl.kpmg.lcm.common.configuration.BasicConfiguration;
+import nl.kpmg.lcm.common.configuration.ClientConfiguration;
+import nl.kpmg.lcm.common.configuration.ServerConfiguration;
 
 import org.glassfish.grizzly.ssl.SSLContextConfigurator;
 
 public class SslProvider {
 
   public static SSLContextConfigurator createSSLServerContextConfigurator(
-      BasicConfiguration configuration) throws SslConfigurationException {
+      ServerConfiguration configuration) throws SslConfigurationException {
 
     SSLContextConfigurator sslContextConfigurator = new SSLContextConfigurator(true);
 
@@ -32,7 +33,7 @@ public class SslProvider {
   }
 
   public static SSLContextConfigurator createSSLClientContextConfigurator(
-      BasicConfiguration configuration) throws SslConfigurationException {
+      ClientConfiguration configuration) throws SslConfigurationException {
 
     SSLContextConfigurator sslContextConfigurator = new SSLContextConfigurator(true);
 

@@ -54,11 +54,6 @@ public abstract class LcmBaseServerTest extends LcmBaseTest {
       server.start();
 
       ClientConfiguration clientConfiguration = new ClientConfiguration();
-      clientConfiguration.setKeystore("./src/main/resources/ssl-keys/client.p12");
-      clientConfiguration.setKeystoreType("pkcs12");
-      clientConfiguration.setKeystorePassword("storepass");
-      clientConfiguration.setKeystoreAlias("cert-ui");
-      clientConfiguration.setKeystoreKeypass("storepass");
       clientConfiguration.setTruststore("./src/main/resources/ssl-keys/ui.keystore");
       clientConfiguration.setTruststorePassword("storepass");
       clientConfiguration.setTruststoreType("JKS");
