@@ -20,25 +20,23 @@ import org.glassfish.grizzly.ssl.SSLContextConfigurator;
 
 public class SslProvider {
 
-  public static SSLContextConfigurator createSSLContextConfigurator(
+  public static SSLContextConfigurator createSSLServerContextConfigurator(
       BasicConfiguration configuration) throws SslConfigurationException {
 
-    SSLContextConfigurator sslContextConfigurator = new SSLContextConfigurator();
+    SSLContextConfigurator sslContextConfigurator = new SSLContextConfigurator(true);
 
-    // set up security context
-    // contains the server keypair
     sslContextConfigurator.setKeyStoreFile(configuration.getKeystore());
     sslContextConfigurator.setKeyStorePass(configuration.getKeystorePassword());
-    sslContextConfigurator.setKeyStoreType(configuration.getKeystoreType());
-    sslContextConfigurator.setKeyPass(configuration.getKeystoreKeypass());
-    // contains the list of trusted certificates
-    sslContextConfigurator.setTrustStoreFile(configuration.getTruststore());
-    sslContextConfigurator.setTrustStorePass(configuration.getTruststorePassword());
-    sslContextConfigurator.setTrustStoreType(configuration.getTruststoreType());
 
-    if (!sslContextConfigurator.validateConfiguration(true)) {
-      throw new SslConfigurationException("Invalid SSL configuration");
-    }
+    return sslContextConfigurator;
+  }
+
+  public static SSLContextConfigurator createSSLClientContextConfigurator(
+      BasicConfiguration configuration) throws SslConfigurationException {
+
+    SSLContextConfigurator sslContextConfigurator = new SSLContextConfigurator(true);
+
+    sslContextConfigurator.setTrustStoreFile(configuration.getTruststore());
 
     return sslContextConfigurator;
   }

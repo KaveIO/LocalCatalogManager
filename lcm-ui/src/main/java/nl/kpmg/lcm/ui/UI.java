@@ -16,12 +16,12 @@ package nl.kpmg.lcm.ui;
 
 import com.vaadin.spring.server.SpringVaadinServlet;
 
+import nl.kpmg.lcm.common.GeneralExceptionMapper;
 import nl.kpmg.lcm.common.HttpsServerProvider;
 import nl.kpmg.lcm.common.HttpsServerWrapper;
+import nl.kpmg.lcm.common.ServerException;
 import nl.kpmg.lcm.common.SslConfigurationException;
 import nl.kpmg.lcm.common.configuration.UiConfiguration;
-import nl.kpmg.lcm.common.GeneralExceptionMapper;
-import nl.kpmg.lcm.common.ServerException;
 
 import org.glassfish.grizzly.servlet.ServletRegistration;
 import org.glassfish.grizzly.servlet.WebappContext;
@@ -75,7 +75,7 @@ public class UI {
 
     // Grizzly ssl configuration
     HttpsServerWrapper grizzlyServer =
-        HttpsServerProvider.createHttpsServer(configuration, baseUri, unsafeUri, rc, false);
+        HttpsServerProvider.createHttpsServer(configuration, baseUri, unsafeUri, rc);
 
     // Create default servlet and manual configuration
     WebappContext webappContext = new WebappContext("Grizzly web context", "/");
