@@ -33,6 +33,8 @@ public class MetaDataWrapper implements MetaDataIdentificator {
   protected final GeneralInfoDescriptor generalInfoDescriptor;
   protected final DynamicDataDescriptor dynamicData;
   protected final EnrichmentPropertiesDescriptor enrichmentPropertiesDescriptor;
+  protected final ExpirationTimeDescriptor expirationTimeDescriptor;
+  protected final TransferHistoryDescriptor transferHistoryDescriptor;
 
   public MetaDataWrapper(MetaData metaData) {
     this.metaData = metaData;
@@ -40,11 +42,14 @@ public class MetaDataWrapper implements MetaDataIdentificator {
     this.generalInfoDescriptor = new GeneralInfoDescriptor(metaData);
     this.dynamicData = new DynamicDataDescriptor(metaData);
     this.enrichmentPropertiesDescriptor = new EnrichmentPropertiesDescriptor(metaData);
+    this.expirationTimeDescriptor = new ExpirationTimeDescriptor(metaData);
+    this.transferHistoryDescriptor = new TransferHistoryDescriptor(metaData);
 
     Notification notification = new Notification();
     this.validateName(notification);
     this.dataDescriptor.validate(notification);
     this.generalInfoDescriptor.validate(notification);
+    this.expirationTimeDescriptor.validate(notification);
     if (notification.hasErrors()) {
       throw new LcmValidationException(notification);
     }
@@ -56,6 +61,8 @@ public class MetaDataWrapper implements MetaDataIdentificator {
     this.generalInfoDescriptor = new GeneralInfoDescriptor(metaData);
     this.dynamicData = new DynamicDataDescriptor(metaData);
     this.enrichmentPropertiesDescriptor = new EnrichmentPropertiesDescriptor(metaData);
+    this.expirationTimeDescriptor = new ExpirationTimeDescriptor(metaData);
+    this.transferHistoryDescriptor = new TransferHistoryDescriptor(metaData);
   }
 
   /**
@@ -154,6 +161,22 @@ public class MetaDataWrapper implements MetaDataIdentificator {
    */
   public void setEnrichmentProperties(EnrichmentPropertiesDescriptor value) {
     metaData.set(value.getSectionName(), value.getMap());
+  }
+
+  public ExpirationTimeDescriptor getExpirationTime() {
+    return expirationTimeDescriptor;
+  }
+
+  public void setExpirationTime(ExpirationTimeDescriptor value) {
+    metaData.set(value.getSectionName(), value.getMap());
+  }
+
+  public TransferHistoryDescriptor getTransferHistory() {
+    return transferHistoryDescriptor;
+  }
+
+  public void setTransferHistory(TransferHistoryDescriptor value) {
+    metaData.set(value.getSectionName(), value.getTransferHistory());
   }
 
   public final void validateName(Notification notification) {
