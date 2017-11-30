@@ -45,6 +45,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
+import java.io.InputStream;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
@@ -420,6 +421,21 @@ public class RestClientService {
     Response delete = client.delete();
 
     Response.StatusType statusInfo = delete.getStatusInfo();
+    if (statusInfo.getFamily() != Response.Status.Family.SUCCESSFUL) {
+      throw new DataCreationException(String.format("%s - %s", statusInfo.getStatusCode(),
+          statusInfo.getReasonPhrase()));
+    }
+  }
+
+  public void addCertificateAlias(String alias, InputStream certificate)
+      throws AuthenticationException, ServerException, ClientException, DataCreationException {
+
+    Entity<InputStream> payload = Entity.entity(certificate, "application/octet-stream");
+
+    Invocation.Builder client = getClient(String.format("client/v0/truststore/%s", alias));
+    Response post = client.post(payload);
+
+    Response.StatusType statusInfo = post.getStatusInfo();
     if (statusInfo.getFamily() != Response.Status.Family.SUCCESSFUL) {
       throw new DataCreationException(String.format("%s - %s", statusInfo.getStatusCode(),
           statusInfo.getReasonPhrase()));

@@ -17,6 +17,7 @@ package nl.kpmg.lcm.common.data;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
+import org.springframework.data.mongodb.core.index.Indexed;
 import org.springframework.data.mongodb.core.mapping.Document;
 
 @Document(collection = "remote_lcm")
@@ -48,6 +49,9 @@ public class RemoteLcm extends AbstractModel {
   private String applicationId;
 
   private String applicationKey;
+
+  @Indexed(unique = true , name = "certificate-alias")
+  private String certificateAlias;
 
   /**
    * @return the domain
@@ -91,47 +95,47 @@ public class RemoteLcm extends AbstractModel {
     this.port = port;
   }
 
-    /**
-     * @return the name
-     */
-    public String getName() {
-        return name;
-    }
+  /**
+   * @return the name
+   */
+  public String getName() {
+    return name;
+  }
 
-    /**
-     * @param name the name to set
-     */
-    public void setName(String name) {
-        this.name = name;
-    }
+  /**
+   * @param name the name to set
+   */
+  public void setName(String name) {
+    this.name = name;
+  }
 
-    /**
-     * @return the lastStatus
-     */
-    public String getStatus() {
-        return status;
-    }
+  /**
+   * @return the lastStatus
+   */
+  public String getStatus() {
+    return status;
+  }
 
-    /**
-     * @param status the lastStatus to set
-     */
-    public void setStatus(String status) {
-        this.status = status;
-    }
+  /**
+   * @param status the lastStatus to set
+   */
+  public void setStatus(String status) {
+    this.status = status;
+  }
 
-    /**
-     * @return the uniqueId
-     */
-    public String getUniqueId() {
-        return uniqueId;
-    }
+  /**
+   * @return the uniqueId
+   */
+  public String getUniqueId() {
+    return uniqueId;
+  }
 
-    /**
-     * @param uniqueId the uniqueId to set
-     */
-    public void setUniqueId(String uniqueId) {
-        this.uniqueId = uniqueId;
-    }
+  /**
+   * @param uniqueId the uniqueId to set
+   */
+  public void setUniqueId(String uniqueId) {
+    this.uniqueId = uniqueId;
+  }
 
   /**
    * @return the applicationId
@@ -161,5 +165,19 @@ public class RemoteLcm extends AbstractModel {
   @JsonProperty
   public void setApplicationKey(String applicationKey) {
     this.applicationKey = applicationKey;
+  }
+
+  /**
+   * @return the certificateAlias
+   */
+  public String getCertificateAlias() {
+    return certificateAlias;
+  }
+
+  /**
+   * @param certificateAlias the certificateAlias to set
+   */
+  public void setCertificateAlias(String certificateAlias) {
+    this.certificateAlias = certificateAlias;
   }
 }

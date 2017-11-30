@@ -13,10 +13,7 @@
  */
 package nl.kpmg.lcm.server.rest.remote.version0;
 
-import nl.kpmg.lcm.server.data.service.MetaDataService;
 import nl.kpmg.lcm.common.Roles;
-
-import org.springframework.beans.factory.annotation.Autowired;
 
 import javax.annotation.security.RolesAllowed;
 import javax.ws.rs.GET;
@@ -30,11 +27,8 @@ import javax.ws.rs.Produces;
 @Path("remote/v0/test")
 public class RemoteLcmTestConectivityController {
 
-  @Autowired
-  private MetaDataService metaDataService;
-
   @GET
-  @Produces({"application/nl.kpmg.lcm.rest.types.MetaDataRepresentation+json"})
+  @Produces({"application/json"})
   @RolesAllowed({Roles.ANY_USER})
   public final String testConnectivity() {
 

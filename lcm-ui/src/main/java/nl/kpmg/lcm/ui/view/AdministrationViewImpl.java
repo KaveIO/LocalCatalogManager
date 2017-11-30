@@ -19,7 +19,6 @@ import com.vaadin.spring.annotation.SpringView;
 import com.vaadin.ui.HorizontalLayout;
 import com.vaadin.ui.Notification;
 import com.vaadin.ui.TabSheet;
-import com.vaadin.ui.UI;
 import com.vaadin.ui.VerticalLayout;
 
 import nl.kpmg.lcm.common.ServerException;
@@ -40,6 +39,7 @@ import nl.kpmg.lcm.ui.view.administration.UserGroupPanel;
 import nl.kpmg.lcm.ui.view.administration.UserPanel;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.PostConstruct;
@@ -65,12 +65,6 @@ public class AdministrationViewImpl extends VerticalLayout implements Administra
   @Autowired
   private RestClientService restClientService;
 
-  /**
-   * The auto wired main UI component.
-   */
-  @Autowired
-  private UI ui;
-
   private final TabSheet tabsheet = new TabSheet();
 
   private UserGroupsRepresentation userGroups;
@@ -87,6 +81,9 @@ public class AdministrationViewImpl extends VerticalLayout implements Administra
   private AuthorizedLcmPanel authorizedLcmPanel;
 
   private LcmIdPanel lcmIdPanel;
+
+  @Value("${lcm.ui.client.security.server.certificate}")
+  private String certificateFilepath;
 
   /**
    * Builds the interface.
@@ -117,8 +114,8 @@ public class AdministrationViewImpl extends VerticalLayout implements Administra
     authorizedLcmPanel = new AuthorizedLcmPanel(restClientService);
     tabsheet.addTab(authorizedLcmPanel, "Authorized LCMs");
 
-    lcmIdPanel = new LcmIdPanel();
-    tabsheet.addTab(lcmIdPanel, "Local LCM id");
+    lcmIdPanel = new LcmIdPanel(certificateFilepath);
+    tabsheet.addTab(lcmIdPanel, "Local LCM identity");
 
 
 

@@ -13,16 +13,22 @@
  */
 package nl.kpmg.lcm.ui.view.administration;
 
+import com.vaadin.server.FileDownloader;
+import com.vaadin.server.FileResource;
 import com.vaadin.ui.Button;
 import com.vaadin.ui.CustomComponent;
 import com.vaadin.ui.HorizontalLayout;
 import com.vaadin.ui.Label;
 import com.vaadin.ui.Panel;
+import com.vaadin.ui.VerticalLayout;
 
 import nl.kpmg.lcm.common.rest.types.LcmIdRepresentation;
 
+import org.slf4j.LoggerFactory;
+
 import java.awt.Toolkit;
 import java.awt.datatransfer.*;
+import java.io.File;
 
 /**
  *
@@ -31,21 +37,29 @@ import java.awt.datatransfer.*;
 public class LcmIdPanel extends CustomComponent {
   private LcmIdRepresentation lcmId;
   private Panel panel;
+  private String certificateFilename = "server.cer";
+  private String certificateFilepath;
+  
+  
+  private static final org.slf4j.Logger LOGGER = LoggerFactory
+      .getLogger(LcmIdPanel.class.getName());
 
-  public LcmIdPanel() {
+  public LcmIdPanel(String certificateFilepath) {
     panel = new Panel();
+    this.certificateFilepath = certificateFilepath;
     setCompositionRoot(panel);
   }
 
   public void refreshLcmIdPanel() {
-    HorizontalLayout root = new HorizontalLayout();
-    root.setMargin(true);
-    root.setSpacing(true);
+    VerticalLayout panelContent = new VerticalLayout();
+    panelContent.setMargin(true);
+    panelContent.setSpacing(true);
 
-    panel.setContent(root);
-
-    root.addComponent(new Label(lcmId.getItem().getLcmId()));
-    root.addComponent(new Button("Copy", new Button.ClickListener() {
+    HorizontalLayout idLayout = new HorizontalLayout();
+    idLayout.setMargin(true);
+    idLayout.setSpacing(true);
+    idLayout.addComponent(new Label("Your LCM id: " + lcmId.getItem().getLcmId()));
+    idLayout.addComponent(new Button("Copy", new Button.ClickListener() {
       @Override
       public void buttonClick(Button.ClickEvent event) {
         StringSelection stringSelection = new StringSelection(lcmId.getItem().getLcmId());
@@ -53,10 +67,27 @@ public class LcmIdPanel extends CustomComponent {
         clipboard.setContents(stringSelection, null);
       }
     }));
+
+    HorizontalLayout certificateLayout = new HorizontalLayout();
+    certificateLayout.setMargin(true);
+    certificateLayout.setSpacing(true);
+    certificateLayout.addComponent(new Label(
+        "Certificate file that need to be given to the Authorized LCM. "));
+    FileResource certificateResource = new FileResource(new File(certificateFilepath));
+    FileDownloader fileDownloader = new FileDownloader(certificateResource);
+    Button certificateDownload = new Button("Download Certificate");
+    fileDownloader.extend(certificateDownload);
+
+    certificateLayout.addComponent(certificateDownload);
+
+    panelContent.addComponent(idLayout);
+    panelContent.addComponent(certificateLayout);
+    panel.setContent(panelContent);
   }
 
   public void setLcmId(LcmIdRepresentation lcmId) {
     this.lcmId = lcmId;
     refreshLcmIdPanel();
   }
+
 }
