@@ -77,8 +77,7 @@ public class BackendMongoImpl extends AbstractBackend {
   protected void enrichMetadataItem(EnrichmentProperties properties, String key) throws IOException {
     if (properties.getItemsCount() || properties.getStructure() || properties.getAccessibility()) {
       String dataURI = metaDataWrapper.getDynamicData().getDynamicDataDescriptor(key).getURI();
-      Storage storage = storageService.getStorageByUri(dataURI);
-      MongoStorage mongoStorage = new MongoStorage(storage);
+      MongoStorage mongoStorage = getMongoStorage(dataURI);
       UpdateableDataContext dataContext = null;
 
       try {
@@ -134,8 +133,7 @@ public class BackendMongoImpl extends AbstractBackend {
     ContentIterator content = ((IterativeData) data).getIterator();
 
     String dataURI = metaDataWrapper.getDynamicData().getDynamicDataDescriptor(key).getURI();
-    Storage storage = storageService.getStorageByUri(dataURI);
-    MongoStorage mongoStorage = new MongoStorage(storage);
+    MongoStorage mongoStorage = getMongoStorage(dataURI);
 
     UpdateableDataContext dataContext = getDataContext(mongoStorage);
     if (transferSettings == null) {
@@ -211,14 +209,37 @@ public class BackendMongoImpl extends AbstractBackend {
 
   @Override
   public boolean delete(String key) {
-    throw new UnsupportedOperationException("Not supported yet.");
+    try {
+      String dataURI = metaDataWrapper.getDynamicData().getDynamicDataDescriptor(key).getURI();
+      MongoStorage mongoStorage = getMongoStorage(dataURI);
+
+      UpdateableDataContext dataContext = getDataContext(mongoStorage);
+      String tableName = getTableName(dataURI);
+
+      Schema database = dataContext.getSchemaByName(mongoStorage.getDatabase());
+      if (database == null) {
+        throw new LcmException("Error: database \"" + mongoStorage.getDatabase()
+            + "\" is not found!");
+      }
+
+      Table table = database.getTableByName(tableName);
+      if (table == null) {
+        throw new LcmException("Error: specified table \"" + tableName
+            + "\" in the metadata is not found!");
+      }
+      DropTable dropTable = new DropTable(database, tableName);
+      dataContext.executeUpdate(dropTable);
+    } catch (Exception ex) {
+      LOGGER.warn("Unable to delete hive table. Error: " + ex.getMessage());
+      return false;
+    }
+    return true;
   }
 
   @Override
   public IterativeData read(String key) {
     String dataURI = metaDataWrapper.getDynamicData().getDynamicDataDescriptor(key).getURI();
-    Storage storage = storageService.getStorageByUri(dataURI);
-    MongoStorage mongoStorage = new MongoStorage(storage);
+    MongoStorage mongoStorage = getMongoStorage(dataURI);
 
     UpdateableDataContext dataContext = getDataContext(mongoStorage);
 
@@ -270,5 +291,11 @@ public class BackendMongoImpl extends AbstractBackend {
 
     return new ArrayList(Arrays.asList(database.getTableNames()));
     }
+
+  private MongoStorage getMongoStorage(String dataURI) {
+    Storage storage = storageService.getStorageByUri(dataURI);
+    MongoStorage mongoStorage = new MongoStorage(storage);
+    return mongoStorage;
+  }
 
 }

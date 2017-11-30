@@ -57,6 +57,10 @@ public class BasicAzureAdapter {
     return client.getDirectoryEntry(filePath).lastModifiedTime.getTime();
   }
 
+  public boolean delete() throws Exception {
+    return client.delete(filePath);
+  }
+
   public void validatePaths() {
     try {
       if (exists()) {

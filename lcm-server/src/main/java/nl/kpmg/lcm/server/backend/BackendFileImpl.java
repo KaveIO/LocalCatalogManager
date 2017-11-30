@@ -231,7 +231,14 @@ public class BackendFileImpl extends AbstractBackend {
 
   @Override
   public boolean delete(String key) {
-    throw new UnsupportedOperationException("Backend delete operation is not supported yet.");
+    FileAdapter fileAdapter = getFileAdapter(key);
+    try {
+      return fileAdapter.delete();
+    } catch (Exception ex) {
+      LOGGER.warn("Unable to delete file: " + getFilePath(key) + ". Error message: "
+          + ex.getMessage());
+    }
+    return false;
   }
 
   @Override

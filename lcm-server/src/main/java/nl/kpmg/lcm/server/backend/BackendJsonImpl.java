@@ -266,7 +266,14 @@ public class BackendJsonImpl extends AbstractBackend {
 
   @Override
   public boolean delete(String key) {
-    throw new UnsupportedOperationException("Backend delete operation is not supported yet.");
+    File dataSourceFile = createDataSourceFile(key);
+    try {
+      return dataSourceFile.delete();
+    } catch (Exception ex) {
+      LOGGER.warn("Unable to delete file: " + getFilePath(key) + ". Error message: "
+          + ex.getMessage());
+    }
+    return false;
   }
 
   @Override

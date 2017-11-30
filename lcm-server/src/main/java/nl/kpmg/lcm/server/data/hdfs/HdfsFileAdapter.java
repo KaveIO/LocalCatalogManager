@@ -102,4 +102,13 @@ public class HdfsFileAdapter implements FileAdapter {
           "Metadata path is probbably wrong. Data uri can not contains \"..\\\"!");
     }
   }
+
+  @Override
+  public boolean delete() throws Exception {
+    Configuration conf = new Configuration();
+    conf.set("fs.defaultFS", storageUrl);
+    FileSystem hdfs = FileSystem.get(conf);
+    Path file = new Path(storagePath);
+    return hdfs.delete(file, false);
+  }
 }

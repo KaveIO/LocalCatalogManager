@@ -32,10 +32,12 @@ import java.io.InputStream;
 public class LocalFileAdapter implements FileAdapter {
   private final LocalFileStorage storage;
   private final String fileName;
+  private String fullFilePath;
 
   public LocalFileAdapter(LocalFileStorage storage, String fileName) {
     this.storage = storage;
     this.fileName = fileName;
+    fullFilePath = storage.getStoragePath() + fileName;
   }
 
   @Override
@@ -44,32 +46,27 @@ public class LocalFileAdapter implements FileAdapter {
         return;
     }
 
-    String fullFilePath = storage.getStoragePath() + fileName;
     File destination = new File(fullFilePath);
     FileUtils.copyInputStreamToFile(stream, destination);
   }
 
   @Override
   public InputStream read() throws IOException {
-    String fullFilePath = storage.getStoragePath() + fileName;
     return new FileInputStream(fullFilePath);
   }
 
   @Override
   public boolean exists() throws IOException {
-    String fullFilePath = storage.getStoragePath() + fileName;
     return (new File(fullFilePath)).exists();
   }
 
   @Override
   public long length() throws IOException {
-    String fullFilePath = storage.getStoragePath() + fileName;
     return (new File(fullFilePath)).length();
   }
 
   @Override
   public long lastModified() throws IOException {
-    String fullFilePath = storage.getStoragePath() + fileName;
     return (new File(fullFilePath)).lastModified();
   }
 
@@ -84,4 +81,9 @@ public class LocalFileAdapter implements FileAdapter {
          throw new LcmValidationException(notification);
        }
     }
+
+  @Override
+  public boolean delete() throws Exception{
+    return (new File(fullFilePath)).delete();
+  }
 }
