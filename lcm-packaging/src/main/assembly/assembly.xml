@@ -80,6 +80,14 @@ limitations under the License.
             </includes>
         </fileSet>
         
+        <fileSet>
+            <directory>src/main/certificates</directory>
+            <outputDirectory>certificates</outputDirectory>
+            <includes>
+                <include>*</include>
+            </includes>
+        </fileSet>
+        
         <!-- 
             Assemblies and git don't allow for empty folders. So we are balancing 
             a couple of things here. First abuse src/main/assembly (a random folder
