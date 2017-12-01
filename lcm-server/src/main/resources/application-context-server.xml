@@ -23,6 +23,7 @@
                 <value>classpath:application.properties</value>
                 <value>classpath:security.properties</value>
                 <value>classpath:application-test.properties</value>
+                <value>classpath:security-test.properties</value>
                 <value>file:config/application.properties</value>
                 <value>file:config/security.properties</value>
             </list>
