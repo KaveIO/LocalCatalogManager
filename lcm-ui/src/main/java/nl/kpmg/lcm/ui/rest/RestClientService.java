@@ -429,11 +429,27 @@ public class RestClientService {
 
   public void addCertificateAlias(String alias, InputStream certificate)
       throws AuthenticationException, ServerException, ClientException, DataCreationException {
+    editCertificateAlias(alias, certificate, false);
+  }
+
+  public void updateCertificateAlias(String alias, InputStream certificate)
+      throws AuthenticationException, ServerException, ClientException, DataCreationException {
+    editCertificateAlias(alias, certificate, true);
+  }
+
+  public void editCertificateAlias(String alias, InputStream certificate, boolean update)
+      throws AuthenticationException, ServerException, ClientException, DataCreationException {
 
     Entity<InputStream> payload = Entity.entity(certificate, "application/octet-stream");
 
     Invocation.Builder client = getClient(String.format("client/v0/truststore/%s", alias));
-    Response post = client.post(payload);
+
+    Response post;
+    if (update) {
+      post = client.put(payload);
+    } else {
+      post = client.post(payload);
+    }
 
     Response.StatusType statusInfo = post.getStatusInfo();
     if (statusInfo.getFamily() != Response.Status.Family.SUCCESSFUL) {

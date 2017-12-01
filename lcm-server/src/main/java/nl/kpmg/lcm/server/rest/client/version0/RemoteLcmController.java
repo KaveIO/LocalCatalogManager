@@ -147,7 +147,7 @@ public class RemoteLcmController {
     RemoteLcm remoteLcm = remoteLcmService.findOneById(remoteLcmId);
     if (remoteLcm != null) {
       remoteLcmService.delete(remoteLcmId);
-      trustStoreService.removeCertificate(remoteLcm.getCertificateAlias());
+      trustStoreService.removeCertificate(remoteLcm.getAlias());
       return Response.ok().build();
     } else {
       return Response.status(Response.Status.NOT_FOUND).build();

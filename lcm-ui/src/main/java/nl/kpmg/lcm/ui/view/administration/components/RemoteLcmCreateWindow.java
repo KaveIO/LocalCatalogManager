@@ -78,14 +78,14 @@ public class RemoteLcmCreateWindow extends Window implements Button.ClickListene
   private RemoteLcm remoteLcm;
   private final static int MAX_LENGTH = 128;
   
-  FileReceiver fileReceiver;
+  private FileReceiver fileReceiver;
 
   public RemoteLcmCreateWindow(RestClientService restClientService,
       DynamicDataContainer dataContainer) {
     super(DEFAULT_TITLE);
     this.restClientService = restClientService;
     this.dataContainer = dataContainer;
-    this.fileReceiver = new FileReceiver(this, restClientService);
+    this.fileReceiver = new FileReceiver(this, restClientService, false);
     init();
   }
 
@@ -94,7 +94,7 @@ public class RemoteLcmCreateWindow extends Window implements Button.ClickListene
     super(EDIT_TITLE);
     this.restClientService = restClientService;
     this.dataContainer = dataContainer;
-    this.fileReceiver = new FileReceiver(this, restClientService);
+    this.fileReceiver = new FileReceiver(this, restClientService, true);
     init();
     nameField.setValue(lcm.getName());
     uniqueIdField.setValue(lcm.getUniqueId());
@@ -104,7 +104,7 @@ public class RemoteLcmCreateWindow extends Window implements Button.ClickListene
     protocolField.setValue(lcm.getProtocol());
     addressField.setValue(lcm.getDomain());
     portField.setValue(lcm.getPort().toString());
-    certificateAliasField.setValue(lcm.getCertificateAlias());
+    certificateAliasField.setValue(lcm.getAlias());
     remoteLcm = lcm;
 
     updateURLLabel(0, null);
@@ -225,7 +225,7 @@ public class RemoteLcmCreateWindow extends Window implements Button.ClickListene
       rootNode.put("protocol", protocolField.getValue().toString());
       rootNode.put("domain", addressField.getValue());
       rootNode.put("port", portField.getValue());
-      rootNode.put("certificateAlias", certificateAliasField.getValue());
+      rootNode.put("alias", certificateAliasField.getValue());
       fileReceiver.setAlias(certificateAliasField.getValue());
       try {
         if (remoteLcm != null) {

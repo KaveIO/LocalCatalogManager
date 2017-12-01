@@ -50,8 +50,8 @@ public class RemoteLcm extends AbstractModel {
 
   private String applicationKey;
 
-  @Indexed(unique = true , name = "certificate-alias")
-  private String certificateAlias;
+  @Indexed(unique = true)
+  private String alias;
 
   /**
    * @return the domain
@@ -168,16 +168,16 @@ public class RemoteLcm extends AbstractModel {
   }
 
   /**
-   * @return the certificateAlias
+   * @return the alias
    */
-  public String getCertificateAlias() {
-    return certificateAlias;
+  public String getAlias() {
+    return alias;
   }
 
   /**
-   * @param certificateAlias the certificateAlias to set
+   * @param certificateAlias the alias to set
    */
-  public void setCertificateAlias(String certificateAlias) {
-    this.certificateAlias = certificateAlias;
+  public void setAlias(String certificateAlias) {
+    this.alias = certificateAlias;
   }
 }

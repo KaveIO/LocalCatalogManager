@@ -44,8 +44,9 @@ public class FileReceiver implements Upload.Receiver, Upload.SucceededListener,
   private Window contianer;
   private RestClientService restClientService;
   private String alias;
+  private boolean isUpdate;
 
-  public FileReceiver(Window contianer, final RestClientService restClientService) {
+  public FileReceiver(Window contianer, final RestClientService restClientService, boolean isUpdate) {
     this.contianer = contianer;
     this.restClientService = restClientService;
   }
@@ -59,8 +60,14 @@ public class FileReceiver implements Upload.Receiver, Upload.SucceededListener,
   @Override
   public void uploadSucceeded(Upload.SucceededEvent event) {
     try {
-      restClientService.addCertificateAlias(alias,
-          new ByteArrayInputStream(certificate.toByteArray()));
+
+      if (isUpdate) {
+        restClientService.updateCertificateAlias(alias,
+            new ByteArrayInputStream(certificate.toByteArray()));
+      } else {
+        restClientService.addCertificateAlias(alias,
+            new ByteArrayInputStream(certificate.toByteArray()));
+      }
     } catch (ServerException | DataCreationException | AuthenticationException | ClientException ex) {
       Notification.show("Operation of failed!");
       LOGGER.warn("Submitting certificate failed.", ex);

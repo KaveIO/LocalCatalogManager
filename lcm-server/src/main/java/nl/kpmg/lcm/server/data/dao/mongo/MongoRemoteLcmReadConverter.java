@@ -41,7 +41,7 @@ public class MongoRemoteLcmReadConverter implements Converter<DBObject, RemoteLc
     remoteLcm.setUniqueId((String) source.get("unique-lcm-id"));
     remoteLcm.setApplicationId((String) source.get("application-id"));
     remoteLcm.setApplicationKey((String) source.get("application-key"));
-    remoteLcm.setCertificateAlias((String) source.get("certificate-alias"));
+    remoteLcm.setAlias((String) source.get("alias"));
 
     return remoteLcm;
   }

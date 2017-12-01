@@ -32,6 +32,7 @@ import javax.ws.rs.Consumes;
 import javax.ws.rs.DELETE;
 import javax.ws.rs.GET;
 import javax.ws.rs.POST;
+import javax.ws.rs.PUT;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.core.Response;
@@ -44,9 +45,10 @@ import javax.ws.rs.core.Response;
 @Path("client/v0/truststore")
 public class TrustStoreController {
 
-  private static final Logger LOGGER = LoggerFactory.getLogger(TrustStoreController.class.getName());
-  
-  private static int MAX_CERTIFICATE_SIZE =  1024 * 1024; // 100K
+  private static final Logger LOGGER = LoggerFactory
+      .getLogger(TrustStoreController.class.getName());
+
+  private static int MAX_CERTIFICATE_SIZE = 1024 * 1024; // 100K
 
   @Autowired
   private TrustStoreService trustStoreService;
@@ -62,14 +64,32 @@ public class TrustStoreController {
   @Path("/{alias}")
   @Consumes({"application/octet-stream"})
   @RolesAllowed({Roles.ADMINISTRATOR})
-  public final Response addCertificate(@PathParam("alias") String alias,  InputStream certificateAsStream) throws IOException {
+  public final Response addCertificate(@PathParam("alias") String alias,
+      InputStream certificateAsStream) throws IOException {
 
     byte[] certificate = readCertificate(certificateAsStream);
-    if(certificate.length > MAX_CERTIFICATE_SIZE) {
-        throw new LcmValidationException("Certificate can not be bigger then " 
-                + MAX_CERTIFICATE_SIZE + " bytes");
+    if (certificate.length > MAX_CERTIFICATE_SIZE) {
+      throw new LcmValidationException("Certificate can not be bigger then " + MAX_CERTIFICATE_SIZE
+          + " bytes");
     }
-    
+
+    trustStoreService.addCertificate(certificate, alias);
+    return Response.ok().build();
+  }
+
+  @PUT
+  @Path("/{alias}")
+  @Consumes({"application/octet-stream"})
+  @RolesAllowed({Roles.ADMINISTRATOR})
+  public final Response updateCertificate(@PathParam("alias") String alias,
+      InputStream certificateAsStream) throws IOException {
+
+    byte[] certificate = readCertificate(certificateAsStream);
+    if (certificate.length > MAX_CERTIFICATE_SIZE) {
+      throw new LcmValidationException("Certificate can not be bigger then " + MAX_CERTIFICATE_SIZE
+          + " bytes");
+    }
+    trustStoreService.removeCertificate(alias);
     trustStoreService.addCertificate(certificate, alias);
     return Response.ok().build();
   }
