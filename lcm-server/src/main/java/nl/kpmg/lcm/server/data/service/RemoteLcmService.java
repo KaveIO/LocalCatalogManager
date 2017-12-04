@@ -18,6 +18,7 @@ import static nl.kpmg.lcm.common.rest.authentication.AuthorizationConstants.LCM_
 
 import jersey.repackaged.com.google.common.collect.Lists;
 
+import nl.kpmg.lcm.common.Roles;
 import nl.kpmg.lcm.common.ServerException;
 import nl.kpmg.lcm.common.client.HttpsClientFactory;
 import nl.kpmg.lcm.common.configuration.ClientConfiguration;
@@ -26,7 +27,6 @@ import nl.kpmg.lcm.common.data.TestResult;
 import nl.kpmg.lcm.common.data.User;
 import nl.kpmg.lcm.common.exception.LcmException;
 import nl.kpmg.lcm.server.data.dao.RemoteLcmDao;
-import nl.kpmg.lcm.common.Roles;
 
 import org.glassfish.jersey.client.authentication.HttpAuthenticationFeature;
 import org.slf4j.Logger;
@@ -85,6 +85,8 @@ public class RemoteLcmService {
     RemoteLcm remoteLcm = dao.findOne(id);
     configuration.setTargetHost(remoteLcm.getDomain());
     configuration.setTargetPort(remoteLcm.getPort().toString());
+    configuration.setUnsafe(remoteLcm.getProtocol().equals("http"));
+
     String fetchUrl = buildRemoteUrl(remoteLcm) + "/remote/v0/test";
 
     HttpAuthenticationFeature credentials =

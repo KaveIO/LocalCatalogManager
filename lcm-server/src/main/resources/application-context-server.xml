@@ -48,6 +48,5 @@
         <property name="truststore" value="${lcm.client.security.truststore}" />
         <property name="truststoreType" value="${lcm.client.security.truststoreType}" />
         <property name="truststorePassword" value="${lcm.client.security.truststorePassword}" />
-        <property name="unsafe" value="${lcm.server.unsafe}" />
     </bean>
 </beans>
