@@ -163,19 +163,19 @@ public class MetaDataWrapper implements MetaDataIdentificator {
     metaData.set(value.getSectionName(), value.getMap());
   }
 
-  public ExpirationTimeDescriptor getExpirationTime() {
+  public final ExpirationTimeDescriptor getExpirationTime() {
     return expirationTimeDescriptor;
   }
 
-  public void setExpirationTime(ExpirationTimeDescriptor value) {
+  public final void setExpirationTime(final ExpirationTimeDescriptor value) {
     metaData.set(value.getSectionName(), value.getMap());
   }
 
-  public TransferHistoryDescriptor getTransferHistory() {
+  public final TransferHistoryDescriptor getTransferHistory() {
     return transferHistoryDescriptor;
   }
 
-  public void setTransferHistory(TransferHistoryDescriptor value) {
+  public final void setTransferHistory(final TransferHistoryDescriptor value) {
     metaData.set(value.getSectionName(), value.getTransferHistory());
   }
 

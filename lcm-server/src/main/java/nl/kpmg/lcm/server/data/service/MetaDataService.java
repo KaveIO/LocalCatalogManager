@@ -35,6 +35,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 /**
@@ -90,6 +91,23 @@ public class MetaDataService {
   }
 
   public void update(MetaData metadata) {
+    MetaData oldMetadata = metaDataDao.findOne(metadata.getId());
+    MetaDataWrapper oldMetadataWrapper = new MetaDataWrapper(oldMetadata);
+    MetaDataWrapper updatedMetadataWrapper = new MetaDataWrapper(metadata);
+
+    Map updatedExpirationTimeSection = updatedMetadataWrapper.getExpirationTime().getMap();
+
+    String oldExecutionTime = oldMetadataWrapper.getExpirationTime().getExecutionExpirationTime();
+    String updatedExecutionTime =
+        updatedMetadataWrapper.getExpirationTime().getExecutionExpirationTime();
+
+    if (oldExecutionTime != null) {
+      if (updatedExpirationTimeSection == null || updatedExecutionTime == null
+          || !updatedExecutionTime.equals(oldExecutionTime)) {
+        throw new LcmValidationException(
+            "Once being set the execution expiration time could not be changed or removed.");
+      }
+    }
     metaDataDao.save(metadata);
   }
 

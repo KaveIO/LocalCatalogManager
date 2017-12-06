@@ -17,6 +17,9 @@ import com.fasterxml.jackson.annotation.JsonInclude;
 
 import nl.kpmg.lcm.common.validation.Notification;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.util.Calendar;
 import java.util.Date;
 import java.util.Map;
@@ -29,6 +32,8 @@ import java.util.Map;
 public class ExpirationTimeDescriptor extends AbstractMetaDataDescriptor {
   public static final int MAX_EXPIRATION_YEAR_DURATION = 50;
 
+  private static final Logger LOGGER = LoggerFactory.getLogger(ExpirationTimeDescriptor.class);
+
   public ExpirationTimeDescriptor(MetaData metaData) {
     super(metaData);
   }
@@ -37,16 +42,26 @@ public class ExpirationTimeDescriptor extends AbstractMetaDataDescriptor {
     super(map);
   }
 
-  public final void setExecutionExpirationTime(final String executionExpirationTime) {
+  public final boolean setExecutionExpirationTime(final String executionExpirationTime) {
+    if (executionExpirationTime == null) {
+      LOGGER.warn("The execution expiration time could not be null.");
+      return false;
+    }
     set("execution", executionExpirationTime);
+    return true;
   }
 
   public final String getExecutionExpirationTime() {
     return get("execution");
   }
 
-  public final void setTransferExpirationTime(final String transferExpirationTime) {
+  public final boolean setTransferExpirationTime(final String transferExpirationTime) {
+    if (transferExpirationTime == null) {
+      LOGGER.warn("The transfer expiration time could not be null.");
+      return false;
+    }
     set("transfer", transferExpirationTime);
+    return true;
   }
 
   public final String getTransferExpirationTime() {

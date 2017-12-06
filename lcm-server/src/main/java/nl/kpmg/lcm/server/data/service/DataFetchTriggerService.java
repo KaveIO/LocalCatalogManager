@@ -117,7 +117,7 @@ public class DataFetchTriggerService {
           + localStorage.getType() + " storage.");
     }
 
-    updateMetaData(metaDataWrapper, localStorage, namespacePath);
+    updateMetaData(metaDataWrapper, localStorage, namespacePath, lcmId);
 
     createFetchTask(metaDataWrapper, lcmId, lcm, transferSettings, username);
   }
@@ -162,7 +162,8 @@ public class DataFetchTriggerService {
   }
 
   private void updateMetaData(MetaDataWrapper metaDataWrapper, Storage localStorage,
-      String namespacePath) throws ServerException, NotFoundException, ClientErrorException {
+      String namespacePath, String lcmId) throws ServerException, NotFoundException,
+      ClientErrorException {
 
     List<String> uriList = metaDataWrapper.getData().getUri();
     List<String> newUriList = new LinkedList();
@@ -188,6 +189,12 @@ public class DataFetchTriggerService {
     }
 
     metaDataWrapper.getData().setUri(newUriList);
+
+    metaDataWrapper.getTransferHistory().addSourceLcmId(lcmId);
+
+    String newExecutionTime = metaDataWrapper.getExpirationTime().getTransferExpirationTime();
+    metaDataWrapper.getExpirationTime().setExecutionExpirationTime(newExecutionTime);
+
     metaDataService.update(metaDataWrapper.getMetaData());
   }
 
