@@ -42,8 +42,10 @@
         <property name="serverStorage" value="${lcm.server.storage}" />
         <property name="unsafe" value="${lcm.server.unsafe}" />
         <property name="applicationName" value="${lcm.server.application.name}" />
+        <property name="swaggerPort" value="${lcm.server.swagger.port}" />
+        <property name="swaggerServerEnabled" value="${lcm.server.swagger.enable}" />
     </bean>
-    
+
     <bean id="clientConfiguration" class="nl.kpmg.lcm.common.configuration.ClientConfiguration">
         <property name="truststore" value="${lcm.client.security.truststore}" />
         <property name="truststoreType" value="${lcm.client.security.truststoreType}" />
