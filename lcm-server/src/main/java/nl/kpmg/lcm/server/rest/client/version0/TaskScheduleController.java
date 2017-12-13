@@ -14,10 +14,10 @@
 
 package nl.kpmg.lcm.server.rest.client.version0;
 
-import nl.kpmg.lcm.common.rest.types.TaskScheduleRepresentation;
-import nl.kpmg.lcm.common.data.TaskSchedule;
-import nl.kpmg.lcm.server.data.service.TaskScheduleService;
 import nl.kpmg.lcm.common.Roles;
+import nl.kpmg.lcm.common.data.TaskSchedule;
+import nl.kpmg.lcm.common.rest.types.TaskScheduleRepresentation;
+import nl.kpmg.lcm.server.data.service.TaskScheduleService;
 import nl.kpmg.lcm.server.rest.client.version0.types.ConcreteTaskScheduleRepresentation;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -30,11 +30,18 @@ import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
 import javax.ws.rs.core.Response;
 
+import io.swagger.annotations.Api;
+import io.swagger.annotations.ApiOperation;
+import io.swagger.annotations.ApiParam;
+import io.swagger.annotations.ApiResponse;
+import io.swagger.annotations.ApiResponses;
+
 /**
  *
  * @author mhoekstra
  */
 @Path("client/v0/taskschedule")
+@Api(value = "v0 taskschedule(cron jobs)")
 public class TaskScheduleController {
 
   /**
@@ -49,6 +56,9 @@ public class TaskScheduleController {
   @GET
   @Produces({"application/json"})
   @RolesAllowed({Roles.ADMINISTRATOR, Roles.API_USER})
+  @ApiOperation(value = "Return the active schedule with all active cron jobs", 
+          notes = "Roles: " + Roles.ADMINISTRATOR + ", " + Roles.API_USER)
+  @ApiResponses(value = {@ApiResponse(code = 200, message = "OK")})
   public final TaskScheduleRepresentation getCurrent() {
     TaskSchedule taskSchedule = taskScheduleService.findFirstByOrderByIdDesc();
 
@@ -66,7 +76,12 @@ public class TaskScheduleController {
   @POST
   @Consumes({"application/nl.kpmg.lcm.server.data.TaskSchedule+json"})
   @RolesAllowed({Roles.ADMINISTRATOR})
-  public final Response createTaskSchedule(final TaskSchedule taskSchedule) {
+    @ApiOperation(value = "Create the active schedule", 
+          notes = "Roles: " + Roles.ADMINISTRATOR)
+  @ApiResponses(value = {@ApiResponse(code = 200, message = "OK")})
+  public final Response createTaskSchedule(
+          @ApiParam( value = "TaskSchedule object.") 
+          final TaskSchedule taskSchedule) {
     taskSchedule.setId(null);
     taskScheduleService.save(taskSchedule);
     return Response.ok().build();

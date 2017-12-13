@@ -45,11 +45,18 @@ import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.core.Response;
 
+import io.swagger.annotations.Api;
+import io.swagger.annotations.ApiOperation;
+import io.swagger.annotations.ApiParam;
+import io.swagger.annotations.ApiResponse;
+import io.swagger.annotations.ApiResponses;
+
 /**
  *
  * @author mhoekstra, S. Koulouzis
  */
 @Path("client/v0/remoteLcm")
+@Api(value = "v0 remote lcm")
 public class RemoteLcmController {
   private final int MAX_FIELD_LENTH = 128;
 
@@ -69,6 +76,8 @@ public class RemoteLcmController {
   @GET
   @Produces({"application/nl.kpmg.lcm.rest.types.RemoteLcmsRepresentation+json"})
   @RolesAllowed({Roles.ADMINISTRATOR, Roles.API_USER})
+  @ApiOperation(value = "Get Remote Lcms list.", notes = "Roles: " + Roles.ADMINISTRATOR + ", " + Roles.API_USER)
+  @ApiResponses(value = {@ApiResponse(code = 200, message = "OK")})
   public RemoteLcmsRepresentation getAll() {
     List all = remoteLcmService.findAll();
     RemoteLcmsRepresentation lcmsRep = new ConcreteRemoteLcmsRepresentation();
@@ -86,7 +95,12 @@ public class RemoteLcmController {
   @Path("{id}")
   @Produces({"application/nl.kpmg.lcm.rest.types.RemoteLcmRepresentation+json"})
   @RolesAllowed({Roles.ADMINISTRATOR, Roles.API_USER})
-  public final RemoteLcmRepresentation getOne(@PathParam("id") final String id) {
+  @ApiOperation(value = "Get accessible remote lcm metadata list.", notes = "Roles: " + Roles.ADMINISTRATOR + ", " + Roles.API_USER)
+  @ApiResponses(value = {@ApiResponse(code = 200, message = "OK"),
+                         @ApiResponse(code = 404, message = "Remote Lcm is not found")})  
+  public final RemoteLcmRepresentation getOne(
+          @ApiParam( value = "Remote Lcm id.") 
+          @PathParam("id") final String id) {
 
     RemoteLcm lcm = remoteLcmService.findOneById(id);
     if (lcm == null) {
@@ -104,7 +118,11 @@ public class RemoteLcmController {
   @POST
   @Consumes({"application/nl.kpmg.lcm.server.data.RemoteLcm+json"})
   @RolesAllowed({Roles.ADMINISTRATOR})
-  public final Response add(final RemoteLcm remoteLcm) {
+  @ApiOperation(value = "Creat Remote Lcm.", notes = "Roles: " + Roles.ADMINISTRATOR)
+  @ApiResponses(value = {@ApiResponse(code = 200, message = "OK"),
+                         @ApiResponse(code = 400, message = "Passed Remote Lcm has invalid structure")})
+  public final Response add(
+           @ApiParam( value = "Remote Lcm Object") final RemoteLcm remoteLcm) {
     try {
       validateRemoteLcm(remoteLcm, true);
     } catch (LcmValidationException ex) {
@@ -118,7 +136,11 @@ public class RemoteLcmController {
   @PUT
   @Consumes({"application/nl.kpmg.lcm.server.data.RemoteLcm+json"})
   @RolesAllowed({Roles.ADMINISTRATOR})
-  public final Response update(RemoteLcm remoteLcm) {
+  @ApiOperation(value = "Update Remote Lcm.", notes = "Roles: " + Roles.ADMINISTRATOR)
+  @ApiResponses(value = {@ApiResponse(code = 200, message = "OK"),
+                         @ApiResponse(code = 400, message = "Passed Remote Lcm has invalid structure")})
+  public final Response update(
+          @ApiParam( value = "Remote Lcm Object") RemoteLcm remoteLcm) {
     try {
       validateRemoteLcm(remoteLcm, false);
     } catch (LcmValidationException ex) {
@@ -137,7 +159,13 @@ public class RemoteLcmController {
   @DELETE
   @Path("{id}")
   @RolesAllowed({Roles.ADMINISTRATOR})
-  public final Response delete(@PathParam("id") final String remoteLcmId) {
+  @ApiOperation(value = "Delete Remote Lcm.", notes = "Roles: " + Roles.ADMINISTRATOR)
+  @ApiResponses(value = {@ApiResponse(code = 200, message = "OK"),
+                         @ApiResponse(code = 400, message = "Passed Remote Lcm id is not valid"),
+                         @ApiResponse(code = 400, message = "Remote Lcm with passed id is not Found")})
+  public final Response delete(
+          @ApiParam( value = "Remote Lcm id.") 
+          @PathParam("id") final String remoteLcmId) {
     try {
       validateRemoteLcmField(remoteLcmId, "Remote LCM id");
     } catch (LcmValidationException ex) {
@@ -158,7 +186,12 @@ public class RemoteLcmController {
   @Path("status/{id}")
   @Produces({"application/nl.kpmg.lcm.server.data.TestResult+json"})
   @RolesAllowed({Roles.ADMINISTRATOR, Roles.API_USER})
-  public TestResult getRemoteLcmStatus(@PathParam("id") final String remoteLcmId) {
+  @ApiOperation(value = "Get Remote Lcm status(Accessible/Inaccessible).", notes = "Roles: " + Roles.ADMINISTRATOR + ", " + Roles.API_USER)
+  @ApiResponses(value = {@ApiResponse(code = 200, message = "OK"),
+                         @ApiResponse(code = 404, message = "Remote Lcm is not found")})  
+  public TestResult getRemoteLcmStatus(
+          @ApiParam( value = "Remote Lcm id.") 
+          @PathParam("id") final String remoteLcmId) {
     try {
       validateRemoteLcmField(remoteLcmId, "Remote LCM id");
     } catch (LcmValidationException ex) {
@@ -166,19 +199,35 @@ public class RemoteLcmController {
           + ". Error message: " + ex.getMessage());
       return null;
     }
+
+    RemoteLcm remoteLcm = remoteLcmService.findOneById(remoteLcmId);
+    if(remoteLcm == null) {
+        throw new NotFoundException("Remote Lcm with id: " +  remoteLcmId + " is not found!");
+    }
+
     return remoteLcmService.testRemoteLcmConnectivity(remoteLcmId);
   }
 
   @POST
   @Path("{id}/import-users")
   @RolesAllowed({Roles.ADMINISTRATOR})
-  public final Response importUsers(@PathParam("id") final String remoteLcmId) {
+  @ApiOperation(value = "Import users from Remote Lcm.", notes = "Roles: " + Roles.ADMINISTRATOR)
+  @ApiResponses(value = {@ApiResponse(code = 200, message = "OK"),
+                         @ApiResponse(code = 404, message = "Remote Lcm is not found")})  
+  public final Response importUsers(
+          @ApiParam( value = "Remote Lcm id.") 
+          @PathParam("id") final String remoteLcmId) {
     try {
       validateRemoteLcmField(remoteLcmId, "Remote LCM id");
     } catch (LcmValidationException ex) {
       return Response.status(Response.Status.BAD_REQUEST).entity(ex.getMessage()).build();
     }
 
+    RemoteLcm remoteLcm = remoteLcmService.findOneById(remoteLcmId);
+    if(remoteLcm == null) {
+        throw new NotFoundException("Remote Lcm with id: " +  remoteLcmId + " is not found!");
+    }    
+    
     remoteLcmService.importUsers(remoteLcmId);
     return Response.ok().build();
   }

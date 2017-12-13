@@ -44,6 +44,12 @@ import javax.ws.rs.Produces;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
 
+import io.swagger.annotations.Api;
+import io.swagger.annotations.ApiOperation;
+import io.swagger.annotations.ApiParam;
+import io.swagger.annotations.ApiResponse;
+import io.swagger.annotations.ApiResponses;
+
 /**
  * Controller for basic user operations, this also contains login in and logout.
  *
@@ -51,6 +57,7 @@ import javax.ws.rs.core.Response.Status;
  */
 @Component
 @Path("client/v0/users")
+@Api(value = "v0 user")
 public class UserController {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(UserController.class.getName());
@@ -78,6 +85,8 @@ public class UserController {
   @GET
   @Produces({"application/nl.kpmg.lcm.rest.types.UsersRepresentation+json"})
   @RolesAllowed({Roles.ADMINISTRATOR})
+  @ApiOperation(value = "Return all the users.", notes = "Roles: " + Roles.ADMINISTRATOR)
+  @ApiResponses(value = {@ApiResponse(code = 200, message = "OK")})
   public final UsersRepresentation getUsers() {
     List users = userService.findAll();
     ConcreteUsersRepresentation concreteUsersRepresentation = new ConcreteUsersRepresentation();
@@ -90,7 +99,12 @@ public class UserController {
   @Produces({"application/nl.kpmg.lcm.rest.types.UserRepresentation+json"})
   @Path("/{user_id}")
   @RolesAllowed({Roles.ADMINISTRATOR})
-  public final Response getUser(@PathParam("user_id") String userId) {
+  @ApiOperation(value = "Return single user.", notes = "Roles: " + Roles.ADMINISTRATOR)
+  @ApiResponses(value = {@ApiResponse(code = 200, message = "OK"),
+                         @ApiResponse(code = 404, message = "The user is not found")})
+  public final Response getUser(
+          @ApiParam( value = "User id")
+          @PathParam("user_id") String userId) {
     User user = userService.findById(userId);
     if (user != null) {
       return Response.ok(new ConcreteUserRepresentation(user)).build();
@@ -102,7 +116,11 @@ public class UserController {
   @POST
   @Consumes({"application/nl.kpmg.lcm.server.data.User+json"})
   @RolesAllowed({Roles.ADMINISTRATOR})
-  public final Response createNewUser(final User user) {
+  @ApiOperation(value = "Create a user.", notes = "Roles: " + Roles.ADMINISTRATOR)
+  @ApiResponses(value = {@ApiResponse(code = 200, message = "OK")})
+  public final Response createNewUser(
+          @ApiParam( value = "User object")
+          final User user) {
     Notification notification = new Notification();
     if (user == null) {
       String message = "Paylaod could not be null. Please add user as payload!";
@@ -126,7 +144,11 @@ public class UserController {
   @PUT
   @Consumes({"application/nl.kpmg.lcm.server.data.User+json"})
   @RolesAllowed({Roles.ADMINISTRATOR})
-  public final Response modifyUser(final User user) {
+  @ApiOperation(value = "Update a user.", notes = "Roles: " + Roles.ADMINISTRATOR)
+  @ApiResponses(value = {@ApiResponse(code = 200, message = "OK")})
+  public final Response modifyUser(
+          @ApiParam( value = "User object")
+          final User user) {
     Notification notification = new Notification();
     if (user == null) {
       String message = "Paylaod could not be null. Please add user as payload!";
@@ -179,7 +201,12 @@ public class UserController {
   @DELETE
   @Path("/{user_id}")
   @RolesAllowed({Roles.ADMINISTRATOR})
-  public final Response deleteUser(@PathParam("user_id") final String userId) {
+  @ApiOperation(value = "Delete a user.", notes = "Roles: " + Roles.ADMINISTRATOR)
+  @ApiResponses(value = {@ApiResponse(code = 200, message = "OK"),
+                         @ApiResponse(code = 404, message = "The user is not found")})
+  public final Response deleteUser(
+          @ApiParam( value = "User id")
+          @PathParam("user_id") final String userId) {
     User user = userService.findById(userId);
 
     if (user != null) {

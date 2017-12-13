@@ -14,6 +14,7 @@
 
 package nl.kpmg.lcm.server.rest.client.version0;
 
+import nl.kpmg.lcm.common.Roles;
 import nl.kpmg.lcm.common.data.EnrichmentProperties;
 import nl.kpmg.lcm.common.data.IterativeData;
 import nl.kpmg.lcm.common.data.metadata.MetaData;
@@ -25,7 +26,6 @@ import nl.kpmg.lcm.common.rest.types.MetaDatasRepresentation;
 import nl.kpmg.lcm.server.backend.Backend;
 import nl.kpmg.lcm.server.data.service.MetaDataService;
 import nl.kpmg.lcm.server.data.service.StorageService;
-import nl.kpmg.lcm.common.Roles;
 import nl.kpmg.lcm.server.rest.client.version0.types.ConcreteMetaDataRepresentation;
 import nl.kpmg.lcm.server.rest.client.version0.types.ConcreteMetaDatasRepresentation;
 
@@ -52,12 +52,19 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
 
+import io.swagger.annotations.Api;
+import io.swagger.annotations.ApiOperation;
+import io.swagger.annotations.ApiParam;
+import io.swagger.annotations.ApiResponse;
+import io.swagger.annotations.ApiResponses;
+
 /**
  *
  * @author mhoekstra
  */
 @Component
 @Path("client/v0/local")
+@Api(value = "v0 local metadata")
 public class LocalMetaDataController {
 
   /**
@@ -93,8 +100,12 @@ public class LocalMetaDataController {
   @GET
   @Produces({"application/nl.kpmg.lcm.rest.types.MetaDatasRepresentation+json"})
   @RolesAllowed({Roles.ADMINISTRATOR, Roles.API_USER})
+  @ApiOperation(value = "Get metadata list.", notes = "Roles: " + Roles.ADMINISTRATOR + ", " + Roles.API_USER)
+  @ApiResponses(value = {@ApiResponse(code = 200, message = "OK")})
   public final MetaDatasRepresentation getLocalMetaDataOverview(
+      @ApiParam( value = "Retern all the metadatas from specified namespace.") 
       @QueryParam("namespace") @DefaultValue("") String namespace,
+      @ApiParam( value = "Retern all the metadatas from specified namespace and subspaces.")
       @QueryParam("recursive") @DefaultValue("False") Boolean recursive) {
 
     List all;
@@ -118,7 +129,9 @@ public class LocalMetaDataController {
   @POST
   @Consumes({"application/nl.kpmg.lcm.server.data.MetaData+json"})
   @RolesAllowed({Roles.ADMINISTRATOR, Roles.API_USER})
-  public final Response createNewMetaData(final MetaData metaData) {
+  @ApiOperation(value = "Create metadata.", notes = "Roles: " + Roles.ADMINISTRATOR + ", " + Roles.API_USER)
+  @ApiResponses(value = {@ApiResponse(code = 200, message = "OK")})
+  public final Response createNewMetaData(final @ApiParam( value = "Metadata Object") MetaData metaData) {
     new MetaDataWrapper(metaData);// validate that MetaData has correct format
     metaDataService.create(metaData);
     return Response.ok().build();
@@ -135,8 +148,13 @@ public class LocalMetaDataController {
   @Path("{meta_data_id}")
   @Consumes({"application/nl.kpmg.lcm.server.data.MetaData+json"})
   @RolesAllowed({Roles.ADMINISTRATOR, Roles.API_USER})
-  public final Response putLocalMetaData(@PathParam("meta_data_id") final String metaDataId,
-      final MetaData metadata) {
+  @ApiOperation(value = "Update metadata", notes = "Roles: " + Roles.ADMINISTRATOR + ", " + Roles.API_USER)
+  @ApiResponses(value = {@ApiResponse(code = 200, message = "OK")})
+  public final Response putLocalMetaData(
+          @ApiParam( value = "Metadata id")
+          @PathParam("meta_data_id") final String metaDataId,
+          @ApiParam( value = "Metadata Object")  final MetaData metadata) {
+
     new MetaDataWrapper(metadata);// validate that MetaData has correct format
     metaDataService.update(metadata);
 
@@ -148,8 +166,12 @@ public class LocalMetaDataController {
   @Consumes({"application/nl.kpmg.lcm.rest.types.MetaDataOperationRequest+json"})
   @Produces(MediaType.APPLICATION_OCTET_STREAM)
   @RolesAllowed({Roles.ADMINISTRATOR, Roles.API_USER})
-  public final Response metadataOperation(@PathParam("meta_data_id") final String metaDataId, 
-          @QueryParam("data_key") String dataKey,
+  @ApiOperation(value = "Metadata operation.", notes = "Roles: " + Roles.ADMINISTRATOR + ", " + Roles.API_USER)
+  @ApiResponses(value = {@ApiResponse(code = 200, message = "OK")})
+  public final Response metadataOperation(
+          @ApiParam( value = "Metadata id")
+          @PathParam("meta_data_id") final String metaDataId, 
+          @ApiParam( value = "Data key that specifies processed data item") @QueryParam("data_key") String dataKey,
       MetaDataOperationRequest request) {
 
     MetaData metadata = metaDataService.findById(metaDataId);
@@ -174,29 +196,6 @@ public class LocalMetaDataController {
           }
         }
       case "copy":
-        // backend = storageService.getBackend(metadata);
-        // String fType = (String) request.getParameters().get("type");
-        // String sPath = (String) request.getParameters().get("storagePath");
-        // String fPath = (String) request.getParameters().get("Path");
-        // URI parsedURI;
-        // try {
-        // parsedURI = new URI(metadata.getDataUri());
-        // String newDataUri = parsedURI.getScheme() + "://" + parsedURI.getHost() + "/" + fPath;
-        // Iterable input = backend.read(metadata);
-        // FileOutputStream fos =
-        // new FileOutputStream(new File(String.format("%s/%s.%s", sPath, fPath, fType)));
-        // int copied = IOUtils.copy(input, fos);
-        // MetaData mnested = new MetaData();
-        // mnested.setDataUri(newDataUri);
-        // metadata.addDuplicate(mnested);
-        // metaDataService.getMetaDataDao().save(metadata);
-        //
-        // return Response.ok().build();
-        // } catch (IOException ex) {
-        // LoggerFactory.getLogger(LocalMetaDataController.class.getName()).error(
-        // String.format("Couldn't find path: %s/%s.%s", sPath, fPath, fType), ex);
-        // }
-
     }
 
     return null;
@@ -207,8 +206,13 @@ public class LocalMetaDataController {
   @Consumes({"application/nl.kpmg.lcm.server.data.EnrichmentProperties+json"})
   @Produces({"application/nl.kpmg.lcm.rest.types.MetaDataRepresentation+json"})
   @RolesAllowed({Roles.ADMINISTRATOR, Roles.API_USER})
+  @ApiOperation(value = "Force metadata enrichment.", notes = "Roles: " + Roles.ADMINISTRATOR + ", " + Roles.API_USER)
+  @ApiResponses(value = {@ApiResponse(code = 200, message = "OK"),
+                         @ApiResponse(code = 404, message = "Metadata is not found!")})
   public final MetaDataRepresentation metadataEnrichment(
-      @PathParam("meta_data_id") final String metaDataId, EnrichmentProperties properties) {
+      @ApiParam( value = "Metadata id") @PathParam("meta_data_id") final String metaDataId, 
+      @ApiParam( value = "Enrichment properties") EnrichmentProperties properties) {
+      
     MetaData metadata = metaDataService.findById(metaDataId);
     if (metadata == null) {
       throw new NotFoundException(String.format("MetaData set %s could not be found", metaDataId));
@@ -237,8 +241,14 @@ public class LocalMetaDataController {
   @Path("{meta_data_id}")
   @Produces({"application/nl.kpmg.lcm.rest.types.MetaDataRepresentation+json"})
   @RolesAllowed({Roles.ADMINISTRATOR, Roles.API_USER})
+  @ApiOperation(value = "Return metadata.", notes = "Roles: " + Roles.ADMINISTRATOR + ", " + Roles.API_USER)
+  @ApiResponses(value = {@ApiResponse(code = 200, message = "OK"),
+                         @ApiResponse(code = 404, message = "Metadata is not found!")})
   public final MetaDataRepresentation getLocalMetaData(
-      @PathParam("meta_data_id") final String metaDataId, @QueryParam("update") Boolean update) {
+     @ApiParam( value = "Metadata id")  
+     @PathParam("meta_data_id") final String metaDataId, 
+     @ApiParam( value = "If true the metadata is enriched and then returned.") 
+     @QueryParam("update") Boolean update) {
 
     MetaData metadata = metaDataService.findById(metaDataId);
     if (metadata == null) {
@@ -262,7 +272,12 @@ public class LocalMetaDataController {
   @DELETE
   @Path("{meta_data_id}")
   @RolesAllowed({Roles.ADMINISTRATOR, Roles.API_USER})
-  public final Response deleteLocalMetaData(@PathParam("meta_data_id") final String metaDataId) {
+  @ApiOperation(value = "Delete metadata", notes = "Roles: " + Roles.ADMINISTRATOR + ", " + Roles.API_USER)
+  @ApiResponses(value = {@ApiResponse(code = 200, message = "OK"),
+                         @ApiResponse(code = 404, message = "Metadata is not found!")})
+  public final Response deleteLocalMetaData(
+          @ApiParam( value = "Metadata id")  
+          @PathParam("meta_data_id") final String metaDataId) {
 
     MetaData metadata = metaDataService.findById(metaDataId);
     if (metadata != null) {
@@ -277,7 +292,13 @@ public class LocalMetaDataController {
   @Path("namespace")
   @Produces({"application/json"})
   @RolesAllowed({Roles.ADMINISTRATOR, Roles.API_USER})
-  public final Set<String> getSubNamespaces(@QueryParam("namespace") String namespace,
+    @ApiOperation(value = "Return namespaces in the Lcm", notes = "Roles: " + Roles.ADMINISTRATOR + ", " + Roles.API_USER)
+  @ApiResponses(value = {@ApiResponse(code = 200, message = "OK"),
+                         @ApiResponse(code = 404, message = "Metadata is not found!")})
+  public final Set<String> getSubNamespaces(
+      @ApiParam( value = "Base namespace.") 
+      @QueryParam("namespace") String namespace,
+      @ApiParam( value = "Wheather to list namespaces recursively.") 
       @QueryParam("recursive") Boolean recursive) {
 
     if (namespace != null && !namespace.isEmpty()) {

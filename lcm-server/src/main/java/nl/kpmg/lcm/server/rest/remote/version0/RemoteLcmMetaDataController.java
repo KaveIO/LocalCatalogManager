@@ -49,11 +49,18 @@ import javax.ws.rs.core.Context;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.SecurityContext;
 
+import io.swagger.annotations.Api;
+import io.swagger.annotations.ApiOperation;
+import io.swagger.annotations.ApiParam;
+import io.swagger.annotations.ApiResponse;
+import io.swagger.annotations.ApiResponses;
+
 /**
  *
  * @author mhoekstra
  */
 @Path("remote/v0/metadata")
+@Api(value = "v0 remote calls for metadata")
 public class RemoteLcmMetaDataController {
 
   @Autowired
@@ -76,7 +83,11 @@ public class RemoteLcmMetaDataController {
   @GET
   @Produces({"application/nl.kpmg.lcm.rest.types.MetaDatasRepresentation+json"})
   @RolesAllowed({Roles.ADMINISTRATOR, Roles.REMOTE_USER})
+  @ApiOperation(value = "Return list of local metadata to remote LCM filtered by string.",
+          notes = "Roles: " + Roles.ADMINISTRATOR + ", " + Roles.REMOTE_USER)
+  @ApiResponses(value = {@ApiResponse(code = 200, message = "OK")})
   public final MetaDatasRepresentation getLocalMetaDataOverview(@Context SecurityContext securityContext,
+      @ApiParam( value = "Search string.")
       @QueryParam("search") String searchString) {
 
     MetaDatasRepresentation metaDatasRepresentation = new ConcreteRemoteLcmMetaDatasRepresentation();
@@ -91,7 +102,7 @@ public class RemoteLcmMetaDataController {
       
       metaDatasRepresentation.setRepresentedItems(ConcreteRemoteLcmMetaDataRepresentation.class, permittedMetadataList);
     } else {
-      // TODO Check this!
+      // TODO Check this! - this is most probably defect!
       if(!permissionChecker.check(securityContext, searchString)){
         throw new LcmException(String.format("Unable to authorize the request.", searchString),
           Response.Status.FORBIDDEN);
@@ -117,17 +128,22 @@ public class RemoteLcmMetaDataController {
   @Path("{meta_data_id}")
   @Produces({"application/nl.kpmg.lcm.rest.types.MetaDataRepresentation+json"})
   @RolesAllowed({Roles.ADMINISTRATOR, Roles.REMOTE_USER})
+  @ApiOperation(value = "Return single local metadata to remote LCM.", notes = "Roles: " + Roles.ADMINISTRATOR + ", " + Roles.REMOTE_USER)
+  @ApiResponses(value = {@ApiResponse(code = 200, message = "OK"),
+                           @ApiResponse(code = 403, message = "The user is not permitted to get the metadata."),
+                           @ApiResponse(code = 404, message = "The metadata is not found")})
   public final MetaDataRepresentation getLocalMetaData(@Context SecurityContext securityContext,
+      @ApiParam( value = "Metadata id.")
       @PathParam("meta_data_id") final String metaDataId) {
-
-    MetaData metadata = metaDataService.findById(metaDataId);
-    if (metadata == null) {
-      throw new NotFoundException(String.format("MetaData set %s could not be found", metaDataId));
-    }
 
     if (!permissionChecker.check(securityContext, metaDataId)) {
       throw new LcmException(String.format("Unable to authorize the request.", metaDataId),
           Response.Status.FORBIDDEN);
+    }
+
+    MetaData metadata = metaDataService.findById(metaDataId);
+    if (metadata == null) {
+      throw new NotFoundException(String.format("MetaData set %s could not be found", metaDataId));
     }
 
     return new ConcreteRemoteLcmMetaDataRepresentation(metadata);
@@ -137,8 +153,13 @@ public class RemoteLcmMetaDataController {
   @Path("{metadata_id}/fetchUrl")
   @Produces({"application/nl.kpmg.lcm.rest.types.FetchEndpointRepresentation+json"})
   @RolesAllowed({Roles.ADMINISTRATOR, Roles.REMOTE_USER})
+  @ApiOperation(value = "Generate Fetchendpoint(Used for data transfer).", notes = "Roles: " + Roles.ADMINISTRATOR + ", " + Roles.REMOTE_USER)
+  @ApiResponses(value = {@ApiResponse(code = 200, message = "OK"),
+                           @ApiResponse(code = 403, message = "The user is not permitted to get the metadata."),
+                           @ApiResponse(code = 404, message = "The metadata is not found")})
   public final FetchEndpointRepresentation generateFetch(@Context SecurityContext securityContext,
-      @PathParam("metadata_id") final String metadataId) {
+       @ApiParam( value = "Metadata id.")
+       @PathParam("metadata_id") final String metadataId) {
 
     MetaData metadata = metaDataService.findById(metadataId);
     if(!permissionChecker.check(securityContext, metadataId)) {
@@ -146,8 +167,7 @@ public class RemoteLcmMetaDataController {
           Response.Status.FORBIDDEN);
     }
 
-    MetaData md = metaDataService.findById(metadataId);
-    if (md == null) {
+    if (metadata == null) {
       throw new NotFoundException(String.format("Metadata %s not found", metadataId));
     }
 
@@ -159,7 +179,7 @@ public class RemoteLcmMetaDataController {
     Date later = getTimeToLive(now);
 
     fe.setTimeToLive(later);
-    fe.setMetadataId(md.getId());
+    fe.setMetadataId(metadata.getId());
     User principal = (User) securityContext.getUserPrincipal();
     fe.setUserToConsume(principal.getName());
     fe.setUserOrigin(principal.getOrigin());

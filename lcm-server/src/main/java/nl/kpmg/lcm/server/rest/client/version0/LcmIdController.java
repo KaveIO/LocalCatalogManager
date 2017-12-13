@@ -13,10 +13,10 @@
  */
 package nl.kpmg.lcm.server.rest.client.version0;
 
+import nl.kpmg.lcm.common.Roles;
 import nl.kpmg.lcm.common.data.LcmId;
 import nl.kpmg.lcm.common.rest.types.LcmIdRepresentation;
 import nl.kpmg.lcm.server.data.service.LcmIdService;
-import nl.kpmg.lcm.common.Roles;
 import nl.kpmg.lcm.server.rest.client.version0.types.ConcreteLcmIdRepresentation;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -29,11 +29,17 @@ import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
 import javax.ws.rs.core.Response;
 
+import io.swagger.annotations.Api;
+import io.swagger.annotations.ApiOperation;
+import io.swagger.annotations.ApiResponse;
+import io.swagger.annotations.ApiResponses;
+
 /**
  *
  * @author shristov
  */
 @Path("client/v0/lcmId")
+@Api(value = "v0 Lcm Id")
 public class LcmIdController {
   @Autowired
   private LcmIdService lcmIdService;
@@ -41,17 +47,23 @@ public class LcmIdController {
   @GET
   @Produces({"application/nl.kpmg.lcm.rest.types.LcmIdRepresentation+json"})
   @RolesAllowed({Roles.ADMINISTRATOR, Roles.API_USER})
+  @ApiOperation(value = "Get authorized LCM with specified id.", notes = "Roles: " + Roles.ADMINISTRATOR + ", " + Roles.API_USER)
+  @ApiResponses(value = {@ApiResponse(code = 200, message = "OK"),
+       @ApiResponse(code = 404, message = "Lcm id is not found!")})
   public final LcmIdRepresentation getOne() {
 
     LcmId lcmId = lcmIdService.getLcmIdObject();
     if (lcmId == null) {
-      throw new NotFoundException(String.format("LcmId not found."));
+      throw new NotFoundException(String.format("Lcm id is not found."));
     }
     return new ConcreteLcmIdRepresentation(lcmId);
   }
 
   @DELETE
   @RolesAllowed({Roles.ADMINISTRATOR})
+  @ApiOperation(value = "Get authorized LCM with specified id.", notes = "Roles: " + Roles.ADMINISTRATOR )
+  @ApiResponses(value = {@ApiResponse(code = 200, message = "OK"),
+       @ApiResponse(code = 404, message = "Lcm id is not found!")})
   public final Response deleteLcmId() {
     lcmIdService.delete();
     return Response.ok().build();

@@ -14,12 +14,12 @@
 
 package nl.kpmg.lcm.server.rest.client.version0;
 
+import nl.kpmg.lcm.common.Roles;
 import nl.kpmg.lcm.common.data.TaskDescription;
 import nl.kpmg.lcm.common.data.TaskType;
 import nl.kpmg.lcm.common.exception.LcmException;
 import nl.kpmg.lcm.common.rest.types.TaskDescriptionsRepresentation;
 import nl.kpmg.lcm.server.data.service.TaskDescriptionService;
-import nl.kpmg.lcm.common.Roles;
 import nl.kpmg.lcm.server.rest.client.version0.types.ConcreteTaskDescriptionRepresentation;
 import nl.kpmg.lcm.server.rest.client.version0.types.ConcreteTaskDescriptionsRepresentation;
 
@@ -39,11 +39,18 @@ import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
 
+import io.swagger.annotations.Api;
+import io.swagger.annotations.ApiOperation;
+import io.swagger.annotations.ApiParam;
+import io.swagger.annotations.ApiResponse;
+import io.swagger.annotations.ApiResponses;
+
 /**
  *
  * @author mhoekstra
  */
 @Path("client/v0/tasks")
+@Api(value = "v0 task descriptions")
 public class TaskDescriptionController {
 
   private final TaskDescriptionService taskDescriptionService;
@@ -57,14 +64,22 @@ public class TaskDescriptionController {
    * Get a list of the tasks that meets the specified criteria.
    *
    * @param status to filter the tasks on
+     * @param type
    * @return a list of all tasks
    */
   @GET
   @Produces({"application/nl.kpmg.lcm.rest.types.TaskDescriptionsRepresentation+json"})
   @RolesAllowed({Roles.ADMINISTRATOR, Roles.API_USER})
+  @ApiOperation(value = "Get task descriptions filter by specified parameters."
+          + " The results are ordered desending by start time.", notes = "Roles: " + Roles.ADMINISTRATOR + ", " + Roles.API_USER)
+  @ApiResponses(value = {@ApiResponse(code = 200, message = "OK")})
   public final TaskDescriptionsRepresentation getOverview(
+      @ApiParam( value = "Task description status.", allowableValues = "PENDING, SCHEDULED, RUNNING, FAILED, SUCCESS")
       @QueryParam("status") final TaskDescription.TaskStatus status,
-      @QueryParam("type") final TaskType type, @QueryParam("limit") final Integer limit) {
+      @ApiParam( value = "Task description type.", allowableValues = "FETCH, ENRICHMENT, ENRICHMENT_MANAGER") 
+      @QueryParam("type") final TaskType type, 
+      @ApiParam( value = "Maximum returned items.") 
+      @QueryParam("limit") final Integer limit) {
 
     List taskDescriptions = null;
     if (status != null && type != null) {
@@ -109,7 +124,11 @@ public class TaskDescriptionController {
   @POST
   @Consumes({"application/nl.kpmg.lcm.server.data.TaskDescription+json"})
   @RolesAllowed({Roles.ADMINISTRATOR, Roles.API_USER})
-  public final Response createTask(final TaskDescription taskDescription) {
+  @ApiOperation(value = "Create task description.", notes = "Roles: " + Roles.ADMINISTRATOR + ", " + Roles.API_USER)
+  @ApiResponses(value = {@ApiResponse(code = 200, message = "OK")})
+  public final Response createTask(
+          @ApiParam( value = "Task description object.")
+          final TaskDescription taskDescription) {
     taskDescription.setId(null);
     taskDescription.setStatus(TaskDescription.TaskStatus.PENDING);
     taskDescription.setOutput(null);
@@ -131,7 +150,12 @@ public class TaskDescriptionController {
   @Path("{tasks_id}")
   @Produces({"application/nl.kpmg.lcm.rest.types.TaskDescriptionRepresentation+json"})
   @RolesAllowed({Roles.ADMINISTRATOR, Roles.API_USER})
-  public final Response getTask(@PathParam("tasks_id") final String taskDescriptionId) {
+  @ApiOperation(value = "Get task description.", notes = "Roles: " + Roles.ADMINISTRATOR + ", " + Roles.API_USER)
+  @ApiResponses(value = {@ApiResponse(code = 200, message = "OK"),
+                         @ApiResponse(code = 404, message = "Task description is not found")})
+  public final Response getTask(
+          @ApiParam( value = "Task description id.")
+          @PathParam("tasks_id") final String taskDescriptionId) {
     TaskDescription taskDescriptions =
         taskDescriptionService.findOne(taskDescriptionId);
 
@@ -151,7 +175,12 @@ public class TaskDescriptionController {
   @DELETE
   @Path("{tasks_id}")
   @RolesAllowed({Roles.ADMINISTRATOR, Roles.API_USER})
-  public final Response deleteCommand(@PathParam("tasks_id") final String taskDescriptionId) {
+  @ApiOperation(value = "Delete task description.", notes = "Roles: " + Roles.ADMINISTRATOR + ", " + Roles.API_USER)
+  @ApiResponses(value = {@ApiResponse(code = 200, message = "OK"),
+                         @ApiResponse(code = 404, message = "Task description is not found")})
+  public final Response deleteCommand(
+          @ApiParam( value = "Task description id.")
+          @PathParam("tasks_id") final String taskDescriptionId) {
     TaskDescription taskDescriptions =
         taskDescriptionService.findOne(taskDescriptionId);
 
