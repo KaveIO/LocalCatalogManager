@@ -177,7 +177,7 @@ public class MetadataCreateWindow extends Window implements Button.ClickListener
         LOGGER.warn("Creation of metadata failed.", ex.getMessage());
       } catch (LcmValidationException | IOException ex) {
         Notification.show("Creation of metadata failed. Invalid metadata!");
-        LOGGER.warn("Creation of metadata failed. Invalid metadata. Message: ", ex.getMessage());
+        LOGGER.warn("Creation of metadata failed. Invalid metadata. Message: " + ex.getMessage());
       }
     }
   }

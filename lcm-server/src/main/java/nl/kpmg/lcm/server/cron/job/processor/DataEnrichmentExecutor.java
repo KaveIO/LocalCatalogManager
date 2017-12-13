@@ -12,14 +12,14 @@
  * the License.
  */
 
-package nl.kpmg.lcm.server.task.enrichment;
+package nl.kpmg.lcm.server.cron.job.processor;
 
+import nl.kpmg.lcm.server.cron.job.AbstractDataProcessor;
 import nl.kpmg.lcm.common.data.EnrichmentProperties;
 import nl.kpmg.lcm.common.data.metadata.MetaDataWrapper;
 import nl.kpmg.lcm.server.data.service.MetaDataService;
-import nl.kpmg.lcm.server.task.EnrichmentTask;
-import nl.kpmg.lcm.server.task.TaskException;
-import nl.kpmg.lcm.server.task.TaskResult;
+import nl.kpmg.lcm.server.cron.exception.CronJobExecutionException;
+import nl.kpmg.lcm.server.cron.TaskResult;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -45,9 +45,9 @@ import java.util.Map;
  *
  * @author mhoekstra
  */
-public class DataEnrichmentTask extends EnrichmentTask {
+public class DataEnrichmentExecutor extends AbstractDataProcessor {
 
-  private final Logger LOGGER = LoggerFactory.getLogger(DataEnrichmentTask.class.getName());
+  private final Logger LOGGER = LoggerFactory.getLogger(DataEnrichmentExecutor.class.getName());
   /**
    * The BackendService.
    */
@@ -60,11 +60,11 @@ public class DataEnrichmentTask extends EnrichmentTask {
    * @param metadata the metadata to enrich
    * @param options - any option that could be useful during task execution
    * @return the result of the task
-   * @throws TaskException if the backend fails
+   * @throws CronJobExecutionException if the backend fails
    */
   @Override
   protected final TaskResult execute(final MetaDataWrapper metadataWrapper, final Map options)
-      throws TaskException {
+      throws CronJobExecutionException {
     EnrichmentProperties enrichment;
 
     enrichment = metadataWrapper.getEnrichmentProperties().getEnrichmentProperties();

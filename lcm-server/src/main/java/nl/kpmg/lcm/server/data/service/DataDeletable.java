@@ -14,6 +14,7 @@
 package nl.kpmg.lcm.server.data.service;
 
 import nl.kpmg.lcm.common.data.DataFormat;
+import nl.kpmg.lcm.common.data.ProgressIndication;
 import nl.kpmg.lcm.common.data.metadata.DataItemsDescriptor;
 import nl.kpmg.lcm.common.data.metadata.MetaData;
 import nl.kpmg.lcm.common.data.metadata.MetaDataWrapper;
@@ -33,14 +34,22 @@ import java.util.Map;
 public class DataDeletable implements Runnable {
 
   private MetaData metadata;
+  private StorageService storageService;
+  private TaskDescriptionService taskDescriptionService;
+  private String taskId;
 
-  public DataDeletable(MetaData metadata) {
+  public DataDeletable(StorageService storageService,
+      TaskDescriptionService taskDescriptionService, MetaData metadata, String taskId) {
+
+    this.storageService = storageService;
+    this.taskDescriptionService = taskDescriptionService;
     this.metadata = metadata;
+    this.taskId = taskId;
   }
 
   @Override
   public void run() {
-    Backend backend = getBackend(metadata);
+    Backend backend = getBackend();
     MetaDataWrapper wrapper = new MetaDataWrapper(metadata);
     Map<String, DataItemsDescriptor> map = wrapper.getDynamicData().getAllDynamicDataDescriptors();
     if (map == null) {
@@ -49,32 +58,36 @@ public class DataDeletable implements Runnable {
     for (String key : map.keySet()) {
       backend.delete(key);
     }
+    if (taskId != null) {
+      taskDescriptionService.updateProgress(taskId, new ProgressIndication(
+          "Deletion finished successfully!"));
+    }
   }
 
-  private Backend getBackend(MetaData metadata) {
+  private Backend getBackend() {
     MetaDataWrapper wrapper = new MetaDataWrapper(metadata);
     String sourceType = wrapper.getSourceType();
     Backend backend = null;
 
     if (sourceType.equals(DataFormat.FILE) || sourceType.equals(DataFormat.S3FILE)
         || sourceType.equals(DataFormat.HDFSFILE) || sourceType.equals(DataFormat.AZUREFILE)) {
-      backend = new BackendFileImpl(metadata, null);
+      backend = new BackendFileImpl(metadata, storageService);
     }
 
     if (sourceType.equals(DataFormat.CSV) || sourceType.equals(DataFormat.AZURECSV)) {
-      backend = new BackendCsvImpl(metadata, null);
+      backend = new BackendCsvImpl(metadata, storageService);
     }
 
     if (sourceType.equals(DataFormat.JSON)) {
-      backend = new BackendJsonImpl(metadata, null);
+      backend = new BackendJsonImpl(metadata, storageService);
     }
 
     if (sourceType.equals(DataFormat.HIVE)) {
-      backend = new BackendHiveImpl(metadata, null);
+      backend = new BackendHiveImpl(metadata, storageService);
     }
 
     if (sourceType.equals(DataFormat.MONGO)) {
-      backend = new BackendMongoImpl(metadata, null);
+      backend = new BackendMongoImpl(metadata, storageService);
     }
     return backend;
   }

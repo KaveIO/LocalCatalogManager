@@ -19,8 +19,8 @@ import nl.kpmg.lcm.common.data.TaskSchedule;
 import nl.kpmg.lcm.common.data.TaskType;
 import nl.kpmg.lcm.common.data.metadata.MetaData;
 import nl.kpmg.lcm.common.data.metadata.MetaDataWrapper;
+import nl.kpmg.lcm.server.cron.job.processor.DataEnrichmentExecutor;
 import nl.kpmg.lcm.server.data.dao.TaskScheduleDao;
-import nl.kpmg.lcm.server.task.enrichment.DataEnrichmentTask;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -77,7 +77,7 @@ public class TaskScheduleService {
         item.setName("Schedule for: " + metadataWrapper.getName());
         item.setTarget(metadataWrapper.getId());
         item.setTargetType(MetaData.class.getName());
-        item.setJob(DataEnrichmentTask.class.getName());
+        item.setJob(DataEnrichmentExecutor.class.getName());
         item.setTaskType(TaskType.ENRICHMENT);
 
         taskList.add(item);
@@ -96,7 +96,7 @@ public class TaskScheduleService {
         item.setName("Schedule for: " + storage.getName());
         item.setTarget(storage.getId());
         item.setTargetType(Storage.class.getName());
-        item.setJob(DataEnrichmentTask.class.getName());
+        item.setJob(DataEnrichmentExecutor.class.getName());
         item.setTaskType(TaskType.ENRICHMENT);
 
         taskList.add(item);

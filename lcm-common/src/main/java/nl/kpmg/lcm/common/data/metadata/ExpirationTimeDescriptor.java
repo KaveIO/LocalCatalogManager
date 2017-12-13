@@ -20,8 +20,6 @@ import nl.kpmg.lcm.common.validation.Notification;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.Calendar;
-import java.util.Date;
 import java.util.Map;
 
 /**
@@ -31,6 +29,8 @@ import java.util.Map;
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class ExpirationTimeDescriptor extends AbstractMetaDataDescriptor {
   public static final int MAX_EXPIRATION_YEAR_DURATION = 50;
+  public static final long MAX_VALID_UNIX_TIMESTAMP = 2147483647;
+  public static final long MIN_VALID_UNIX_TIMESTAMP = 0;
 
   private static final Logger LOGGER = LoggerFactory.getLogger(ExpirationTimeDescriptor.class);
 
@@ -76,58 +76,29 @@ public class ExpirationTimeDescriptor extends AbstractMetaDataDescriptor {
   @Override
   public void validate(Notification notification) {
     if (getMap() != null) {
-      validateExpirationTime("execution", notification);
-      validateExpirationTime("transfer", notification);
+      if (getMap().get("execution") != null) {
+        validateExpirationTime("execution", notification);
+      }
+      if (getMap().get("transfer") != null) {
+        validateExpirationTime("transfer", notification);
+      }
     }
   }
 
   private void validateExpirationTime(String fieldName, Notification notification) {
-    validateField(fieldName, notification);
-    if (!notification.hasErrors()) {
-      if (!(getMap().get(fieldName) instanceof String)) {
-        notification.addError("Error: Invalid " + fieldName + " expiration time of metadata.");
-      }
-      validateTimestamp(get(fieldName), notification);
+    if (!(getMap().get(fieldName) instanceof String)) {
+      notification.addError("Error: Invalid " + fieldName + " expiration time of metadata.");
     }
-  }
-
-  private void validateTimestamp(String expirationTime, Notification notification) {
-    Date currentDate = new Date();
-    Calendar currentCal = Calendar.getInstance();
-    int currentYear = currentCal.get(Calendar.YEAR);
-    int currentMonth = currentCal.get(Calendar.MONTH);
-    int currentDay = currentCal.get(Calendar.DAY_OF_MONTH);
-
-    long expirationTimeInMiliseconds =
-        convertTimestampSecondsToMiliseconds(expirationTime, notification);
-    if (notification.hasErrors()) {
-      return;
-    }
-
-    Date timestampDate = new Date(expirationTimeInMiliseconds);
-    Calendar timestampCal = Calendar.getInstance();
-    timestampCal.setTime(timestampDate);
-    int timestampYear = timestampCal.get(Calendar.YEAR);
-    int timestampMonth = timestampCal.get(Calendar.MONTH);
-    int timestampDay = timestampCal.get(Calendar.DAY_OF_MONTH);
-
-    if (timestampYear > currentYear + MAX_EXPIRATION_YEAR_DURATION) {
-      notification.addError("The expiration time of the metadata is too late in the future: "
-          + expirationTime + ".");
-    } else if (timestampYear <= currentYear && timestampMonth <= currentMonth
-        && timestampDay <= currentDay) {
-      notification.addError("The expiration time of the metadata has already passed: "
-          + expirationTime + ".");
-    }
-  }
-
-  private long convertTimestampSecondsToMiliseconds(String timestamp, Notification notification) {
+    String expirationTimeString = (String) getMap().get(fieldName);
+    long exTime = 0;
     try {
-      return Long.parseLong(timestamp) * 1000;
+      exTime = Long.parseLong(expirationTimeString);
     } catch (Exception ex) {
       notification.addError("Invalid expiration time of the metadata. Error: " + ex.getMessage());
-      return -1;
+    }
+    if (exTime < MIN_VALID_UNIX_TIMESTAMP || exTime > MAX_VALID_UNIX_TIMESTAMP) {
+      notification.addError("The expiration times can not be smaller than "
+          + MIN_VALID_UNIX_TIMESTAMP + " and bigger than " + MAX_VALID_UNIX_TIMESTAMP + ".");
     }
   }
-
 }

@@ -18,6 +18,7 @@ import com.fasterxml.jackson.annotation.JsonInclude;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.LinkedList;
 import java.util.List;
 
 /**
@@ -48,6 +49,9 @@ public class TransferHistoryDescriptor {
 
   public final void addSourceLcmId(final String sourceLcmId) {
     List<String> list = getTransferHistory();
+    if(list == null){
+        list = new LinkedList<>();
+    }
     if (list.size() == MAX_SIZE_OF_TRANSFER_HISTORY) {
       list.remove(0);
     }

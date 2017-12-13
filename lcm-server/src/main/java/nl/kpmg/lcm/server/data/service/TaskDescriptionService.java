@@ -19,6 +19,9 @@ import jersey.repackaged.com.google.common.collect.Lists;
 import nl.kpmg.lcm.common.data.ProgressIndication;
 import nl.kpmg.lcm.common.data.TaskDescription;
 import nl.kpmg.lcm.common.data.TaskType;
+import nl.kpmg.lcm.common.data.metadata.MetaData;
+import nl.kpmg.lcm.common.data.metadata.MetaDataWrapper;
+import nl.kpmg.lcm.server.cron.job.processor.DataDeletionExecutor;
 import nl.kpmg.lcm.server.data.dao.TaskDescriptionDao;
 
 import org.slf4j.Logger;
@@ -32,6 +35,7 @@ import org.springframework.data.domain.Sort.Direction;
 import org.springframework.data.domain.Sort.Order;
 import org.springframework.stereotype.Service;
 
+import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
@@ -46,6 +50,9 @@ public class TaskDescriptionService {
 
   @Autowired
   private TaskDescriptionDao taskDescriptionDao;
+
+  @Autowired
+  private MetaDataService metadataService;
 
   public List<TaskDescription> findAll() {
     List result = Lists.newArrayList(taskDescriptionDao.findAll());
@@ -150,5 +157,57 @@ public class TaskDescriptionService {
 
   public void deleteAll() {
     taskDescriptionDao.deleteAll();
+  }
+
+  public boolean doesExistTypeAndTarget(TaskType type, String target) {
+    List<TaskDescription> list = findByType(type);
+    for (TaskDescription task : list) {
+      if (task.getTarget().equals(target))
+        return true;
+    }
+    return false;
+  }
+
+
+  public void createNewDataDeletionTaskDescriptions() {
+    List<MetaData> metadataList = metadataService.findAll();
+    for (MetaData metadata : metadataList) {
+      MetaDataWrapper metadataWrapper = new MetaDataWrapper(metadata);
+      String executionExpirationTime =
+          metadataWrapper.getExpirationTime().getExecutionExpirationTime();
+      if (executionExpirationTime == null || executionExpirationTime.equals("")) {
+        continue;
+      }
+
+      Date currentDate = new Date();
+      long currentExpirationTimeInMiliseconds = currentDate.getTime();
+      long metadataExpirationTimeInMiliseconds =
+          convertTimestampSecondsToMiliseconds(executionExpirationTime);
+
+      if (metadataExpirationTimeInMiliseconds > currentExpirationTimeInMiliseconds) {
+        continue;
+      }
+
+      if (doesExistTypeAndTarget(TaskType.DELETE, metadataWrapper.getId())) {
+        continue;
+      }
+
+      TaskDescription dataDeletionTaskDescription = new TaskDescription();
+      dataDeletionTaskDescription.setJob(DataDeletionExecutor.class.getName());
+      dataDeletionTaskDescription.setType(TaskType.DELETE);
+      dataDeletionTaskDescription.setStatus(TaskDescription.TaskStatus.PENDING);
+      dataDeletionTaskDescription.setTarget(metadataWrapper.getId());
+
+      Calendar calendar = Calendar.getInstance();
+      calendar.add(Calendar.MINUTE, 2);
+      Date startTime = calendar.getTime();
+      dataDeletionTaskDescription.setStartTime(startTime);
+
+      createNew(dataDeletionTaskDescription);
+    }
+  }
+
+  private long convertTimestampSecondsToMiliseconds(String timestamp) {
+    return Long.parseLong(timestamp) * 1000;
   }
 }

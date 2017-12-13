@@ -36,7 +36,7 @@ import nl.kpmg.lcm.common.exception.LcmException;
 import nl.kpmg.lcm.common.rest.types.FetchEndpointRepresentation;
 import nl.kpmg.lcm.common.rest.types.MetaDataRepresentation;
 import nl.kpmg.lcm.server.rest.client.version0.HttpResponseHandler;
-import nl.kpmg.lcm.server.task.enrichment.DataFetchTask;
+import nl.kpmg.lcm.server.cron.job.processor.DataFetchExecutor;
 
 import org.glassfish.jersey.client.authentication.HttpAuthenticationFeature;
 import org.slf4j.Logger;
@@ -125,7 +125,7 @@ public class DataFetchTriggerService {
   private void createFetchTask(MetaDataWrapper metaDataWrapper, String lcmId, RemoteLcm lcm,
       TransferSettings transferSettings, String username) throws ServerException, ClientErrorException {
     TaskDescription dataFetchTaskDescription = new TaskDescription();
-    dataFetchTaskDescription.setJob(DataFetchTask.class.getName());
+    dataFetchTaskDescription.setJob(DataFetchExecutor.class.getName());
     dataFetchTaskDescription.setType(TaskType.FETCH);
     dataFetchTaskDescription.setStatus(TaskDescription.TaskStatus.PENDING);
     dataFetchTaskDescription.setTarget(metaDataWrapper.getId());
@@ -193,9 +193,11 @@ public class DataFetchTriggerService {
     metaDataWrapper.getTransferHistory().addSourceLcmId(lcmId);
 
     String newExecutionTime = metaDataWrapper.getExpirationTime().getTransferExpirationTime();
-    metaDataWrapper.getExpirationTime().setExecutionExpirationTime(newExecutionTime);
+    if(newExecutionTime != null) {
+        metaDataWrapper.getExpirationTime().setExecutionExpirationTime(newExecutionTime);
+    }
 
-    metaDataService.update(metaDataWrapper.getMetaData());
+    metaDataService.create(metaDataWrapper.getMetaData());
   }
 
   private String getUpdatedURI(String uri, Storage localStorage) throws ServerException {

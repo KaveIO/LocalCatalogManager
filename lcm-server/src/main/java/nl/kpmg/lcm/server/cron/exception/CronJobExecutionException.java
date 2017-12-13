@@ -12,21 +12,29 @@
  * the License.
  */
 
-package nl.kpmg.lcm.server.task;
+package nl.kpmg.lcm.server.cron.exception;
 
 /**
- * Used to communicate the outcome of a Task.
  *
  * @author mhoekstra
  */
-public enum TaskResult {
-  /**
-   * The task was successfully executed.
-   */
-  SUCCESS,
+public class CronJobExecutionException extends Exception {
 
-  /**
-   * The task failed somewhere during execution.
-   */
-  FAILURE;
+  public CronJobExecutionException() {}
+
+  public CronJobExecutionException(String message) {
+    super(message);
+  }
+
+  public CronJobExecutionException(String arg0, Throwable arg1) {
+    super(arg0, arg1);
+  }
+
+  public CronJobExecutionException(Throwable cause) {
+    super(cause);
+  }
+
+  public CronJobExecutionException(String arg0, Throwable arg1, boolean arg2, boolean arg3) {
+    super(arg0, arg1, arg2, arg3);
+  }
 }

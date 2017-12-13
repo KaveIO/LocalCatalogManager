@@ -11,27 +11,36 @@
   * or implied. See the License for the specific language governing permissions and limitations under
   * the License.
  */
-package nl.kpmg.lcm.server.task.enrichment;
+package nl.kpmg.lcm.server.cron.job.manager;
 
+import nl.kpmg.lcm.server.data.service.TaskDescriptionService;
 import nl.kpmg.lcm.server.data.service.TaskScheduleService;
 
 import org.quartz.Job;
 import org.quartz.JobExecutionContext;
 import org.quartz.JobExecutionException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  *
  * @author shristov
  */
-public class EnrichmentManagerTask implements Job {
+public class TaskManagerExecutor implements Job {
+
+  private static final Logger LOGGER = LoggerFactory.getLogger(TaskManagerExecutor.class);
 
   @Autowired
   private TaskScheduleService taskScheduleService;
 
+  @Autowired
+  private TaskDescriptionService taskDescriptionService;
+
   @Override
   public void execute(JobExecutionContext context) throws JobExecutionException {
     taskScheduleService.createNewScheduleWithEnrichmentJobs();
+    taskDescriptionService.createNewDataDeletionTaskDescriptions();
   }
 
 }

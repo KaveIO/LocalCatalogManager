@@ -15,6 +15,7 @@ package nl.kpmg.lcm.server.data.service;
 
 import nl.kpmg.lcm.common.data.metadata.MetaData;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 /**
@@ -24,10 +25,20 @@ import org.springframework.stereotype.Service;
 @Service
 public class RemoteLcmDataDeleteService {
 
-  public void deleteData(MetaData metadata) {
-    DataDeletable deleter = new DataDeletable(metadata);
+  @Autowired
+  private StorageService storageService;
+
+  @Autowired
+  private TaskDescriptionService taskDescriptionService;
+
+  public void deleteData(MetaData metadata, String taskId) {
+    DataDeletable deleter =
+        new DataDeletable(storageService, taskDescriptionService, metadata, taskId);
     Thread thread = new Thread(deleter);
     thread.start();
   }
 
+  public void deleteData(MetaData metadata) {
+    deleteData(metadata, null);
+  }
 }

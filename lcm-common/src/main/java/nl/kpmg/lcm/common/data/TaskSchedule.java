@@ -36,6 +36,7 @@ public class TaskSchedule extends AbstractModel {
    */
   private List<TaskScheduleItem> enrichmentItems = new LinkedList();
   private List<TaskScheduleItem> fetchItems = new LinkedList();
+  private List<TaskScheduleItem> deletionItems = new LinkedList<>();
   private List<TaskScheduleItem> managerItems = new LinkedList();
 
   /**
@@ -176,6 +177,7 @@ public class TaskSchedule extends AbstractModel {
 
     if (enrichmentItems.equals(comparedTaskSchedule.getEnrichmentItems())
         && fetchItems.equals(comparedTaskSchedule.getFetchItems())
+        && deletionItems.equals(comparedTaskSchedule.getDeletionItems())
         && managerItems.equals(comparedTaskSchedule.getManagerItems())) {
       return true;
     }
@@ -186,7 +188,7 @@ public class TaskSchedule extends AbstractModel {
 
   @Override
   public int hashCode() {
-    return Objects.hash(enrichmentItems, fetchItems, managerItems);
+    return Objects.hash(enrichmentItems, fetchItems, deletionItems, managerItems);
   }
 
   /**
@@ -230,6 +232,22 @@ public class TaskSchedule extends AbstractModel {
    */
   public void setManagerItems(List<TaskScheduleItem> managerItems) {
     this.managerItems = managerItems;
+  }
+
+  /**
+   *
+   * @return the deletionItems
+   */
+  public List<TaskScheduleItem> getDeletionItems() {
+    return deletionItems;
+  }
+
+  /**
+   *
+   * @param deletionItems the deletionItems to set
+   */
+  public void setDeletionItems(List<TaskScheduleItem> deletionItems) {
+    this.deletionItems = deletionItems;
   }
 
 }
