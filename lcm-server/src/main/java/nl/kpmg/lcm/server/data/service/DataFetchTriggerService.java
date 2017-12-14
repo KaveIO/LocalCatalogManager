@@ -35,8 +35,8 @@ import nl.kpmg.lcm.common.data.metadata.MetaDataWrapper;
 import nl.kpmg.lcm.common.exception.LcmException;
 import nl.kpmg.lcm.common.rest.types.FetchEndpointRepresentation;
 import nl.kpmg.lcm.common.rest.types.MetaDataRepresentation;
-import nl.kpmg.lcm.server.rest.client.version0.HttpResponseHandler;
 import nl.kpmg.lcm.server.cron.job.processor.DataFetchExecutor;
+import nl.kpmg.lcm.server.rest.client.version0.HttpResponseHandler;
 
 import org.glassfish.jersey.client.authentication.HttpAuthenticationFeature;
 import org.slf4j.Logger;
@@ -115,6 +115,13 @@ public class DataFetchTriggerService {
         localStorage.getType())) {
       throw new LcmException("Unable to transfer " + metaDataWrapper.getSourceType() + " to "
           + localStorage.getType() + " storage.");
+    }
+
+    String executionExpirationTime =
+        metaDataWrapper.getExpirationTime().getExecutionExpirationTime();
+    if (executionExpirationTime != null) {
+      throw new LcmException(
+          "Unable to (re)transfer a metadata with already set execution expiration time.");
     }
 
     updateMetaData(metaDataWrapper, localStorage, namespacePath, lcmId);
