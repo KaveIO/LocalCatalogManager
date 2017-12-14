@@ -55,12 +55,35 @@ public class MetaDataService {
   private TaskScheduleService taskScheduleService;
 
   public List<MetaData> findAll() {
+    return Lists.newLinkedList(metaDataDao.findAllByInactive(null));
+  }
+
+  /**
+   *
+   * @return return all the records in the collection including the deleted
+   */
+  public List<MetaData> findAllRecords() {
     return Lists.newLinkedList(metaDataDao.findAll());
   }
 
+  /**
+   *
+   * @param id id of the metadata
+   * @return only active metadata.
+   */
   public MetaData findById(String id) {
+    return metaDataDao.findOneByIdAndInactive(id, null);
+  }
+
+  /**
+   *
+   * @param id id of the metadata
+   * @return return metadata record no matter if it is inactivated or not.
+   */
+  public MetaData findRecordById(String id) {
     return metaDataDao.findOne(id);
   }
+
 
   public void create(MetaData metadata) {
     metaDataDao.save(metadata);
@@ -72,7 +95,8 @@ public class MetaDataService {
 
   public void delete(MetaData metadata) {
     taskScheduleService.removeMetadataFromTaskSchedule(metadata);
-    metaDataDao.delete(metadata);
+    metadata.setInactive(String.valueOf(System.currentTimeMillis()));
+    metaDataDao.save(metadata);
   }
 
   public List<MetaData> findByStorageName(String storageName) {
@@ -214,9 +238,11 @@ public class MetaDataService {
     }
     return namespaceSet;
   }
-  
-  public void removeAll(){
-      metaDataDao.deleteAll();
+
+  public void removeAll() {
+    List<MetaData> all = Lists.newLinkedList(metaDataDao.findAllByInactive(null));
+    for (MetaData md : all) {
+      delete(md);
+    }
   }
-  
 }

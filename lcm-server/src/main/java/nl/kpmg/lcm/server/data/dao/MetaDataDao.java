@@ -18,10 +18,16 @@ import nl.kpmg.lcm.common.data.metadata.MetaData;
 
 import org.springframework.data.repository.PagingAndSortingRepository;
 
+import java.util.List;
+
 /**
  *
  * @author mhoekstra
  */
 public interface MetaDataDao extends PagingAndSortingRepository<MetaData, String> {
-  public MetaData findOneByName(String name);
+  public MetaData findOneByNameAndInactive(String name, Boolean inactive);
+
+  public List<MetaData> findAllByInactive(Boolean inactive);
+
+  public MetaData findOneByIdAndInactive(String id, Boolean inactive);
 }

@@ -41,6 +41,9 @@ public class MongoMetaDataReadConverter implements Converter<DBObject, MetaData>
         case "name":
           metaData.setName(source.get(key).toString());
           break;
+        case "inactive":
+          metaData.setInactive(source.get(key).toString());
+          break;
         default:
           metaData.anySetter(key, source.get(key));
       }
