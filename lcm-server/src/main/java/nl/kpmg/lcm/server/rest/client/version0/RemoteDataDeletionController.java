@@ -11,7 +11,7 @@
   * or implied. See the License for the specific language governing permissions and limitations under
   * the License.
  */
-package nl.kpmg.lcm.server.rest.remote.version0;
+package nl.kpmg.lcm.server.rest.client.version0;
 
 import nl.kpmg.lcm.common.Roles;
 import nl.kpmg.lcm.common.data.User;
@@ -19,7 +19,7 @@ import nl.kpmg.lcm.common.data.metadata.MetaData;
 import nl.kpmg.lcm.common.data.metadata.TransferHistoryDescriptor;
 import nl.kpmg.lcm.common.exception.LcmException;
 import nl.kpmg.lcm.server.data.service.MetaDataService;
-import nl.kpmg.lcm.server.data.service.RemoteLcmDataDeleteService;
+import nl.kpmg.lcm.server.data.service.RemoteDataDeletionService;
 import nl.kpmg.lcm.server.rest.authorization.PermissionChecker;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -39,8 +39,8 @@ import javax.ws.rs.core.SecurityContext;
  *
  * @author shristov
  */
-@Path("remote/v0/delete")
-public class RemoteLcmDataDeleteController {
+@Path("client/v0/remoteData/")
+public class RemoteDataDeletionController {
 
   @Autowired
   private MetaDataService metaDataService;
@@ -49,10 +49,10 @@ public class RemoteLcmDataDeleteController {
   private PermissionChecker permissionChecker;
 
   @Autowired
-  private RemoteLcmDataDeleteService service;
+  private RemoteDataDeletionService service;
 
   @DELETE
-  @Path("{metadata_id}")
+  @Path("{metadata_id}/delete")
   @RolesAllowed({Roles.ADMINISTRATOR, Roles.REMOTE_USER})
   public final Response deleteActualData(@Context SecurityContext securityContext,
       @PathParam("metadata_id") final String metadataId) {
@@ -66,7 +66,7 @@ public class RemoteLcmDataDeleteController {
     TransferHistoryDescriptor descriptor = new TransferHistoryDescriptor((metadata));
     List<String> transferHistory = descriptor.getTransferHistory();
     if (!principal.getOrigin().equals(
-        transferHistory.get(TransferHistoryDescriptor.MAX_SIZE_OF_TRANSFER_HISTORY - 1))) {
+        transferHistory.get(transferHistory.size() - 1))) {
       throw new LcmException(String.format(
           "LCM with id: %s is not the last one that had transferred the metadata with id: %s.",
           principal.getOrigin(), metadataId), Response.Status.FORBIDDEN);

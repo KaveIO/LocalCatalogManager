@@ -705,4 +705,18 @@ public class RestClientService {
       throw new ClientException("Call to LCM-Server failed", response);
     }
   }
+
+  public void deleteRemoteData(String metadataId) throws ServerException, AuthenticationException,
+      DataCreationException {
+    String path = "client/v0/remoteData/" + metadataId + "/delete";
+    Invocation.Builder client = getClient(path);
+    Response delete = client.delete();
+
+    Response.StatusType statusInfo = delete.getStatusInfo();
+    if (statusInfo.getFamily() != Response.Status.Family.SUCCESSFUL) {
+      throw new DataCreationException(String.format("%s - %s", statusInfo.getStatusCode(),
+          statusInfo.getReasonPhrase()));
+    }
+  }
+
 }

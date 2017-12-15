@@ -42,6 +42,7 @@ import nl.kpmg.lcm.ui.rest.RestClientService;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
+import java.util.Date;
 import java.util.List;
 
 /**
@@ -69,6 +70,7 @@ public class StartTransferWindow extends Window implements Button.ClickListener 
   private Label remoteLcmLabel;
   private Label metadataIdLabel;
   private Label metadataNameLabel;
+  private Label expirationTimeWarning;
   private ComboBox storageListComboBox;
   private String remoteLcmId;
   private String remoteLcmUrl;
@@ -101,6 +103,12 @@ public class StartTransferWindow extends Window implements Button.ClickListener 
     startButton.addClickListener(this);
     FormLayout mainPanel = new FormLayout();
     mainPanel.addComponent(tabsheet);
+
+    createExpirationTimeWarning();
+    if (expirationTimeWarning != null) {
+      mainPanel.addComponent(expirationTimeWarning);
+    }
+
     mainPanel.addComponent(startButton);
 
     this.setWidth(DIALOG_WIDTH);
@@ -275,4 +283,18 @@ public class StartTransferWindow extends Window implements Button.ClickListener 
     NamespacePathValidator validator = new NamespacePathValidator();
     validator.validate(namespaceSelection, notification);
   }
+
+  private void createExpirationTimeWarning() {
+    String transferTime = remoteMetadata.getExpirationTime().getTransferExpirationTime();
+    if (transferTime != null) {
+      long seconds = Long.parseLong(transferTime);
+      long milis = seconds * 1000;
+      Date date = new Date(milis);
+
+      expirationTimeWarning = new Label("Note: The relevant data will be deleted at: " + date);
+      expirationTimeWarning.setStyleName("warning");
+      expirationTimeWarning.setWidth("100%");
+    }
+  }
+
 }

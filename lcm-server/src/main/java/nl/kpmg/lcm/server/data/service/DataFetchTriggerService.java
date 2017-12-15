@@ -124,7 +124,7 @@ public class DataFetchTriggerService {
           "Unable to (re)transfer a metadata with already set execution expiration time.");
     }
 
-    updateMetaData(metaDataWrapper, localStorage, namespacePath, lcmId);
+    updateMetaData(metaDataWrapper, localStorage, namespacePath, lcm.getUniqueId());
 
     createFetchTask(metaDataWrapper, lcmId, lcm, transferSettings, username);
   }

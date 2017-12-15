@@ -23,7 +23,7 @@ import org.springframework.stereotype.Service;
  * @author shristov
  */
 @Service
-public class RemoteLcmDataDeleteService {
+public class RemoteDataDeletionService {
 
   @Autowired
   private StorageService storageService;

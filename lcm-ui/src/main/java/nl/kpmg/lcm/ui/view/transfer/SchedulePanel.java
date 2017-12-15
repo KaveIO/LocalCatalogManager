@@ -31,6 +31,7 @@ import com.vaadin.ui.VerticalLayout;
 import nl.kpmg.lcm.common.ServerException;
 import nl.kpmg.lcm.common.client.ClientException;
 import nl.kpmg.lcm.common.data.RemoteLcm;
+import nl.kpmg.lcm.common.data.metadata.MetaData;
 import nl.kpmg.lcm.common.data.metadata.MetaDataWrapper;
 import nl.kpmg.lcm.common.exception.LcmValidationException;
 import nl.kpmg.lcm.common.rest.types.MetaDataRepresentation;
@@ -45,6 +46,7 @@ import nl.kpmg.lcm.ui.view.transfer.components.StartTransferWindow;
 import org.slf4j.LoggerFactory;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -169,15 +171,34 @@ public class SchedulePanel extends CustomComponent {
 
     HorizontalLayout actionsLayout = new HorizontalLayout();
 
+    Button viewButton = createViewButton(item);
+    actionsLayout.addComponent(viewButton);
+
+    Button transferButton = createTransferButton(item);
+    actionsLayout.addComponent(transferButton);
+
+    Button deleteButton = createDeleteButton(item);
+    if (deleteButton != null) {
+      actionsLayout.addComponent(deleteButton);
+    }
+
+    return actionsLayout;
+  }
+
+  public Button createViewButton(MetaDataRepresentation item) {
     Button viewButton = new Button("view");
     viewButton.setData(item);
     viewButton.addClickListener((event) -> {
-        MetadataEditWindow metadataEditWindow = new MetadataEditWindow(restClientService,
-          (MetaDataRepresentation) event.getButton().getData());
-        UI.getCurrent().addWindow(metadataEditWindow);
+      MetadataEditWindow metadataEditWindow =
+          new MetadataEditWindow(restClientService, (MetaDataRepresentation) event.getButton()
+              .getData());
+      UI.getCurrent().addWindow(metadataEditWindow);
     });
     viewButton.addStyleName("link");
+    return viewButton;
+  }
 
+  public Button createTransferButton(MetaDataRepresentation item) {
     Button transferButton = new Button("transfer");
     transferButton.setData(item);
     transferButton.addClickListener(new ClickListener() {
@@ -193,12 +214,53 @@ public class SchedulePanel extends CustomComponent {
       }
     });
     transferButton.addStyleName("link");
-
-    actionsLayout.addComponent(viewButton);
-    actionsLayout.addComponent(transferButton);
-
-    return actionsLayout;
+    return transferButton;
   }
+
+  public Button createDeleteButton(MetaDataRepresentation item) {
+    String currentLcmId = null;
+    try {
+      currentLcmId = restClientService.getLcmId().getItem().getLcmId();
+    } catch (Exception ex) {
+      LOGGER.warn("Unable to get the local LCM id. Error message: " + ex.getMessage());
+      return null;
+    }
+
+    MetaData metadata = item.getItem();
+    MetaDataWrapper wrapper = new MetaDataWrapper(metadata);
+    List<String> transferHistory = wrapper.getTransferHistory().getTransferHistory();
+    if (transferHistory == null) {
+      LOGGER.info("The metadata with id: " + metadata.getId() + " does not have transfer history.");
+      return null;
+    }
+
+    String lastLcmIdInTransferHistory = transferHistory.get(transferHistory.size() - 1);
+    if (!lastLcmIdInTransferHistory.equals(currentLcmId)) {
+      LOGGER
+          .info("The local LCM id is not the last LCM id in the transfer history of the metadata with id: "
+              + metadata.getId());
+      return null;
+    }
+
+    Button deleteButton = new Button("delete");
+    deleteButton.setData(item);
+    deleteButton.addClickListener(new ClickListener() {
+      @Override
+      public void buttonClick(Button.ClickEvent event) {
+        try {
+          restClientService.deleteRemoteData(metadata.getId());
+          Notification.show("Remote data deletion started successfully.");
+        } catch (Exception ex) {
+          Notification.show("Unable to delete the remote data.");
+          LOGGER.warn("Unable to delete the remote data. Error message: " + ex.getMessage());
+        }
+      }
+    });
+
+    deleteButton.addStyleName("link");
+    return deleteButton;
+  }
+
 
   class SearchListener implements Button.ClickListener {
     @Override

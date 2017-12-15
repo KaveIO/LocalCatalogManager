@@ -93,14 +93,16 @@ public class MetaDataService {
     String metadataExecutionTime = wrapper.getExpirationTime().getExecutionExpirationTime();
     String metadataTransferTime = wrapper.getExpirationTime().getTransferExpirationTime();
 
-    if (metadataExecutionTime != null && metadataTransferTime != null) {
-      long execTime = getExecutionExpirationTime(metadataExecutionTime);
-      long transferTime = getTransferExpirationTime(metadataTransferTime);
-
-      if (!isExpirationTimeInTheFuture(execTime) || !isExpirationTimeInTheFuture(transferTime)) {
-        throw new LcmValidationException("Can`t set an expiration time that had already passed.");
-      }
+    if (!isExpirationTimeInTheFuture(metadataExecutionTime)) {
+      throw new LcmValidationException(
+          "Can`t set an execution expiration time that had already passed.");
     }
+
+    if (!isExpirationTimeInTheFuture(metadataTransferTime)) {
+      throw new LcmValidationException(
+          "Can`t set an transfer expiration time that had already passed.");
+    }
+
     metaDataDao.save(metadata);
   }
 
@@ -116,6 +118,8 @@ public class MetaDataService {
     String oldExecutionTime = oldMetadataWrapper.getExpirationTime().getExecutionExpirationTime();
     String updatedExecutionTime =
         updatedMetadataWrapper.getExpirationTime().getExecutionExpirationTime();
+    String updatedTransferTime =
+        updatedMetadataWrapper.getExpirationTime().getTransferExpirationTime();
 
     if (oldExecutionTime != null) {
       if (!oldExecutionTime.equals(updatedExecutionTime)) {
@@ -124,15 +128,14 @@ public class MetaDataService {
       }
     }
 
-    String updatedTransferTime =
-        updatedMetadataWrapper.getExpirationTime().getTransferExpirationTime();
-    if (updatedExecutionTime != null && updatedTransferTime != null) {
-      long execTime = getExecutionExpirationTime(updatedExecutionTime);
-      long transferTime = getTransferExpirationTime(updatedTransferTime);
+    if (!isExpirationTimeInTheFuture(updatedExecutionTime)) {
+      throw new LcmValidationException(
+          "Can`t set an execution expiration time that had already passed.");
+    }
 
-      if (!isExpirationTimeInTheFuture(execTime) || !isExpirationTimeInTheFuture(transferTime)) {
-        throw new LcmValidationException("Can`t set an expiration time that had already passed.");
-      }
+    if (!isExpirationTimeInTheFuture(updatedTransferTime)) {
+      throw new LcmValidationException(
+          "Can`t set an transfer expiration time that had already passed.");
     }
     metaDataDao.save(metadata);
   }
@@ -143,39 +146,34 @@ public class MetaDataService {
     metaDataDao.save(metadata);
   }
 
-  private long getExecutionExpirationTime(String executionTime) {
-    return convertTimestampSecondsToMiliseconds(executionTime);
-  }
+  private boolean isExpirationTimeInTheFuture(String expirationTimestamp) {
+    if (expirationTimestamp != null) {
+      long expirationTimeInMiliseconds = convertTimestampToMiliseconds(expirationTimestamp);
+      Date currentDate = new Date();
+      Calendar currentCal = Calendar.getInstance();
+      int currentYear = currentCal.get(Calendar.YEAR);
 
-  private long getTransferExpirationTime(String transferTime) {
-    return convertTimestampSecondsToMiliseconds(transferTime);
-  }
+      long currentExpirationTimeInMiliseconds = currentDate.getTime();
 
-  private boolean isExpirationTimeInTheFuture(long expirationTimeInMiliseconds) {
-    Date currentDate = new Date();
-    Calendar currentCal = Calendar.getInstance();
-    int currentYear = currentCal.get(Calendar.YEAR);
+      Date timestampDate = new Date(expirationTimeInMiliseconds);
+      Calendar timestampCal = Calendar.getInstance();
+      timestampCal.setTime(timestampDate);
+      int timestampYear = timestampCal.get(Calendar.YEAR);
 
-    long currentExpirationTimeInMiliseconds = currentDate.getTime();
-
-    Date timestampDate = new Date(expirationTimeInMiliseconds);
-    Calendar timestampCal = Calendar.getInstance();
-    timestampCal.setTime(timestampDate);
-    int timestampYear = timestampCal.get(Calendar.YEAR);
-
-    if (timestampYear > currentYear + MAX_EXPIRATION_YEAR_DURATION) {
-      LOGGER.warn("The expiration time of the metadata is too late in the future: "
-          + expirationTimeInMiliseconds + ".");
-      return false;
-    } else if (expirationTimeInMiliseconds <= currentExpirationTimeInMiliseconds) {
-      LOGGER.warn("The expiration time of the metadata has already passed: "
-          + expirationTimeInMiliseconds + ".");
-      return false;
+      if (timestampYear > currentYear + MAX_EXPIRATION_YEAR_DURATION) {
+        LOGGER.warn("The expiration time of the metadata is too late in the future: "
+            + expirationTimeInMiliseconds + ".");
+        return false;
+      } else if (expirationTimeInMiliseconds <= currentExpirationTimeInMiliseconds) {
+        LOGGER.warn("The expiration time of the metadata has already passed: "
+            + expirationTimeInMiliseconds + ".");
+        return false;
+      }
     }
     return true;
   }
 
-  private long convertTimestampSecondsToMiliseconds(String timestamp) {
+  private long convertTimestampToMiliseconds(String timestamp) {
     return Long.parseLong(timestamp) * 1000;
   }
 

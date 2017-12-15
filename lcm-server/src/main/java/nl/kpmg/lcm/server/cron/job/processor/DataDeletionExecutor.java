@@ -18,7 +18,7 @@ import nl.kpmg.lcm.common.data.metadata.MetaDataWrapper;
 import nl.kpmg.lcm.server.cron.TaskResult;
 import nl.kpmg.lcm.server.cron.exception.CronJobExecutionException;
 import nl.kpmg.lcm.server.cron.job.AbstractDataProcessor;
-import nl.kpmg.lcm.server.data.service.RemoteLcmDataDeleteService;
+import nl.kpmg.lcm.server.data.service.RemoteDataDeletionService;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -36,7 +36,7 @@ public class DataDeletionExecutor extends AbstractDataProcessor {
       .getLogger(DataDeletionExecutor.class.getName());
 
   @Autowired
-  RemoteLcmDataDeleteService service;
+  RemoteDataDeletionService service;
 
   @Override
   protected TaskResult execute(MetaDataWrapper metadataWrapper, Map options)
