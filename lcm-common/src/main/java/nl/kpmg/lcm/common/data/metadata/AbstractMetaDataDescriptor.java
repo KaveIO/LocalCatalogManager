@@ -65,6 +65,15 @@ public abstract class AbstractMetaDataDescriptor {
     getMap().put(fieldName, value);
   }
 
+  protected final void remove(final String fieldName) {
+    if (getMap() == null) {
+      return;
+    }
+
+    getMap().remove(fieldName);
+  }
+
+
   protected final void validateField(String fieldName, Notification notification) {
     if (getMap().get(fieldName) == null) {
       notification.addError("Error: Section \"" + fieldName + "\" is not found");

@@ -706,10 +706,12 @@ public class RestClientService {
     }
   }
 
-  public void deleteRemoteData(String metadataId) throws ServerException, AuthenticationException,
+  public void deleteRemoteData(String metadataId, String lcmId) throws ServerException, AuthenticationException,
       DataCreationException {
-    String path = "client/v0/remoteData/" + metadataId + "/delete";
-    Invocation.Builder client = getClient(path);
+    String path = "client/v0/remoteData/" + metadataId;
+    Map<String, String> parameters =  new HashMap();
+    parameters.put("lcmId", lcmId);
+    Invocation.Builder client = getClient(path, parameters);
     Response delete = client.delete();
 
     Response.StatusType statusInfo = delete.getStatusInfo();

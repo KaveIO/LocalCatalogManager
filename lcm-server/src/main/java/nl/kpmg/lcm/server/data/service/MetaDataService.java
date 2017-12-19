@@ -116,6 +116,7 @@ public class MetaDataService {
     MetaDataWrapper updatedMetadataWrapper = new MetaDataWrapper(metadata);
 
     String oldExecutionTime = oldMetadataWrapper.getExpirationTime().getExecutionExpirationTime();
+    String oldTransferTime = oldMetadataWrapper.getExpirationTime().getTransferExpirationTime();
     String updatedExecutionTime =
         updatedMetadataWrapper.getExpirationTime().getExecutionExpirationTime();
     String updatedTransferTime =
@@ -128,12 +129,8 @@ public class MetaDataService {
       }
     }
 
-    if (!isExpirationTimeInTheFuture(updatedExecutionTime)) {
-      throw new LcmValidationException(
-          "Can`t set an execution expiration time that had already passed.");
-    }
-
-    if (!isExpirationTimeInTheFuture(updatedTransferTime)) {
+    if (updatedTransferTime != null && !updatedTransferTime.equals(oldTransferTime)
+        && !isExpirationTimeInTheFuture(updatedTransferTime)) {
       throw new LcmValidationException(
           "Can`t set an transfer expiration time that had already passed.");
     }

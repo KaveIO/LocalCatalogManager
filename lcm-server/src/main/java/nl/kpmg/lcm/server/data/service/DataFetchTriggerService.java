@@ -202,6 +202,7 @@ public class DataFetchTriggerService {
     String newExecutionTime = metaDataWrapper.getExpirationTime().getTransferExpirationTime();
     if(newExecutionTime != null) {
         metaDataWrapper.getExpirationTime().setExecutionExpirationTime(newExecutionTime);
+        metaDataWrapper.getExpirationTime().removeTransferExpirationTime();
     }
 
     metaDataService.create(metaDataWrapper.getMetaData());

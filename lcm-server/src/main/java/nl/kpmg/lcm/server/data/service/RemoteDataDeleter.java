@@ -14,7 +14,9 @@
 package nl.kpmg.lcm.server.data.service;
 
 import nl.kpmg.lcm.common.data.DataFormat;
+import nl.kpmg.lcm.common.data.EnrichmentProperties;
 import nl.kpmg.lcm.common.data.ProgressIndication;
+import nl.kpmg.lcm.common.data.TaskDescription;
 import nl.kpmg.lcm.common.data.metadata.DataItemsDescriptor;
 import nl.kpmg.lcm.common.data.metadata.MetaData;
 import nl.kpmg.lcm.common.data.metadata.MetaDataWrapper;
@@ -25,30 +27,36 @@ import nl.kpmg.lcm.server.backend.BackendHiveImpl;
 import nl.kpmg.lcm.server.backend.BackendJsonImpl;
 import nl.kpmg.lcm.server.backend.BackendMongoImpl;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.util.Map;
 
 /**
  *
  * @author shristov
  */
-public class DataDeletable implements Runnable {
+public class RemoteDataDeleter {
 
-  private MetaData metadata;
+  private final Logger LOGGER = LoggerFactory.getLogger(RemoteDataDeleter.class.getName());
+
+  private MetaDataService metadataService;
   private StorageService storageService;
   private TaskDescriptionService taskDescriptionService;
+
+  private MetaData metadata;
   private String taskId;
 
-  public DataDeletable(StorageService storageService,
+  public RemoteDataDeleter(MetaDataService metadataService, StorageService storageService,
       TaskDescriptionService taskDescriptionService, MetaData metadata, String taskId) {
-
+    this.metadataService = metadataService;
     this.storageService = storageService;
     this.taskDescriptionService = taskDescriptionService;
     this.metadata = metadata;
     this.taskId = taskId;
   }
 
-  @Override
-  public void run() {
+  public void deleteRemoteData() {
     Backend backend = getBackend();
     MetaDataWrapper wrapper = new MetaDataWrapper(metadata);
     Map<String, DataItemsDescriptor> map = wrapper.getDynamicData().getAllDynamicDataDescriptors();
@@ -58,9 +66,30 @@ public class DataDeletable implements Runnable {
     for (String key : map.keySet()) {
       backend.delete(key);
     }
+
     if (taskId != null) {
       taskDescriptionService.updateProgress(taskId, new ProgressIndication(
           "Deletion finished successfully!"));
+
+      TaskDescription task = taskDescriptionService.findOne(taskId);
+      EnrichmentProperties enrichment;
+      enrichment = wrapper.getEnrichmentProperties().getEnrichmentProperties();
+
+      // metadata enrichment is empty and there is storage enrichment section
+      if (enrichment == null && task.getOptions() != null) {
+        enrichment = new EnrichmentProperties(task.getOptions());
+      }
+
+      // If no preset enrichment properties are found then set the default enrichment properties.
+      if (enrichment == null) {
+        enrichment = EnrichmentProperties.createDefaultEnrichmentProperties();
+      }
+
+      try {
+        metadataService.enrichMetadata(wrapper, enrichment);
+      } catch (Exception e) {
+        LOGGER.error("Unableto enrich metadata. Metadata id: " + wrapper.getId());
+      }
     }
   }
 

@@ -64,6 +64,7 @@ public class SchedulePanel extends CustomComponent {
   private ComboBox remoteLcmListComboBox;
   private TextField searchField;
   private Map<String, String> remoteLcmUrlMap = new HashMap();
+  private String lastRemoteLcmId;
 
   public SchedulePanel(RestClientService restClientService) {
     this.restClientService = restClientService;
@@ -206,10 +207,9 @@ public class SchedulePanel extends CustomComponent {
       @Override
       public void buttonClick(Button.ClickEvent event) {
         MetaDataRepresentation data = (MetaDataRepresentation) event.getButton().getData();
-        String id = (String) remoteLcmListComboBox.getValue();
-        String url = remoteLcmUrlMap.get(id);
+        String url = remoteLcmUrlMap.get(lastRemoteLcmId);
         StartTransferWindow storageCreateWindow =
-            new StartTransferWindow(restClientService, id, url, data.getItem());
+            new StartTransferWindow(restClientService, lastRemoteLcmId, url, data.getItem());
         UI.getCurrent().addWindow(storageCreateWindow);
       }
     });
@@ -248,7 +248,7 @@ public class SchedulePanel extends CustomComponent {
       @Override
       public void buttonClick(Button.ClickEvent event) {
         try {
-          restClientService.deleteRemoteData(metadata.getId());
+          restClientService.deleteRemoteData(metadata.getId(), lastRemoteLcmId);
           Notification.show("Remote data deletion started successfully.");
         } catch (Exception ex) {
           Notification.show("Unable to delete the remote data.");
@@ -267,6 +267,7 @@ public class SchedulePanel extends CustomComponent {
     public void buttonClick(Button.ClickEvent event) {
       try {
         String id = (String) remoteLcmListComboBox.getValue();
+        lastRemoteLcmId = id;
         MetaDatasRepresentation result = restClientService.getRemoteMetadata(id);
         remoteMetadataTable.removeAllItems();
         if (result != null) {

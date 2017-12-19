@@ -68,6 +68,10 @@ public class ExpirationTimeDescriptor extends AbstractMetaDataDescriptor {
     return get("transfer");
   }
 
+  public final void removeTransferExpirationTime() {
+    remove("transfer");
+  }
+
   @Override
   public String getSectionName() {
     return "expiration-time";

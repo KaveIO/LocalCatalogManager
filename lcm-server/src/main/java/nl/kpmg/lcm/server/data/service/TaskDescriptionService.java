@@ -16,9 +16,11 @@ package nl.kpmg.lcm.server.data.service;
 
 import jersey.repackaged.com.google.common.collect.Lists;
 
+import nl.kpmg.lcm.common.data.DataState;
 import nl.kpmg.lcm.common.data.ProgressIndication;
 import nl.kpmg.lcm.common.data.TaskDescription;
 import nl.kpmg.lcm.common.data.TaskType;
+import nl.kpmg.lcm.common.data.metadata.DataItemsDescriptor;
 import nl.kpmg.lcm.common.data.metadata.MetaData;
 import nl.kpmg.lcm.common.data.metadata.MetaDataWrapper;
 import nl.kpmg.lcm.server.cron.job.processor.DataDeletionExecutor;
@@ -159,10 +161,11 @@ public class TaskDescriptionService {
     taskDescriptionDao.deleteAll();
   }
 
-  public boolean doesExistTypeAndTarget(TaskType type, String target) {
+  public boolean doesExistTaskDescription(TaskType type, String target,
+      TaskDescription.TaskStatus status) {
     List<TaskDescription> list = findByType(type);
     for (TaskDescription task : list) {
-      if (task.getTarget().equals(target))
+      if (task.getTarget().equals(target) && task.getStatus() == status)
         return true;
     }
     return false;
@@ -188,7 +191,30 @@ public class TaskDescriptionService {
         continue;
       }
 
-      if (doesExistTypeAndTarget(TaskType.DELETE, metadataWrapper.getId())) {
+      if (doesExistTaskDescription(TaskType.DELETE, metadataWrapper.getId(),
+          TaskDescription.TaskStatus.PENDING)
+          || doesExistTaskDescription(TaskType.DELETE, metadataWrapper.getId(),
+              TaskDescription.TaskStatus.SCHEDULED)
+          || doesExistTaskDescription(TaskType.DELETE, metadataWrapper.getId(),
+              TaskDescription.TaskStatus.RUNNING)) {
+        continue;
+      }
+
+      if (metadataWrapper.getDynamicData().getAllDynamicDataDescriptors() == null) {
+        continue;
+      }
+
+      boolean willBeCreatedTaskDescription = false;
+      for (String key : metadataWrapper.getDynamicData().getAllDynamicDataDescriptors().keySet()) {
+        DataItemsDescriptor dynamicDataDescriptor =
+            metadataWrapper.getDynamicData().getDynamicDataDescriptor(key);
+        if (dynamicDataDescriptor.getDetailsDescriptor().getState().equals(DataState.ATTACHED)) {
+          willBeCreatedTaskDescription = true;
+          break;
+        }
+
+      }
+      if (!willBeCreatedTaskDescription) {
         continue;
       }
 

@@ -76,7 +76,7 @@ public class TaskDescriptionController {
   public final TaskDescriptionsRepresentation getOverview(
       @ApiParam( value = "Task description status.", allowableValues = "PENDING, SCHEDULED, RUNNING, FAILED, SUCCESS")
       @QueryParam("status") final TaskDescription.TaskStatus status,
-      @ApiParam( value = "Task description type.", allowableValues = "FETCH, ENRICHMENT, ENRICHMENT_MANAGER") 
+      @ApiParam( value = "Task description type.", allowableValues = "FETCH, ENRICHMENT, TASK_MANAGER")
       @QueryParam("type") final TaskType type, 
       @ApiParam( value = "Maximum returned items.") 
       @QueryParam("limit") final Integer limit) {

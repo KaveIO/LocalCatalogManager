@@ -15,65 +15,66 @@ package nl.kpmg.lcm.server.rest.client.version0;
 
 import nl.kpmg.lcm.common.Roles;
 import nl.kpmg.lcm.common.data.User;
-import nl.kpmg.lcm.common.data.metadata.MetaData;
-import nl.kpmg.lcm.common.data.metadata.TransferHistoryDescriptor;
-import nl.kpmg.lcm.common.exception.LcmException;
-import nl.kpmg.lcm.server.data.service.MetaDataService;
+import nl.kpmg.lcm.common.exception.LcmValidationException;
+import nl.kpmg.lcm.common.validation.Notification;
 import nl.kpmg.lcm.server.data.service.RemoteDataDeletionService;
 import nl.kpmg.lcm.server.rest.authorization.PermissionChecker;
 
 import org.springframework.beans.factory.annotation.Autowired;
 
-import java.util.List;
-
 import javax.annotation.security.RolesAllowed;
 import javax.ws.rs.DELETE;
-import javax.ws.rs.NotFoundException;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
+import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.SecurityContext;
+
+import io.swagger.annotations.Api;
+import io.swagger.annotations.ApiOperation;
+import io.swagger.annotations.ApiParam;
+import io.swagger.annotations.ApiResponse;
+import io.swagger.annotations.ApiResponses;
 
 /**
  *
  * @author shristov
  */
 @Path("client/v0/remoteData/")
+@Api(value = "v0 delete data on Remote LCM")
 public class RemoteDataDeletionController {
-
-  @Autowired
-  private MetaDataService metaDataService;
-
-  @Autowired
-  private PermissionChecker permissionChecker;
 
   @Autowired
   private RemoteDataDeletionService service;
 
+  private final int MAX_FIELD_LENGTH = 128;
+
   @DELETE
-  @Path("{metadata_id}/delete")
-  @RolesAllowed({Roles.ADMINISTRATOR, Roles.REMOTE_USER})
-  public final Response deleteActualData(@Context SecurityContext securityContext,
-      @PathParam("metadata_id") final String metadataId) {
-    MetaData metadata = metaDataService.findById(metadataId);
-    if (metadata == null) {
-      throw new NotFoundException(String.format("MetaData with id %s could not be found",
-          metadataId));
-    }
+  @Path("{metadata_id}")
+  @RolesAllowed({Roles.ADMINISTRATOR})
+  @ApiOperation(value = "Delete data on Remote LCM.", notes = "Roles: " + Roles.ADMINISTRATOR)
+  @ApiResponses(value = {@ApiResponse(code = 200, message = "OK")})
+  public final Response deleteActualData(@Context SecurityContext securityContext, @ApiParam(
+      value = "Metadata Id") @PathParam("metadata_id") final String metadataId, @ApiParam(
+      value = "Remote LCM Id") @QueryParam("lcmId") String lcmId) {
+
+    validateRemoteLcmField(metadataId, "Metadata Id");
+    validateRemoteLcmField(lcmId, "Remote Lcm ID");
 
     User principal = (User) securityContext.getUserPrincipal();
-    TransferHistoryDescriptor descriptor = new TransferHistoryDescriptor((metadata));
-    List<String> transferHistory = descriptor.getTransferHistory();
-    if (!principal.getOrigin().equals(
-        transferHistory.get(transferHistory.size() - 1))) {
-      throw new LcmException(String.format(
-          "LCM with id: %s is not the last one that had transferred the metadata with id: %s.",
-          principal.getOrigin(), metadataId), Response.Status.FORBIDDEN);
-    }
-
-    service.deleteData(metadata);
+    PermissionChecker.getThreadLocal().set(principal);
+    service.deleteRemoteData(lcmId, metadataId);
 
     return Response.ok().build();
+  }
+
+  private void validateRemoteLcmField(final String field, String fieldName) {
+    if (field == null || field.isEmpty() || field.length() > MAX_FIELD_LENGTH) {
+      Notification notification = new Notification();
+      notification.addError(fieldName + " could not be null, empty or longer than "
+          + MAX_FIELD_LENGTH + "!", null);
+      throw new LcmValidationException(notification);
+    }
   }
 }

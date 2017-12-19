@@ -58,7 +58,7 @@ import io.swagger.annotations.ApiResponses;
 @Path("client/v0/remoteLcm")
 @Api(value = "v0 remote lcm")
 public class RemoteLcmController {
-  private final int MAX_FIELD_LENTH = 128;
+  private final int MAX_FIELD_LENGTH = 128;
 
   private static final Logger LOGGER = LoggerFactory.getLogger(RemoteLcmController.class.getName());
 
@@ -233,10 +233,10 @@ public class RemoteLcmController {
   }
 
   private void validateRemoteLcmField(final String field, String fieldName) {
-    if (field == null || field.isEmpty() || field.length() > MAX_FIELD_LENTH) {
+    if (field == null || field.isEmpty() || field.length() > MAX_FIELD_LENGTH) {
       Notification notification = new Notification();
       notification.addError(fieldName + " could not be null, empty or longer than "
-          + MAX_FIELD_LENTH + "!", null);
+          + MAX_FIELD_LENGTH + "!", null);
       throw new LcmValidationException(notification);
     }
   }

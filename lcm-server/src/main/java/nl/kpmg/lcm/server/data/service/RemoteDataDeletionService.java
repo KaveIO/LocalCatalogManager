@@ -13,10 +13,22 @@
  */
 package nl.kpmg.lcm.server.data.service;
 
-import nl.kpmg.lcm.common.data.metadata.MetaData;
+import static nl.kpmg.lcm.common.rest.authentication.AuthorizationConstants.LCM_AUTHENTICATION_ORIGIN_HEADER;
+import static nl.kpmg.lcm.common.rest.authentication.AuthorizationConstants.LCM_AUTHENTICATION_REMOTE_USER_HEADER;
 
+import nl.kpmg.lcm.common.ServerException;
+import nl.kpmg.lcm.common.client.HttpsClientFactory;
+import nl.kpmg.lcm.common.configuration.ClientConfiguration;
+import nl.kpmg.lcm.common.data.RemoteLcm;
+import nl.kpmg.lcm.common.exception.LcmException;
+import nl.kpmg.lcm.server.rest.authorization.PermissionChecker;
+
+import org.glassfish.jersey.client.authentication.HttpAuthenticationFeature;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+
+import javax.ws.rs.client.WebTarget;
+import javax.ws.rs.core.Response;
 
 /**
  *
@@ -24,21 +36,59 @@ import org.springframework.stereotype.Service;
  */
 @Service
 public class RemoteDataDeletionService {
+  @Autowired
+  private RemoteLcmService lcmService;
 
   @Autowired
-  private StorageService storageService;
+  private LcmIdService lcmIdService;
 
   @Autowired
-  private TaskDescriptionService taskDescriptionService;
+  private ClientConfiguration configuration;
 
-  public void deleteData(MetaData metadata, String taskId) {
-    DataDeletable deleter =
-        new DataDeletable(storageService, taskDescriptionService, metadata, taskId);
-    Thread thread = new Thread(deleter);
-    thread.start();
+  private HttpAuthenticationFeature credentials;
+
+  private final String REMOTE_DATA_PATH = "remote/v0/data";
+
+  public boolean deleteRemoteData(String remoteLcmId, String metadataId) {
+
+    try {
+      RemoteLcm lcm = lcmService.findOneById(remoteLcmId);
+      WebTarget webTarget = getWebTarget(lcm).path(REMOTE_DATA_PATH).path(metadataId);
+
+      String username = PermissionChecker.getThreadLocal().get().getName();
+      String self = lcmIdService.getLcmIdObject().getLcmId();
+      Response response =
+          webTarget.request().header(LCM_AUTHENTICATION_REMOTE_USER_HEADER, username)
+              .header(LCM_AUTHENTICATION_ORIGIN_HEADER, self).delete();
+
+      if (response.getStatusInfo().getFamily() == Response.Status.Family.SUCCESSFUL) {
+        return true;
+      }
+    } catch (ServerException ex) {
+      throw new LcmException("Unable to delete remote data", ex);
+    }
+
+    return false;
   }
 
-  public void deleteData(MetaData metadata) {
-    deleteData(metadata, null);
+  private WebTarget getWebTarget(RemoteLcm lcm) throws ServerException {
+    if (credentials == null) {
+      credentials =
+          HttpAuthenticationFeature.basicBuilder()
+              .credentials(lcm.getApplicationId(), lcm.getApplicationKey()).build();
+    }
+    HttpsClientFactory clientFactory = new HttpsClientFactory(configuration, credentials);
+    configuration.setTargetHost(lcm.getDomain());
+    configuration.setTargetPort(lcm.getPort().toString());
+    return clientFactory.createWebTarget(buildRemoteUrl(lcm));
   }
+
+  private String buildRemoteUrl(RemoteLcm lcm) {
+    String url = String.format("%s://%s", lcm.getProtocol(), lcm.getDomain());
+    if (lcm.getPort() != null) {
+      url += ":" + lcm.getPort();
+    }
+    return url;
+  }
+
 }
