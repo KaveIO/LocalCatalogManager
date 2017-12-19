@@ -1,6 +1,8 @@
 **/nb-configuration.xml
 **/nbactions*.xml
 **/__pycache__/
+**/certificates/
+**/.idea/
 
 /target/
 /lcm-common/target/
