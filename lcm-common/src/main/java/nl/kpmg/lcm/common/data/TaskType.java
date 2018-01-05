@@ -28,6 +28,6 @@ public enum TaskType {
   DELETE,
 
   /* Main data manager tasks */
-  TASK_MANAGER;
+  TASK_MANAGER
 
 }
