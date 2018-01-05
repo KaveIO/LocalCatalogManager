@@ -15,16 +15,17 @@
 package nl.kpmg.lcm.server.rest.client.version0;
 
 
+import nl.kpmg.lcm.common.data.RemoteLcm;
+import nl.kpmg.lcm.common.data.RemoteLcmTestResult;
+import nl.kpmg.lcm.common.exception.LcmValidationException;
 import nl.kpmg.lcm.common.rest.types.RemoteLcmRepresentation;
 import nl.kpmg.lcm.common.rest.types.RemoteLcmsRepresentation;
-import nl.kpmg.lcm.common.data.RemoteLcm;
+import nl.kpmg.lcm.common.validation.Notification;
 import nl.kpmg.lcm.server.data.dao.RemoteLcmDao;
 import nl.kpmg.lcm.server.data.service.RemoteLcmService;
-import nl.kpmg.lcm.common.exception.LcmValidationException;
 import nl.kpmg.lcm.server.rest.authentication.Roles;
 import nl.kpmg.lcm.server.rest.client.version0.types.ConcreteRemoteLcmRepresentation;
 import nl.kpmg.lcm.server.rest.client.version0.types.ConcreteRemoteLcmsRepresentation;
-import nl.kpmg.lcm.common.validation.Notification;
 
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -129,5 +130,20 @@ public class RemoteLcmController {
     service.getDao().delete(lcm.getItem());
     return Response.ok().build();
   }
+
+  @GET
+  @Path("status/{id}")
+  @Produces({"application/nl.kpmg.lcm.rest.types.MetaDatasRepresentation+json"})
+  @RolesAllowed({Roles.ADMINISTRATOR})
+  public RemoteLcmTestResult getRemoteLcmStatus(@PathParam("id") final String id)  {
+    if (id == null || id.isEmpty()) {
+      Notification notification = new Notification();
+      notification.addError("Id could not be null ot empty!", null);
+      throw new LcmValidationException(notification);
+    }
+
+    return service.testRemoteLcmConnectivity(id);
+  }
+
 
 }

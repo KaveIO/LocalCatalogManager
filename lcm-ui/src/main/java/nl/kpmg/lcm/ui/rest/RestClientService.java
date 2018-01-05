@@ -18,9 +18,11 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.vaadin.server.VaadinService;
 import com.vaadin.server.WrappedSession;
 
+import nl.kpmg.lcm.common.ServerException;
 import nl.kpmg.lcm.common.client.ClientException;
 import nl.kpmg.lcm.common.client.HttpsClientFactory;
 import nl.kpmg.lcm.common.configuration.ClientConfiguration;
+import nl.kpmg.lcm.common.data.RemoteLcmTestResult;
 import nl.kpmg.lcm.common.rest.types.AbstractRepresentation;
 import nl.kpmg.lcm.common.rest.types.MetaDatasRepresentation;
 import nl.kpmg.lcm.common.rest.types.RemoteLcmsRepresentation;
@@ -29,7 +31,6 @@ import nl.kpmg.lcm.common.rest.types.TaskDescriptionsRepresentation;
 import nl.kpmg.lcm.common.rest.types.TaskScheduleRepresentation;
 import nl.kpmg.lcm.common.rest.types.UserGroupsRepresentation;
 import nl.kpmg.lcm.common.rest.types.UsersRepresentation;
-import nl.kpmg.lcm.common.ServerException;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -183,10 +184,38 @@ public class RestClientService {
     return getDatasRepresentation("client/v0/storage", StoragesRepresentation.class);
   }
 
-
-  public RemoteLcmsRepresentation getRemoteLcm()
-      throws AuthenticationException, ServerException, ClientException {
+  public RemoteLcmsRepresentation getRemoteLcm() throws AuthenticationException, ServerException,
+      ClientException {
     return getDatasRepresentation("client/v0/remoteLcm", RemoteLcmsRepresentation.class);
+  }
+
+  public RemoteLcmTestResult testRemoteLcm(String remoteLcmId) {
+    String path = "client/v0/remoteLcm/status/" + remoteLcmId;
+    LOGGER.info(String.format("Executing test remote LCM on LCM-Server on path: %s", path));
+    try {
+      Response response = getClient(path).get();
+      if (response.getStatusInfo().getFamily() == Response.Status.Family.SUCCESSFUL) {
+        RemoteLcmTestResult result = response.readEntity(RemoteLcmTestResult.class);
+        return result;
+      } else {
+        String message =
+            String.format("Test to LCM-Server failed with: %d - %s", response.getStatus(), response
+                .getStatusInfo().getReasonPhrase());
+        LOGGER.info(message);
+        return new RemoteLcmTestResult(message, RemoteLcmTestResult.TestCode.INACCESSIBLE);
+      }
+    } catch (AuthenticationException ex) {
+      String message =
+          String.format("Test to LCM-Server failed with authentication exception: %s ",
+              ex.getMessage());
+      LOGGER.info(message);
+      return new RemoteLcmTestResult(message, RemoteLcmTestResult.TestCode.INACCESSIBLE);
+    } catch (ServerException ex) {
+      String message =
+          String.format("Test to LCM-Server failed with server exception: %s ", ex.getMessage());
+      LOGGER.info(message);
+      return new RemoteLcmTestResult(message, RemoteLcmTestResult.TestCode.INACCESSIBLE);
+    }
   }
 
   public TaskDescriptionsRepresentation getTasks()

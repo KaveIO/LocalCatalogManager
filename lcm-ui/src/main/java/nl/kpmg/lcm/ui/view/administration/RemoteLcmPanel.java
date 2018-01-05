@@ -24,17 +24,18 @@ import com.vaadin.ui.UI;
 import com.vaadin.ui.VerticalLayout;
 import com.vaadin.ui.Window;
 
+import nl.kpmg.lcm.common.ServerException;
 import nl.kpmg.lcm.common.client.ClientException;
+import nl.kpmg.lcm.common.data.RemoteLcm;
 import nl.kpmg.lcm.common.rest.types.RemoteLcmRepresentation;
 import nl.kpmg.lcm.common.rest.types.RemoteLcmsRepresentation;
-import nl.kpmg.lcm.common.ServerException;
-import nl.kpmg.lcm.common.data.RemoteLcm;
 import nl.kpmg.lcm.ui.component.DefinedLabel;
 import nl.kpmg.lcm.ui.rest.AuthenticationException;
 import nl.kpmg.lcm.ui.rest.RestClientService;
 import nl.kpmg.lcm.ui.view.administration.components.RemoteLcmCreateWindow;
 import nl.kpmg.lcm.ui.view.administration.listeners.DeleteRemoteLcmListener;
 import nl.kpmg.lcm.ui.view.administration.listeners.EditRemoteLcmListener;
+import nl.kpmg.lcm.ui.view.administration.listeners.TestRemoteLcmListener;
 
 import org.slf4j.LoggerFactory;
 
@@ -147,6 +148,7 @@ public class RemoteLcmPanel extends CustomComponent implements DynamicDataContai
     table.addContainerProperty("Protocol", String.class, null);
     table.addContainerProperty("Address", String.class, null);
     table.addContainerProperty("Port", String.class, null);
+    table.addContainerProperty("Status", String.class, null);
     table.addContainerProperty("Actions", HorizontalLayout.class, null);
 
     return table;
@@ -169,10 +171,13 @@ public class RemoteLcmPanel extends CustomComponent implements DynamicDataContai
         RemoteLcm remoteLcm = item.getItem();
 
         HorizontalLayout actionsLayout = createActionsLayout(item);
-
-        remoteLcmTable.addItem(
-            new Object[] {remoteLcm.getName(), remoteLcm.getProtocol(), remoteLcm.getDomain(),
-                remoteLcm.getPort().toString(), actionsLayout}, remoteLcm.getId());
+        String code = "";
+        if (remoteLcm.getStatus() != null && remoteLcm.getStatus().contains(":")) {
+          code = remoteLcm.getStatus().split(":")[0];
+        }
+        remoteLcmTable.addItem(new Object[] {remoteLcm.getName(), remoteLcm.getProtocol(),
+            remoteLcm.getDomain(), remoteLcm.getPort().toString(), code, actionsLayout},
+            remoteLcm.getId());
       }
     }
   }
@@ -196,6 +201,7 @@ public class RemoteLcmPanel extends CustomComponent implements DynamicDataContai
     String url =
         String.format(template, item.getProtocol(), item.getDomain(), item.getPort().toString());
     panelContent.addComponent(new DefinedLabel("URL", url));
+    panelContent.addComponent(new DefinedLabel("Status", item.getStatus()));
 
     detailsPanel.setContent(panelContent);
   }
@@ -227,9 +233,15 @@ public class RemoteLcmPanel extends CustomComponent implements DynamicDataContai
     deleteButton.addClickListener(new DeleteRemoteLcmListener(this, restClientService));
     deleteButton.addStyleName("link");
 
+    Button testButton = new Button("test");
+    testButton.setData(item);
+    testButton.addClickListener(new TestRemoteLcmListener(this, restClientService));
+    //testButton.addStyleName("link");
+
     actionsLayout.addComponent(viewButton);
     actionsLayout.addComponent(editButton);
     actionsLayout.addComponent(deleteButton);
+    actionsLayout.addComponent(testButton);
 
     return actionsLayout;
   }

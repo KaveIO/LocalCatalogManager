@@ -38,6 +38,8 @@ public class RemoteLcm extends AbstractModel {
    */
   private Integer port;
 
+  private String status;
+
   /**
    * @return the domain
    */
@@ -92,5 +94,19 @@ public class RemoteLcm extends AbstractModel {
      */
     public void setName(String name) {
         this.name = name;
+    }
+
+    /**
+     * @return the lastStatus
+     */
+    public String getStatus() {
+        return status;
+    }
+
+    /**
+     * @param status the lastStatus to set
+     */
+    public void setStatus(String status) {
+        this.status = status;
     }
 }
