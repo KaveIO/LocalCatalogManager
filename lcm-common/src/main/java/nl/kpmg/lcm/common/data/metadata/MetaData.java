@@ -16,6 +16,7 @@ package nl.kpmg.lcm.common.data.metadata;
 
 import com.fasterxml.jackson.annotation.JsonAnyGetter;
 import com.fasterxml.jackson.annotation.JsonAnySetter;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 
 import nl.kpmg.lcm.common.data.AbstractModel;
 
@@ -154,6 +155,7 @@ public class MetaData extends AbstractModel implements MetaDataIdentificator {
     }
   }
 
+  @JsonIgnore
   @Override
   public final String getName() {
     if (innerMap.containsKey("name")) {
@@ -163,11 +165,13 @@ public class MetaData extends AbstractModel implements MetaDataIdentificator {
     return null;
   }
 
+  @JsonIgnore
   @Override
   public final void setName(final String name) {
     innerMap.put("name", name);
   }
 
+  @JsonIgnore
   public Map getInnerMap() {
     return innerMap;
   }

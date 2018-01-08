@@ -17,13 +17,13 @@ package nl.kpmg.lcm.server.data.service;
 import jersey.repackaged.com.google.common.collect.Lists;
 
 import nl.kpmg.lcm.common.Constants;
-import nl.kpmg.lcm.server.backend.Backend;
 import nl.kpmg.lcm.common.data.EnrichmentProperties;
-import nl.kpmg.lcm.server.data.dao.MetaDataDao;
 import nl.kpmg.lcm.common.data.metadata.MetaData;
 import nl.kpmg.lcm.common.data.metadata.MetaDataWrapper;
 import nl.kpmg.lcm.common.exception.LcmException;
 import nl.kpmg.lcm.common.exception.LcmValidationException;
+import nl.kpmg.lcm.server.backend.Backend;
+import nl.kpmg.lcm.server.data.dao.MetaDataDao;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -115,8 +115,10 @@ public class MetaDataService {
         updatedMetaData = backend.enrichMetadata(enrichment);
       } catch (LcmValidationException ex) {
         LOGGER.info("Unable to get metadata info. Error: " + ex.getNotification().errorMessage());
+        return false;
       } catch (LcmException ex) {
         LOGGER.info("Unable to get metadata info. Error: " + ex.getMessage());
+        return false;
       }
       if (updatedMetaData != null) {
         update(updatedMetaData);

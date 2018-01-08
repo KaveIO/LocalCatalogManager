@@ -22,6 +22,8 @@
             <list>
                 <value>classpath:application.properties</value>
                 <value>file:config/application.properties</value>
+                <value>classpath:security.properties</value>
+                <value>file:config/security.properties</value>
             </list>
         </property>
     </bean>

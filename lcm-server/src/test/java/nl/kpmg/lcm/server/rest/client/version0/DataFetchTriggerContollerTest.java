@@ -18,12 +18,8 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
-import nl.kpmg.lcm.common.configuration.ServerConfiguration;
-import nl.kpmg.lcm.common.rest.types.MetaDataRepresentation;
-import nl.kpmg.lcm.common.rest.types.MetaDatasRepresentation;
-import nl.kpmg.lcm.server.LcmBaseServerTest;
 import nl.kpmg.lcm.common.ServerException;
-import nl.kpmg.lcm.server.backend.Backend;
+import nl.kpmg.lcm.common.configuration.ServerConfiguration;
 import nl.kpmg.lcm.common.data.DataFormat;
 import nl.kpmg.lcm.common.data.IterativeData;
 import nl.kpmg.lcm.common.data.RemoteLcm;
@@ -31,6 +27,10 @@ import nl.kpmg.lcm.common.data.Storage;
 import nl.kpmg.lcm.common.data.TaskDescription;
 import nl.kpmg.lcm.common.data.metadata.MetaData;
 import nl.kpmg.lcm.common.data.metadata.MetaDataWrapper;
+import nl.kpmg.lcm.common.rest.types.MetaDataRepresentation;
+import nl.kpmg.lcm.common.rest.types.MetaDatasRepresentation;
+import nl.kpmg.lcm.server.LcmBaseServerTest;
+import nl.kpmg.lcm.server.backend.Backend;
 import nl.kpmg.lcm.server.data.service.StorageService;
 import nl.kpmg.lcm.server.data.service.TaskDescriptionService;
 import nl.kpmg.lcm.server.rest.authentication.BasicAuthenticationManager;
@@ -102,12 +102,7 @@ public class DataFetchTriggerContollerTest extends LcmBaseServerTest {
     getWebTarget().path("client/logout").request().header(AUTH_USER_HEADER, "admin")
         .header(BasicAuthenticationManager.BASIC_AUTHENTICATION_HEADER, basicAuthTokenAdmin)
         .post(null);
-    List<TaskDescription> tdList = taskDescriptionService.findAll();
-    for (TaskDescription td : tdList) {
-      if (td != null) {
-        taskDescriptionService.delete(td.getId());
-      }
-    }
+    taskDescriptionService.deleteAll();
   }
 
   @Before

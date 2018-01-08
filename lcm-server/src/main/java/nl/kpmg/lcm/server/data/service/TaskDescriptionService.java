@@ -100,4 +100,8 @@ public class TaskDescriptionService {
   public void delete(String taskId) {
     taskDescriptionDao.delete(taskId);
   }
+
+  public void deleteAll() {
+    taskDescriptionDao.deleteAll();
+  }
 }
