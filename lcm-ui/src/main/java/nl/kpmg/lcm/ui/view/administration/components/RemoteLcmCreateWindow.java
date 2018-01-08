@@ -158,6 +158,7 @@ public class RemoteLcmCreateWindow extends Window implements Button.ClickListene
       try {
         if (remoteLcm != null) {
           rootNode.put("id", remoteLcm.getId());
+          rootNode.put("status", remoteLcm.getStatus());
           restClientService.updateRemoteLcm(rootNode.toString());
           Notification.show("Update finished successfully.");
         } else {

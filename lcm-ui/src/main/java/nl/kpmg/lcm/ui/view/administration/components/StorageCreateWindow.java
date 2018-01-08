@@ -168,6 +168,7 @@ public class StorageCreateWindow extends Window implements Button.ClickListener 
       try {
         if (storage != null) {
           rootNode.put("id", storage.getId());
+          rootNode.put("status", storage.getStatus());
           restClientService.updateStorage(rootNode.toString());
           Notification.show("Update was successful.");
         } else {

@@ -22,7 +22,7 @@ import nl.kpmg.lcm.common.ServerException;
 import nl.kpmg.lcm.common.client.ClientException;
 import nl.kpmg.lcm.common.client.HttpsClientFactory;
 import nl.kpmg.lcm.common.configuration.ClientConfiguration;
-import nl.kpmg.lcm.common.data.RemoteLcmTestResult;
+import nl.kpmg.lcm.common.data.TestResult;
 import nl.kpmg.lcm.common.rest.types.AbstractRepresentation;
 import nl.kpmg.lcm.common.rest.types.MetaDatasRepresentation;
 import nl.kpmg.lcm.common.rest.types.RemoteLcmsRepresentation;
@@ -189,32 +189,32 @@ public class RestClientService {
     return getDatasRepresentation("client/v0/remoteLcm", RemoteLcmsRepresentation.class);
   }
 
-  public RemoteLcmTestResult testRemoteLcm(String remoteLcmId) {
+  public TestResult testRemoteLcm(String remoteLcmId) {
     String path = "client/v0/remoteLcm/status/" + remoteLcmId;
     LOGGER.info(String.format("Executing test remote LCM on LCM-Server on path: %s", path));
     try {
       Response response = getClient(path).get();
       if (response.getStatusInfo().getFamily() == Response.Status.Family.SUCCESSFUL) {
-        RemoteLcmTestResult result = response.readEntity(RemoteLcmTestResult.class);
+        TestResult result = response.readEntity(TestResult.class);
         return result;
       } else {
         String message =
             String.format("Test to LCM-Server failed with: %d - %s", response.getStatus(), response
                 .getStatusInfo().getReasonPhrase());
         LOGGER.info(message);
-        return new RemoteLcmTestResult(message, RemoteLcmTestResult.TestCode.INACCESSIBLE);
+        return new TestResult(message, TestResult.TestCode.INACCESSIBLE);
       }
     } catch (AuthenticationException ex) {
       String message =
           String.format("Test to LCM-Server failed with authentication exception: %s ",
               ex.getMessage());
       LOGGER.info(message);
-      return new RemoteLcmTestResult(message, RemoteLcmTestResult.TestCode.INACCESSIBLE);
+      return new TestResult(message, TestResult.TestCode.INACCESSIBLE);
     } catch (ServerException ex) {
       String message =
           String.format("Test to LCM-Server failed with server exception: %s ", ex.getMessage());
       LOGGER.info(message);
-      return new RemoteLcmTestResult(message, RemoteLcmTestResult.TestCode.INACCESSIBLE);
+      return new TestResult(message, TestResult.TestCode.INACCESSIBLE);
     }
   }
 
@@ -321,6 +321,35 @@ public class RestClientService {
     if (statusInfo.getFamily() != Response.Status.Family.SUCCESSFUL) {
       throw new DataCreationException(String.format("%s - %s", statusInfo.getStatusCode(),
           statusInfo.getReasonPhrase()));
+    }
+  }
+
+  public TestResult testStorage(String storageId) {
+    String path = "client/v0/storage/status/" + storageId;
+    LOGGER.info(String.format("Executing test about storage on path: %s", path));
+    try {
+      Response response = getClient(path).get();
+      if (response.getStatusInfo().getFamily() == Response.Status.Family.SUCCESSFUL) {
+        TestResult result = response.readEntity(TestResult.class);
+        return result;
+      } else {
+        String message =
+            String.format("Test to to storage failed with: %d - %s", response.getStatus(), response
+                .getStatusInfo().getReasonPhrase());
+        LOGGER.info(message);
+        return new TestResult(message, TestResult.TestCode.INACCESSIBLE);
+      }
+    } catch (AuthenticationException ex) {
+      String message =
+          String.format("Test to storage failed with authentication exception: %s ",
+              ex.getMessage());
+      LOGGER.info(message);
+      return new TestResult(message, TestResult.TestCode.INACCESSIBLE);
+    } catch (ServerException ex) {
+      String message =
+          String.format("Test to storage failed with server exception: %s ", ex.getMessage());
+      LOGGER.info(message);
+      return new TestResult(message, TestResult.TestCode.INACCESSIBLE);
     }
   }
 

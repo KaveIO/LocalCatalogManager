@@ -9,6 +9,7 @@ import com.amazonaws.services.s3.AmazonS3ClientBuilder;
 import com.amazonaws.services.s3.model.ObjectListing;
 import com.amazonaws.services.s3.model.S3ObjectSummary;
 
+import nl.kpmg.lcm.common.data.TestResult;
 import nl.kpmg.lcm.server.backend.storage.S3FileStorage;
 import nl.kpmg.lcm.server.data.FileSystemAdapter;
 
@@ -83,5 +84,16 @@ private static final org.slf4j.Logger LOGGER =
 
     return fileNameList;
   }
+
+    @Override
+    public TestResult testConnection() throws IOException {
+
+    boolean  result = s3Client.doesBucketExist(bucketName);
+    if(result){
+        return new TestResult("OK.", TestResult.TestCode.ACCESIBLE);
+    }
+    return new TestResult("Storage bucket does not exists or it is not accessible!",
+        TestResult.TestCode.INACCESSIBLE);
+    }
 
 }

@@ -24,17 +24,18 @@ import com.vaadin.ui.UI;
 import com.vaadin.ui.VerticalLayout;
 import com.vaadin.ui.Window;
 
+import nl.kpmg.lcm.common.ServerException;
 import nl.kpmg.lcm.common.client.ClientException;
+import nl.kpmg.lcm.common.data.Storage;
 import nl.kpmg.lcm.common.rest.types.StorageRepresentation;
 import nl.kpmg.lcm.common.rest.types.StoragesRepresentation;
-import nl.kpmg.lcm.common.ServerException;
-import nl.kpmg.lcm.common.data.Storage;
 import nl.kpmg.lcm.ui.component.DefinedLabel;
 import nl.kpmg.lcm.ui.rest.AuthenticationException;
 import nl.kpmg.lcm.ui.rest.RestClientService;
 import nl.kpmg.lcm.ui.view.administration.components.StorageCreateWindow;
 import nl.kpmg.lcm.ui.view.administration.listeners.DeleteStorageListener;
 import nl.kpmg.lcm.ui.view.administration.listeners.EditStorageListener;
+import nl.kpmg.lcm.ui.view.administration.listeners.TestStorageListener;
 
 import org.slf4j.LoggerFactory;
 
@@ -152,6 +153,7 @@ public class StoragePanel extends CustomComponent implements DynamicDataContaine
     table.setWidth("100%");
     table.addContainerProperty("Name", String.class, null);
     table.addContainerProperty("Type", String.class, null);
+    table.addContainerProperty("Status", String.class, null);
     table.addContainerProperty("Actions", HorizontalLayout.class, null);
 
     return table;
@@ -174,8 +176,11 @@ public class StoragePanel extends CustomComponent implements DynamicDataContaine
         Storage storage = item.getItem();
 
         HorizontalLayout actionsLayout = createActionsLayout(item);
-
-        storageTable.addItem(new Object[] {storage.getName(), storage.getType(),
+        String code = "";
+        if (storage.getStatus() != null && storage.getStatus().contains(":")) {
+          code = storage.getStatus().split(":")[0];
+        }
+        storageTable.addItem(new Object[] {storage.getName(), storage.getType(), code,
             actionsLayout}, storage.getId());
       }
     }
@@ -203,9 +208,14 @@ public class StoragePanel extends CustomComponent implements DynamicDataContaine
     deleteButton.addClickListener(new DeleteStorageListener(this, restClientService));
     deleteButton.addStyleName("link");
 
+    Button testButton = new Button("test connection");
+    testButton.setData(item);
+    testButton.addClickListener(new TestStorageListener(this, restClientService));
+
     actionsLayout.addComponent(viewButton);
     actionsLayout.addComponent(editButton);
     actionsLayout.addComponent(deleteButton);
+    actionsLayout.addComponent(testButton);
 
     return actionsLayout;
   }
@@ -231,11 +241,14 @@ public class StoragePanel extends CustomComponent implements DynamicDataContaine
 
     Map<String, Object> enrichentProperties = item.getEnrichmentProperties();
 
-    if(enrichentProperties !=  null) {
-        for (Map.Entry<String, Object> entry : enrichentProperties.entrySet()) {
-            panelContent.addComponent(new DefinedLabel("Enrichment: " + entry.getKey(), entry.getValue().toString()));
-        }
+    if (enrichentProperties != null) {
+      for (Map.Entry<String, Object> entry : enrichentProperties.entrySet()) {
+        panelContent.addComponent(new DefinedLabel("Enrichment: " + entry.getKey(), entry
+            .getValue().toString()));
+      }
     }
+
+    panelContent.addComponent(new DefinedLabel("Status: ", item.getStatus()));
 
     storageDetailsPanel.setContent(panelContent);
   }

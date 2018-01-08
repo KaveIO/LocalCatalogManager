@@ -17,9 +17,9 @@ import com.vaadin.ui.Button;
 
 import nl.kpmg.lcm.common.ServerException;
 import nl.kpmg.lcm.common.client.ClientException;
-import nl.kpmg.lcm.common.data.RemoteLcm;
+import nl.kpmg.lcm.common.data.Storage;
 import nl.kpmg.lcm.common.data.TestResult;
-import nl.kpmg.lcm.common.rest.types.RemoteLcmRepresentation;
+import nl.kpmg.lcm.common.rest.types.StorageRepresentation;
 import nl.kpmg.lcm.ui.rest.AuthenticationException;
 import nl.kpmg.lcm.ui.rest.DataCreationException;
 import nl.kpmg.lcm.ui.rest.RestClientService;
@@ -31,35 +31,34 @@ import org.slf4j.LoggerFactory;
  *
  * @author shristov
  */
-public class TestRemoteLcmListener extends AbstractListener {
+public class TestStorageListener extends AbstractListener {
   private static final org.slf4j.Logger LOGGER = LoggerFactory
-      .getLogger(TestRemoteLcmListener.class.getName());
+      .getLogger(TestStorageListener.class.getName());
 
   /**
    * @param dataContainer parent view.
    */
-  public TestRemoteLcmListener(final DynamicDataContainer dataContainer,
+  public TestStorageListener(final DynamicDataContainer dataContainer,
       final RestClientService restClientService) {
     super(dataContainer, restClientService);
   }
 
   @Override
   public void buttonClick(final Button.ClickEvent event) {
-    RemoteLcmRepresentation data = (RemoteLcmRepresentation) event.getButton().getData();
-    RemoteLcm item = data.getItem();
-    TestResult result = restClientService.testRemoteLcm(item.getId());
+    StorageRepresentation data = (StorageRepresentation) event.getButton().getData();
+    Storage item = data.getItem();
+    TestResult result = restClientService.testStorage(item.getId());
     dataContainer.updateContent();
     String message = String.format("%s : %s", result.getCode(), result.getMessage());
     com.vaadin.ui.Notification.show(message);
-
   }
 
-  protected String getItemName() {
-    return "remote LCM";
+  protected String getItemTypeName() {
+    return "storage";
   }
 
   protected void deleteItem(String id) throws AuthenticationException, ServerException,
       ClientException, DataCreationException {
-    restClientService.deleteRemoteLcm(id);
+    restClientService.deleteStorage(id);
   }
 }

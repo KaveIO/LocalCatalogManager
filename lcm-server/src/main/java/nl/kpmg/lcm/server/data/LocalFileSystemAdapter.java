@@ -13,6 +13,7 @@
  */
 package nl.kpmg.lcm.server.data;
 
+import nl.kpmg.lcm.common.data.TestResult;
 import nl.kpmg.lcm.server.backend.storage.LocalFileStorage;
 
 import java.io.File;
@@ -56,5 +57,15 @@ public class LocalFileSystemAdapter implements FileSystemAdapter{
 
     return fileNameList;
     }
+
+  @Override
+  public TestResult testConnection() throws IOException {
+    File baseDir = new File(storage.getStoragePath());
+    if (baseDir.exists() && baseDir.isDirectory()) {
+      return new TestResult("OK", TestResult.TestCode.ACCESIBLE);
+    } else {
+      return new TestResult("Storage directory does not exists", TestResult.TestCode.INACCESSIBLE);
+    }
+  }
 
 }

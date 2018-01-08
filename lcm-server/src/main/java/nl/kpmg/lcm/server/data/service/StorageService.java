@@ -16,16 +16,18 @@ package nl.kpmg.lcm.server.data.service;
 
 import jersey.repackaged.com.google.common.collect.Lists;
 
+import nl.kpmg.lcm.common.data.DataFormat;
+import nl.kpmg.lcm.common.data.Storage;
+import nl.kpmg.lcm.common.data.TestResult;
+import nl.kpmg.lcm.common.data.metadata.MetaDataWrapper;
+import nl.kpmg.lcm.common.exception.LcmException;
 import nl.kpmg.lcm.server.backend.Backend;
 import nl.kpmg.lcm.server.backend.BackendFactory;
 import nl.kpmg.lcm.server.backend.storage.HiveStorage;
 import nl.kpmg.lcm.server.backend.storage.MongoStorage;
 import nl.kpmg.lcm.server.backend.storage.S3FileStorage;
-import nl.kpmg.lcm.common.data.DataFormat;
-import nl.kpmg.lcm.common.data.Storage;
+import nl.kpmg.lcm.server.backend.storage.StorageTester;
 import nl.kpmg.lcm.server.data.dao.StorageDao;
-import nl.kpmg.lcm.common.data.metadata.MetaDataWrapper;
-import nl.kpmg.lcm.common.exception.LcmException;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -77,13 +79,13 @@ public class StorageService {
 
   /**
    * Save the passed storage. If "credentials" section is missing then checks the mong if storage
-   * with the same id already exists(i.e. update). If such exists the  "credentials" section is preserved.
-   * This is needed because the "credentials" section is never returned outside of server module for
-   * security reasons. When the end user tries to update a storage it is important to preserve the
-   * old credentials if new ones are not passed.
-   * There is one important consequence from the statements above:
-   * "Credentials" sections can never be removed from existing storage. If you want bypass it then
-   * set to storage empty "credentials" section.
+   * with the same id already exists(i.e. update). If such exists the "credentials" section is
+   * preserved. This is needed because the "credentials" section is never returned outside of server
+   * module for security reasons. When the end user tries to update a storage it is important to
+   * preserve the old credentials if new ones are not passed. There is one important consequence
+   * from the statements above: "Credentials" sections can never be removed from existing storage.
+   * If you want bypass it then set to storage empty "credentials" section.
+   *
    * @param storage to save
    * @return saved storage
    */
@@ -131,7 +133,7 @@ public class StorageService {
 
     try {
       // all the URIs must have same data type
-      String unparesURI =  metadataWrapper.getData().getUri().get(0);
+      String unparesURI = metadataWrapper.getData().getUri().get(0);
       URI parsedUri = new URI(unparesURI);
       String scheme = parsedUri.getScheme();
 
@@ -166,11 +168,11 @@ public class StorageService {
     return result;
   }
 
-    public Storage getStorageByUri(String uri) {
-        String storagName = getStorageName(uri);
-        return findByName(storagName);    
-    }
-  
+  public Storage getStorageByUri(String uri) {
+    String storagName = getStorageName(uri);
+    return findByName(storagName);
+  }
+
   public String getStorageName(String uri) {
     String result = null;
     try {
@@ -185,4 +187,18 @@ public class StorageService {
     return result;
   }
 
+  public TestResult testStorage(String id) {
+    StorageTester tester = new StorageTester();
+    Storage storage = findById(id);
+    if (storage == null) {
+      throw new LcmException("Error! Unable to find Storage for the given metadata! Storage id:"
+          + id);
+    }
+    TestResult result = tester.testAccessability(storage);
+    storage.setStatus(result.getCode() + ":" + result.getMessage());
+
+    saveStorage(storage);
+
+    return result;
+  }
 }

@@ -16,10 +16,10 @@ package nl.kpmg.lcm.server.data.dao.mongo;
 import com.mongodb.BasicDBObject;
 import com.mongodb.DBObject;
 
+import nl.kpmg.lcm.common.data.Storage;
 import nl.kpmg.lcm.server.backend.storage.HiveStorage;
 import nl.kpmg.lcm.server.backend.storage.MongoStorage;
 import nl.kpmg.lcm.server.backend.storage.S3FileStorage;
-import nl.kpmg.lcm.common.data.Storage;
 import nl.kpmg.lcm.server.security.EncryptionException;
 import nl.kpmg.lcm.server.security.SecurityEngine;
 
@@ -58,6 +58,10 @@ public class MongoStorageWriteConverter implements Converter<Storage, DBObject> 
 
     if (source.getOptions() != null) {
       dbo.put("options", source.getOptions());
+    }
+
+    if (source.getStatus()!= null) {
+      dbo.put("status", source.getStatus());
     }
 
     Map credentialsMap = source.getCredentials();

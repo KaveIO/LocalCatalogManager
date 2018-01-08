@@ -19,7 +19,7 @@ package nl.kpmg.lcm.common.data;
  * @author shristov
  */
 
-public class RemoteLcmTestResult {
+public class TestResult {
 
   public enum TestCode {
     INACCESSIBLE, ACCESIBLE
@@ -28,9 +28,9 @@ public class RemoteLcmTestResult {
   private String message;
   private TestCode code;
 
-  public RemoteLcmTestResult() {}
+  public TestResult() {}
 
-  public RemoteLcmTestResult(String message, TestCode code) {
+  public TestResult(String message, TestCode code) {
     this.message = message;
     this.code = code;
   }

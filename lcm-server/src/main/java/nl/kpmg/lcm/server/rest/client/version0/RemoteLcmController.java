@@ -16,7 +16,7 @@ package nl.kpmg.lcm.server.rest.client.version0;
 
 
 import nl.kpmg.lcm.common.data.RemoteLcm;
-import nl.kpmg.lcm.common.data.RemoteLcmTestResult;
+import nl.kpmg.lcm.common.data.TestResult;
 import nl.kpmg.lcm.common.exception.LcmValidationException;
 import nl.kpmg.lcm.common.rest.types.RemoteLcmRepresentation;
 import nl.kpmg.lcm.common.rest.types.RemoteLcmsRepresentation;
@@ -134,8 +134,8 @@ public class RemoteLcmController {
   @GET
   @Path("status/{id}")
   @Produces({"application/nl.kpmg.lcm.rest.types.MetaDatasRepresentation+json"})
-  @RolesAllowed({Roles.ADMINISTRATOR})
-  public RemoteLcmTestResult getRemoteLcmStatus(@PathParam("id") final String id)  {
+  @RolesAllowed({Roles.ADMINISTRATOR, Roles.API_USER})
+  public TestResult getRemoteLcmStatus(@PathParam("id") final String id)  {
     if (id == null || id.isEmpty()) {
       Notification notification = new Notification();
       notification.addError("Id could not be null ot empty!", null);
@@ -144,6 +144,5 @@ public class RemoteLcmController {
 
     return service.testRemoteLcmConnectivity(id);
   }
-
 
 }

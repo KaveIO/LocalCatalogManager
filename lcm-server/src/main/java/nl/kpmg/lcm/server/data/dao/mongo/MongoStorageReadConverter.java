@@ -15,10 +15,10 @@ package nl.kpmg.lcm.server.data.dao.mongo;
 
 import com.mongodb.DBObject;
 
+import nl.kpmg.lcm.common.data.Storage;
 import nl.kpmg.lcm.server.backend.storage.HiveStorage;
 import nl.kpmg.lcm.server.backend.storage.MongoStorage;
 import nl.kpmg.lcm.server.backend.storage.S3FileStorage;
-import nl.kpmg.lcm.common.data.Storage;
 import nl.kpmg.lcm.server.security.EncryptionException;
 import nl.kpmg.lcm.server.security.SecurityEngine;
 
@@ -46,6 +46,7 @@ public class MongoStorageReadConverter implements Converter<DBObject, Storage> {
     Storage storage = new Storage();
     storage.setId(source.get("_id").toString());
     storage.setName((String) source.get("name"));
+    storage.setStatus((String) source.get("status"));
     storage.setType((String) source.get("type"));
     Map sourceMap = source.toMap();
     Map enrichmentPropertiesMap = (Map) sourceMap.get("enrichment-properties");

@@ -13,6 +13,8 @@
  */
 package nl.kpmg.lcm.server.data;
 
+import nl.kpmg.lcm.common.data.TestResult;
+
 import java.io.IOException;
 import java.util.List;
 
@@ -23,4 +25,6 @@ import java.util.List;
 public interface FileSystemAdapter {
 
   public List listFileNames(String subPath) throws IOException;
+
+  public TestResult testConnection() throws IOException;
 }

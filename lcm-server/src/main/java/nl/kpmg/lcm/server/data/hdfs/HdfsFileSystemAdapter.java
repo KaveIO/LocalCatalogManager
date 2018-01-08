@@ -1,5 +1,6 @@
 package nl.kpmg.lcm.server.data.hdfs;
 
+import nl.kpmg.lcm.common.data.TestResult;
 import nl.kpmg.lcm.server.backend.storage.HdfsFileStorage;
 import nl.kpmg.lcm.server.data.FileSystemAdapter;
 
@@ -38,8 +39,8 @@ public class HdfsFileSystemAdapter implements FileSystemAdapter {
     this.storage = storage;
   }
 
-    @Override
-    public List listFileNames(String subPath) throws IOException {
+  @Override
+  public List listFileNames(String subPath) throws IOException {
 
     Configuration conf = new Configuration();
     conf.set("fs.defaultFS", storage.getUrl());
@@ -47,17 +48,32 @@ public class HdfsFileSystemAdapter implements FileSystemAdapter {
     String storagePath = "/" + storage.getPath() + "/" + subPath;
     Path filePath = new Path(storagePath);
     if (!hdfs.exists(filePath)) {
-        return null;
+      return null;
     }
 
-     RemoteIterator<LocatedFileStatus> fileList = hdfs.listFiles(filePath, false);
-     LinkedList<String> fileNameList =  new LinkedList();
+    RemoteIterator<LocatedFileStatus> fileList = hdfs.listFiles(filePath, false);
+    LinkedList<String> fileNameList = new LinkedList();
 
-     while(fileList.hasNext()){
-         LocatedFileStatus fileStatus =  fileList.next();
-         fileNameList.add(fileStatus.getPath().getName());
-     }
-
-     return fileNameList;
+    while (fileList.hasNext()) {
+      LocatedFileStatus fileStatus = fileList.next();
+      fileNameList.add(fileStatus.getPath().getName());
     }
+
+    return fileNameList;
+  }
+
+  @Override
+  public TestResult testConnection() throws IOException {
+    Configuration conf = new Configuration();
+    conf.set("fs.defaultFS", storage.getUrl());
+    FileSystem hdfs = FileSystem.get(conf);
+    String storagePath = "/" + storage.getPath();
+    Path filePath = new Path(storagePath);
+    if (hdfs.exists(filePath)) {
+      return new TestResult("OK", TestResult.TestCode.ACCESIBLE);
+    }
+
+    return new TestResult("Connection is successful but Storage path is not found!",
+        TestResult.TestCode.INACCESSIBLE);
+  }
 }

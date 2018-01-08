@@ -19,7 +19,7 @@ import jersey.repackaged.com.google.common.collect.Lists;
 import nl.kpmg.lcm.common.client.HttpsClientFactory;
 import nl.kpmg.lcm.common.configuration.ClientConfiguration;
 import nl.kpmg.lcm.common.data.RemoteLcm;
-import nl.kpmg.lcm.common.data.RemoteLcmTestResult;
+import nl.kpmg.lcm.common.data.TestResult;
 import nl.kpmg.lcm.server.data.dao.RemoteLcmDao;
 
 import org.glassfish.jersey.client.authentication.HttpAuthenticationFeature;
@@ -75,7 +75,7 @@ public class RemoteLcmService {
     return dao;
   }
 
-  public RemoteLcmTestResult testRemoteLcmConnectivity(String id) {
+  public TestResult testRemoteLcmConnectivity(String id) {
     RemoteLcm remoteLcm = dao.findOne(id);
     configuration.setTargetHost(remoteLcm.getDomain());
     configuration.setTargetPort(remoteLcm.getPort().toString());
@@ -87,19 +87,19 @@ public class RemoteLcmService {
     HttpsClientFactory clientFactory = new HttpsClientFactory(configuration, credentials);
 
     Response response = null;
-    RemoteLcmTestResult result;
+    TestResult result;
     try {
       response = clientFactory.createWebTarget(fetchUrl).request().get();
       if (response.getStatusInfo().getFamily() == Response.Status.Family.SUCCESSFUL) {
         String message = response.readEntity(String.class);
-        result = new RemoteLcmTestResult(message, RemoteLcmTestResult.TestCode.ACCESIBLE);
+        result = new TestResult(message, TestResult.TestCode.ACCESIBLE);
       } else {
         String message = "Unable to reach it: " + response.getStatusInfo().getFamily().name();
-        result = new RemoteLcmTestResult(message, RemoteLcmTestResult.TestCode.INACCESSIBLE);
+        result = new TestResult(message, TestResult.TestCode.INACCESSIBLE);
       }
     } catch (Exception ex) {
       logger.error("Test connection failed. Error " + ex.getMessage());
-      result = new RemoteLcmTestResult(ex.getMessage(), RemoteLcmTestResult.TestCode.INACCESSIBLE);
+      result = new TestResult(ex.getMessage(), TestResult.TestCode.INACCESSIBLE);
     }
 
     remoteLcm.setStatus(String.format("%s : %s", result.getCode(), result.getMessage()));

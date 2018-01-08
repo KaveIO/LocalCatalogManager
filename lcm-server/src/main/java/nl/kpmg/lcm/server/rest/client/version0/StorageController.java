@@ -14,9 +14,12 @@
 
 package nl.kpmg.lcm.server.rest.client.version0;
 
+import nl.kpmg.lcm.common.data.Storage;
+import nl.kpmg.lcm.common.data.TestResult;
+import nl.kpmg.lcm.common.exception.LcmValidationException;
 import nl.kpmg.lcm.common.rest.types.StorageRepresentation;
 import nl.kpmg.lcm.common.rest.types.StoragesRepresentation;
-import nl.kpmg.lcm.common.data.Storage;
+import nl.kpmg.lcm.common.validation.Notification;
 import nl.kpmg.lcm.server.data.service.StorageService;
 import nl.kpmg.lcm.server.rest.authentication.Roles;
 import nl.kpmg.lcm.server.rest.client.version0.types.ConcreteStorageRepresentation;
@@ -129,6 +132,20 @@ public class StorageController {
   public Response overwriteStorage(final Storage storage) {
     storageService.update(storage);
     return Response.ok().build();
+  }
+
+  @GET
+  @Path("status/{id}")
+  @Produces({"application/nl.kpmg.lcm.rest.types.MetaDatasRepresentation+json"})
+  @RolesAllowed({Roles.ADMINISTRATOR, Roles.API_USER})
+  public TestResult getRemoteLcmStatus(@PathParam("id") final String id)  {
+    if (id == null || id.isEmpty()) {
+      Notification notification = new Notification();
+      notification.addError("Id could not be null ot empty!", null);
+      throw new LcmValidationException(notification);
+    }
+
+    return storageService.testStorage(id);
   }
 
 }

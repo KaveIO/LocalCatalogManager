@@ -42,6 +42,8 @@ public class Storage extends AbstractModel {
 
   private Map credentials;
 
+  private String status;
+
   @Field("enrichment-properties")
   private Map enrichmentProperties;
 
@@ -122,5 +124,19 @@ public class Storage extends AbstractModel {
    */
   public void setType(String type) {
     this.type = type;
+  }
+
+  /**
+   * @return the status
+   */
+  public String getStatus() {
+    return status;
+  }
+
+  /**
+   * @param status the status to set
+   */
+  public void setStatus(String status) {
+    this.status = status;
   }
 }
