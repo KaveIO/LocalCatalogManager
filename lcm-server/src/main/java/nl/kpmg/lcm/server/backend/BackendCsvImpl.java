@@ -14,8 +14,6 @@
 
 package nl.kpmg.lcm.server.backend;
 
-import nl.kpmg.lcm.server.backend.metadata.CsvMetaData;
-import nl.kpmg.lcm.server.backend.storage.LocalFileStorage;
 import nl.kpmg.lcm.common.data.ContentIterator;
 import nl.kpmg.lcm.common.data.Data;
 import nl.kpmg.lcm.common.data.DataFormat;
@@ -25,10 +23,12 @@ import nl.kpmg.lcm.common.data.Storage;
 import nl.kpmg.lcm.common.data.TransferSettings;
 import nl.kpmg.lcm.common.data.metadata.DataItemsDescriptor;
 import nl.kpmg.lcm.common.data.metadata.MetaData;
-import nl.kpmg.lcm.server.data.service.StorageService;
 import nl.kpmg.lcm.common.exception.LcmException;
 import nl.kpmg.lcm.common.exception.LcmValidationException;
 import nl.kpmg.lcm.common.validation.Notification;
+import nl.kpmg.lcm.server.backend.metadata.CsvMetaData;
+import nl.kpmg.lcm.server.backend.storage.LocalFileStorage;
+import nl.kpmg.lcm.server.data.service.StorageService;
 
 import org.apache.metamodel.DataContextFactory;
 import org.apache.metamodel.UpdateableDataContext;
@@ -300,7 +300,10 @@ public class BackendCsvImpl extends AbstractBackend {
     File dataSourceDir = new File(storagePath + "/" + subPath);
 
     if (!dataSourceDir.exists() || !dataSourceDir.isDirectory()) {
-      throw new LcmException("The storage is pointing non existing directory");
+         String message =
+          String.format("The storage %s is pointing non existing directory %s", storageName,
+              subPath);
+      throw new LcmException(message);
     }
 
     File[] files = dataSourceDir.listFiles();
