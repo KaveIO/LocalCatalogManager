@@ -20,14 +20,13 @@ import com.vaadin.ui.Panel;
 import com.vaadin.ui.Table;
 import com.vaadin.ui.VerticalLayout;
 
+import nl.kpmg.lcm.common.data.TaskDescription;
+import nl.kpmg.lcm.common.data.TaskSchedule;
 import nl.kpmg.lcm.common.rest.types.TaskDescriptionRepresentation;
 import nl.kpmg.lcm.common.rest.types.TaskDescriptionsRepresentation;
 import nl.kpmg.lcm.common.rest.types.TaskScheduleRepresentation;
-import nl.kpmg.lcm.common.data.TaskDescription;
-import nl.kpmg.lcm.common.data.TaskSchedule;
 
 import java.util.Date;
-import java.util.ListIterator;
 
 /**
  *
@@ -116,15 +115,14 @@ public class TasksPanel extends CustomComponent {
   private void updateTasks() {
     tasksTable.removeAllItems();
     if (tasks != null) {
-      ListIterator li = tasks.getItems().listIterator(tasks.getItems().size());
-      //Put the resent tasks on the top.
-      while(li.hasPrevious()) {
-      TaskDescription taskDescription = ((TaskDescriptionRepresentation)li.previous()).getItem();
+      for (TaskDescriptionRepresentation item : tasks.getItems()) {
+        TaskDescription taskDescription = item.getItem();
 
-      String status = taskDescription.getStatus() != null? taskDescription.getStatus().toString(): "";
-       tasksTable.addItem(new Object[] {taskDescription.getJob(), taskDescription.getTarget(),
-            taskDescription.getStartTime(), taskDescription.getEndTime(),
-            status}, taskDescription.getId());
+        String status =
+            taskDescription.getStatus() != null ? taskDescription.getStatus().toString() : "";
+        tasksTable.addItem(new Object[] {taskDescription.getJob(), taskDescription.getTarget(),
+            taskDescription.getStartTime(), taskDescription.getEndTime(), status},
+            taskDescription.getId());
       }
     }
   }

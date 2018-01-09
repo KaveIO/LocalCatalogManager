@@ -14,9 +14,10 @@
 
 package nl.kpmg.lcm.server.rest.client.version0;
 
-import nl.kpmg.lcm.common.rest.types.TaskDescriptionStatusFilter;
-import nl.kpmg.lcm.common.rest.types.TaskDescriptionsRepresentation;
 import nl.kpmg.lcm.common.data.TaskDescription;
+import nl.kpmg.lcm.common.data.TaskType;
+import nl.kpmg.lcm.common.exception.LcmException;
+import nl.kpmg.lcm.common.rest.types.TaskDescriptionsRepresentation;
 import nl.kpmg.lcm.server.data.service.TaskDescriptionService;
 import nl.kpmg.lcm.server.rest.authentication.Roles;
 import nl.kpmg.lcm.server.rest.client.version0.types.ConcreteTaskDescriptionRepresentation;
@@ -29,7 +30,6 @@ import java.util.List;
 import javax.annotation.security.RolesAllowed;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.DELETE;
-import javax.ws.rs.DefaultValue;
 import javax.ws.rs.GET;
 import javax.ws.rs.POST;
 import javax.ws.rs.Path;
@@ -54,7 +54,7 @@ public class TaskDescriptionController {
   }
 
   /**
-   * Get a list of all the tasks.
+   * Get a list of the tasks that meets the specified criteria.
    *
    * @param status to filter the tasks on
    * @return a list of all tasks
@@ -63,42 +63,39 @@ public class TaskDescriptionController {
   @Produces({"application/nl.kpmg.lcm.rest.types.TaskDescriptionsRepresentation+json"})
   @RolesAllowed({Roles.ADMINISTRATOR, Roles.API_USER})
   public final TaskDescriptionsRepresentation getOverview(
-      @DefaultValue("ALL") @QueryParam("status") final TaskDescriptionStatusFilter status) {
+      @QueryParam("status") final TaskDescription.TaskStatus status,
+      @QueryParam("type") final TaskType type, @QueryParam("limit") final Integer limit) {
 
-    List taskDescriptions;
-    switch (status) {
-      case PENDING:
-        taskDescriptions = taskDescriptionService
-            .findByStatus(TaskDescription.TaskStatus.PENDING);
-        break;
-      case RUNNING:
-        taskDescriptions = taskDescriptionService
-            .findByStatus(TaskDescription.TaskStatus.RUNNING);
-        break;
-      case SCHEDULED:
-        taskDescriptions = taskDescriptionService
-            .findByStatus(TaskDescription.TaskStatus.SCHEDULED);
-        break;
-      case SUCCESS:
-        taskDescriptions = taskDescriptionService
-            .findByStatus(TaskDescription.TaskStatus.SUCCESS);
-        break;
-      case FAILED:
-        taskDescriptions = taskDescriptionService
-            .findByStatus(TaskDescription.TaskStatus.FAILED);
-        break;
-      case ALL:
-      default:
-        taskDescriptions = taskDescriptionService.findAll();
-        break;
+    List taskDescriptions = null;
+    if (status != null && type != null) {
+      if (limit != null) {
+        taskDescriptions = taskDescriptionService.findByTypeAndStatus(type, status, limit);
+      } else {
+        taskDescriptions = taskDescriptionService.findByTypeAndStatus(type, status);
+      }
+    } else if (status != null) {
+      if (limit != null) {
+        taskDescriptions = taskDescriptionService.findByStatus(status, limit);
+      } else {
+        taskDescriptions = taskDescriptionService.findByStatus(status, limit);
+      }
+    } else if (type != null) {
+      if (limit != null) {
+        taskDescriptions = taskDescriptionService.findByType(type, limit);
+      } else {
+        taskDescriptions = taskDescriptionService.findByType(type);
+      }
+    } else if (limit != null) {
+      taskDescriptions = taskDescriptionService.find(limit);
+    } else {
+      throw new LcmException("Wrong parameters take a look at the documentation!");
     }
-
 
     ConcreteTaskDescriptionsRepresentation concreteTaskDescriptionsRepresentation =
         new ConcreteTaskDescriptionsRepresentation();
     if (taskDescriptions != null) {
-      concreteTaskDescriptionsRepresentation
-          .setRepresentedItems(ConcreteTaskDescriptionRepresentation.class, taskDescriptions);
+      concreteTaskDescriptionsRepresentation.setRepresentedItems(
+          ConcreteTaskDescriptionRepresentation.class, taskDescriptions);
     }
     return concreteTaskDescriptionsRepresentation;
   }

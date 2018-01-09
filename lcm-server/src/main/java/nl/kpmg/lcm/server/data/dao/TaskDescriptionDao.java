@@ -15,7 +15,10 @@
 package nl.kpmg.lcm.server.data.dao;
 
 import nl.kpmg.lcm.common.data.TaskDescription;
+import nl.kpmg.lcm.common.data.TaskType;
 
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.data.repository.PagingAndSortingRepository;
 
 import java.util.List;
@@ -26,4 +29,22 @@ import java.util.List;
  */
 public interface TaskDescriptionDao extends PagingAndSortingRepository<TaskDescription, String> {
   public List<TaskDescription> findByStatus(TaskDescription.TaskStatus status);
+
+  public List<TaskDescription> findByStatus(TaskDescription.TaskStatus status, Sort sort);
+
+  public List<TaskDescription> findByStatus(TaskDescription.TaskStatus status, Pageable pageable);
+
+  public List<TaskDescription> findByType(TaskType type);
+
+  public List<TaskDescription> findByType(TaskType type, Pageable pageable);
+
+  public List<TaskDescription> findByType(TaskType type, Sort sort);
+
+  public List<TaskDescription> findByTypeAndStatus(TaskType type, TaskDescription.TaskStatus status);
+
+  public List<TaskDescription> findByTypeAndStatus(TaskType type,
+      TaskDescription.TaskStatus status, Pageable pageable);
+
+  public List<TaskDescription> findByTypeAndStatus(TaskType type,
+      TaskDescription.TaskStatus status, Sort sort);
 }

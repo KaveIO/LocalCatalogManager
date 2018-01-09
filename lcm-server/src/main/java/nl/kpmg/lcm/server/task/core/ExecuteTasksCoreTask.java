@@ -62,20 +62,20 @@ public class ExecuteTasksCoreTask extends CoreTask {
   @Override
   public final TaskResult execute() throws TaskException {
 
-    List<TaskDescription> taskDescriptions = taskDescriptionService.findAll();
+    List<TaskDescription> taskDescriptions =
+        taskDescriptionService.findByStatus(TaskDescription.TaskStatus.PENDING);
     for (TaskDescription taskDescription : taskDescriptions) {
-      if (taskDescription.getStatus() == TaskDescription.TaskStatus.PENDING) {
-        try {
-          scheduleEnrichmentTask(taskDescription.getId(), taskDescription.getJob(),
-              taskDescription.getTarget());
-          taskDescriptionService.updateStatus(taskDescription.getId(),
-                  TaskDescription.TaskStatus.SCHEDULED);
-        } catch (TaskScheduleException ex) {
-          LOGGER.warn("Failed scheduling task.");
-          taskDescriptionService.updateStatus(taskDescription.getId(),
-                  TaskDescription.TaskStatus.FAILED);
-        }
+      try {
+        scheduleEnrichmentTask(taskDescription.getId(), taskDescription.getJob(),
+            taskDescription.getTarget());
+        taskDescriptionService.updateStatus(taskDescription.getId(),
+            TaskDescription.TaskStatus.SCHEDULED);
+      } catch (TaskScheduleException ex) {
+        LOGGER.warn("Failed scheduling task.");
+        taskDescriptionService.updateStatus(taskDescription.getId(),
+            TaskDescription.TaskStatus.FAILED);
       }
+
     }
     return TaskResult.SUCCESS;
   }

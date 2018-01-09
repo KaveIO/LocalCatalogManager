@@ -22,12 +22,12 @@ import com.vaadin.ui.TabSheet;
 import com.vaadin.ui.UI;
 import com.vaadin.ui.VerticalLayout;
 
+import nl.kpmg.lcm.common.ServerException;
 import nl.kpmg.lcm.common.client.ClientException;
 import nl.kpmg.lcm.common.rest.types.TaskDescriptionsRepresentation;
 import nl.kpmg.lcm.common.rest.types.TaskScheduleRepresentation;
 import nl.kpmg.lcm.common.rest.types.UserGroupsRepresentation;
 import nl.kpmg.lcm.common.rest.types.UsersRepresentation;
-import nl.kpmg.lcm.common.ServerException;
 import nl.kpmg.lcm.ui.rest.AuthenticationException;
 import nl.kpmg.lcm.ui.rest.RestClientService;
 import nl.kpmg.lcm.ui.view.administration.RemoteLcmPanel;
@@ -54,6 +54,7 @@ public class AdministrationViewImpl extends VerticalLayout implements Administra
    */
   public static final String VIEW_NAME = "administration";
 
+  private static final int MAX_TASKS_LOADED = 100;
   /**
    * The service for interacting with the backend.
    */
@@ -115,7 +116,7 @@ public class AdministrationViewImpl extends VerticalLayout implements Administra
   @Override
   public final void enter(final ViewChangeListener.ViewChangeEvent event) {
     try {
-      tasks = restClientService.getTasks();
+      tasks = restClientService.getLastTasks(MAX_TASKS_LOADED);
       taskSchedule = restClientService.getTaskSchedule();
       users = restClientService.getUsers();
       userGroups = restClientService.getUserGroups();

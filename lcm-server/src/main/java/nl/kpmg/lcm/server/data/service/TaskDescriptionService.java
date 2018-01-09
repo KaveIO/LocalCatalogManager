@@ -18,11 +18,18 @@ import jersey.repackaged.com.google.common.collect.Lists;
 
 import nl.kpmg.lcm.common.data.ProgressIndication;
 import nl.kpmg.lcm.common.data.TaskDescription;
+import nl.kpmg.lcm.common.data.TaskType;
 import nl.kpmg.lcm.server.data.dao.TaskDescriptionDao;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.domain.Sort.Direction;
+import org.springframework.data.domain.Sort.Order;
 import org.springframework.stereotype.Service;
 
 import java.util.Date;
@@ -41,7 +48,41 @@ public class TaskDescriptionService {
   private TaskDescriptionDao taskDescriptionDao;
 
   public List<TaskDescription> findAll() {
-    return Lists.newLinkedList(taskDescriptionDao.findAll());
+    List result = Lists.newArrayList(taskDescriptionDao.findAll());
+    return result;
+  }
+
+  public List<TaskDescription> findByType(TaskType type) {
+    Sort sort = new Sort(new Order(Direction.DESC, "startTime"));
+    List result = Lists.newArrayList(taskDescriptionDao.findByType(type, sort));
+    return result;
+  }
+
+  public List<TaskDescription> findByType(TaskType type, int limit) {
+    Sort sort = new Sort(new Order(Direction.DESC, "startTime"));
+    Pageable pageable = new PageRequest(0, limit, sort);
+    List result = Lists.newArrayList(taskDescriptionDao.findByType(type, pageable));
+    return result;
+  }
+
+  public List<TaskDescription> findByTypeAndStatus(TaskType type, TaskDescription.TaskStatus status) {
+    Sort sort = new Sort(new Order(Direction.DESC, "startTime"));
+    List result = Lists.newArrayList(taskDescriptionDao.findByTypeAndStatus(type, status, sort));
+    return result;
+  }
+
+  public List<TaskDescription> findByTypeAndStatus(TaskType type,
+          TaskDescription.TaskStatus status, int limit) {
+    Sort sort = new Sort(new Order(Direction.DESC, "startTime"));
+    Pageable pageable = new PageRequest(0, limit, sort);
+    List result = Lists.newArrayList(taskDescriptionDao.findByTypeAndStatus(type, status, pageable));
+    return result;
+  }
+  public List<TaskDescription> find(int limit) {
+    Sort sort = new Sort(new Order(Direction.DESC, "startTime"));
+    Pageable pageable = new PageRequest(0, limit, sort);
+    Page<TaskDescription> page = taskDescriptionDao.findAll(pageable);
+    return Lists.newArrayList(page);
   }
 
   public TaskDescription findOne(String taskId) {
@@ -56,6 +97,12 @@ public class TaskDescriptionService {
 
   public List<TaskDescription> findByStatus(TaskDescription.TaskStatus status) {
     return taskDescriptionDao.findByStatus(status);
+  }
+
+  public List<TaskDescription> findByStatus(TaskDescription.TaskStatus status, int limit) {
+    Sort sort = new Sort(new Order(Direction.DESC, "startTime"));
+    Pageable pageable = new PageRequest(0, limit, sort);
+    return taskDescriptionDao.findByStatus(status, pageable);
   }
 
   public void markTaskAsRunning(TaskDescription description) {

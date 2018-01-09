@@ -25,6 +25,7 @@ import nl.kpmg.lcm.common.ServerException;
 import nl.kpmg.lcm.common.client.ClientException;
 import nl.kpmg.lcm.common.client.HttpsClientFactory;
 import nl.kpmg.lcm.common.configuration.ClientConfiguration;
+import nl.kpmg.lcm.common.data.TaskType;
 import nl.kpmg.lcm.common.data.TestResult;
 import nl.kpmg.lcm.common.rest.types.AbstractRepresentation;
 import nl.kpmg.lcm.common.rest.types.MetaDatasRepresentation;
@@ -40,11 +41,14 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Set;
 
 import javax.ws.rs.ProcessingException;
 import javax.ws.rs.client.Entity;
 import javax.ws.rs.client.Invocation;
+import javax.ws.rs.client.WebTarget;
 import javax.ws.rs.core.Response;
 
 /**
@@ -154,6 +158,10 @@ public class RestClientService {
   }
 
   public Invocation.Builder getClient(String path) throws AuthenticationException, ServerException {
+      return getClient(path, new HashMap());
+  }
+
+  public Invocation.Builder getClient(String path, Map<String, String> parameters) throws AuthenticationException, ServerException {
     if (!isAuthenticated()) {
       throw new AuthenticationException("Not logged in");
     }
@@ -165,7 +173,13 @@ public class RestClientService {
       uri = this.unsafeUri;
     }
 
-    return clientFactory.createWebTarget(uri).path(path).request()
+    WebTarget target = clientFactory.createWebTarget(uri).path(path);
+    for(String key : parameters.keySet()){
+        String value =  parameters.get(key);
+        target = target.queryParam(key, value);
+    }
+
+    return target.request()
         .header(LCM_AUTHENTICATION_USER_HEADER, retrieveLoginUser())
         .header(LCM_AUTHENTICATION_TOKEN_HEADER, retrieveLoginToken());
   }
@@ -186,11 +200,13 @@ public class RestClientService {
    * @throws ServerException when the server could not be reached
    * @throws ClientException when the request fails
    */
-  public <T extends AbstractRepresentation> T getDatasRepresentation(String path, Class<T> type)
+  public <T extends AbstractRepresentation> T getDatasRepresentation(String path, Class<T> type,
+          Map<String, String> parameters)
       throws AuthenticationException, ServerException, ClientException {
 
     LOGGER.info(String.format("Executing get on LCM-Server on path: %s", path));
-    Response response = getClient(path).get();
+
+    Response response = getClient(path, parameters).get();
     if (response.getStatusInfo().getFamily() == Response.Status.Family.SUCCESSFUL) {
       T datasRepresentation = response.readEntity(type);
       return datasRepresentation;
@@ -199,6 +215,12 @@ public class RestClientService {
           response.getStatus(), response.getStatusInfo().getReasonPhrase()));
       throw new ClientException("Call to LCM-Server failed", response);
     }
+  }
+
+  public <T extends AbstractRepresentation> T getDatasRepresentation(String path, Class<T> type)
+      throws AuthenticationException, ServerException, ClientException {
+
+   return getDatasRepresentation(path, type, new HashMap<String,String>());
   }
 
   public MetaDatasRepresentation getLocalMetadata()
@@ -250,9 +272,19 @@ public class RestClientService {
     }
   }
 
-  public TaskDescriptionsRepresentation getTasks()
+  public TaskDescriptionsRepresentation getFetchTasks() throws AuthenticationException,
+      ServerException, ClientException {
+    Map<String, String> parameters = new HashMap<>();
+    parameters.put("type", TaskType.FETCH.name());
+    return getDatasRepresentation("client/v0/tasks", TaskDescriptionsRepresentation.class,
+        parameters);
+  }
+
+  public TaskDescriptionsRepresentation getLastTasks(Integer maximumItems)
       throws AuthenticationException, ServerException, ClientException {
-    return getDatasRepresentation("client/v0/tasks", TaskDescriptionsRepresentation.class);
+    Map<String, String> parameters = new HashMap<>();
+    parameters.put("limit", String.valueOf(maximumItems));
+    return getDatasRepresentation("client/v0/tasks", TaskDescriptionsRepresentation.class, parameters);
   }
 
   public TaskScheduleRepresentation getTaskSchedule()

@@ -25,14 +25,13 @@ import com.vaadin.ui.Table;
 import com.vaadin.ui.TextField;
 import com.vaadin.ui.VerticalLayout;
 
-import nl.kpmg.lcm.common.client.ClientException;
-import nl.kpmg.lcm.common.rest.types.TaskDescriptionRepresentation;
-import nl.kpmg.lcm.common.rest.types.TaskDescriptionsRepresentation;
 import nl.kpmg.lcm.common.ServerException;
+import nl.kpmg.lcm.common.client.ClientException;
 import nl.kpmg.lcm.common.data.ProgressIndication;
 import nl.kpmg.lcm.common.data.TaskDescription;
 import nl.kpmg.lcm.common.data.TaskDescription.TaskStatus;
-import nl.kpmg.lcm.common.data.TaskType;
+import nl.kpmg.lcm.common.rest.types.TaskDescriptionRepresentation;
+import nl.kpmg.lcm.common.rest.types.TaskDescriptionsRepresentation;
 import nl.kpmg.lcm.ui.rest.AuthenticationException;
 import nl.kpmg.lcm.ui.rest.RestClientService;
 
@@ -215,18 +214,12 @@ public class MonitorPanel extends CustomComponent {
       TaskStatus status = initStatus(statusValue);
       try {
 
-      TaskDescriptionsRepresentation result = restClientService.getTasks();
+      TaskDescriptionsRepresentation result = restClientService.getFetchTasks();
       taskTable.removeAllItems();
 
       if (result != null) {
-        ListIterator li = result.getItems().listIterator(result.getItems().size());
-        // Put the resent tasks on the top.
-        while (li.hasPrevious()) {
-          TaskDescription description = ((TaskDescriptionRepresentation) li.previous()).getItem();
-          if(description.getType() != TaskType.FETCH) {
-              //display only fetch tasks.
-              continue;
-          }
+        for(TaskDescriptionRepresentation item : result.getItems()){
+          TaskDescription description = item.getItem();
           String json;
           try {
             json = new ObjectMapper().writeValueAsString(description);
