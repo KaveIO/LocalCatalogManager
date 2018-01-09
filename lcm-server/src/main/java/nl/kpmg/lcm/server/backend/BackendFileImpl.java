@@ -41,7 +41,6 @@ import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.Date;
 import java.util.List;
 
 /**
@@ -80,46 +79,26 @@ public class BackendFileImpl extends AbstractBackend {
   }
 
   @Override
-  public MetaData enrichMetadata(EnrichmentProperties properties) {
-    expandDataURISection();
-    if (metaDataWrapper.getDynamicData().getAllDynamicDataDescriptors() == null) {
-      return metaDataWrapper.getMetaData();
+  protected void enrichMetadataItem(EnrichmentProperties properties, String key) throws IOException {
+    DataItemsDescriptor dynamicDataDescriptor =
+        metaDataWrapper.getDynamicData().getDynamicDataDescriptor(key);
+    String dataURI = dynamicDataDescriptor.getURI();
+    String filePath = storageService.getStorageItemName(dataURI);
+    Storage storage = storageService.getStorageByUri(dataURI);
+    FileAdapter fileAdapter = getFileAdapter(storage, filePath);
+    if (properties.getAccessibility()) {
+      String state = fileAdapter.exists() ? "ATTACHED" : "DETACHED";
+      dynamicDataDescriptor.getDetailsDescriptor().setState(state);
     }
-    for (String key : metaDataWrapper.getDynamicData().getAllDynamicDataDescriptors().keySet()) {
-      long start = System.currentTimeMillis();
-      DataItemsDescriptor dynamicDataDescriptor =
-          metaDataWrapper.getDynamicData().getDynamicDataDescriptor(key);
-      String dataURI = dynamicDataDescriptor.getURI();
-      String filePath = storageService.getStorageItemName(dataURI);
-      Storage storage = storageService.getStorageByUri(dataURI);
-      FileAdapter fileAdapter = getFileAdapter(storage, filePath);
-      try {
-        dynamicDataDescriptor.clearDetailsDescriptor();
-        if (properties.getAccessibility()) {
-          String state = fileAdapter.exists() ? "ATTACHED" : "DETACHED";
-          dynamicDataDescriptor.getDetailsDescriptor().setState(state);
-        }
 
-        if (fileAdapter.exists()) {
-          if (properties.getSize()) {
-            dynamicDataDescriptor.getDetailsDescriptor().setSize(fileAdapter.length());
-          }
-
-          dynamicDataDescriptor.getDetailsDescriptor().setDataUpdateTimestamp(
-              fileAdapter.lastModified());
-        }
-      } catch (Exception ex) {
-        LOGGER.error("Unable to enrich medatadata : " + metaDataWrapper.getId()
-            + ". Error Message: " + ex.getMessage());
-        throw new LcmException("Unable to get info about datasource: " + filePath, ex);
-      } finally {
-        dynamicDataDescriptor.getDetailsDescriptor().setUpdateTimestamp(new Date().getTime());
-        long end = System.currentTimeMillis();
-        dynamicDataDescriptor.getDetailsDescriptor().setUpdateDurationTimestamp(end - start);
+    if (fileAdapter.exists()) {
+      if (properties.getSize()) {
+        dynamicDataDescriptor.getDetailsDescriptor().setSize(fileAdapter.length());
       }
-    }
-    return metaDataWrapper.getMetaData();
 
+      dynamicDataDescriptor.getDetailsDescriptor().setDataUpdateTimestamp(
+          fileAdapter.lastModified());
+    }
   }
 
   @Override

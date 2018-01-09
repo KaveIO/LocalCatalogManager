@@ -102,49 +102,33 @@ public class BackendJsonImpl extends AbstractBackend {
   }
 
   @Override
-  public MetaData enrichMetadata(EnrichmentProperties properties) {
-    expandDataURISection();
-    if (metaDataWrapper.getDynamicData().getAllDynamicDataDescriptors() == null) {
-      return metaDataWrapper.getMetaData();
-    }
-    for (String key : metaDataWrapper.getDynamicData().getAllDynamicDataDescriptors().keySet()) {
+  protected void enrichMetadataItem(EnrichmentProperties properties, String key) throws IOException {
     File dataSourceFile = createDataSourceFile(key);
-    long start = System.currentTimeMillis();
-    try {
-      jsonMetaData.getDynamicData().getDynamicDataDescriptor(key).clearDetailsDescriptor();
-      if (properties.getAccessibility()) {
-        String state = dataSourceFile.exists() ? "ATTACHED" : "DETACHED";
-        jsonMetaData.getDynamicData().getDynamicDataDescriptor(key).getDetailsDescriptor().setState(state);
-      }
-
-      if (dataSourceFile.exists()) {
-        if (properties.getSize()) {
-          jsonMetaData.getDynamicData().getDynamicDataDescriptor(key).getDetailsDescriptor().setSize(dataSourceFile.length());
-        }
-        if (properties.getStructure()) {
-          JsonDataContext dataContext = createDataContext(dataSourceFile);
-          Schema schema = dataContext.getDefaultSchema();
-          if (schema.getTableCount() == 0) {
-            return null;
-          }
-          Table table = schema.getTables()[0];
-          jsonMetaData.getTableDescription(key).setColumns(table.getColumns());
-        }
-        Long dataUpdateTime = new Date(dataSourceFile.lastModified()).getTime();
-        jsonMetaData.getDynamicData().getDynamicDataDescriptor(key).getDetailsDescriptor().setDataUpdateTimestamp(dataUpdateTime);
-      }
-    } catch (Exception ex) {
-      LOGGER.error("Unable to enrich medatadata : " + jsonMetaData.getId() + ". Error Message: "
-          + ex.getMessage());
-      throw new LcmException("Unable to get info about datasource: " + dataSourceFile.getPath(), ex);
-    } finally {
-      jsonMetaData.getDynamicData().getDynamicDataDescriptor(key).getDetailsDescriptor().setUpdateTimestamp(new Date().getTime());
-      long end = System.currentTimeMillis();
-      jsonMetaData.getDynamicData().getDynamicDataDescriptor(key).getDetailsDescriptor().setUpdateDurationTimestamp(end - start);
-    }
+    jsonMetaData.getDynamicData().getDynamicDataDescriptor(key).clearDetailsDescriptor();
+    if (properties.getAccessibility()) {
+      String state = dataSourceFile.exists() ? "ATTACHED" : "DETACHED";
+      jsonMetaData.getDynamicData().getDynamicDataDescriptor(key).getDetailsDescriptor()
+          .setState(state);
     }
 
-    return metaDataWrapper.getMetaData();
+    if (dataSourceFile.exists()) {
+      if (properties.getSize()) {
+        jsonMetaData.getDynamicData().getDynamicDataDescriptor(key).getDetailsDescriptor()
+            .setSize(dataSourceFile.length());
+      }
+      if (properties.getStructure()) {
+        JsonDataContext dataContext = createDataContext(dataSourceFile);
+        Schema schema = dataContext.getDefaultSchema();
+        if (schema.getTableCount() == 0) {
+          return;
+        }
+        Table table = schema.getTables()[0];
+        jsonMetaData.getTableDescription(key).setColumns(table.getColumns());
+      }
+      Long dataUpdateTime = new Date(dataSourceFile.lastModified()).getTime();
+      jsonMetaData.getDynamicData().getDynamicDataDescriptor(key).getDetailsDescriptor()
+          .setDataUpdateTimestamp(dataUpdateTime);
+    }
   }
 
   /**
@@ -266,4 +250,5 @@ public class BackendJsonImpl extends AbstractBackend {
 
     return fileNameList;
   }
+
 }

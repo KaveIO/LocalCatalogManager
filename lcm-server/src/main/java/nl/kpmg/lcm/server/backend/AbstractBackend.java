@@ -14,19 +14,23 @@
 
 package nl.kpmg.lcm.server.backend;
 
-import nl.kpmg.lcm.server.data.ProgressIndicationFactory;
+import nl.kpmg.lcm.common.data.EnrichmentProperties;
 import nl.kpmg.lcm.common.data.metadata.DataItemsDescriptor;
 import nl.kpmg.lcm.common.data.metadata.MetaData;
 import nl.kpmg.lcm.common.data.metadata.MetaDataWrapper;
-import nl.kpmg.lcm.server.data.service.StorageService;
+import nl.kpmg.lcm.common.exception.LcmException;
 import nl.kpmg.lcm.common.exception.LcmValidationException;
 import nl.kpmg.lcm.common.validation.Notification;
+import nl.kpmg.lcm.server.data.ProgressIndicationFactory;
+import nl.kpmg.lcm.server.data.service.StorageService;
 
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.LoggerFactory;
 
+import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.util.Date;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -93,6 +97,38 @@ abstract class AbstractBackend implements Backend {
 
     return supportedSchemas;
   }
+
+  @Override
+  public MetaData enrichMetadata(EnrichmentProperties properties) {
+    expandDataURISection();
+    if (metaDataWrapper.getDynamicData().getAllDynamicDataDescriptors() == null) {
+      return metaDataWrapper.getMetaData();
+    }
+    for (String key : metaDataWrapper.getDynamicData().getAllDynamicDataDescriptors().keySet()) {
+      DataItemsDescriptor dynamicDataDescriptor =
+          metaDataWrapper.getDynamicData().getDynamicDataDescriptor(key);
+      long start = System.currentTimeMillis();
+      try {
+          dynamicDataDescriptor.clearDetailsDescriptor();
+          enrichMetadataItem(properties, key);
+      } catch (Exception ex) {
+        String message =
+            "Unable to enrich medatadata : " + metaDataWrapper.getId() + " key: " + key
+                + ". Error Message: " + ex.getMessage();
+        LOGGER.error(message);
+        throw new LcmException(message);
+      } finally {
+        dynamicDataDescriptor.getDetailsDescriptor().setUpdateTimestamp(new Date().getTime());
+        long end = System.currentTimeMillis();
+        dynamicDataDescriptor.getDetailsDescriptor().setUpdateDurationTimestamp(end - start);
+      }
+    }
+
+    //in case that there are dynami data items exists.
+    return metaDataWrapper.getMetaData();
+  }
+
+  protected abstract void enrichMetadataItem(EnrichmentProperties properties, String itemKey) throws IOException;
 
   protected void expandDataURISection() {
     List<String> uriList = metaDataWrapper.getData().getUri();

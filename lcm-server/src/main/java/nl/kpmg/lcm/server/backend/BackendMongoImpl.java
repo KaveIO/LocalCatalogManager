@@ -14,20 +14,20 @@
 
 package nl.kpmg.lcm.server.backend;
 
-import nl.kpmg.lcm.server.backend.metadata.ColumnDescription;
-import nl.kpmg.lcm.server.backend.metadata.TabularMetaData;
-import nl.kpmg.lcm.server.backend.storage.MongoStorage;
 import nl.kpmg.lcm.common.data.ContentIterator;
 import nl.kpmg.lcm.common.data.Data;
 import nl.kpmg.lcm.common.data.DataFormat;
 import nl.kpmg.lcm.common.data.EnrichmentProperties;
 import nl.kpmg.lcm.common.data.IterativeData;
-import nl.kpmg.lcm.server.data.ProgressIndicationFactory;
 import nl.kpmg.lcm.common.data.Storage;
 import nl.kpmg.lcm.common.data.TransferSettings;
 import nl.kpmg.lcm.common.data.metadata.MetaData;
-import nl.kpmg.lcm.server.data.service.StorageService;
 import nl.kpmg.lcm.common.exception.LcmException;
+import nl.kpmg.lcm.server.backend.metadata.ColumnDescription;
+import nl.kpmg.lcm.server.backend.metadata.TabularMetaData;
+import nl.kpmg.lcm.server.backend.storage.MongoStorage;
+import nl.kpmg.lcm.server.data.ProgressIndicationFactory;
+import nl.kpmg.lcm.server.data.service.StorageService;
 
 import org.apache.metamodel.DataContextFactory;
 import org.apache.metamodel.MetaModelHelper;
@@ -42,9 +42,9 @@ import org.apache.metamodel.schema.Table;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Date;
 import java.util.List;
 import java.util.Map;
 
@@ -73,71 +73,44 @@ public class BackendMongoImpl extends AbstractBackend {
   }
 
   @Override
-  public MetaData enrichMetadata(EnrichmentProperties enrichment) {
-    expandDataURISection();
-    if (metaDataWrapper.getDynamicData().getAllDynamicDataDescriptors() == null) {
-      return metaDataWrapper.getMetaData();
-    }
-    for (String key : metaDataWrapper.getDynamicData().getAllDynamicDataDescriptors().keySet()) {
-      long start = System.currentTimeMillis();
-      try {
-        mongoMetaData.getDynamicData().getDynamicDataDescriptor(key).clearDetailsDescriptor();
-        if (enrichment.getItemsCount() || enrichment.getStructure()
-            || enrichment.getAccessibility()) {
-          String dataURI = metaDataWrapper.getDynamicData().getDynamicDataDescriptor(key).getURI();
-          Storage storage = storageService.getStorageByUri(dataURI);
-          MongoStorage mongoStorage = new MongoStorage(storage);
-          UpdateableDataContext dataContext = getDataContext(mongoStorage);
+  protected void enrichMetadataItem(EnrichmentProperties properties, String key) throws IOException {
+    if (properties.getItemsCount() || properties.getStructure() || properties.getAccessibility()) {
+      String dataURI = metaDataWrapper.getDynamicData().getDynamicDataDescriptor(key).getURI();
+      Storage storage = storageService.getStorageByUri(dataURI);
+      MongoStorage mongoStorage = new MongoStorage(storage);
+      UpdateableDataContext dataContext = getDataContext(mongoStorage);
 
-          Schema database = dataContext.getSchemaByName(mongoStorage.getDatabase());
-          if (database == null) {
-            if (enrichment.getAccessibility()) {
-              mongoMetaData.getDynamicData().getDynamicDataDescriptor(key).getDetailsDescriptor()
-                  .setState("DETACHED");
-            }
-            return mongoMetaData.getMetaData();
-          }
-          Table table = database.getTableByName(getTableName(dataURI));
-          if (table == null) {
-            if (enrichment.getAccessibility()) {
-              mongoMetaData.getDynamicData().getDynamicDataDescriptor(key).getDetailsDescriptor()
-                  .setState("DETACHED");
-            }
-            return mongoMetaData.getMetaData();
-          }
-
-          if (enrichment.getAccessibility()) {
-            mongoMetaData.getDynamicData().getDynamicDataDescriptor(key).getDetailsDescriptor()
-                .setState("ATTACHED");
-          }
-
-          if (enrichment.getItemsCount()) {
-            Query query = dataContext.query().from(table).selectCount().toQuery();
-            DataSet dataSet = dataContext.query().from(table).selectCount().execute();
-            Row result = MetaModelHelper.executeSingleRowQuery(dataContext, query);
-            Long count = (Long) result.getValue(0);
-            mongoMetaData.getDynamicData().getDynamicDataDescriptor(key).getDetailsDescriptor()
-                .setItemsCount(count);
-          }
-
-          if (enrichment.getStructure()) {
-            mongoMetaData.getTableDescription(key).setColumns(table.getColumns());
-          }
-
-        }
-      } catch (Exception ex) {
-        LOGGER.error("Unable to enrich medatadata : " + mongoMetaData.getId() + ". Error Message: "
-            + ex.getMessage());
-        throw new LcmException("Unable to enrich medatadata : " + mongoMetaData.getId(), ex);
-      } finally {
+      Schema database = dataContext.getSchemaByName(mongoStorage.getDatabase());
+      if (database == null && properties.getAccessibility()) {
         mongoMetaData.getDynamicData().getDynamicDataDescriptor(key).getDetailsDescriptor()
-            .setUpdateTimestamp(new Date().getTime());
-        long end = System.currentTimeMillis();
+            .setState("DETACHED");
+        return;
+      }
+      Table table = database.getTableByName(getTableName(dataURI));
+      if (table == null && properties.getAccessibility()) {
         mongoMetaData.getDynamicData().getDynamicDataDescriptor(key).getDetailsDescriptor()
-            .setUpdateDurationTimestamp(end - start);
+            .setState("DETACHED");
+        return;
+      }
+
+      if (properties.getAccessibility()) {
+        mongoMetaData.getDynamicData().getDynamicDataDescriptor(key).getDetailsDescriptor()
+            .setState("ATTACHED");
+      }
+
+      if (properties.getItemsCount()) {
+        Query query = dataContext.query().from(table).selectCount().toQuery();
+        DataSet dataSet = dataContext.query().from(table).selectCount().execute();
+        Row result = MetaModelHelper.executeSingleRowQuery(dataContext, query);
+        Long count = (Long) result.getValue(0);
+        mongoMetaData.getDynamicData().getDynamicDataDescriptor(key).getDetailsDescriptor()
+            .setItemsCount(count);
+      }
+
+      if (properties.getStructure()) {
+        mongoMetaData.getTableDescription(key).setColumns(table.getColumns());
       }
     }
-    return mongoMetaData.getMetaData();
   }
 
   @Override
@@ -264,4 +237,5 @@ public class BackendMongoImpl extends AbstractBackend {
 
     return new ArrayList(Arrays.asList(database.getTableNames()));
     }
+
 }

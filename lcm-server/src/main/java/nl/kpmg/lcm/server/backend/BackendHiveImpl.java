@@ -14,19 +14,19 @@
 
 package nl.kpmg.lcm.server.backend;
 
-import nl.kpmg.lcm.server.backend.metadata.TabularMetaData;
-import nl.kpmg.lcm.server.backend.storage.HiveStorage;
 import nl.kpmg.lcm.common.data.ContentIterator;
 import nl.kpmg.lcm.common.data.Data;
 import nl.kpmg.lcm.common.data.DataFormat;
 import nl.kpmg.lcm.common.data.EnrichmentProperties;
 import nl.kpmg.lcm.common.data.IterativeData;
-import nl.kpmg.lcm.server.data.ProgressIndicationFactory;
 import nl.kpmg.lcm.common.data.Storage;
 import nl.kpmg.lcm.common.data.TransferSettings;
 import nl.kpmg.lcm.common.data.metadata.MetaData;
-import nl.kpmg.lcm.server.data.service.StorageService;
 import nl.kpmg.lcm.common.exception.LcmException;
+import nl.kpmg.lcm.server.backend.metadata.TabularMetaData;
+import nl.kpmg.lcm.server.backend.storage.HiveStorage;
+import nl.kpmg.lcm.server.data.ProgressIndicationFactory;
+import nl.kpmg.lcm.server.data.service.StorageService;
 
 import org.apache.metamodel.MetaModelHelper;
 import org.apache.metamodel.data.DataSet;
@@ -39,12 +39,12 @@ import org.apache.metamodel.schema.Table;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.io.IOException;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Date;
 import java.util.List;
 
 /**
@@ -89,65 +89,45 @@ public class BackendHiveImpl extends AbstractBackend {
   }
 
   @Override
-  public MetaData enrichMetadata(EnrichmentProperties enrichment) {
-    expandDataURISection();
-    if (metaDataWrapper.getDynamicData().getAllDynamicDataDescriptors() == null) {
-      return metaDataWrapper.getMetaData();
-    }
-    for (String key : metaDataWrapper.getDynamicData().getAllDynamicDataDescriptors().keySet()) {
-    long start = System.currentTimeMillis();
-    try {
-      hiveMetaData.getDynamicData().getDynamicDataDescriptor(key).clearDetailsDescriptor();
-      if (enrichment.getItemsCount() || enrichment.getStructure() || enrichment.getAccessibility()) {
-         
-        String dataURI = metaDataWrapper.getDynamicData().getDynamicDataDescriptor(key).getURI();
-        Storage storage = storageService.getStorageByUri(dataURI);
-        HiveStorage hiveStorage =  new HiveStorage(storage);  
-        JdbcDataContext dataContext = getDataContext(hiveStorage);
+  protected void enrichMetadataItem(EnrichmentProperties properties, String key) throws IOException {
+    hiveMetaData.getDynamicData().getDynamicDataDescriptor(key).clearDetailsDescriptor();
+    if (properties.getItemsCount() || properties.getStructure() || properties.getAccessibility()) {
+      String dataURI = metaDataWrapper.getDynamicData().getDynamicDataDescriptor(key).getURI();
+      Storage storage = storageService.getStorageByUri(dataURI);
+      HiveStorage hiveStorage = new HiveStorage(storage);
+      JdbcDataContext dataContext = getDataContext(hiveStorage);
 
-        Schema database = dataContext.getSchemaByName(hiveStorage.getDatabase());
-        if (database == null) {
-          if (enrichment.getAccessibility()) {
-            hiveMetaData.getDynamicData().getDynamicDataDescriptor(key).getDetailsDescriptor().setState("DETACHED");
-          }
-          return hiveMetaData.getMetaData();
-        }
-        Table table = database.getTableByName(getTableName(dataURI));
-        if (table == null) {
-          if (enrichment.getAccessibility()) {
-            hiveMetaData.getDynamicData().getDynamicDataDescriptor(key).getDetailsDescriptor().setState("DETACHED");
-          }
-          return hiveMetaData.getMetaData();
-        }
-
-        if (enrichment.getAccessibility()) {
-          hiveMetaData.getDynamicData().getDynamicDataDescriptor(key).getDetailsDescriptor().setState("ATTACHED");
-        }
-
-        if (enrichment.getItemsCount()) {
-          Query query = dataContext.query().from(table).selectCount().toQuery();
-          DataSet dataSet = dataContext.query().from(table).selectCount().execute();
-          Row result = MetaModelHelper.executeSingleRowQuery(dataContext, query);
-          Long count = (Long) result.getValue(0);
-          hiveMetaData.getDynamicData().getDynamicDataDescriptor(key).getDetailsDescriptor().setItemsCount(count);
-        }
-
-        if (enrichment.getStructure()) {
-          hiveMetaData.getTableDescription(key).setColumns(table.getColumns());
-        }
-
+      Schema database = dataContext.getSchemaByName(hiveStorage.getDatabase());
+      if (database == null && properties.getAccessibility()) {
+        hiveMetaData.getDynamicData().getDynamicDataDescriptor(key).getDetailsDescriptor()
+            .setState("DETACHED");
+        return;
       }
-    } catch (Exception ex) {
-      LOGGER.error("Unable to enrich medatadata : " + hiveMetaData.getId() + ". Error Message: "
-          + ex.getMessage());
-      throw new LcmException("Unable to enrich medatadata : " + hiveMetaData.getId(), ex);
-    } finally {
-      hiveMetaData.getDynamicData().getDynamicDataDescriptor(key).getDetailsDescriptor().setUpdateTimestamp(new Date().getTime());
-      long end = System.currentTimeMillis();
-      hiveMetaData.getDynamicData().getDynamicDataDescriptor(key).getDetailsDescriptor().setUpdateDurationTimestamp(end - start);
+      Table table = database.getTableByName(getTableName(dataURI));
+      if (table == null && properties.getAccessibility()) {
+        hiveMetaData.getDynamicData().getDynamicDataDescriptor(key).getDetailsDescriptor()
+            .setState("DETACHED");
+        return;
+      }
+
+      if (properties.getAccessibility()) {
+        hiveMetaData.getDynamicData().getDynamicDataDescriptor(key).getDetailsDescriptor()
+            .setState("ATTACHED");
+      }
+
+      if (properties.getItemsCount()) {
+        Query query = dataContext.query().from(table).selectCount().toQuery();
+        DataSet dataSet = dataContext.query().from(table).selectCount().execute();
+        Row result = MetaModelHelper.executeSingleRowQuery(dataContext, query);
+        Long count = (Long) result.getValue(0);
+        hiveMetaData.getDynamicData().getDynamicDataDescriptor(key).getDetailsDescriptor()
+            .setItemsCount(count);
+      }
+
+      if (properties.getStructure()) {
+        hiveMetaData.getTableDescription(key).setColumns(table.getColumns());
+      }
     }
-    }
-    return hiveMetaData.getMetaData();
   }
 
   @Override
@@ -281,4 +261,5 @@ public class BackendHiveImpl extends AbstractBackend {
 
     return new ArrayList(Arrays.asList(schema.getTableNames()));
   }
+
 }

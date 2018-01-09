@@ -133,53 +133,32 @@ public class BackendCsvImpl extends AbstractBackend {
   }
 
   @Override
-  public MetaData enrichMetadata(EnrichmentProperties properties) {
-    expandDataURISection();
-    if (metaDataWrapper.getDynamicData().getAllDynamicDataDescriptors() == null) {
-      return metaDataWrapper.getMetaData();
+  protected void enrichMetadataItem(EnrichmentProperties properties, String key) {
+    DataItemsDescriptor dynamicDataDescriptor =
+        metaDataWrapper.getDynamicData().getDynamicDataDescriptor(key);
+    File dataSourceFile = constructDatasourceFile(key);
+    metaDataWrapper.getDynamicData().getDynamicDataDescriptor(key).clearDetailsDescriptor();
+    if (properties.getAccessibility()) {
+      String state = dataSourceFile.exists() ? "ATTACHED" : "DETACHED";
+      dynamicDataDescriptor.getDetailsDescriptor().setState(state);
     }
-    for (String key : metaDataWrapper.getDynamicData().getAllDynamicDataDescriptors().keySet()) {
 
-      DataItemsDescriptor dynamicDataDescriptor =
-          metaDataWrapper.getDynamicData().getDynamicDataDescriptor(key);
-      File dataSourceFile = constructDatasourceFile(key);
-      long start = System.currentTimeMillis();
-      try {
-        metaDataWrapper.getDynamicData().getDynamicDataDescriptor(key).clearDetailsDescriptor();
-        if (properties.getAccessibility()) {
-          String state = dataSourceFile.exists() ? "ATTACHED" : "DETACHED";
-          dynamicDataDescriptor.getDetailsDescriptor().setState(state);
-        }
-
-        if (dataSourceFile.exists()) {
-          if (properties.getSize()) {
-            dynamicDataDescriptor.getDetailsDescriptor().setSize(dataSourceFile.length());
-          }
-          if (properties.getStructure()) {
-            UpdateableDataContext dataContext = createDataContext(dataSourceFile, key);
-            Schema schema = dataContext.getDefaultSchema();
-            if (schema.getTableCount() == 0) {
-              return null;
-            }
-            Table table = schema.getTables()[0];
-            csvMetaData.getTableDescription(key).setColumns(table.getColumns());
-          }
-          Long dataUpdateTime = new Date(dataSourceFile.lastModified()).getTime();
-          dynamicDataDescriptor.getDetailsDescriptor().setDataUpdateTimestamp(dataUpdateTime);
-        }
-      } catch (Exception ex) {
-        LOGGER.error("Unable to enrich medatadata : " + metaDataWrapper.getId() + ". Error Message: "
-            + ex.getMessage());
-        throw new LcmException("Unable to get info about datasource: " + dataSourceFile.getPath(),
-            ex);
-      } finally {
-        dynamicDataDescriptor.getDetailsDescriptor().setUpdateTimestamp(new Date().getTime());
-        long end = System.currentTimeMillis();
-        dynamicDataDescriptor.getDetailsDescriptor().setUpdateDurationTimestamp(end - start);
+    if (dataSourceFile.exists()) {
+      if (properties.getSize()) {
+        dynamicDataDescriptor.getDetailsDescriptor().setSize(dataSourceFile.length());
       }
+      if (properties.getStructure()) {
+        UpdateableDataContext dataContext = createDataContext(dataSourceFile, key);
+        Schema schema = dataContext.getDefaultSchema();
+        if (schema.getTableCount() == 0) {
+          return;
+        }
+        Table table = schema.getTables()[0];
+        csvMetaData.getTableDescription(key).setColumns(table.getColumns());
+      }
+      Long dataUpdateTime = new Date(dataSourceFile.lastModified()).getTime();
+      dynamicDataDescriptor.getDetailsDescriptor().setDataUpdateTimestamp(dataUpdateTime);
     }
-
-    return metaDataWrapper.getMetaData();
   }
 
   /**
