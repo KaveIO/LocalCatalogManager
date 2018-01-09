@@ -27,4 +27,5 @@ public interface FileAdapter {
   public boolean exists() throws IOException;
   public long length() throws IOException;
   public long lastModified() throws IOException;
+  public void validatePaths();
 }

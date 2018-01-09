@@ -25,9 +25,10 @@ import com.amazonaws.services.s3.model.ObjectMetadata;
 import com.amazonaws.services.s3.model.PutObjectRequest;
 import com.amazonaws.services.s3.model.S3Object;
 
+import nl.kpmg.lcm.common.exception.LcmException;
+import nl.kpmg.lcm.common.exception.LcmValidationException;
 import nl.kpmg.lcm.server.backend.storage.S3FileStorage;
 import nl.kpmg.lcm.server.data.FileAdapter;
-import nl.kpmg.lcm.common.exception.LcmException;
 
 import org.slf4j.LoggerFactory;
 
@@ -106,4 +107,11 @@ public class S3FileAdapter implements FileAdapter {
     S3Object object = s3Client.getObject(new GetObjectRequest(bucketName, fileName));
     return object.getObjectMetadata().getLastModified().getTime();
   }
+
+    @Override
+    public void validatePaths() {
+        if(fileName.contains("../")){
+            throw new LcmValidationException("Metadata path is probbably wrong. Data uri can not contains \"..\\\"!");
+        }
+    }
 }

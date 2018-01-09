@@ -23,11 +23,11 @@ import java.io.IOException;
  *
  * @author Stoyan Hristov<shristov@intracol.com>
  */
-class FilePathValidator {
+public class FilePathValidator {
   /**
    * Checks if @subDirectory is sub directory of @baseDirectory or @subDirectory is file in sub
    * directory of @baseDirectory. For example: return false for base directory : \temp\myapp\bin\
-   * and subdirectory ..\\..\file.txt
+   * and subdirectory ../../file.txt
    *
    * @subDirectory is file in sub directory of @baseDirectory
    * @param subDirectory : directory or file that will be checked

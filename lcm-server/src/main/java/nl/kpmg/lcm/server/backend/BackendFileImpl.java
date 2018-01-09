@@ -13,29 +13,29 @@
  */
 package nl.kpmg.lcm.server.backend;
 
-import nl.kpmg.lcm.server.backend.storage.HdfsFileStorage;
-import nl.kpmg.lcm.server.backend.storage.LocalFileStorage;
-import nl.kpmg.lcm.server.backend.storage.S3FileStorage;
 import nl.kpmg.lcm.common.data.Data;
 import nl.kpmg.lcm.common.data.DataFormat;
 import nl.kpmg.lcm.common.data.EnrichmentProperties;
+import nl.kpmg.lcm.common.data.Storage;
+import nl.kpmg.lcm.common.data.StreamingData;
+import nl.kpmg.lcm.common.data.TransferSettings;
+import nl.kpmg.lcm.common.data.metadata.DataItemsDescriptor;
+import nl.kpmg.lcm.common.data.metadata.MetaData;
+import nl.kpmg.lcm.common.exception.LcmException;
+import nl.kpmg.lcm.common.exception.LcmValidationException;
+import nl.kpmg.lcm.common.validation.Notification;
+import nl.kpmg.lcm.server.backend.storage.HdfsFileStorage;
+import nl.kpmg.lcm.server.backend.storage.LocalFileStorage;
+import nl.kpmg.lcm.server.backend.storage.S3FileStorage;
 import nl.kpmg.lcm.server.data.FileAdapter;
 import nl.kpmg.lcm.server.data.FileSystemAdapter;
 import nl.kpmg.lcm.server.data.LocalFileAdapter;
 import nl.kpmg.lcm.server.data.LocalFileSystemAdapter;
-import nl.kpmg.lcm.common.data.Storage;
-import nl.kpmg.lcm.common.data.StreamingData;
-import nl.kpmg.lcm.common.data.TransferSettings;
 import nl.kpmg.lcm.server.data.hdfs.HdfsFileAdapter;
 import nl.kpmg.lcm.server.data.hdfs.HdfsFileSystemAdapter;
-import nl.kpmg.lcm.common.data.metadata.DataItemsDescriptor;
-import nl.kpmg.lcm.common.data.metadata.MetaData;
 import nl.kpmg.lcm.server.data.s3.S3FileAdapter;
 import nl.kpmg.lcm.server.data.s3.S3FileSystemAdapter;
 import nl.kpmg.lcm.server.data.service.StorageService;
-import nl.kpmg.lcm.common.exception.LcmException;
-import nl.kpmg.lcm.common.exception.LcmValidationException;
-import nl.kpmg.lcm.common.validation.Notification;
 
 import org.slf4j.LoggerFactory;
 
@@ -56,12 +56,11 @@ public class BackendFileImpl extends AbstractBackend {
   public BackendFileImpl(MetaData metaData, StorageService storageService) {
     super(metaData, storageService);
 
-
   }
 
   private FileAdapter getFileAdapter(Storage storage, String filePath) {
     FileAdapter fileAdapter = null;
-    Notification notification = new Notification();
+
     if (S3FileStorage.getSupportedStorageTypes().contains(storage.getType())) {
       fileAdapter = new S3FileAdapter(new S3FileStorage(storage), filePath);
     } else if (LocalFileStorage.getSupportedStorageTypes().contains(storage.getType())) {
@@ -71,11 +70,12 @@ public class BackendFileImpl extends AbstractBackend {
     } else {
       LOGGER.warn("Improper storage object is passed to BackendFileImpl. Storage id: "
           + storage.getId());
+      Notification notification = new Notification();
       notification.addError("Improper storage object is passed to BackendFileImpl.");
       throw new LcmValidationException(notification);
     }
 
-
+    fileAdapter.validatePaths();
     return fileAdapter;
   }
 

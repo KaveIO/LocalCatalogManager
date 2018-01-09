@@ -13,6 +13,9 @@
  */
 package nl.kpmg.lcm.server.data;
 
+import nl.kpmg.lcm.common.exception.LcmValidationException;
+import nl.kpmg.lcm.common.validation.Notification;
+import nl.kpmg.lcm.server.backend.FilePathValidator;
 import nl.kpmg.lcm.server.backend.storage.LocalFileStorage;
 
 import org.apache.commons.io.FileUtils;
@@ -70,5 +73,15 @@ public class LocalFileAdapter implements FileAdapter {
     return (new File(fullFilePath)).lastModified();
   }
 
+    @Override
+    public void validatePaths() {
+       File baseDir = new File(storage.getStoragePath());
+       File dataSourceFile = new File(storage.getStoragePath() + fileName);
+       Notification notification = new Notification();
+       FilePathValidator.validate(baseDir, dataSourceFile, notification);
 
+       if (notification.hasErrors()) {
+         throw new LcmValidationException(notification);
+       }
+    }
 }

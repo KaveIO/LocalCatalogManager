@@ -13,6 +13,7 @@
  */
 package nl.kpmg.lcm.server.data.hdfs;
 
+import nl.kpmg.lcm.common.exception.LcmValidationException;
 import nl.kpmg.lcm.server.backend.storage.HdfsFileStorage;
 import nl.kpmg.lcm.server.data.FileAdapter;
 
@@ -32,11 +33,13 @@ import java.io.OutputStream;
  */
 public class HdfsFileAdapter implements FileAdapter {
   private String storagePath;
+  private String storageBasePath;
   private String storageUrl;
   private static final org.slf4j.Logger LOGGER = LoggerFactory.getLogger(HdfsFileAdapter.class
       .getName());
 
   public HdfsFileAdapter(HdfsFileStorage hdfsStorage, String fileName) {
+    storageBasePath = "/" + hdfsStorage.getPath();
     storagePath = "/" + hdfsStorage.getPath() + "/" + fileName;
     storageUrl = hdfsStorage.getUrl();
   }
@@ -90,4 +93,13 @@ public class HdfsFileAdapter implements FileAdapter {
     return hdfs.getFileStatus(file).getModificationTime();
   }
 
+  @Override
+  public void validatePaths() {
+    //in case ../ exists in the storagePath new Path() will eliminate them.
+    Path filePath = new Path(storagePath);
+    if (!filePath.toString().startsWith(storageBasePath)) {
+      throw new LcmValidationException(
+          "Metadata path is probbably wrong. Data uri can not contains \"..\\\"!");
+    }
+  }
 }
