@@ -28,17 +28,18 @@ import com.vaadin.ui.TextField;
 import com.vaadin.ui.UI;
 import com.vaadin.ui.VerticalLayout;
 
+import nl.kpmg.lcm.common.ServerException;
 import nl.kpmg.lcm.common.client.ClientException;
+import nl.kpmg.lcm.common.data.RemoteLcm;
+import nl.kpmg.lcm.common.data.metadata.MetaDataWrapper;
+import nl.kpmg.lcm.common.exception.LcmValidationException;
 import nl.kpmg.lcm.common.rest.types.MetaDataRepresentation;
 import nl.kpmg.lcm.common.rest.types.MetaDatasRepresentation;
 import nl.kpmg.lcm.common.rest.types.RemoteLcmRepresentation;
 import nl.kpmg.lcm.common.rest.types.RemoteLcmsRepresentation;
-import nl.kpmg.lcm.common.ServerException;
-import nl.kpmg.lcm.common.data.RemoteLcm;
-import nl.kpmg.lcm.common.data.metadata.MetaDataWrapper;
-import nl.kpmg.lcm.common.exception.LcmValidationException;
 import nl.kpmg.lcm.ui.rest.AuthenticationException;
 import nl.kpmg.lcm.ui.rest.RestClientService;
+import nl.kpmg.lcm.ui.view.metadata.MetadataEditWindow;
 import nl.kpmg.lcm.ui.view.transfer.components.StartTransferWindow;
 
 import org.slf4j.LoggerFactory;
@@ -143,16 +144,11 @@ public class SchedulePanel extends CustomComponent {
     tableLayout.addStyleName("padding-right-20");
 
     VerticalLayout detailsLayout = new VerticalLayout();
-    detailsLayout.setWidth("50%");
+    detailsLayout.setWidth("100%");
     detailsLayout.setHeight("100%");
-    metadataDetails = new TextArea();
-    metadataDetails.setWidth("100%");
-    metadataDetails.setHeight("100%");
-    detailsLayout.addComponent(metadataDetails);
 
     HorizontalLayout dataLayout = new HorizontalLayout();
     dataLayout.addComponent(tableLayout);
-    dataLayout.addComponent(metadataDetails);
     dataLayout.setWidth("100%");
 
     return dataLayout;
@@ -176,15 +172,9 @@ public class SchedulePanel extends CustomComponent {
     Button viewButton = new Button("view");
     viewButton.setData(item);
     viewButton.addClickListener((event) -> {
-      MetaDataRepresentation data = (MetaDataRepresentation) event.getButton().getData();
-      try {
-        String json =
-            new ObjectMapper().writerWithDefaultPrettyPrinter().writeValueAsString(data.getItem());
-        metadataDetails.setValue(json);
-      } catch (JsonProcessingException ex) {
-        LOGGER.warn("Error:  unable to parse the metadata! Message: " + ex.getMessage());
-        metadataDetails.setValue("Error:  unable to parse the metadata!");
-      }
+        MetadataEditWindow metadataEditWindow = new MetadataEditWindow(restClientService,
+          (MetaDataRepresentation) event.getButton().getData());
+        UI.getCurrent().addWindow(metadataEditWindow);
     });
     viewButton.addStyleName("link");
 

@@ -25,10 +25,10 @@ import com.vaadin.ui.TextArea;
 import com.vaadin.ui.VerticalLayout;
 import com.vaadin.ui.Window;
 
-import nl.kpmg.lcm.common.rest.types.MetaDataRepresentation;
 import nl.kpmg.lcm.common.ServerException;
 import nl.kpmg.lcm.common.data.metadata.MetaData;
 import nl.kpmg.lcm.common.data.metadata.MetaDataWrapper;
+import nl.kpmg.lcm.common.rest.types.MetaDataRepresentation;
 import nl.kpmg.lcm.ui.component.DefinedLabel;
 import nl.kpmg.lcm.ui.rest.AuthenticationException;
 import nl.kpmg.lcm.ui.rest.DataCreationException;
@@ -51,7 +51,11 @@ public class MetadataEditWindow extends Window implements Button.ClickListener {
   /**
    * The default size of the side panels of this view.
    */
-  private static final String PANEL_SIZE = "600px";
+  private static final String PANEL_SIZE = "900px";
+
+  private static final String PANEL_HEIGHT = "500px";
+
+  private static final int MAX_NUMBER_OF_ROWS_FOR_RAW_PANEL = 15;
 
   /**
    * The default size of the side panels of this view.
@@ -90,6 +94,7 @@ public class MetadataEditWindow extends Window implements Button.ClickListener {
     tabsheet.addTab(adminPanel, "Administration");
 
     this.setWidth(PANEL_SIZE);
+    this.setHeight(PANEL_HEIGHT);
     this.setModal(true);
     this.setContent(tabsheet);
   }
@@ -115,10 +120,11 @@ public class MetadataEditWindow extends Window implements Button.ClickListener {
     textArea = new TextArea();
     textArea.setWidth("100%");
     textArea.setHeight("100%");
+    textArea.setRows(MAX_NUMBER_OF_ROWS_FOR_RAW_PANEL);
 
     ObjectMapper objectMapper = new ObjectMapper();
     try {
-      String rawMetadata = objectMapper.writeValueAsString(metadata);
+      String rawMetadata = objectMapper.writerWithDefaultPrettyPrinter().writeValueAsString(metadata);
       textArea.setValue(rawMetadata);
     } catch (JsonProcessingException ex) {
       textArea.setEnabled(false);
@@ -130,6 +136,7 @@ public class MetadataEditWindow extends Window implements Button.ClickListener {
 
     VerticalLayout panelContent = new VerticalLayout();
     panelContent.setMargin(true);
+    panelContent.setSpacing(true);
     panelContent.addComponent(textArea);
     panelContent.addComponent(saveButton);
 
@@ -145,6 +152,7 @@ public class MetadataEditWindow extends Window implements Button.ClickListener {
 
     VerticalLayout panelContent = new VerticalLayout();
     panelContent.setMargin(true);
+    panelContent.setSpacing(true);
     panelContent.addComponent(warning);
     panelContent.addComponent(deleteButton);
 
