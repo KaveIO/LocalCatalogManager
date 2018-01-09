@@ -14,6 +14,8 @@
 
 package nl.kpmg.lcm.server.rest.authentication;
 
+import static nl.kpmg.lcm.common.rest.authentication.AuthorizationConstants.BASIC_AUTHENTICATION_HEADER;
+
 import nl.kpmg.lcm.server.LoginException;
 import nl.kpmg.lcm.server.data.service.UserService;
 
@@ -40,11 +42,6 @@ public class BasicAuthenticationManager extends AbstractAuthenticationManager {
   public final void setIsBasicAuthenticationEnabled(final String isEnabled) {
     this.isBasicAuthenticationEnabled = Boolean.valueOf(isEnabled);
   }
-
-  /**
-   * The name of the http request header containing the authentication user.
-   */
-  public static final String BASIC_AUTHENTICATION_HEADER = "Authorization";
 
   /**
    * The logger.

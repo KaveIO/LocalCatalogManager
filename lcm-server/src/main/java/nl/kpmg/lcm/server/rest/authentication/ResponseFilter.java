@@ -14,6 +14,9 @@
 
 package nl.kpmg.lcm.server.rest.authentication;
 
+import static nl.kpmg.lcm.common.rest.authentication.AuthorizationConstants.LCM_AUTHENTICATION_TOKEN_HEADER;
+import static nl.kpmg.lcm.common.rest.authentication.AuthorizationConstants.LCM_AUTHENTICATION_USER_HEADER;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -52,8 +55,8 @@ public class ResponseFilter implements ContainerResponseFilter {
 
     MultivaluedMap<String, Object> headers = responseContext.getHeaders();
     headers.add("Acces-Control-Allow-Headers",
-        String.format("%s, %s", SessionAuthenticationManager.LCM_AUTHENTICATION_USER_HEADER,
-            SessionAuthenticationManager.LCM_AUTHENTICATION_TOKEN_HEADER));
+        String.format("%s, %s", LCM_AUTHENTICATION_USER_HEADER,
+            LCM_AUTHENTICATION_TOKEN_HEADER));
     headers.add("WWW-Authenticate", "Basic realm=\"LCM\", LCMToken realm=\"LCM\"");
   }
 }

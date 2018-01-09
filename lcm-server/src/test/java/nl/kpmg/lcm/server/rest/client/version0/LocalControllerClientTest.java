@@ -14,12 +14,12 @@
 
 package nl.kpmg.lcm.server.rest.client.version0;
 
+import static nl.kpmg.lcm.common.rest.authentication.AuthorizationConstants.BASIC_AUTHENTICATION_HEADER;
 import static org.junit.Assert.assertEquals;
 
+import nl.kpmg.lcm.common.ServerException;
 import nl.kpmg.lcm.server.LcmBaseServerTest;
 import nl.kpmg.lcm.server.LoginException;
-import nl.kpmg.lcm.common.ServerException;
-import nl.kpmg.lcm.server.rest.authentication.BasicAuthenticationManager;
 
 import org.junit.Test;
 
@@ -31,7 +31,7 @@ public class LocalControllerClientTest extends LcmBaseServerTest {
   @Test
   public void testGetLocalOverview() throws LoginException, ServerException {
     Response response = getWebTarget().path("client/v0/local").request()
-        .header(BasicAuthenticationManager.BASIC_AUTHENTICATION_HEADER, basicAuthTokenAdmin).get();
+        .header(BASIC_AUTHENTICATION_HEADER, basicAuthTokenAdmin).get();
 
     assertEquals(Status.OK.getStatusCode(), response.getStatus());
   }

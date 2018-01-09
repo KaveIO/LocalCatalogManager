@@ -32,6 +32,8 @@ import com.vaadin.ui.UI;
 import com.vaadin.ui.VerticalLayout;
 import com.vaadin.ui.themes.ValoTheme;
 
+import nl.kpmg.lcm.ui.rest.AuthenticationException;
+import nl.kpmg.lcm.ui.rest.RestClientService;
 import nl.kpmg.lcm.ui.view.AdministrationViewImpl;
 import nl.kpmg.lcm.ui.view.MetadataOverviewViewImpl;
 import nl.kpmg.lcm.ui.view.TransferViewImpl;
@@ -49,6 +51,9 @@ public class Application extends UI {
 
   @Autowired
   private SpringViewProvider viewProvider;
+
+  @Autowired
+  private RestClientService restClientService;
 
   @Configuration
   @EnableVaadin
@@ -80,6 +85,8 @@ public class Application extends UI {
     navigationBar.addComponent(createNavigationButton("Transfer", TransferViewImpl.VIEW_NAME));
     navigationBar
         .addComponent(createNavigationButton("Administration", AdministrationViewImpl.VIEW_NAME));
+    navigationBar
+        .addComponent(createLogoutButton("Logout"));
     root.addComponent(navigationBar);
 
     final Panel viewContainer = new Panel();
@@ -99,6 +106,23 @@ public class Application extends UI {
       @Override
       public void buttonClick(ClickEvent event) {
         getUI().getNavigator().navigateTo(viewName);
+      }
+    });
+    return button;
+  }
+
+  private Button createLogoutButton(String caption) {
+    Button button = new Button(caption);
+    button.addStyleName(ValoTheme.BUTTON_SMALL);
+    button.addClickListener(new ClickListener() {
+      @Override
+      public void buttonClick(ClickEvent event) {
+        try {
+          restClientService.logout();
+          navigator.navigateTo("login");
+        } catch (AuthenticationException ex) {
+          Notification.show("Error! unable to logout sucessfully.");
+        }
       }
     });
     return button;

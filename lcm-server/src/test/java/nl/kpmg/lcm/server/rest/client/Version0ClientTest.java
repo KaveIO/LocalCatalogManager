@@ -14,15 +14,15 @@
 
 package nl.kpmg.lcm.server.rest.client;
 
+import static nl.kpmg.lcm.common.rest.authentication.AuthorizationConstants.BASIC_AUTHENTICATION_HEADER;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 
+import nl.kpmg.lcm.common.ServerException;
 import nl.kpmg.lcm.server.LcmBaseServerTest;
 import nl.kpmg.lcm.server.LoginException;
-import nl.kpmg.lcm.common.ServerException;
-import nl.kpmg.lcm.server.rest.authentication.BasicAuthenticationManager;
 
 import org.junit.Test;
 
@@ -37,7 +37,7 @@ public class Version0ClientTest extends LcmBaseServerTest {
   @Test
   public void testGetIndex() throws LoginException, IOException, ServerException {
     Response response = getWebTarget().path("client/v0").request()
-        .header(BasicAuthenticationManager.BASIC_AUTHENTICATION_HEADER, basicAuthTokenAdmin).get();
+        .header(BASIC_AUTHENTICATION_HEADER, basicAuthTokenAdmin).get();
 
     assertEquals(200, response.getStatus());
 

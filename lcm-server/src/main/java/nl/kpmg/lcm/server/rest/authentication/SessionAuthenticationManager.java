@@ -13,6 +13,9 @@
  */
 package nl.kpmg.lcm.server.rest.authentication;
 
+import static nl.kpmg.lcm.common.rest.authentication.AuthorizationConstants.LCM_AUTHENTICATION_TOKEN_HEADER;
+import static nl.kpmg.lcm.common.rest.authentication.AuthorizationConstants.LCM_AUTHENTICATION_USER_HEADER;
+
 import nl.kpmg.lcm.server.LoginException;
 import nl.kpmg.lcm.server.LogoutException;
 import nl.kpmg.lcm.server.data.service.UserService;
@@ -36,15 +39,6 @@ import javax.ws.rs.container.ContainerRequestContext;
  */
 @Service
 public class SessionAuthenticationManager extends AbstractAuthenticationManager {
-  /**
-   * The name of the http request header containing the authentication user.
-   */
-  public static final String LCM_AUTHENTICATION_USER_HEADER = "LCM-Authentication-User";
-
-  /**
-   * The name of the http request header containing the authentication token.
-   */
-  public static final String LCM_AUTHENTICATION_TOKEN_HEADER = "LCM-Authentication-Token";
 
   /**
    * The logger.

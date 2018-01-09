@@ -14,30 +14,30 @@
 
 package nl.kpmg.lcm.server.rest.client.version0;
 
+import static nl.kpmg.lcm.common.rest.authentication.AuthorizationConstants.BASIC_AUTHENTICATION_HEADER;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 
 import com.google.gson.stream.JsonReader;
 
-import nl.kpmg.lcm.common.rest.types.FetchEndpointRepresentation;
-import nl.kpmg.lcm.common.rest.types.MetaDataRepresentation;
-import nl.kpmg.lcm.common.rest.types.MetaDatasRepresentation;
-import nl.kpmg.lcm.server.LcmBaseServerTest;
 import nl.kpmg.lcm.common.ServerException;
-import nl.kpmg.lcm.server.backend.Backend;
 import nl.kpmg.lcm.common.data.ContentIterator;
 import nl.kpmg.lcm.common.data.Data;
 import nl.kpmg.lcm.common.data.DataFormat;
 import nl.kpmg.lcm.common.data.FetchEndpoint;
 import nl.kpmg.lcm.common.data.IterativeData;
-import nl.kpmg.lcm.server.data.JsonReaderContentIterator;
 import nl.kpmg.lcm.common.data.Storage;
 import nl.kpmg.lcm.common.data.TransferSettings;
 import nl.kpmg.lcm.common.data.metadata.MetaData;
 import nl.kpmg.lcm.common.data.metadata.MetaDataWrapper;
+import nl.kpmg.lcm.common.rest.types.FetchEndpointRepresentation;
+import nl.kpmg.lcm.common.rest.types.MetaDataRepresentation;
+import nl.kpmg.lcm.common.rest.types.MetaDatasRepresentation;
+import nl.kpmg.lcm.server.LcmBaseServerTest;
+import nl.kpmg.lcm.server.backend.Backend;
+import nl.kpmg.lcm.server.data.JsonReaderContentIterator;
 import nl.kpmg.lcm.server.data.service.FetchEndpointService;
 import nl.kpmg.lcm.server.data.service.StorageService;
-import nl.kpmg.lcm.server.rest.authentication.BasicAuthenticationManager;
 import nl.kpmg.lcm.server.test.mock.MetaDataMocker;
 import nl.kpmg.lcm.server.test.mock.StorageMocker;
 
@@ -104,7 +104,7 @@ public class FetchEndpointContollerTest extends LcmBaseServerTest {
   @After
   public void afterTest() throws ServerException {
     getWebTarget().path("client/logout").request().header(AUTH_USER_HEADER, "admin")
-        .header(BasicAuthenticationManager.BASIC_AUTHENTICATION_HEADER, basicAuthTokenAdmin)
+        .header(BASIC_AUTHENTICATION_HEADER, basicAuthTokenAdmin)
         .post(null);
 
     List<FetchEndpoint> all = fetchEndpointService.findAll();
@@ -187,7 +187,7 @@ public class FetchEndpointContollerTest extends LcmBaseServerTest {
 
     Invocation.Builder req =
         getWebTarget().path(METADATA_PATH).request().header(AUTH_USER_HEADER, "admin")
-            .header(BasicAuthenticationManager.BASIC_AUTHENTICATION_HEADER, basicAuthTokenAdmin);
+            .header(BASIC_AUTHENTICATION_HEADER, basicAuthTokenAdmin);
 
     Response response = req.get();
     assertEquals(expected, response.getStatus());
@@ -245,7 +245,7 @@ public class FetchEndpointContollerTest extends LcmBaseServerTest {
       FileNotFoundException, IOException {
     Response response =
         getWebTarget().path(FETCH_PATH).path(id).queryParam("data_key", key).request().header(AUTH_USER_HEADER, "admin")
-            .header(BasicAuthenticationManager.BASIC_AUTHENTICATION_HEADER, basicAuthTokenAdmin)
+            .header(BASIC_AUTHENTICATION_HEADER, basicAuthTokenAdmin)
             .get();
 
     assertEquals(expected, response.getStatus());
@@ -259,7 +259,7 @@ public class FetchEndpointContollerTest extends LcmBaseServerTest {
 
     Response resp =
         getWebTarget().path(METADATA_PATH).request().header(AUTH_USER_HEADER, "admin")
-            .header(BasicAuthenticationManager.BASIC_AUTHENTICATION_HEADER, basicAuthTokenAdmin)
+            .header(BASIC_AUTHENTICATION_HEADER, basicAuthTokenAdmin)
             .post(entity);
 
     assertEquals(expected, resp.getStatus());
@@ -269,7 +269,7 @@ public class FetchEndpointContollerTest extends LcmBaseServerTest {
     Response response =
         getWebTarget().path(GENERATE_FETCH_PATH).path(metadataId).path("fetchUrl").request()
             .header(AUTH_USER_HEADER, "admin")
-            .header(BasicAuthenticationManager.BASIC_AUTHENTICATION_HEADER, basicAuthTokenAdmin)
+            .header(BASIC_AUTHENTICATION_HEADER, basicAuthTokenAdmin)
             .get();
 
     assertEquals(expected, response.getStatus());

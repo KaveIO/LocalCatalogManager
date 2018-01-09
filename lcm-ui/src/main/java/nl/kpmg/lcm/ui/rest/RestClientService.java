@@ -14,6 +14,9 @@
 
 package nl.kpmg.lcm.ui.rest;
 
+import static nl.kpmg.lcm.common.rest.authentication.AuthorizationConstants.LCM_AUTHENTICATION_TOKEN_HEADER;
+import static nl.kpmg.lcm.common.rest.authentication.AuthorizationConstants.LCM_AUTHENTICATION_USER_HEADER;
+
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.vaadin.server.VaadinService;
 import com.vaadin.server.WrappedSession;
@@ -77,6 +80,14 @@ public class RestClientService {
     VaadinService.getCurrentRequest().getWrappedSession().setAttribute("loginUser", loginUser);
   }
 
+  private void clearLoginToken() {
+    VaadinService.getCurrentRequest().getWrappedSession().removeAttribute("loginToken");
+  }
+
+  private void clearLoginUser() {
+    VaadinService.getCurrentRequest().getWrappedSession().removeAttribute("loginUser");
+  }
+
   private String retrieveLoginToken() {
     WrappedSession wrappedSession = VaadinService.getCurrentRequest().getWrappedSession();
     return (String) wrappedSession.getAttribute("loginToken");
@@ -114,6 +125,27 @@ public class RestClientService {
     saveLoginToken(post.readEntity(String.class));
   }
 
+  public void logout() throws AuthenticationException {
+    String path = "client/logout";
+
+    Entity<String> payload =
+        Entity.entity("{}", "application/nl.kpmg.lcm.server.rest.client.types.LogoutRequest+json");
+
+    Response post = null;
+    try {
+      post = getClient(path).post(payload);
+    } catch (ServerException | ProcessingException e) {
+      LOGGER.warn("Server error in LCM target server HTTPS REST invocation, trying HTTP...", e);
+      secure = false;
+    }
+    if (post == null || post.getStatus() != 200) {
+      throw new AuthenticationException("Logout failed");
+    }
+
+    clearLoginUser();
+    clearLoginToken();
+  }
+
   public boolean isAuthenticated() {
     String retrieveLoginToken = retrieveLoginToken();
     String retrieveLoginUser = retrieveLoginUser();
@@ -134,8 +166,8 @@ public class RestClientService {
     }
 
     return clientFactory.createWebTarget(uri).path(path).request()
-        .header("LCM-Authentication-User", retrieveLoginUser())
-        .header("LCM-Authentication-Token", retrieveLoginToken());
+        .header(LCM_AUTHENTICATION_USER_HEADER, retrieveLoginUser())
+        .header(LCM_AUTHENTICATION_TOKEN_HEADER, retrieveLoginToken());
   }
 
   /**

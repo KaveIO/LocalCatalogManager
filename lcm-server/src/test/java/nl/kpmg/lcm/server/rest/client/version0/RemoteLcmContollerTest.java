@@ -14,17 +14,17 @@
 
 package nl.kpmg.lcm.server.rest.client.version0;
 
+import static nl.kpmg.lcm.common.rest.authentication.AuthorizationConstants.BASIC_AUTHENTICATION_HEADER;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 
+import nl.kpmg.lcm.common.ServerException;
+import nl.kpmg.lcm.common.data.RemoteLcm;
 import nl.kpmg.lcm.common.rest.types.RemoteLcmRepresentation;
 import nl.kpmg.lcm.common.rest.types.RemoteLcmsRepresentation;
 import nl.kpmg.lcm.server.LcmBaseServerTest;
-import nl.kpmg.lcm.common.ServerException;
-import nl.kpmg.lcm.common.data.RemoteLcm;
 import nl.kpmg.lcm.server.data.service.RemoteLcmService;
-import nl.kpmg.lcm.server.rest.authentication.BasicAuthenticationManager;
 
 import org.junit.After;
 import org.junit.Test;
@@ -55,7 +55,7 @@ public class RemoteLcmContollerTest extends LcmBaseServerTest {
   public void afterTest() throws ServerException {
 
     getWebTarget().path("client/logout").request().header(AUTH_USER_HEADER, "admin")
-            .header(BasicAuthenticationManager.BASIC_AUTHENTICATION_HEADER, basicAuthTokenAdmin).post(null);
+            .header(BASIC_AUTHENTICATION_HEADER, basicAuthTokenAdmin).post(null);
 
     List<RemoteLcm> all = service.findAll();
     for (RemoteLcm lcm : all) {
@@ -159,7 +159,7 @@ public class RemoteLcmContollerTest extends LcmBaseServerTest {
     Entity<RemoteLcm> entity = Entity.entity(lcm, LCM_CONTENT_TYPE);
     Response resp = getWebTarget()
             .path(PATH).request().header(AUTH_USER_HEADER, "admin")
-            .header(BasicAuthenticationManager.BASIC_AUTHENTICATION_HEADER, basicAuthTokenAdmin).post(entity);
+            .header(BASIC_AUTHENTICATION_HEADER, basicAuthTokenAdmin).post(entity);
     assertEquals(expected, resp.getStatus());
   }
 
@@ -168,7 +168,7 @@ public class RemoteLcmContollerTest extends LcmBaseServerTest {
     Response resp = getWebTarget()
             .path(PATH)
             .request().header(AUTH_USER_HEADER, "admin")
-            .header(BasicAuthenticationManager.BASIC_AUTHENTICATION_HEADER, basicAuthTokenAdmin).put(entity);
+            .header(BASIC_AUTHENTICATION_HEADER, basicAuthTokenAdmin).put(entity);
     assertEquals(expected, resp.getStatus());
   }
 
@@ -177,7 +177,7 @@ public class RemoteLcmContollerTest extends LcmBaseServerTest {
             .path(PATH)
             .request()
             .header(AUTH_USER_HEADER, "admin")
-            .header(BasicAuthenticationManager.BASIC_AUTHENTICATION_HEADER, basicAuthTokenAdmin);
+            .header(BASIC_AUTHENTICATION_HEADER, basicAuthTokenAdmin);
 
     Response response = req.get();
     assertEquals(expected, response.getStatus());
@@ -192,7 +192,7 @@ public class RemoteLcmContollerTest extends LcmBaseServerTest {
             .path(uid)
             .request()
             .header(AUTH_USER_HEADER, "admin")
-            .header(BasicAuthenticationManager.BASIC_AUTHENTICATION_HEADER, basicAuthTokenAdmin).delete();
+            .header(BASIC_AUTHENTICATION_HEADER, basicAuthTokenAdmin).delete();
 
     assertEquals(expected, response.getStatus());
 
@@ -204,7 +204,7 @@ public class RemoteLcmContollerTest extends LcmBaseServerTest {
             .path(uid)
             .request()
             .header(AUTH_USER_HEADER, "admin")
-            .header(BasicAuthenticationManager.BASIC_AUTHENTICATION_HEADER, basicAuthTokenAdmin).get();
+            .header(BASIC_AUTHENTICATION_HEADER, basicAuthTokenAdmin).get();
 
     assertEquals(expected, response.getStatus());
     return response

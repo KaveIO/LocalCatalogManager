@@ -14,6 +14,8 @@
 
 package nl.kpmg.lcm.server.rest;
 
+import static nl.kpmg.lcm.common.rest.authentication.AuthorizationConstants.LCM_AUTHENTICATION_TOKEN_HEADER;
+
 import nl.kpmg.lcm.server.LoginException;
 import nl.kpmg.lcm.server.LogoutException;
 import nl.kpmg.lcm.server.data.service.UserService;
@@ -32,7 +34,6 @@ import javax.ws.rs.POST;
 import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
 import javax.ws.rs.core.Response;
-
 /**
  *
  * @author mhoekstra
@@ -107,7 +108,7 @@ public class Client {
     @RolesAllowed({Roles.ANY_USER})
     @Path("/logout")
     public final Response logout(
-            @HeaderParam(SessionAuthenticationManager.LCM_AUTHENTICATION_TOKEN_HEADER) final String authenticationToken) {
+            @HeaderParam(LCM_AUTHENTICATION_TOKEN_HEADER) final String authenticationToken) {
         try {
             authenticationManager.removeAuthenticationToken(authenticationToken);
             return Response.ok().build();
