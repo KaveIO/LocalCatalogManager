@@ -35,13 +35,15 @@ import java.util.Map;
 public class DataDeleter {
 
   private MetaData metadata;
+  private MetaDataService metadataService;
   private StorageService storageService;
   private TaskDescriptionService taskDescriptionService;
   private String taskId;
 
-  public DataDeleter(StorageService storageService,
+  public DataDeleter(MetaDataService metadataService, StorageService storageService,
       TaskDescriptionService taskDescriptionService, MetaData metadata, String taskId) {
 
+    this.metadataService = metadataService;
     this.storageService = storageService;
     this.taskDescriptionService = taskDescriptionService;
     this.metadata = metadata;
@@ -62,7 +64,8 @@ public class DataDeleter {
       taskDescriptionService.updateProgress(taskId, new ProgressIndication(
           "Deletion finished successfully!"));
     }
-    backend.enrichMetadata(EnrichmentProperties.createDataExistingEnrichmentProperties());
+    EnrichmentProperties enrichment = EnrichmentProperties.createDataExistingEnrichmentProperties();
+    metadataService.enrichMetadata(wrapper, enrichment);
   }
 
   private Backend getBackend() {

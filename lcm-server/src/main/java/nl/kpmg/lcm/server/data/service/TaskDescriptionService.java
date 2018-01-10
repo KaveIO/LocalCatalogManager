@@ -21,6 +21,7 @@ import nl.kpmg.lcm.common.data.ProgressIndication;
 import nl.kpmg.lcm.common.data.TaskDescription;
 import nl.kpmg.lcm.common.data.TaskType;
 import nl.kpmg.lcm.common.data.metadata.DataItemsDescriptor;
+import nl.kpmg.lcm.common.data.metadata.DynamicDataDescriptor;
 import nl.kpmg.lcm.common.data.metadata.MetaData;
 import nl.kpmg.lcm.common.data.metadata.MetaDataWrapper;
 import nl.kpmg.lcm.server.cron.job.processor.DataDeletionExecutor;
@@ -161,7 +162,7 @@ public class TaskDescriptionService {
     taskDescriptionDao.deleteAll();
   }
 
-  public boolean doesExistTaskDescription(TaskType type, String target,
+  public boolean doesTaskDescriptionExist(TaskType type, String target,
       TaskDescription.TaskStatus status) {
     List<TaskDescription> list = findByType(type);
     for (TaskDescription task : list) {
@@ -178,8 +179,37 @@ public class TaskDescriptionService {
       MetaDataWrapper metadataWrapper = new MetaDataWrapper(metadata);
       String executionExpirationTime =
           metadataWrapper.getExpirationTime().getExecutionExpirationTime();
-      if (executionExpirationTime == null || executionExpirationTime.equals("")) {
+
+      if(!isMetadataExpirationTimeInThePast(executionExpirationTime)){
+          continue;
+      }
+
+      if (doesTaskDescriptionExist(TaskType.DELETE, metadataWrapper.getId(),
+          TaskDescription.TaskStatus.PENDING)
+          || doesTaskDescriptionExist(TaskType.DELETE, metadataWrapper.getId(),
+              TaskDescription.TaskStatus.SCHEDULED)
+          || doesTaskDescriptionExist(TaskType.DELETE, metadataWrapper.getId(),
+              TaskDescription.TaskStatus.RUNNING)) {
         continue;
+      }
+
+     DynamicDataDescriptor dynamicDataDescriptor = metadataWrapper.getDynamicData();
+     if (!isAnyDataAttached(dynamicDataDescriptor)){
+         continue;
+     }
+
+     String metadataId = metadataWrapper.getId();
+     createNewDataDeletionTaskDescription(metadataId);
+    }
+  }
+
+  private long convertTimestampSecondsToMiliseconds(String timestamp) {
+    return Long.parseLong(timestamp) * 1000;
+  }
+  
+  private boolean isMetadataExpirationTimeInThePast(String executionExpirationTime){
+      if (executionExpirationTime == null || executionExpirationTime.equals("")) {
+        return false;
       }
 
       Date currentDate = new Date();
@@ -188,41 +218,33 @@ public class TaskDescriptionService {
           convertTimestampSecondsToMiliseconds(executionExpirationTime);
 
       if (metadataExpirationTimeInMiliseconds > currentExpirationTimeInMiliseconds) {
-        continue;
+        return false;
+      }
+      return true;
+  }
+  
+  private boolean isAnyDataAttached(DynamicDataDescriptor dynamicDataDescriptor){
+       if (dynamicDataDescriptor.getAllDynamicDataDescriptors() == null) {
+        return false;
       }
 
-      if (doesExistTaskDescription(TaskType.DELETE, metadataWrapper.getId(),
-          TaskDescription.TaskStatus.PENDING)
-          || doesExistTaskDescription(TaskType.DELETE, metadataWrapper.getId(),
-              TaskDescription.TaskStatus.SCHEDULED)
-          || doesExistTaskDescription(TaskType.DELETE, metadataWrapper.getId(),
-              TaskDescription.TaskStatus.RUNNING)) {
-        continue;
-      }
-
-      if (metadataWrapper.getDynamicData().getAllDynamicDataDescriptors() == null) {
-        continue;
-      }
-
-      boolean willBeCreatedTaskDescription = false;
-      for (String key : metadataWrapper.getDynamicData().getAllDynamicDataDescriptors().keySet()) {
-        DataItemsDescriptor dynamicDataDescriptor =
-            metadataWrapper.getDynamicData().getDynamicDataDescriptor(key);
-        if (dynamicDataDescriptor.getDetailsDescriptor().getState().equals(DataState.ATTACHED)) {
-          willBeCreatedTaskDescription = true;
-          break;
+      for (String key : dynamicDataDescriptor.getAllDynamicDataDescriptors().keySet()) {
+        DataItemsDescriptor dynamicItemDescriptor =
+            dynamicDataDescriptor.getDynamicDataDescriptor(key);
+        if (dynamicItemDescriptor.getDetailsDescriptor().getState().equals(DataState.ATTACHED)) {
+          return true;
         }
 
       }
-      if (!willBeCreatedTaskDescription) {
-        continue;
-      }
-
+    return false;
+  }
+  
+  private void createNewDataDeletionTaskDescription(String metadataId){
       TaskDescription dataDeletionTaskDescription = new TaskDescription();
       dataDeletionTaskDescription.setJob(DataDeletionExecutor.class.getName());
       dataDeletionTaskDescription.setType(TaskType.DELETE);
       dataDeletionTaskDescription.setStatus(TaskDescription.TaskStatus.PENDING);
-      dataDeletionTaskDescription.setTarget(metadataWrapper.getId());
+      dataDeletionTaskDescription.setTarget(metadataId);
 
       Calendar calendar = Calendar.getInstance();
       calendar.add(Calendar.MINUTE, 2);
@@ -230,10 +252,5 @@ public class TaskDescriptionService {
       dataDeletionTaskDescription.setStartTime(startTime);
 
       createNew(dataDeletionTaskDescription);
-    }
-  }
-
-  private long convertTimestampSecondsToMiliseconds(String timestamp) {
-    return Long.parseLong(timestamp) * 1000;
   }
 }
