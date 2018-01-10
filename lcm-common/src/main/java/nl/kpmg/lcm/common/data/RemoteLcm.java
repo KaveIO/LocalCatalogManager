@@ -17,7 +17,6 @@ package nl.kpmg.lcm.common.data;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
-import org.springframework.data.mongodb.core.index.Indexed;
 import org.springframework.data.mongodb.core.mapping.Document;
 
 @Document(collection = "remote_lcm")
@@ -49,9 +48,6 @@ public class RemoteLcm extends AbstractModel {
   private String applicationId;
 
   private String applicationKey;
-
-  @Indexed(unique = true)
-  private String alias;
 
   /**
    * @return the domain
@@ -165,19 +161,5 @@ public class RemoteLcm extends AbstractModel {
   @JsonProperty
   public void setApplicationKey(String applicationKey) {
     this.applicationKey = applicationKey;
-  }
-
-  /**
-   * @return the alias
-   */
-  public String getAlias() {
-    return alias;
-  }
-
-  /**
-   * @param certificateAlias the alias to set
-   */
-  public void setAlias(String certificateAlias) {
-    this.alias = certificateAlias;
   }
 }

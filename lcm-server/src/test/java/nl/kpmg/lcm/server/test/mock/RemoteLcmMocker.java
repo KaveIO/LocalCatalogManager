@@ -29,10 +29,9 @@ public class RemoteLcmMocker {
     remoteLcm.setProtocol("https");
     remoteLcm.setDomain("0.0.0.0");
     remoteLcm.setPort(4444);
-    remoteLcm.setUniqueId("lcmId");
+    remoteLcm.setUniqueId("lcmId" + System.currentTimeMillis());
     remoteLcm.setApplicationId("applicationId");
     remoteLcm.setApplicationKey("applicationKey");
-    remoteLcm.setAlias("test-lcm-" + System.currentTimeMillis()); // making it unique to avoid duplication
 
     return remoteLcm;
   }

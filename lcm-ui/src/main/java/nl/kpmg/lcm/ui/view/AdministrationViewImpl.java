@@ -99,9 +99,6 @@ public class AdministrationViewImpl extends VerticalLayout implements Administra
     storagePanel.setHeight("100%");
     tabsheet.addTab(storagePanel, "Storage");
 
-    remoteLcmPanel = new RemoteLcmPanel(restClientService);
-    tabsheet.addTab(remoteLcmPanel, "Remote LCM");
-
     tasksPanel = new TasksPanel();
     tabsheet.addTab(tasksPanel, "Tasks");
 
@@ -111,13 +108,14 @@ public class AdministrationViewImpl extends VerticalLayout implements Administra
     userGroupsPanel = new UserGroupPanel(restClientService);
     tabsheet.addTab(userGroupsPanel, "User groups");
 
+    remoteLcmPanel = new RemoteLcmPanel(restClientService);
+    tabsheet.addTab(remoteLcmPanel, "Remote LCM");
+
     authorizedLcmPanel = new AuthorizedLcmPanel(restClientService);
     tabsheet.addTab(authorizedLcmPanel, "Authorized LCMs");
 
     lcmIdPanel = new LcmIdPanel(certificateFilepath);
     tabsheet.addTab(lcmIdPanel, "Local LCM identity");
-
-
 
     tabsheet.setHeight("100%");
     root.addComponent(tabsheet);

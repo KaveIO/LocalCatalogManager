@@ -71,7 +71,6 @@ public class RemoteLcmCreateWindow extends Window implements Button.ClickListene
   private ComboBox protocolField = new ComboBox("Protocol");
   private TextField addressField = new TextField("Address");
   private TextField portField = new TextField("Port");
-  private TextField certificateAliasField = new TextField("Certificate alias");
   private Button saveButton = new Button("Save");
   private Upload certificateUpload = new Upload();
   private Label urlLabel = new Label();
@@ -104,7 +103,6 @@ public class RemoteLcmCreateWindow extends Window implements Button.ClickListene
     protocolField.setValue(lcm.getProtocol());
     addressField.setValue(lcm.getDomain());
     portField.setValue(lcm.getPort().toString());
-    certificateAliasField.setValue(lcm.getAlias());
     remoteLcm = lcm;
 
     updateURLLabel(0, null);
@@ -131,7 +129,7 @@ public class RemoteLcmCreateWindow extends Window implements Button.ClickListene
     HorizontalLayout nameLayout = createLayoutForField(nameField);
     panelContent.addComponent(nameLayout);
 
-    HorizontalLayout uniqeIdLayout = createLayoutForField(uniqueIdField, false);
+    HorizontalLayout uniqeIdLayout = createLayoutForField(uniqueIdField);
     panelContent.addComponent(uniqeIdLayout);
 
     HorizontalLayout applicationIdLayout = createLayoutForField(applicationIdField);
@@ -151,9 +149,6 @@ public class RemoteLcmCreateWindow extends Window implements Button.ClickListene
 
     HorizontalLayout urlLabelLayout = createLayoutForLabel(urlLabel);
     panelContent.addComponent(urlLabelLayout);
-
-    HorizontalLayout aliasFieldLayout = createLayoutForField(certificateAliasField);
-    panelContent.addComponent(aliasFieldLayout);
 
     HorizontalLayout uploadFieldLayout = createUploadLayout();
     panelContent.addComponent(uploadFieldLayout);
@@ -225,8 +220,7 @@ public class RemoteLcmCreateWindow extends Window implements Button.ClickListene
       rootNode.put("protocol", protocolField.getValue().toString());
       rootNode.put("domain", addressField.getValue());
       rootNode.put("port", portField.getValue());
-      rootNode.put("alias", certificateAliasField.getValue());
-      fileReceiver.setAlias(certificateAliasField.getValue());
+      fileReceiver.setAlias(uniqueIdField.getValue());
       try {
         if (remoteLcm != null) {
           rootNode.put("id", remoteLcm.getId());
