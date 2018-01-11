@@ -40,6 +40,8 @@ public class AuthorizedLcm extends AbstractModel {
    */
   private String applicationKey;
 
+  private boolean importOfUsersAllowed;
+
   /**
    * @return the name
    */
@@ -96,5 +98,13 @@ public class AuthorizedLcm extends AbstractModel {
   @JsonProperty
   public void setApplicationKey(String applicationKey) {
     this.applicationKey = applicationKey;
+  }
+
+  public boolean isImportOfUsersAllowed() {
+    return importOfUsersAllowed;
+  }
+
+  public void setImportOfUsersAllowed(boolean importOfUsersAllowed) {
+    this.importOfUsersAllowed = importOfUsersAllowed;
   }
 }

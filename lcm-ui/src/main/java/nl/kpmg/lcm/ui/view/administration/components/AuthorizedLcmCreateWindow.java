@@ -18,6 +18,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.vaadin.data.Property;
 import com.vaadin.ui.Button;
+import com.vaadin.ui.CheckBox;
 import com.vaadin.ui.HorizontalLayout;
 import com.vaadin.ui.Label;
 import com.vaadin.ui.Notification;
@@ -69,6 +70,7 @@ public class AuthorizedLcmCreateWindow extends Window implements Button.ClickLis
   private final TextField uniqeLcmIdField = new TextField("Lcm id");
   private final TextField applicationIdField = new TextField("Application id");
   private final TextField applicationKeyField = new TextField("Application key");
+  private final CheckBox allowImportOfUsersCheckBox = new CheckBox("Allow the import of users from this LCM.");
   private final Button saveButton = new Button("Save");
   private final Button copyButton = new Button("Copy");
   private final Button generateButton = new Button("Regenerate");
@@ -101,6 +103,7 @@ public class AuthorizedLcmCreateWindow extends Window implements Button.ClickLis
     applicationIdField.setValue(authorizedLcm.getApplicationId());
     // Application key is never displayed in security reasons
     applicationKeyField.setValue("");
+    allowImportOfUsersCheckBox.setValue(authorizedLcm.isImportOfUsersAllowed());
 
     this.authorizedLcm = authorizedLcm;
     initLayouts();
@@ -132,9 +135,11 @@ public class AuthorizedLcmCreateWindow extends Window implements Button.ClickLis
     HorizontalLayout passwordLayout = initApplicationKeyLayout();
     panelContent.addComponent(passwordLayout);
 
+    HorizontalLayout allowImportOfUsersLayout = initAllowImportOfUsersLayout();
+    panelContent.addComponent(allowImportOfUsersLayout);
+
     saveButton.addStyleName("margin-top-20");
     panelContent.addComponent(saveButton);
-    passwordLayout.setWidth("100%");
 
     this.setWidth(PANEL_SIZE);
     this.setModal(true);
@@ -195,8 +200,17 @@ public class AuthorizedLcmCreateWindow extends Window implements Button.ClickLis
         applicationKeyLayout.setWidth("100%");return applicationKeyLayout;
     }
 
-    private String generateApplicationKey() throws LcmException {
-        RandomString generator = new RandomString(12, "^_!&@");
+  private HorizontalLayout initAllowImportOfUsersLayout() {
+    HorizontalLayout allowImportOfUsersLayout = new HorizontalLayout();
+    allowImportOfUsersCheckBox.setWidth("70%");
+    allowImportOfUsersLayout.addStyleName("margin-top-20");
+    allowImportOfUsersLayout.addComponent(allowImportOfUsersCheckBox);
+
+    return allowImportOfUsersLayout;
+  }
+
+  private String generateApplicationKey() throws LcmException {
+    RandomString generator = new RandomString(12, "^_!&@");
         unhashedKey = generator.nextString();
         String hashedKey;
         try {
@@ -233,6 +247,7 @@ public class AuthorizedLcmCreateWindow extends Window implements Button.ClickLis
       rootNode.put("applicationId", applicationIdField.getValue());
       rootNode.put("applicationKey", unhashedKey);
       rootNode.put("uniqueId", uniqeLcmIdField.getValue());
+      rootNode.put("importOfUsersAllowed", allowImportOfUsersCheckBox.getValue());
 
       try {
         if (authorizedLcm != null) {
