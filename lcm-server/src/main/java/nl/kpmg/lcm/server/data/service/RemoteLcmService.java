@@ -16,9 +16,12 @@ package nl.kpmg.lcm.server.data.service;
 
 import static nl.kpmg.lcm.common.rest.authentication.AuthorizationConstants.LCM_AUTHENTICATION_ORIGIN_HEADER;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.ObjectNode;
+
 import jersey.repackaged.com.google.common.collect.Lists;
 
-import nl.kpmg.lcm.common.Roles;
 import nl.kpmg.lcm.common.ServerException;
 import nl.kpmg.lcm.common.client.HttpsClientFactory;
 import nl.kpmg.lcm.common.configuration.ClientConfiguration;
@@ -34,8 +37,10 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.util.LinkedList;
 import java.util.List;
 
+import javax.ws.rs.client.Entity;
 import javax.ws.rs.core.Response;
 
 /**
@@ -126,35 +131,52 @@ public class RemoteLcmService {
     return url;
   }
 
-  public boolean importUsers(String remoteLcmId) {
+  public boolean exportUsers(String remoteLcmId) {
 
     RemoteLcm remoteLcm = dao.findOne(remoteLcmId);
     HttpAuthenticationFeature credentials =
         HttpAuthenticationFeature.basicBuilder()
-                .credentials(remoteLcm.getApplicationId(), remoteLcm.getApplicationKey()).build();
+            .credentials(remoteLcm.getApplicationId(), remoteLcm.getApplicationKey()).build();
 
     HttpsClientFactory clientFactory = new HttpsClientFactory(configuration, credentials);
-    String fetchUrl = buildRemoteUrl(remoteLcm) + "/remote/v0/users/username-list";
+    String fetchUrl = buildRemoteUrl(remoteLcm) + "/remote/v0/users/import";
     Response response = null;
     try {
       String self = lcmIdService.getLcmIdObject().getLcmId();
-      response = clientFactory.createWebTarget(fetchUrl).request()
-              .header(LCM_AUTHENTICATION_ORIGIN_HEADER, self).get();
+      ObjectNode jsonPayload = createPayload();
+      Entity<String> payload = Entity.entity(jsonPayload.toString(), "application/json");
+
+      response =
+          clientFactory.createWebTarget(fetchUrl).request()
+              .header(LCM_AUTHENTICATION_ORIGIN_HEADER, self).post(payload);
       if (response.getStatus() != Response.Status.OK.getStatusCode()) {
         return false;
       }
-       List<String> usernames = response.readEntity(List.class);
-       for(String username: usernames) {
-           User user =  new User();
-           user.setName(username);
-           user.setRole(Roles.REMOTE_USER);
-           user.setOrigin(remoteLcm.getUniqueId());
-           userService.create(user);
-       }
     } catch (ServerException ex) {
       throw new LcmException(ex.getMessage());
     }
 
     return true;
+  }
+
+  private ObjectNode createPayload() {
+    List<User> users = userService.findAll();
+    List<String> usernames = new LinkedList<String>();
+    for (User user : users) {
+      usernames.add(user.getName());
+    }
+
+    ObjectMapper mapper = new ObjectMapper();
+    ObjectNode rootNode = mapper.createObjectNode();
+    ObjectMapper objectMapper = new ObjectMapper();
+    String value = null;
+    try {
+      value = objectMapper.writeValueAsString(usernames);
+    } catch (JsonProcessingException ex) {
+      throw new LcmException("Unable to transform the list of usernames into a string. Error: "
+          + ex.getMessage());
+    }
+    rootNode.put("usernames", value);
+    return rootNode;
   }
 }

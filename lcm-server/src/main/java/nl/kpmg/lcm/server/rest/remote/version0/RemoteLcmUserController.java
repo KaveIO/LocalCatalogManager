@@ -13,23 +13,33 @@
  */
 package nl.kpmg.lcm.server.rest.remote.version0;
 
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.ObjectMapper;
+
 import nl.kpmg.lcm.common.Roles;
+import nl.kpmg.lcm.common.data.AuthorizedLcm;
 import nl.kpmg.lcm.common.data.User;
+import nl.kpmg.lcm.server.data.service.AuthorizedLcmService;
 import nl.kpmg.lcm.server.data.service.UserService;
 
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
-import java.util.LinkedList;
+import java.io.IOException;
 import java.util.List;
+import java.util.Map;
 
 import javax.annotation.security.RolesAllowed;
-import javax.ws.rs.GET;
+import javax.ws.rs.POST;
 import javax.ws.rs.Path;
-import javax.ws.rs.Produces;
+import javax.ws.rs.core.Context;
+import javax.ws.rs.core.Response;
+import javax.ws.rs.core.SecurityContext;
 
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
+import io.swagger.annotations.ApiParam;
 import io.swagger.annotations.ApiResponse;
 import io.swagger.annotations.ApiResponses;
 
@@ -41,28 +51,52 @@ import io.swagger.annotations.ApiResponses;
 @Path("remote/v0/users")
 @Api(value = "v0 remote calls for users")
 public class RemoteLcmUserController {
-
+  private static final org.slf4j.Logger LOGGER = LoggerFactory
+      .getLogger(RemoteLcmUserController.class.getName());
   /**
    * The user service.
    */
   @Autowired
   private UserService userService;
 
-  @GET
-  @Produces({"application/nl.kpmg.lcm.rest.types.UsersRepresentation+json"})
-  @Path("/username-list")
+  @Autowired
+  private AuthorizedLcmService authorizedLcmService;
+
+  @POST
+  @Path("/import")
   @RolesAllowed({Roles.ADMINISTRATOR, Roles.REMOTE_USER})
-  @ApiOperation(value = "Return list of usernames of local users.",
-          notes = "Roles: " + Roles.ADMINISTRATOR + ", " + Roles.REMOTE_USER)
+  @ApiOperation(value = "Import users from a remote LCM.", notes = "Roles: " + Roles.ADMINISTRATOR
+      + ", " + Roles.REMOTE_USER)
   @ApiResponses(value = {@ApiResponse(code = 200, message = "OK")})
-  public final List<String> getUsernames() {
-    List<User> users = userService.findAll();
-    List<String> usernameList = new LinkedList();
-    for(User user : users) {
-        usernameList.add(user.getName());
+  public final Response importUsers(@Context SecurityContext securityContext, @ApiParam(
+      value = "Usernames map. Contains: \"usernames\".") Map payload) throws IOException {
+
+    User principal = (User) securityContext.getUserPrincipal();
+    String remoteLcmId = principal.getOrigin();
+
+    AuthorizedLcm authorizedLcm = authorizedLcmService.findOneByUniqueId(remoteLcmId);
+    if (authorizedLcm == null) {
+      return Response.status(Response.Status.NOT_FOUND)
+          .entity("Authorized LCM with id" + remoteLcmId + " can not be found.").build();
     }
 
-    return usernameList;
+    if (!authorizedLcm.isImportOfUsersAllowed()) {
+      return Response
+          .status(Response.Status.BAD_REQUEST)
+          .entity(
+              "The usernames from the authorized LCM with id" + remoteLcmId
+                  + " can not be imported because it doesn`t allow that.").build();
+    }
+
+    String usernamesJson = (String) payload.get("usernames");
+    List<String> usernames = convertJsonToList(usernamesJson);
+    userService.createRemoteUsers(usernames, remoteLcmId);
+
+    return Response.status(Response.Status.OK).build();
   }
 
+  public List<String> convertJsonToList(String usernamesJson) throws IOException {
+    ObjectMapper objectMapper = new ObjectMapper();
+    return objectMapper.readValue(usernamesJson, new TypeReference<List<String>>() {});
+  }
 }
