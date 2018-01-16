@@ -84,8 +84,8 @@ public class RemoteLcmUserController {
       return Response
           .status(Response.Status.BAD_REQUEST)
           .entity(
-              "The usernames from the authorized LCM with id" + remoteLcmId
-                  + " can not be imported because it doesn`t allow that.").build();
+              "The remote lcm with id: " + remoteLcmId + " did not allow importing users from it.")
+          .build();
     }
 
     String usernamesJson = (String) payload.get("usernames");

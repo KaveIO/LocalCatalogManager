@@ -43,7 +43,6 @@ public class ExportUsersToRemoteLcmListener extends AbstractListener {
             if (dialog.isConfirmed()) {
               try {
                 String resultMessage = exportUsers(item.getId());
-                dataContainer.updateContent();
                 com.vaadin.ui.Notification.show("The export completed. Result: " + resultMessage);
               } catch (Exception e) {
                 LOGGER.error(String.format("Unable to export users to %s . Error message: %s",

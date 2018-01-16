@@ -290,6 +290,10 @@ public class RestClientService {
       Response response = getClient(path).post(null);
       if (response.getStatusInfo().getFamily() == Response.Status.Family.SUCCESSFUL) {
         return "OK";
+      } else if (response.getStatus() == 400) {
+        String message = "The remote LCM did not allow importing of users from the local LCM.";
+        LOGGER.info(message);
+        return message;
       } else {
         String message =
             String.format("The export of users to remote LCM failed with: %d - %s",

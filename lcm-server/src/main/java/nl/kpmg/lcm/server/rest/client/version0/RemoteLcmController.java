@@ -227,7 +227,15 @@ public class RemoteLcmController {
       throw new NotFoundException("Remote Lcm with id: " + remoteLcmId + " is not found!");
     }
 
-    remoteLcmService.exportUsers(remoteLcmId);
+    boolean result = remoteLcmService.exportUsers(remoteLcmId);
+
+    if (!result) {
+      return Response
+          .status(Response.Status.BAD_REQUEST)
+          .entity(
+              "The remote lcm with id: " + remoteLcmId + " did not allow importing users from it.")
+          .build();
+    }
     return Response.ok().build();
   }
 
