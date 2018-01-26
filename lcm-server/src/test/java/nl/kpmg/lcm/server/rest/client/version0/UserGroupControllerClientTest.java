@@ -109,7 +109,7 @@ public class UserGroupControllerClientTest extends LcmBaseServerTest {
     Response res1 = getWebTarget().path("client/v0/userGroups/").request()
             .header(LCM_AUTHENTICATION_ORIGIN_HEADER, User.LOCAL_ORIGIN)
         .header("LCM-Authentication-User", "admin")
-        .header("LCM-Authentication-Token", authenticationToken).put(entity);
+        .header("LCM-Authentication-Token", authenticationToken).post(entity);
 
     assertEquals(200, res1.getStatus());
   }
