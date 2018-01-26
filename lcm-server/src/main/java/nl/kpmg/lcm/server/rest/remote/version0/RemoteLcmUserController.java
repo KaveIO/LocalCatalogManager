@@ -21,7 +21,9 @@ import nl.kpmg.lcm.common.data.AuthorizedLcm;
 import nl.kpmg.lcm.common.data.User;
 import nl.kpmg.lcm.server.data.service.AuthorizedLcmService;
 import nl.kpmg.lcm.server.data.service.UserService;
+import nl.kpmg.lcm.server.rest.UserIdentifier;
 
+import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
@@ -53,6 +55,11 @@ import io.swagger.annotations.ApiResponses;
 public class RemoteLcmUserController {
   private static final org.slf4j.Logger LOGGER = LoggerFactory
       .getLogger(RemoteLcmUserController.class.getName());
+
+  private static final Logger AUDIT_LOGGER = LoggerFactory.getLogger("auditLogger");
+
+  @Autowired
+  private UserIdentifier userIdentifier;
   /**
    * The user service.
    */
@@ -71,32 +78,60 @@ public class RemoteLcmUserController {
   public final Response importUsers(@Context SecurityContext securityContext, @ApiParam(
       value = "Usernames map. Contains: \"usernames\".") Map payload) throws IOException {
 
+    String usernamesJson = (String) payload.get("usernames");
+    List<String> usernames = convertJsonToList(usernamesJson);
+
+    AUDIT_LOGGER.debug(userIdentifier.getUserDescription(securityContext, false)
+        + " is trying to import users: " + formatListAsString(usernames) + " to the local LCM.");
+
     User principal = (User) securityContext.getUserPrincipal();
     String remoteLcmId = principal.getOrigin();
 
     AuthorizedLcm authorizedLcm = authorizedLcmService.findOneByUniqueId(remoteLcmId);
     if (authorizedLcm == null) {
+      AUDIT_LOGGER.debug(userIdentifier.getUserDescription(securityContext, true)
+          + " was not able to import users: " + formatListAsString(usernames)
+          + " because the local LCM did not authorize LCM with id: " + remoteLcmId + ".");
       return Response.status(Response.Status.NOT_FOUND)
           .entity("Authorized LCM with id" + remoteLcmId + " can not be found.").build();
     }
 
     if (!authorizedLcm.isImportOfUsersAllowed()) {
+      AUDIT_LOGGER.debug(userIdentifier.getUserDescription(securityContext, true)
+          + " was not able to import users: " + formatListAsString(usernames)
+          + " because the remote LCM with id: " + remoteLcmId
+          + " is not allowed to export its users to the local LCM.");
       return Response
           .status(Response.Status.BAD_REQUEST)
           .entity(
-              "The remote lcm with id: " + remoteLcmId + " did not allow importing users from it.")
-          .build();
+              "The remote LCM with id: " + remoteLcmId
+                  + " is not allowed to export its users to the local LCM.").build();
     }
 
-    String usernamesJson = (String) payload.get("usernames");
-    List<String> usernames = convertJsonToList(usernamesJson);
     userService.createRemoteUsers(usernames, remoteLcmId);
 
+    AUDIT_LOGGER.info(userIdentifier.getUserDescription(securityContext, true)
+        + " imported successfully users: " + formatListAsString(usernames) + ".");
     return Response.status(Response.Status.OK).build();
   }
 
   public List<String> convertJsonToList(String usernamesJson) throws IOException {
     ObjectMapper objectMapper = new ObjectMapper();
     return objectMapper.readValue(usernamesJson, new TypeReference<List<String>>() {});
+  }
+
+  private String formatListAsString(List<String> list) {
+    StringBuilder builder = new StringBuilder();
+
+    for (String element : list) {
+      builder.append(element + ", ");
+    }
+
+    // Remote the last empty space
+    builder.deleteCharAt(builder.length() - 1);
+    // Remote the last comma character
+    builder.deleteCharAt(builder.length() - 1);
+
+    return builder.toString();
   }
 }

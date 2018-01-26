@@ -13,6 +13,7 @@
  */
 package nl.kpmg.lcm.server.rest.authorization;
 
+import nl.kpmg.lcm.common.Roles;
 import nl.kpmg.lcm.common.data.User;
 import nl.kpmg.lcm.common.data.UserGroup;
 import nl.kpmg.lcm.common.data.metadata.MetaData;
@@ -20,7 +21,6 @@ import nl.kpmg.lcm.common.data.metadata.MetaDataWrapper;
 import nl.kpmg.lcm.server.data.service.MetaDataService;
 import nl.kpmg.lcm.server.data.service.UserGroupService;
 import nl.kpmg.lcm.server.data.service.UserService;
-import nl.kpmg.lcm.common.Roles;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -37,7 +37,7 @@ import javax.ws.rs.core.SecurityContext;
  */
 @Service
 public class PermissionChecker {
-  private static final Logger AUTHORIZATION_LOGGER = LoggerFactory.getLogger("authorizationLogger");
+  private static final Logger AUDIT_LOGGER = LoggerFactory.getLogger("auditLogger");
 
   private AuthorizationService authorizationService;
 
@@ -98,8 +98,8 @@ public class PermissionChecker {
 
   public boolean check(SecurityContext securityContext, String metadataId) {
     if (securityContext == null || metadataId == null) {
-      AUTHORIZATION_LOGGER.info("Unable to authorize access to metadata: " + metadataId
-          + " because security condext is null");
+      AUDIT_LOGGER.info("Unable to authorize access to metadata: " + metadataId
+          + " because security context is null.");
       return false;
     }
 
@@ -107,23 +107,23 @@ public class PermissionChecker {
 
     // TODO administratore role has full acess?
     if (principal.getRole().equals(Roles.ADMINISTRATOR)) {
-      AUTHORIZATION_LOGGER.info("Authorized admin user: " + principal.getName()
-          + " to access metadata: " + metadataId);
+      AUDIT_LOGGER.info("Authorized admin user: " + principal.getName()
+          + " to access metadata: " + metadataId + ".");
       return true;
     }
 
     User user = userService.findOneByNameAndOrigin(principal.getName(), principal.getOrigin());
 
     if (user == null) {
-      AUTHORIZATION_LOGGER.info("Unable to authorize access to metadata: " + metadataId
-          + " because user is not found: " + principal.getName() + "@" + principal.getOrigin());
+      AUDIT_LOGGER.info("Unable to authorize access to metadata:" + metadataId
+          + " because user is not found: " + principal.getName() + "@" + principal.getOrigin() + ".");
       return false;
     }
 
     MetaData metadata = metadataService.findById(metadataId);
     if (metadata == null) {
-      AUTHORIZATION_LOGGER.info("Unable to authorize access to metadata: " + metadataId
-          + " because metadata is not found. User:" + user.getId());
+      AUDIT_LOGGER.info("Unable to authorize access to metadata: " + metadataId
+          + " because metadata is not found. User:" + user.getId() + ".");
       return false;
     }
 
@@ -137,8 +137,8 @@ public class PermissionChecker {
       return true;
     }
 
-    AUTHORIZATION_LOGGER.info("Unable to authorize access to metadata: " + metadataId
-        + " because no permissions are not found for user:" + user.getId());
+    AUDIT_LOGGER.info("Unable to authorize access to metadata: " + metadataId
+        + " because no permissions are not found for user:" + user.getId() + ".");
     return false;
   }
 
@@ -148,9 +148,9 @@ public class PermissionChecker {
       if (group.getAllowedMetadataList() != null) {
         for (String id : group.getAllowedMetadataList()) {
           if (metadataWrapper.getId().equals(id)) {
-            AUTHORIZATION_LOGGER.info("Authorized user: " + user.getId() + " to access metadata: "
+            AUDIT_LOGGER.info("Authorized user: " + user.getId() + " to access metadata: "
                 + metadataWrapper.getId()
-                + ".  Reason : User is part of directly authorized group:" + group.getId());
+                + ". Reason : User is part of directly authorized group: " + group.getId() + ".");
             return true;
           }
         }
@@ -160,9 +160,9 @@ public class PermissionChecker {
       if (group.getAllowedPathList() != null) {
         for (String path : group.getAllowedPathList()) {
           if (metadataWrapper.getData().getPath().startsWith(path)) {
-            AUTHORIZATION_LOGGER.info("Authorized user: " + user.getId() + " to access metadata: "
-                + metadataWrapper.getId() + ".  Reason : User is part of authorized group:"
-                + group.getId());
+            AUDIT_LOGGER.info("Authorized user: " + user.getId() + " to access metadata: "
+                + metadataWrapper.getId() + ". Reason : User is part of authorized group:"
+                + group.getId() + ".");
             return true;
           }
         }
@@ -175,8 +175,8 @@ public class PermissionChecker {
     if (user.getAllowedMetadataList() != null) {
       for (String id : user.getAllowedMetadataList()) {
         if (metadataWrapper.getId().equals(id)) {
-          AUTHORIZATION_LOGGER.info("Authorized user: " + user.getId() + " to access metadata: "
-              + metadataWrapper.getId() + ".  Reason : User is directly authorized.");
+          AUDIT_LOGGER.info("Authorized user: " + user.getId() + " to access metadata: "
+              + metadataWrapper.getId() + ". Reason : User is directly authorized.");
           return true;
         }
       }
@@ -184,8 +184,8 @@ public class PermissionChecker {
     if (user.getAllowedPathList() != null) {
       for (String path : user.getAllowedPathList()) {
         if (metadataWrapper.getData().getPath().startsWith(path)) {
-          AUTHORIZATION_LOGGER.info("Authorized user: " + user.getId() + " to access metadata: "
-              + metadataWrapper.getId() + ".  Reason : User is authorized by path.");
+          AUDIT_LOGGER.info("Authorized user: " + user.getId() + " to access metadata: "
+              + metadataWrapper.getId() + ". Reason : User is authorized by path.");
           return true;
         }
       }

@@ -42,12 +42,12 @@ public class FetchEndpointService {
     return dao.findOne(id);
   }
 
-  public void create(FetchEndpoint fe) {
-    dao.save(fe);
+  public FetchEndpoint create(FetchEndpoint fe) {
+    return dao.save(fe);
   }
 
-  public void update(FetchEndpoint fe) {
-    dao.save(fe);
+  public FetchEndpoint update(FetchEndpoint fe) {
+    return dao.save(fe);
   }
 
   public void delete(FetchEndpoint fe) {

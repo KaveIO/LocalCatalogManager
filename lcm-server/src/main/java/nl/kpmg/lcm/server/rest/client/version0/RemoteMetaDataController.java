@@ -27,6 +27,7 @@ import nl.kpmg.lcm.common.rest.types.MetaDatasRepresentation;
 import nl.kpmg.lcm.common.validation.Notification;
 import nl.kpmg.lcm.server.data.service.DataFetchTriggerService;
 import nl.kpmg.lcm.server.data.service.RemoteMetaDataService;
+import nl.kpmg.lcm.server.rest.UserIdentifier;
 import nl.kpmg.lcm.server.rest.authorization.PermissionChecker;
 
 import org.slf4j.Logger;
@@ -64,6 +65,10 @@ import io.swagger.annotations.ApiResponses;
 @Api(value = "v0 remote lcm interaction")
 public class RemoteMetaDataController {
   private static final Logger LOGGER = LoggerFactory.getLogger(RemoteMetaDataController.class.getName());
+  private static final Logger AUDIT_LOGGER = LoggerFactory.getLogger("auditLogger");
+
+  @Autowired
+  private UserIdentifier userIdentifier;
 
   @Autowired
   private DataFetchTriggerService dataFetchTriggerService;
@@ -86,15 +91,26 @@ public class RemoteMetaDataController {
           @ApiParam( value = "Transfer details map Contains: "
                   + "\"local-storage-id\",\"namespace-path\" and \"transfer-settings\".") 
           Map payload) throws ServerException {
+    AUDIT_LOGGER.info(userIdentifier.getUserDescription(securityContext, false)
+        + " is trying to trigger a transfer of metadata with id: " + metadataId
+        + " from remote LCM with id: " + lcmId + ".");
 
     Notification notification = validateTriggerParams(payload, lcmId, metadataId);
 
     if (notification.hasErrors()) {
+      AUDIT_LOGGER.debug(userIdentifier.getUserDescription(securityContext, true)
+          + " was unable to trigger a transfer of metadata with id: " + metadataId
+          + " from remote LCM with id: " + lcmId + ". Error message: "
+          + notification.errorMessage());
       throw new LcmValidationException(notification);
     }
 
-    if(securityContext == null) {
-        throw new InvalidStateException("Security context is null!");
+    if (securityContext == null) {
+      AUDIT_LOGGER.debug(userIdentifier.getUserDescription(securityContext, true)
+          + " was unable to trigger a transfer of metadata with id: " + metadataId
+          + " from remote LCM with id: " + lcmId + " because the security context is null. "
+          + notification.errorMessage());
+      throw new InvalidStateException("Security context is null!");
     }
 
     String localStorageId = (String) payload.get("local-storage-id");
@@ -104,7 +120,7 @@ public class RemoteMetaDataController {
 
     TransferSettings transferSettings = null;
     if (transferSettingsString == null) {
-        LOGGER.info("Unable to find TransferSettings object! Default settings will be used!");
+      LOGGER.info("Unable to find TransferSettings object! Default settings will be used!");
       transferSettings = new TransferSettings();
     } else {
       try {
@@ -120,6 +136,9 @@ public class RemoteMetaDataController {
     dataFetchTriggerService.scheduleDataFetchTask(lcmId, metadataId, localStorageId,
         transferSettings, namespacePath, principal.getName());
 
+    AUDIT_LOGGER.info(userIdentifier.getUserDescription(securityContext, true)
+        + " transfered successfully the metadata with id: " + metadataId
+        + " from remote LCM with id: " + lcmId + ".");
     return Response.ok().build();
   }
 
@@ -153,21 +172,35 @@ public class RemoteMetaDataController {
           @PathParam("scope") final String scope,
           @ApiParam( value = "Return only metadatas containing specified string") 
           @QueryParam("text") String searchString) throws ServerException, ClientException {
-    if (scope == null) {
-      Notification notification = new Notification();
-      notification.addError("Scope could not be null!", null);
-      throw new LcmValidationException(notification);
-    }
-
     if (searchString == null) {
       searchString = "";
     }
 
+    String searchStringMessage =
+        searchString.length() > 0 ? " containing the string: " + searchString : "";
+    AUDIT_LOGGER.debug(userIdentifier.getUserDescription(securityContext, false)
+        + " is trying to get all allowed metadatas from remote LCM with id: " + scope
+        + searchStringMessage + ".");
+
+    if (scope == null) {
+      Notification notification = new Notification();
+      notification.addError("Scope could not be null!", null);
+      AUDIT_LOGGER.debug(userIdentifier.getUserDescription(securityContext, true)
+          + " was unable to get all allowed metadatas from remote LCM with id: " + scope
+          + searchStringMessage + ". " + notification.errorMessage());
+      throw new LcmValidationException(notification);
+    }
+
     User principal = (User) securityContext.getUserPrincipal();
-      PermissionChecker.getThreadLocal().set(principal);
+    PermissionChecker.getThreadLocal().set(principal);
     MetaDatasRepresentation result =
         remoteMetaDataService.getMetaDatasRepresentation(scope, searchString);
 
+    AUDIT_LOGGER
+        .debug(userIdentifier.getUserDescription(securityContext, true)
+            + " got successfully all allowed metadatas from remote LCM with id: " + scope
+            + searchStringMessage + ". Number of metadatas returned: " + result.getItems().size()
+            + ".");
     return result;
   }
 

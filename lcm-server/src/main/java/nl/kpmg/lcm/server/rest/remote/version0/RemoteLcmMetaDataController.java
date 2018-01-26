@@ -25,11 +25,14 @@ import nl.kpmg.lcm.common.rest.types.MetaDatasRepresentation;
 import nl.kpmg.lcm.server.data.service.FetchEndpointService;
 import nl.kpmg.lcm.server.data.service.MetaDataService;
 import nl.kpmg.lcm.server.data.service.StorageService;
+import nl.kpmg.lcm.server.rest.UserIdentifier;
 import nl.kpmg.lcm.server.rest.authorization.PermissionChecker;
 import nl.kpmg.lcm.server.rest.client.version0.types.ConcreteFetchEndpointRepresentation;
 import nl.kpmg.lcm.server.rest.client.version0.types.ConcreteRemoteLcmMetaDataRepresentation;
 import nl.kpmg.lcm.server.rest.client.version0.types.ConcreteRemoteLcmMetaDatasRepresentation;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import java.util.ArrayList;
@@ -62,6 +65,10 @@ import io.swagger.annotations.ApiResponses;
 @Path("remote/v0/metadata")
 @Api(value = "v0 remote calls for metadata")
 public class RemoteLcmMetaDataController {
+  private static final Logger AUDIT_LOGGER = LoggerFactory.getLogger("auditLogger");
+
+  @Autowired
+  private UserIdentifier userIdentifier;
 
   @Autowired
   private MetaDataService metaDataService;
@@ -90,31 +97,44 @@ public class RemoteLcmMetaDataController {
       @ApiParam( value = "Search string.")
       @QueryParam("search") String searchString) {
 
-    MetaDatasRepresentation metaDatasRepresentation = new ConcreteRemoteLcmMetaDatasRepresentation();
+    String searchStringMessage =
+        searchString.length() > 0 ? " containing the string: " + searchString : "";
+
+    AUDIT_LOGGER.debug(userIdentifier.getUserDescription(securityContext, false)
+        + " is trying to get all allowed local metadata" + searchStringMessage + ".");
+
+    MetaDatasRepresentation metaDatasRepresentation =
+        new ConcreteRemoteLcmMetaDatasRepresentation();
     if (searchString == null || searchString.isEmpty()) {
       List<MetaData> all = metaDataService.findAll();
       List permittedMetadataList = new LinkedList();
       for(MetaData metadata:  all ){
           if(permissionChecker.check(securityContext, metadata.getId())){
-              permittedMetadataList.add(metadata);
-          }
+          permittedMetadataList.add(metadata);
+        }
       }
-      
+
       metaDatasRepresentation.setRepresentedItems(ConcreteRemoteLcmMetaDataRepresentation.class, permittedMetadataList);
     } else {
       // TODO Check this! - this is most probably defect!
-      if(!permissionChecker.check(securityContext, searchString)){
+      if (!permissionChecker.check(securityContext, searchString)) {
+        AUDIT_LOGGER.debug(userIdentifier.getUserDescription(securityContext, true)
+            + " was unable to get all allowed local metadatas" + searchStringMessage
+            + " because the user is not authorized to do so.");
         throw new LcmException(String.format("Unable to authorize the request.", searchString),
-          Response.Status.FORBIDDEN);
-      }      
-      
+            Response.Status.FORBIDDEN);
+      }
+
       MetaData result = metaDataService.findById(searchString);
-      List metaDataList = new ArrayList<MetaData>();      
+      List metaDataList = new ArrayList<MetaData>();
       metaDataList.add(result);
       metaDatasRepresentation.setRepresentedItems(ConcreteRemoteLcmMetaDataRepresentation.class,
           metaDataList);
     }
 
+    AUDIT_LOGGER.debug(userIdentifier.getUserDescription(securityContext, true)
+        + " got successfully all allowed local metadatas" + searchStringMessage
+        + ". Number of metadatas returned: " + metaDatasRepresentation.getItems().size() + ".");
     return metaDatasRepresentation;
   }
 
@@ -133,19 +153,29 @@ public class RemoteLcmMetaDataController {
                            @ApiResponse(code = 403, message = "The user is not permitted to get the metadata."),
                            @ApiResponse(code = 404, message = "The metadata is not found")})
   public final MetaDataRepresentation getLocalMetaData(@Context SecurityContext securityContext,
-      @ApiParam( value = "Metadata id.")
-      @PathParam("meta_data_id") final String metaDataId) {
+      @ApiParam(value = "Metadata id.") @PathParam("meta_data_id") final String metaDataId) {
+    AUDIT_LOGGER.debug(userIdentifier.getUserDescription(securityContext, false)
+        + " is trying to get the local metadata with id: " + metaDataId + ".");
 
     if (!permissionChecker.check(securityContext, metaDataId)) {
+      AUDIT_LOGGER.debug(userIdentifier.getUserDescription(securityContext, true)
+          + " was unable to get the local metadata with id: " + metaDataId
+          + " because the user is not authorized to do so.");
       throw new LcmException(String.format("Unable to authorize the request.", metaDataId),
           Response.Status.FORBIDDEN);
     }
 
     MetaData metadata = metaDataService.findById(metaDataId);
     if (metadata == null) {
+      AUDIT_LOGGER.debug(userIdentifier.getUserDescription(securityContext, true)
+          + " was unable to get the local metadata with id: " + metaDataId
+          + " because such metadata is not found.");
       throw new NotFoundException(String.format("MetaData set %s could not be found", metaDataId));
     }
 
+    AUDIT_LOGGER.debug(userIdentifier.getUserDescription(securityContext, true)
+        + " got successfully the local metadata with id: " + metadata.getId() + " and name: "
+        + metadata.getName() + ".");
     return new ConcreteRemoteLcmMetaDataRepresentation(metadata);
   }
 
@@ -158,16 +188,25 @@ public class RemoteLcmMetaDataController {
                            @ApiResponse(code = 403, message = "The user is not permitted to get the metadata."),
                            @ApiResponse(code = 404, message = "The metadata is not found")})
   public final FetchEndpointRepresentation generateFetch(@Context SecurityContext securityContext,
-       @ApiParam( value = "Metadata id.")
-       @PathParam("metadata_id") final String metadataId) {
+      @ApiParam(value = "Metadata id.") @PathParam("metadata_id") final String metadataId) {
+    AUDIT_LOGGER
+        .debug(userIdentifier.getUserDescription(securityContext, false)
+            + " is trying to generate new fetch endpoint for the metadata with id: " + metadataId
+            + ".");
 
     MetaData metadata = metaDataService.findById(metadataId);
-    if(!permissionChecker.check(securityContext, metadataId)) {
-        throw new LcmException(String.format("Unable to authorize the request.", metadataId),
+    if (!permissionChecker.check(securityContext, metadataId)) {
+      AUDIT_LOGGER.debug(userIdentifier.getUserDescription(securityContext, true)
+          + " was unable to generate new fetch endpoint for the metadata with id: " + metadataId
+          + " because the user is not authorized to do so.");
+      throw new LcmException(String.format("Unable to authorize the request.", metadataId),
           Response.Status.FORBIDDEN);
     }
 
     if (metadata == null) {
+      AUDIT_LOGGER.debug(userIdentifier.getUserDescription(securityContext, true)
+          + " was unable to generate new fetch endpoint for the metadata with id: " + metadataId
+          + " because such metadata is not found.");
       throw new NotFoundException(String.format("Metadata %s not found", metadataId));
     }
 
@@ -183,8 +222,11 @@ public class RemoteLcmMetaDataController {
     User principal = (User) securityContext.getUserPrincipal();
     fe.setUserToConsume(principal.getName());
     fe.setUserOrigin(principal.getOrigin());
-    fetchEndpointService.create(fe);
+    FetchEndpoint newFetchEndpoint = fetchEndpointService.create(fe);
 
+    AUDIT_LOGGER.debug(userIdentifier.getUserDescription(securityContext, true)
+        + " generated successfully new fetch endpoint with id: " + newFetchEndpoint.getId()
+        + " for the metadata with id: " + newFetchEndpoint.getMetadataId() + ".");
     return new ConcreteFetchEndpointRepresentation(fe);
   }
 
