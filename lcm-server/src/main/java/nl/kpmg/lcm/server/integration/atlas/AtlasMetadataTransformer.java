@@ -5,15 +5,18 @@
  */
 package nl.kpmg.lcm.server.integration.atlas;
 
+import nl.kpmg.lcm.common.configuration.AtlasConfiguration;
 import nl.kpmg.lcm.common.data.DataFormat;
 import nl.kpmg.lcm.common.data.Storage;
 import nl.kpmg.lcm.common.data.metadata.MetaData;
 import nl.kpmg.lcm.server.backend.metadata.ColumnDescription;
 import nl.kpmg.lcm.server.backend.metadata.TabularMetaData;
+import nl.kpmg.lcm.server.data.service.StorageService;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.metamodel.schema.ColumnType;
 import org.apache.metamodel.schema.ColumnTypeImpl;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
@@ -26,14 +29,29 @@ import java.util.Map;
  */
 // Compatible with sandbox 2.6.3
 @Service
-public class AtlasMetadataTransformator {
+public class AtlasMetadataTransformer {
 
-  public MetaData transform(Map entity, Storage storage) throws TransformationException {
-    return transform(entity, "atlas", storage);
+  @Autowired
+  public StorageService storageService;
+
+  @Autowired
+  private AtlasConfiguration atlasConfiguration;
+
+  @Autowired
+  private AtlasRequestProxy atlasRequestProxy;
+
+  public MetaData transform(Map entity) throws TransformationException {
+    return transform(entity, "atlas");
   }
 
-  public MetaData transform(Map mainEntity, String path, Storage storage)
-      throws TransformationException {
+  /**
+   *
+   * @param mainEntity - contains Atlas metadata entity
+   * @param path - the new metadata will belong to this path
+   * @return null if transformation is not possible in any reason.ahaa
+   * @throws TransformationException
+   */
+  public MetaData transform(Map mainEntity, String path) throws TransformationException {
     TabularMetaData metadata = new TabularMetaData();
 
     Map entityItem = (Map) mainEntity.get("entity");
@@ -46,9 +64,17 @@ public class AtlasMetadataTransformator {
     String tableName = (String) atribues.get("name");
     metadata.setName(tableName);
     metadata.getData().setPath(path);
-    // TODO find sutable storage on the base of atlas configuration
+
+    String dbName = getDbName(atribues);
+
+    String domain = atlasConfiguration.getUrlDomain();
+    Storage sutableStorage = storageService.findHiveStorageByDatabaseName(domain, dbName);
+    if (sutableStorage == null) {
+      return null;
+    }
+
     String dataFormat = DataFormat.HIVE;
-    String dataUri = dataFormat + "://" + storage.getName() + "/" + tableName;
+    String dataUri = dataFormat + "://" + sutableStorage.getName() + "/" + tableName;
     List<String> uriList = new ArrayList();
     uriList.add(dataUri);
     metadata.getData().setUri(uriList);
@@ -60,6 +86,16 @@ public class AtlasMetadataTransformator {
     setAtlasOriginData(entityItem, metadata, mainEntity);
 
     return metadata.getMetaData();
+  }
+
+  private String getDbName(Map atribues) {
+    Map db = (Map) atribues.get("db");
+    String dbGuid = (String) db.get("guid");
+    Map dbMainEntity = (Map) atlasRequestProxy.getEntity(dbGuid);
+    Map dbEntity = (Map) dbMainEntity.get("entity");
+    Map dbAtribues = (Map) dbEntity.get("attributes");
+    String dbName = (String) dbAtribues.get("name");
+    return dbName;
   }
 
   private List<ColumnDescription> buildColumns(Map atribues, Map referencedEntities)

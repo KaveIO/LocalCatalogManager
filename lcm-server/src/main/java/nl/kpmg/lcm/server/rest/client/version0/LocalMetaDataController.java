@@ -15,9 +15,7 @@
 package nl.kpmg.lcm.server.rest.client.version0;
 
 import nl.kpmg.lcm.common.Roles;
-import nl.kpmg.lcm.common.data.DataFormat;
 import nl.kpmg.lcm.common.data.EnrichmentProperties;
-import nl.kpmg.lcm.common.data.Storage;
 import nl.kpmg.lcm.common.data.metadata.MetaData;
 import nl.kpmg.lcm.common.data.metadata.MetaDataWrapper;
 import nl.kpmg.lcm.common.exception.LcmExposableException;
@@ -129,11 +127,8 @@ public class LocalMetaDataController {
     } else {
       all = metaDataService.findAll();
     }
-    //TODO find how to configure the atlas storage
-    Storage hiveStorage =  new Storage();
-    hiveStorage.setType(DataFormat.HIVE);
-    hiveStorage.setName("hiveStorage");
-    List<MetaData> atlasMetadata = atlasService.getAll(hiveStorage);
+
+    List<MetaData> atlasMetadata = atlasService.getAll();
     for(MetaData metadata: atlasMetadata) {
         all.add(metadata);
     }

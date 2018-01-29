@@ -56,6 +56,7 @@
         <property name="username" value="${lcm.server.atlas.username}" />
         <property name="password" value="${lcm.server.atlas.password}" />
         <property name="host" value="${lcm.server.atlas.host}" />
+        <property name="urlDomain" value="${lcm.server.atlas.hive.domain}" />
         <property name="port" value="${lcm.server.atlas.port}" />
         <property name="secure" value="${lcm.server.atlas.secure}" />
     </bean>

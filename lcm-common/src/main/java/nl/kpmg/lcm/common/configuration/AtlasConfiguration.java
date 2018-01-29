@@ -15,7 +15,7 @@ public class AtlasConfiguration {
     private String host;
     private Integer port;
     private Boolean secure;
-    private String hiveDomain;
+    private String urlDomain;
 
     /**
      * @return the username
@@ -85,5 +85,19 @@ public class AtlasConfiguration {
      */
     public void setSecure(Boolean secure) {
         this.secure = secure;
+    }
+
+    /**
+     * @return the urlDomain
+     */
+    public String getUrlDomain() {
+        return urlDomain;
+    }
+
+    /**
+     * @param urlDomain the urlDomain to set
+     */
+    public void setUrlDomain(String urlDomain) {
+        this.urlDomain = urlDomain;
     }
 }
