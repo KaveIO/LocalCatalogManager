@@ -15,6 +15,7 @@ public class AtlasConfiguration {
     private String host;
     private Integer port;
     private Boolean secure;
+    private String hiveDomain;
 
     /**
      * @return the username
