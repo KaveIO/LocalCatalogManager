@@ -20,7 +20,7 @@ import nl.kpmg.lcm.common.data.DataFormat;
 import nl.kpmg.lcm.common.data.Storage;
 import nl.kpmg.lcm.common.data.metadata.MetaDataWrapper;
 import nl.kpmg.lcm.server.data.service.StorageService;
-import nl.kpmg.lcm.common.exception.LcmException;
+import nl.kpmg.lcm.common.exception.LcmExposableException;
 import nl.kpmg.lcm.server.test.mock.MetaDataMocker;
 import nl.kpmg.lcm.server.test.mock.StorageMocker;
 
@@ -67,7 +67,7 @@ public class BackendFactoryTest {
         assertTrue(csvBackend instanceof BackendCsvImpl);
     }
 
-    @Test(expected = LcmException.class)
+    @Test(expected = LcmExposableException.class)
     public void testCreateBackendInvalidSchema() throws Exception {
         backendFactory.createBackend("this_is_invalid_schema", storageService, validMetaData);
     }

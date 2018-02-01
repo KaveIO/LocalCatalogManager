@@ -18,7 +18,7 @@ import nl.kpmg.lcm.common.Roles;
 import nl.kpmg.lcm.common.data.EnrichmentProperties;
 import nl.kpmg.lcm.common.data.metadata.MetaData;
 import nl.kpmg.lcm.common.data.metadata.MetaDataWrapper;
-import nl.kpmg.lcm.common.exception.LcmException;
+import nl.kpmg.lcm.common.exception.LcmExposableException;
 import nl.kpmg.lcm.common.rest.types.MetaDataRepresentation;
 import nl.kpmg.lcm.common.rest.types.MetaDatasRepresentation;
 import nl.kpmg.lcm.server.backend.Backend;
@@ -242,7 +242,7 @@ public class LocalMetaDataController {
       AUDIT_LOGGER.debug(userIdentifier.getUserDescription(securityContext, true)
           + " was unable to enrich the metadata with id: " + metaDataId + " and name: "
           + metadata.getName() + ".");
-      throw new LcmException("Unable to enrich the metadata. Id: " + metaDataId);
+      throw new LcmExposableException("Unable to enrich the metadata. Id: " + metaDataId);
     }
   }
 

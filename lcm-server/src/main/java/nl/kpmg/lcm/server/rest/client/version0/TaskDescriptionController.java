@@ -17,7 +17,7 @@ package nl.kpmg.lcm.server.rest.client.version0;
 import nl.kpmg.lcm.common.Roles;
 import nl.kpmg.lcm.common.data.TaskDescription;
 import nl.kpmg.lcm.common.data.TaskType;
-import nl.kpmg.lcm.common.exception.LcmException;
+import nl.kpmg.lcm.common.exception.LcmExposableException;
 import nl.kpmg.lcm.common.rest.types.TaskDescriptionsRepresentation;
 import nl.kpmg.lcm.server.data.service.TaskDescriptionService;
 import nl.kpmg.lcm.server.rest.UserIdentifier;
@@ -122,7 +122,7 @@ public class TaskDescriptionController {
       AUDIT_LOGGER.debug(userIdentifier.getUserDescription(securityContext, true)
           + " was not able to access any task descriptions "
           + "because the specified type, status and maximum number of returned items are invalid.");
-      throw new LcmException("Wrong parameters take a look at the documentation!");
+      throw new LcmExposableException("Wrong parameters take a look at the documentation!");
     }
 
     ConcreteTaskDescriptionsRepresentation concreteTaskDescriptionsRepresentation =

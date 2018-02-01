@@ -13,7 +13,7 @@
  */
 package nl.kpmg.lcm.server.exception.mapper;
 
-import nl.kpmg.lcm.common.exception.LcmException;
+import nl.kpmg.lcm.common.exception.LcmExposableException;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -25,20 +25,20 @@ import javax.ws.rs.ext.ExceptionMapper;
  *
  * @author shristov
  */
-public class LcmExceptionMapper implements ExceptionMapper<LcmException> {
+public class LcmExposableExceptionMapper implements ExceptionMapper<LcmExposableException> {
   /**
    * The logger for this class.
    */
-  private static final Logger LOGGER = LoggerFactory.getLogger(LcmExceptionMapper.class);
+  private static final Logger LOGGER = LoggerFactory.getLogger(LcmExposableExceptionMapper.class);
 
   @Override
-  public Response toResponse(LcmException exception) {
+  public Response toResponse(LcmExposableException exception) {
     LOGGER.warn("Lcm Exception is thrown with messages: " + exception.getMessage());
     Response.Status status = Response.Status.INTERNAL_SERVER_ERROR;
     if (exception.getResponseCode() != null) {
       status = exception.getResponseCode();
     }
-    return Response.status(status).type("text/plain")
+     return Response.status(status).type("text/plain")
         .entity(exception.getMessage()).build();
   }
 

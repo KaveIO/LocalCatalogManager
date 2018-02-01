@@ -16,7 +16,7 @@ package nl.kpmg.lcm.server.backend;
 
 import nl.kpmg.lcm.server.backend.metadata.ColumnDescription;
 import nl.kpmg.lcm.common.data.TransferSettings;
-import nl.kpmg.lcm.common.exception.LcmException;
+import nl.kpmg.lcm.common.exception.LcmExposableException;
 
 import org.apache.metamodel.UpdateableDataContext;
 import org.apache.metamodel.create.CreateTable;
@@ -53,7 +53,7 @@ public class TableCreator {
 
     CreateTable createTable = new CreateTable(database, tableName);
     if (columns == null) {
-      throw new LcmException(
+      throw new LcmExposableException(
           "There is no \"table-description\" section in the metadata! At least column names are required.");
     }
 
@@ -62,7 +62,7 @@ public class TableCreator {
     dataContext.executeUpdate(createTable);
     Table table = database.getTableByName(tableName);
     if (table == null) {
-      throw new LcmException("Unable to create table with name: " + tableName);
+      throw new LcmExposableException("Unable to create table with name: " + tableName);
     }
 
     return table;

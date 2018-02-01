@@ -26,7 +26,7 @@ import nl.kpmg.lcm.common.configuration.ServerConfiguration;
 import nl.kpmg.lcm.server.cron.CronManager;
 import nl.kpmg.lcm.server.cron.exception.CronManagerException;
 import nl.kpmg.lcm.server.data.service.LcmIdService;
-import nl.kpmg.lcm.server.exception.mapper.LcmExceptionMapper;
+import nl.kpmg.lcm.server.exception.mapper.LcmExposableExceptionMapper;
 import nl.kpmg.lcm.server.exception.mapper.ValidationExceptionMapper;
 import nl.kpmg.lcm.server.rest.authentication.AuthenticationRequestFilter;
 import nl.kpmg.lcm.server.rest.authentication.ResponseFilter;
@@ -118,7 +118,7 @@ public class Server {
             .register(AuthenticationRequestFilter.class).register(AuthorizationRequestFilter.class)
             .register(ResponseFilter.class).register(DeclarativeLinkingFeature.class)
             .register(UriBuilderEntityProcessor.class).register(ValidationExceptionMapper.class)
-            .register(LcmExceptionMapper.class).register(GeneralExceptionMapper.class);
+            .register(LcmExposableExceptionMapper.class).register(GeneralExceptionMapper.class);
 
     return HttpsServerProvider.createHttpsServer(configuration, baseUri, baseFallbackUri, rc);
   }

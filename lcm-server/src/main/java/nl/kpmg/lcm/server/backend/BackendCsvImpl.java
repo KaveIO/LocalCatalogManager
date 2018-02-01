@@ -24,7 +24,7 @@ import nl.kpmg.lcm.common.data.Storage;
 import nl.kpmg.lcm.common.data.TransferSettings;
 import nl.kpmg.lcm.common.data.metadata.DataItemsDescriptor;
 import nl.kpmg.lcm.common.data.metadata.MetaData;
-import nl.kpmg.lcm.common.exception.LcmException;
+import nl.kpmg.lcm.common.exception.LcmExposableException;
 import nl.kpmg.lcm.common.exception.LcmValidationException;
 import nl.kpmg.lcm.common.validation.Notification;
 import nl.kpmg.lcm.server.backend.metadata.CsvMetaData;
@@ -152,7 +152,7 @@ public class BackendCsvImpl extends AbstractBackend {
   @Override
   public void store(Data data, String key, TransferSettings transferSettings) {
     if (!(data instanceof IterativeData)) {
-      throw new LcmException("Unable to store streaming data directly to csv.");
+      throw new LcmExposableException("Unable to store streaming data directly to csv.");
     }
     ContentIterator content = ((IterativeData) data).getIterator();
     CsvAdapter csvAdapter = getCsvAdapter(key);
@@ -164,7 +164,7 @@ public class BackendCsvImpl extends AbstractBackend {
               "The file: " + getFilePath(key) + " is already attached, won't overwrite.";
           progressIndicationFactory.writeIndication(message);
         }
-        throw new LcmException("Data set is already attached, won't overwrite. Data item: " + key);
+        throw new LcmExposableException("Data set is already attached, won't overwrite. Data item: " + key);
       }
 
       int rowNumber = 1;

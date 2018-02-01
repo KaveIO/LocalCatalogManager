@@ -20,7 +20,7 @@ import static nl.kpmg.lcm.common.rest.authentication.AuthorizationConstants.LCM_
 import nl.kpmg.lcm.common.client.HttpsClientFactory;
 import nl.kpmg.lcm.common.configuration.ClientConfiguration;
 import nl.kpmg.lcm.common.data.RemoteLcm;
-import nl.kpmg.lcm.common.exception.LcmException;
+import nl.kpmg.lcm.common.exception.LcmExposableException;
 import nl.kpmg.lcm.common.rest.types.MetaDatasRepresentation;
 import nl.kpmg.lcm.server.rest.authorization.PermissionChecker;
 import nl.kpmg.lcm.server.rest.client.version0.types.ConcreteMetaDataRepresentation;
@@ -115,7 +115,7 @@ public class RemoteMetaDataService {
     if (targetLcm.isPresent())
       return concretize(Stream.of(fetchRemoteLcmMetadata(targetLcm.get(), searchString)));
     else
-      throw new LcmException(
+      throw new LcmExposableException(
           String.format("Unknown LCM remote peer: %s. Make sure to add it via the API.", scope),
           Response.Status.BAD_REQUEST);
   }

@@ -17,7 +17,6 @@ import nl.kpmg.lcm.common.Roles;
 import nl.kpmg.lcm.common.data.User;
 import nl.kpmg.lcm.common.data.metadata.MetaData;
 import nl.kpmg.lcm.common.data.metadata.TransferHistoryDescriptor;
-import nl.kpmg.lcm.common.exception.LcmException;
 import nl.kpmg.lcm.server.data.service.DataDeletionService;
 import nl.kpmg.lcm.server.data.service.MetaDataService;
 import nl.kpmg.lcm.server.rest.UserIdentifier;
@@ -30,6 +29,7 @@ import java.util.List;
 
 import javax.annotation.security.RolesAllowed;
 import javax.ws.rs.DELETE;
+import javax.ws.rs.ForbiddenException;
 import javax.ws.rs.NotFoundException;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
@@ -93,7 +93,7 @@ public class RemoteLcmDataDeletionController {
       AUDIT_LOGGER.debug(userIdentifier.getUserDescription(securityContext, false)
           + " was unable to delete the data behind the metadata with id: " + metadataId
           + " because " + message + ".");
-      throw new LcmException(message, Response.Status.FORBIDDEN);
+      throw new ForbiddenException(message);
     }
 
     service.deleteDataByThread(metadata);

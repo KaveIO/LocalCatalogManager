@@ -19,11 +19,11 @@ import javax.ws.rs.core.Response;
  * This exception is used for unrecoverable cases i.e. in cases(except validation) when the flow
  must be interrupted and an error message must be returned to the REST API user. For example: the
  data storage is not found or the requested data source is not supported etc. Be careful when
- constructing LcmExposeableException, the error message is passed directly to the REST API end user!
+ constructing LcmExposableException, the error message is passed directly to the REST API end user!
  *
  * @author shristov
  */
-public class LcmException extends RuntimeException {
+public class LcmExposableException extends LcmException {
 
   private Response.Status responseCode;
 
@@ -31,7 +31,7 @@ public class LcmException extends RuntimeException {
    * @param message is passed directly to the REST API end user!It must be meaningful message for
    *        the end user. Additionally the message must not expose any implementation details.
    */
-  public LcmException(String message) {
+  public LcmExposableException(String message) {
     super(message);
   }
 
@@ -40,17 +40,9 @@ public class LcmException extends RuntimeException {
    *        the end user. Additionally the message must not expose any implementation details.
    * @param responseCode is valid  Response.Status that will be return to the end user.
    */
-  public LcmException(String message, Response.Status responseCode) {
+  public LcmExposableException(String message, Response.Status responseCode) {
     super(message);
     this.responseCode = responseCode;
-  }
-
-  /**
-   * @param message is passed directly to the REST API end user!It must be meaningful message for
-   *        the end user. Additionally the message must not expose any implementation details.
-   */
-  public LcmException(String message, Exception cause) {
-    super(message, cause);
   }
 
     /**
@@ -58,7 +50,7 @@ public class LcmException extends RuntimeException {
    *        the end user. Additionally the message must not expose any implementation details.
    * @param errorCode is valid Response.Status that will be return to the end user.
    */
-  public LcmException(String message, Response.Status errorCode, Exception cause) {
+  public LcmExposableException(String message, Response.Status errorCode, Exception cause) {
     super(message, cause);
     this.responseCode = errorCode;
   }

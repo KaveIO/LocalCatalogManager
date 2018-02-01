@@ -23,7 +23,7 @@ import nl.kpmg.lcm.common.data.IterativeData;
 import nl.kpmg.lcm.common.data.Storage;
 import nl.kpmg.lcm.common.data.TransferSettings;
 import nl.kpmg.lcm.common.data.metadata.MetaData;
-import nl.kpmg.lcm.common.exception.LcmException;
+import nl.kpmg.lcm.common.exception.LcmExposableException;
 import nl.kpmg.lcm.server.backend.metadata.ColumnDescription;
 import nl.kpmg.lcm.server.backend.metadata.TabularMetaData;
 import nl.kpmg.lcm.server.backend.storage.MongoStorage;
@@ -127,7 +127,7 @@ public class BackendMongoImpl extends AbstractBackend {
   public void store(Data data, String key, TransferSettings transferSettings) {
 
     if (!(data instanceof IterativeData)) {
-      throw new LcmException("Unable to store streaming data directly to hive storage.");
+      throw new LcmExposableException("Unable to store streaming data directly to hive storage.");
     }
 
     ContentIterator content = ((IterativeData) data).getIterator();
@@ -150,7 +150,7 @@ public class BackendMongoImpl extends AbstractBackend {
                 + "\" already exists and storing is started without overwriting!";
         progressIndicationFactory.writeIndication(message);
       }
-      throw new LcmException("Error, can not store the data! Table: \"" + tableName
+      throw new LcmExposableException("Error, can not store the data! Table: \"" + tableName
           + "\" already exists and storing is started without overwriting!");
     }
 
@@ -218,13 +218,13 @@ public class BackendMongoImpl extends AbstractBackend {
 
       Schema database = dataContext.getSchemaByName(mongoStorage.getDatabase());
       if (database == null) {
-        throw new LcmException("Error: database \"" + mongoStorage.getDatabase()
+        throw new LcmExposableException("Error: database \"" + mongoStorage.getDatabase()
             + "\" is not found!");
       }
 
       Table table = database.getTableByName(tableName);
       if (table == null) {
-        throw new LcmException("Error: specified table \"" + tableName
+        throw new LcmExposableException("Error: specified table \"" + tableName
             + "\" in the metadata is not found!");
       }
       DropTable dropTable = new DropTable(database, tableName);
@@ -245,7 +245,7 @@ public class BackendMongoImpl extends AbstractBackend {
 
     Schema schema = dataContext.getSchemaByName(mongoStorage.getDatabase());
     if (schema == null) {
-      throw new LcmException("Error: database \"" + mongoStorage.getDatabase() + "\" is not found!");
+      throw new LcmExposableException("Error: database \"" + mongoStorage.getDatabase() + "\" is not found!");
     }
     // remove the first symbol as uri Path is something like "/tablex"
     String tableName = getTableName(dataURI);
@@ -253,7 +253,7 @@ public class BackendMongoImpl extends AbstractBackend {
     Table table = schema.getTableByName(tableName);
 
     if (table == null) {
-      throw new LcmException("Error: specified table \"" + tableName
+      throw new LcmExposableException("Error: specified table \"" + tableName
           + "\" in the metadata is not found!");
     }
 

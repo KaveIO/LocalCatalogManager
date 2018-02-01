@@ -24,7 +24,7 @@ import nl.kpmg.lcm.common.data.DataFormat;
 import nl.kpmg.lcm.common.data.Storage;
 import nl.kpmg.lcm.server.data.dao.StorageDao;
 import nl.kpmg.lcm.common.data.metadata.MetaDataWrapper;
-import nl.kpmg.lcm.common.exception.LcmException;
+import nl.kpmg.lcm.common.exception.LcmExposableException;
 import nl.kpmg.lcm.server.test.mock.MetaDataMocker;
 import nl.kpmg.lcm.server.test.mock.StorageMocker;
 
@@ -87,7 +87,7 @@ public class StorageServiceTest {
         assertNotNull(result);
     }
 
-    @Test(expected = LcmException.class)
+    @Test(expected = LcmExposableException.class)
     public void testGetBackendCSVInvalidURI() throws Exception {
         given(storageDao.findOneByName(csvStorageName)).willReturn(csvStorage);
         given(backendFactory.createBackend(csvSchame, storageService, validMetaDataWrapper)).willReturn(backendCsvImp);
@@ -98,14 +98,14 @@ public class StorageServiceTest {
         storageService.getBackend(metadataWapper);
     }
 
-    @Test(expected = LcmException.class)
+    @Test(expected = LcmExposableException.class)
     public void testGetBackendCSVNullMetadata() throws Exception {
         given(storageDao.findOneByName(csvStorageName)).willReturn(csvStorage);
         given(backendFactory.createBackend(csvSchame, storageService, validMetaDataWrapper)).willReturn(backendCsvImp);
         storageService.getBackend(null);
     }
 
-    @Test(expected = LcmException.class)
+    @Test(expected = LcmExposableException.class)
     public void testGetBackendCSVMissingStorage() throws Exception {
         String nonExistingStorageName = "nonExistingStorageName";
         given(storageDao.findOneByName(nonExistingStorageName)).willReturn(null);

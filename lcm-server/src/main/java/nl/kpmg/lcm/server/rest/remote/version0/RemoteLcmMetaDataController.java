@@ -18,7 +18,6 @@ import nl.kpmg.lcm.common.Roles;
 import nl.kpmg.lcm.common.data.FetchEndpoint;
 import nl.kpmg.lcm.common.data.User;
 import nl.kpmg.lcm.common.data.metadata.MetaData;
-import nl.kpmg.lcm.common.exception.LcmException;
 import nl.kpmg.lcm.common.rest.types.FetchEndpointRepresentation;
 import nl.kpmg.lcm.common.rest.types.MetaDataRepresentation;
 import nl.kpmg.lcm.common.rest.types.MetaDatasRepresentation;
@@ -42,6 +41,7 @@ import java.util.LinkedList;
 import java.util.List;
 
 import javax.annotation.security.RolesAllowed;
+import javax.ws.rs.ForbiddenException;
 import javax.ws.rs.GET;
 import javax.ws.rs.NotFoundException;
 import javax.ws.rs.Path;
@@ -49,7 +49,6 @@ import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.Context;
-import javax.ws.rs.core.Response;
 import javax.ws.rs.core.SecurityContext;
 
 import io.swagger.annotations.Api;
@@ -121,8 +120,7 @@ public class RemoteLcmMetaDataController {
         AUDIT_LOGGER.debug(userIdentifier.getUserDescription(securityContext, true)
             + " was unable to get all allowed local metadatas" + searchStringMessage
             + " because the user is not authorized to do so.");
-        throw new LcmException(String.format("Unable to authorize the request.", searchString),
-            Response.Status.FORBIDDEN);
+        throw new ForbiddenException(String.format("Unable to authorize the request.", searchString));
       }
 
       MetaData result = metaDataService.findById(searchString);
@@ -161,8 +159,7 @@ public class RemoteLcmMetaDataController {
       AUDIT_LOGGER.debug(userIdentifier.getUserDescription(securityContext, true)
           + " was unable to get the local metadata with id: " + metaDataId
           + " because the user is not authorized to do so.");
-      throw new LcmException(String.format("Unable to authorize the request.", metaDataId),
-          Response.Status.FORBIDDEN);
+      throw new ForbiddenException(String.format("Unable to authorize the request.", metaDataId));
     }
 
     MetaData metadata = metaDataService.findById(metaDataId);
@@ -199,8 +196,7 @@ public class RemoteLcmMetaDataController {
       AUDIT_LOGGER.debug(userIdentifier.getUserDescription(securityContext, true)
           + " was unable to generate new fetch endpoint for the metadata with id: " + metadataId
           + " because the user is not authorized to do so.");
-      throw new LcmException(String.format("Unable to authorize the request.", metadataId),
-          Response.Status.FORBIDDEN);
+      throw new ForbiddenException(String.format("Unable to authorize the request.", metadataId));
     }
 
     if (metadata == null) {

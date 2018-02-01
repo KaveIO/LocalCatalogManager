@@ -13,7 +13,7 @@
  */
 package nl.kpmg.lcm.server.data;
 
-import nl.kpmg.lcm.common.exception.LcmException;
+import nl.kpmg.lcm.common.exception.LcmExposableException;
 import nl.kpmg.lcm.common.exception.LcmValidationException;
 import nl.kpmg.lcm.common.validation.Notification;
 import nl.kpmg.lcm.server.backend.BackendCsvImpl;
@@ -73,7 +73,7 @@ public class LocalCsvAdapter implements CsvAdapter {
   public InputStream getInputStream() throws IOException {
     File dataSourceFile = constructDatasourceFile();
     if (!dataSourceFile.exists()) {
-      throw new LcmException("Unable to find data source file! FilePath: "
+      throw new LcmExposableException("Unable to find data source file! FilePath: "
           + dataSourceFile.getPath());
     }
     return new FileInputStream(dataSourceFile);

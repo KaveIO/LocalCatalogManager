@@ -65,7 +65,7 @@ public class RemoteDataDeletionService {
         return true;
       }
     } catch (ServerException ex) {
-      throw new LcmException("Unable to delete remote data", ex);
+      throw new LcmException("Unable to delete remote data.", ex);
     }
 
     return false;
