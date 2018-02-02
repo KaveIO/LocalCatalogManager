@@ -40,7 +40,7 @@ public class AuthorizedLcm extends AbstractModel {
    */
   private String applicationKey;
 
-  private boolean importOfUsersAllowed;
+  private Boolean importOfUsersAllowed;
 
   /**
    * @return the name
@@ -100,11 +100,11 @@ public class AuthorizedLcm extends AbstractModel {
     this.applicationKey = applicationKey;
   }
 
-  public boolean isImportOfUsersAllowed() {
+  public Boolean isImportOfUsersAllowed() {
     return importOfUsersAllowed;
   }
 
-  public void setImportOfUsersAllowed(boolean importOfUsersAllowed) {
+  public void setImportOfUsersAllowed(Boolean importOfUsersAllowed) {
     this.importOfUsersAllowed = importOfUsersAllowed;
   }
 }
