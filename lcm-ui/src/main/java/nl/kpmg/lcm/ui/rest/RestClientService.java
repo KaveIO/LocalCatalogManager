@@ -348,10 +348,14 @@ public class RestClientService {
     Invocation.Builder client = getClient("client/v0/userGroups");
     Response post = client.post(payload);
 
-    Response.StatusType statusInfo = post.getStatusInfo();
+    checkForErrors(post);
+  }
+
+  private void checkForErrors(Response response) throws DataCreationException {
+    Response.StatusType statusInfo = response.getStatusInfo();
     if (statusInfo.getFamily() != Response.Status.Family.SUCCESSFUL) {
-      throw new DataCreationException(String.format("%s - %s", statusInfo.getStatusCode(),
-          statusInfo.getReasonPhrase()));
+      String message = response.readEntity(String.class);
+      throw new DataCreationException(String.format("%s - %s", statusInfo.getStatusCode(), message));
     }
   }
 
@@ -363,11 +367,7 @@ public class RestClientService {
     Invocation.Builder client = getClient("client/v0/userGroups");
     Response put = client.put(payload);
 
-    Response.StatusType statusInfo = put.getStatusInfo();
-    if (statusInfo.getFamily() != Response.Status.Family.SUCCESSFUL) {
-      throw new DataCreationException(String.format("%s - %s", statusInfo.getStatusCode(),
-          statusInfo.getReasonPhrase()));
-    }
+    checkForErrors(put);
   }
 
   public void deleteUserGroup(String userGroupId) throws AuthenticationException, ServerException,
@@ -376,11 +376,7 @@ public class RestClientService {
     Invocation.Builder client = getClient(String.format("client/v0/userGroups/%s", userGroupId));
     Response delete = client.delete();
 
-    Response.StatusType statusInfo = delete.getStatusInfo();
-    if (statusInfo.getFamily() != Response.Status.Family.SUCCESSFUL) {
-      throw new DataCreationException(String.format("%s - %s", statusInfo.getStatusCode(),
-          statusInfo.getReasonPhrase()));
-    }
+    checkForErrors(delete);
   }
 
   public LcmIdRepresentation getLcmId() throws AuthenticationException, ServerException,
@@ -397,11 +393,7 @@ public class RestClientService {
     Invocation.Builder client = getClient("client/v0/remoteLcm");
     Response post = client.post(payload);
 
-    Response.StatusType statusInfo = post.getStatusInfo();
-    if (statusInfo.getFamily() != Response.Status.Family.SUCCESSFUL) {
-      throw new DataCreationException(String.format("%s - %s", statusInfo.getStatusCode(),
-          statusInfo.getReasonPhrase()));
-    }
+    checkForErrors(post);
   }
 
   public void updateRemoteLcm(String storage) throws ServerException, DataCreationException,
@@ -412,11 +404,7 @@ public class RestClientService {
     Invocation.Builder client = getClient("client/v0/remoteLcm");
     Response put = client.put(payload);
 
-    Response.StatusType statusInfo = put.getStatusInfo();
-    if (statusInfo.getFamily() != Response.Status.Family.SUCCESSFUL) {
-      throw new DataCreationException(String.format("%s - %s", statusInfo.getStatusCode(),
-          statusInfo.getReasonPhrase()));
-    }
+    checkForErrors(put);
   }
 
   public void deleteRemoteLcm(String lcmId) throws AuthenticationException, ServerException,
@@ -425,11 +413,7 @@ public class RestClientService {
     Invocation.Builder client = getClient(String.format("client/v0/remoteLcm/%s", lcmId));
     Response delete = client.delete();
 
-    Response.StatusType statusInfo = delete.getStatusInfo();
-    if (statusInfo.getFamily() != Response.Status.Family.SUCCESSFUL) {
-      throw new DataCreationException(String.format("%s - %s", statusInfo.getStatusCode(),
-          statusInfo.getReasonPhrase()));
-    }
+    checkForErrors(delete);
   }
 
   public void addCertificateAlias(String alias, InputStream certificate)
@@ -456,11 +440,7 @@ public class RestClientService {
       post = client.post(payload);
     }
 
-    Response.StatusType statusInfo = post.getStatusInfo();
-    if (statusInfo.getFamily() != Response.Status.Family.SUCCESSFUL) {
-      throw new DataCreationException(String.format("%s - %s", statusInfo.getStatusCode(),
-          statusInfo.getReasonPhrase()));
-    }
+    checkForErrors(post);
   }
 
   public void createStorage(String storage) throws ServerException, DataCreationException,
@@ -471,11 +451,7 @@ public class RestClientService {
     Invocation.Builder client = getClient("client/v0/storage");
     Response post = client.post(payload);
 
-    Response.StatusType statusInfo = post.getStatusInfo();
-    if (statusInfo.getFamily() != Response.Status.Family.SUCCESSFUL) {
-      throw new DataCreationException(String.format("%s - %s", statusInfo.getStatusCode(),
-          statusInfo.getReasonPhrase()));
-    }
+    checkForErrors(post);
   }
 
   public void updateStorage(String storage) throws ServerException, DataCreationException,
@@ -486,11 +462,7 @@ public class RestClientService {
     Invocation.Builder client = getClient("client/v0/storage");
     Response put = client.put(payload);
 
-    Response.StatusType statusInfo = put.getStatusInfo();
-    if (statusInfo.getFamily() != Response.Status.Family.SUCCESSFUL) {
-      throw new DataCreationException(String.format("%s - %s", statusInfo.getStatusCode(),
-          statusInfo.getReasonPhrase()));
-    }
+    checkForErrors(put);
   }
 
   public void deleteStorage(String storageId) throws AuthenticationException, ServerException,
@@ -499,11 +471,7 @@ public class RestClientService {
     Invocation.Builder client = getClient(String.format("client/v0/storage/%s", storageId));
     Response delete = client.delete();
 
-    Response.StatusType statusInfo = delete.getStatusInfo();
-    if (statusInfo.getFamily() != Response.Status.Family.SUCCESSFUL) {
-      throw new DataCreationException(String.format("%s - %s", statusInfo.getStatusCode(),
-          statusInfo.getReasonPhrase()));
-    }
+    checkForErrors(delete);
   }
 
   public void createAuthorizedLcm(String authorizedLcm) throws ServerException, DataCreationException,
@@ -514,11 +482,7 @@ public class RestClientService {
     Invocation.Builder client = getClient("client/v0/authorizedlcm");
     Response post = client.post(payload);
 
-    Response.StatusType statusInfo = post.getStatusInfo();
-    if (statusInfo.getFamily() != Response.Status.Family.SUCCESSFUL) {
-      throw new DataCreationException(String.format("%s - %s", statusInfo.getStatusCode(),
-          statusInfo.getReasonPhrase()));
-    }
+    checkForErrors(post);
   }
 
     public void updateAuthorizedLcm(String authorizedLcm) throws ServerException, DataCreationException,
@@ -529,11 +493,7 @@ public class RestClientService {
     Invocation.Builder client = getClient("client/v0/authorizedlcm");
     Response put = client.put(payload);
 
-    Response.StatusType statusInfo = put.getStatusInfo();
-    if (statusInfo.getFamily() != Response.Status.Family.SUCCESSFUL) {
-      throw new DataCreationException(String.format("%s - %s", statusInfo.getStatusCode(),
-          statusInfo.getReasonPhrase()));
-    }
+    checkForErrors(put);
   }
 
   public void deleteAuthorizedLcm(String lcmId) throws AuthenticationException, ServerException,
@@ -542,11 +502,7 @@ public class RestClientService {
     Invocation.Builder client = getClient(String.format("client/v0/authorizedlcm/%s", lcmId));
     Response delete = client.delete();
 
-    Response.StatusType statusInfo = delete.getStatusInfo();
-    if (statusInfo.getFamily() != Response.Status.Family.SUCCESSFUL) {
-      throw new DataCreationException(String.format("%s - %s", statusInfo.getStatusCode(),
-          statusInfo.getReasonPhrase()));
-    }
+    checkForErrors(delete);
   }
 
   public TestResult testStorage(String storageId) {
@@ -586,11 +542,7 @@ public class RestClientService {
     Invocation.Builder client = getClient("client/v0/users");
     Response post = client.post(payload);
 
-    Response.StatusType statusInfo = post.getStatusInfo();
-    if (statusInfo.getFamily() != Response.Status.Family.SUCCESSFUL) {
-      throw new DataCreationException(String.format("%s - %s", statusInfo.getStatusCode(),
-          statusInfo.getReasonPhrase()));
-    }
+    checkForErrors(post);
   }
 
   public void updateUser(String user) throws ServerException, DataCreationException,
@@ -601,11 +553,7 @@ public class RestClientService {
     Invocation.Builder client = getClient("client/v0/users");
     Response put = client.put(payload);
 
-    Response.StatusType statusInfo = put.getStatusInfo();
-    if (statusInfo.getFamily() != Response.Status.Family.SUCCESSFUL) {
-      throw new DataCreationException(String.format("%s - %s", statusInfo.getStatusCode(),
-          statusInfo.getReasonPhrase()));
-    }
+    checkForErrors(put);
   }
 
   public void deleteUser(String userId) throws AuthenticationException, ServerException,
@@ -614,11 +562,7 @@ public class RestClientService {
     Invocation.Builder client = getClient(String.format("client/v0/users/%s", userId));
     Response delete = client.delete();
 
-    Response.StatusType statusInfo = delete.getStatusInfo();
-    if (statusInfo.getFamily() != Response.Status.Family.SUCCESSFUL) {
-      throw new DataCreationException(String.format("%s - %s", statusInfo.getStatusCode(),
-          statusInfo.getReasonPhrase()));
-    }
+    checkForErrors(delete);
   }
 
   public void triggerTransfer(String remoLcmId, String remoteMetadataId, String jsonPayload)
@@ -630,11 +574,7 @@ public class RestClientService {
         getClient("client/v0/remote/" + remoLcmId + "/metadata/" + remoteMetadataId);
     Response post = client.post(payload);
 
-    Response.StatusType statusInfo = post.getStatusInfo();
-    if (statusInfo.getFamily() != Response.Status.Family.SUCCESSFUL) {
-      throw new DataCreationException(String.format("%s - %s", statusInfo.getStatusCode(),
-          statusInfo.getReasonPhrase()));
-    }
+    checkForErrors(post);
   }
 
   public void postMetadata(String metadata)
@@ -645,11 +585,7 @@ public class RestClientService {
     Invocation.Builder client = getClient("client/v0/local");
     Response post = client.post(payload);
 
-    Response.StatusType statusInfo = post.getStatusInfo();
-    if (statusInfo.getFamily() != Response.Status.Family.SUCCESSFUL) {
-      throw new DataCreationException(
-          String.format("%s - %s", statusInfo.getStatusCode(), statusInfo.getReasonPhrase()));
-    }
+    checkForErrors(post);
   }
 
   public void putMetadata(String id, String metadata)
@@ -660,11 +596,7 @@ public class RestClientService {
     Invocation.Builder client = getClient(String.format("client/v0/local/%s", id));
     Response put = client.put(payload);
 
-    Response.StatusType statusInfo = put.getStatusInfo();
-    if (statusInfo.getFamily() != Response.Status.Family.SUCCESSFUL) {
-      throw new DataCreationException(
-          String.format("%s - %s", statusInfo.getStatusCode(), statusInfo.getReasonPhrase()));
-    }
+    checkForErrors(put);
   }
 
   public void deleteMetadata(String id)
@@ -672,11 +604,7 @@ public class RestClientService {
     Invocation.Builder client = getClient(String.format("client/v0/local/%s", id));
     Response delete = client.delete();
 
-    Response.StatusType statusInfo = delete.getStatusInfo();
-    if (statusInfo.getFamily() != Response.Status.Family.SUCCESSFUL) {
-      throw new DataCreationException(
-          String.format("%s - %s", statusInfo.getStatusCode(), statusInfo.getReasonPhrase()));
-    }
+    checkForErrors(delete);
   }
 
   public void enrichMetadata(String metadataId)
@@ -687,11 +615,7 @@ public class RestClientService {
     Invocation.Builder client = getClient("client/v0/local/" + metadataId+ "/enrich");
     Response post = client.post(payload);
 
-    Response.StatusType statusInfo = post.getStatusInfo();
-    if (statusInfo.getFamily() != Response.Status.Family.SUCCESSFUL) {
-      throw new DataCreationException(
-          String.format("%s - %s", statusInfo.getStatusCode(), statusInfo.getReasonPhrase()));
-    }
+    checkForErrors(post);
   }
 
   public Set<String> getSubNamespaces(String baseNamespace)
@@ -719,11 +643,7 @@ public class RestClientService {
     Invocation.Builder client = getClient(path, parameters);
     Response delete = client.delete();
 
-    Response.StatusType statusInfo = delete.getStatusInfo();
-    if (statusInfo.getFamily() != Response.Status.Family.SUCCESSFUL) {
-      throw new DataCreationException(String.format("%s - %s", statusInfo.getStatusCode(),
-          statusInfo.getReasonPhrase()));
-    }
+    checkForErrors(delete);
   }
 
 }
