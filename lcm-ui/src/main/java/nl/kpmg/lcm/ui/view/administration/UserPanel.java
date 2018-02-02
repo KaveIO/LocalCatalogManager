@@ -25,12 +25,12 @@ import com.vaadin.ui.VerticalLayout;
 
 import nl.kpmg.lcm.common.Roles;
 import nl.kpmg.lcm.common.ServerException;
-import nl.kpmg.lcm.common.client.ClientException;
 import nl.kpmg.lcm.common.data.User;
 import nl.kpmg.lcm.common.rest.types.UserRepresentation;
 import nl.kpmg.lcm.common.rest.types.UsersRepresentation;
 import nl.kpmg.lcm.ui.component.DefinedLabel;
 import nl.kpmg.lcm.ui.rest.AuthenticationException;
+import nl.kpmg.lcm.ui.rest.LcmBadRequestException;
 import nl.kpmg.lcm.ui.rest.RestClientService;
 import nl.kpmg.lcm.ui.view.administration.components.UserCreateWindow;
 import nl.kpmg.lcm.ui.view.administration.listeners.DeleteUserListener;
@@ -152,9 +152,12 @@ public class UserPanel extends CustomComponent implements DynamicDataContainer {
   private void reloadUsers() {
     try {
       this.users = restClientService.getUsers();
-    } catch (AuthenticationException | ServerException | ClientException ex) {
+    } catch (ServerException ex) {
       Notification.show("Unable to reload the users!");
       LOGGER.error("Unable to reload the users." + ex.getMessage());
+    } catch (AuthenticationException | LcmBadRequestException ex) {
+      LOGGER.error("Unable to reload the users." + ex.getMessage());
+      Notification.show("Unable to reload the users! Message: " + ex.getMessage());
     }
   }
 

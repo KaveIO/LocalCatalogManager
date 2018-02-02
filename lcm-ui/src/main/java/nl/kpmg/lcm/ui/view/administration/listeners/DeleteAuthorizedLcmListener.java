@@ -17,11 +17,10 @@ import com.vaadin.ui.Button;
 import com.vaadin.ui.UI;
 
 import nl.kpmg.lcm.common.ServerException;
-import nl.kpmg.lcm.common.client.ClientException;
 import nl.kpmg.lcm.common.data.AuthorizedLcm;
 import nl.kpmg.lcm.common.rest.types.AuthorizedLcmRepresentation;
 import nl.kpmg.lcm.ui.rest.AuthenticationException;
-import nl.kpmg.lcm.ui.rest.DataCreationException;
+import nl.kpmg.lcm.ui.rest.LcmBadRequestException;
 import nl.kpmg.lcm.ui.rest.RestClientService;
 import nl.kpmg.lcm.ui.view.administration.DynamicDataContainer;
 
@@ -77,7 +76,7 @@ public class DeleteAuthorizedLcmListener extends AbstractListener {
   }
 
   protected void deleteItem(String id) throws AuthenticationException, ServerException,
-      ClientException, DataCreationException {
+      LcmBadRequestException {
     restClientService.deleteAuthorizedLcm(id);
   }
 }

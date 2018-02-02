@@ -36,7 +36,7 @@ import nl.kpmg.lcm.common.data.metadata.MetaData;
 import nl.kpmg.lcm.common.data.metadata.MetaDataWrapper;
 import nl.kpmg.lcm.common.exception.LcmValidationException;
 import nl.kpmg.lcm.ui.rest.AuthenticationException;
-import nl.kpmg.lcm.ui.rest.DataCreationException;
+import nl.kpmg.lcm.ui.rest.LcmBadRequestException;
 import nl.kpmg.lcm.ui.rest.RestClientService;
 import nl.kpmg.lcm.ui.view.MetadataOverviewView;
 
@@ -184,7 +184,10 @@ public class MetadataCreateWindow extends Window implements Button.ClickListener
         Notification.show("Creation of metadata successful.");
         metadataOverviewView.updateContent();
         this.close();
-      } catch (ServerException | DataCreationException | AuthenticationException ex) {
+      } catch (LcmBadRequestException | AuthenticationException ex) {
+        Notification.show("Creation of metadata failed. Message: " +  ex.getMessage());
+        LOGGER.warn("Creation of metadata failed." + ex.getMessage());
+      } catch (ServerException ex) {
         Notification.show("Creation of metadata failed.");
         LOGGER.warn("Creation of metadata failed." + ex.getMessage());
       } catch (LcmValidationException | IOException ex) {

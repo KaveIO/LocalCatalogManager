@@ -24,12 +24,12 @@ import com.vaadin.ui.UI;
 import com.vaadin.ui.VerticalLayout;
 
 import nl.kpmg.lcm.common.ServerException;
-import nl.kpmg.lcm.common.client.ClientException;
 import nl.kpmg.lcm.common.data.AuthorizedLcm;
 import nl.kpmg.lcm.common.rest.types.AuthorizedLcmRepresentation;
 import nl.kpmg.lcm.common.rest.types.AuthorizedLcmsRepresentation;
 import nl.kpmg.lcm.ui.component.DefinedLabel;
 import nl.kpmg.lcm.ui.rest.AuthenticationException;
+import nl.kpmg.lcm.ui.rest.LcmBadRequestException;
 import nl.kpmg.lcm.ui.rest.RestClientService;
 import nl.kpmg.lcm.ui.view.administration.components.AuthorizedLcmCreateWindow;
 import nl.kpmg.lcm.ui.view.administration.listeners.DeleteAuthorizedLcmListener;
@@ -149,9 +149,12 @@ public class AuthorizedLcmPanel extends CustomComponent implements DynamicDataCo
   private void reloadAuthorizedLcms() {
     try {
       this.authorizedLcms = restClientService.getAuthorizedLcms();
-    } catch (AuthenticationException | ServerException | ClientException ex) {
-      Notification.show("Unable to reload the authorized LCM!");
+    } catch (ServerException ex) {
       LOGGER.error("Unable to reload the authorized LCM." + ex.getMessage());
+      Notification.show("Unable to reload the authorized LCM!");
+    } catch (AuthenticationException | LcmBadRequestException ex) {
+      LOGGER.error("Unable to reload the authorized LCM." + ex.getMessage());
+      Notification.show("Unable to reload the authorized LCM! Message: " + ex.getMessage());
     }
   }
 

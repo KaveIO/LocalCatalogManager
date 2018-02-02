@@ -27,7 +27,7 @@ import com.vaadin.ui.Window;
 import nl.kpmg.lcm.common.ServerException;
 import nl.kpmg.lcm.common.data.Storage;
 import nl.kpmg.lcm.ui.rest.AuthenticationException;
-import nl.kpmg.lcm.ui.rest.DataCreationException;
+import nl.kpmg.lcm.ui.rest.LcmBadRequestException;
 import nl.kpmg.lcm.ui.rest.RestClientService;
 import nl.kpmg.lcm.ui.view.administration.DynamicDataContainer;
 
@@ -181,8 +181,11 @@ public class StorageCreateWindow extends Window implements Button.ClickListener 
         }
         dataContainer.updateContent();
         this.close();
-      } catch (ServerException | DataCreationException | AuthenticationException | IOException ex) {
+      } catch (ServerException | IOException ex) {
         Notification.show("Creation of storage failed.");
+        LOGGER.warn("Creation of storage failed.", ex);
+      } catch ( LcmBadRequestException | AuthenticationException ex) {
+        Notification.show("Creation of storage failed. Message: " +  ex.getMessage());
         LOGGER.warn("Creation of storage failed.", ex);
       }
     }

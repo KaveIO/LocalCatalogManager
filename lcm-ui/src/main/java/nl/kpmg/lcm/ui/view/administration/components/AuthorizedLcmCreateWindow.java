@@ -33,7 +33,7 @@ import nl.kpmg.lcm.common.exception.LcmException;
 import nl.kpmg.lcm.common.rest.authentication.PasswordHash;
 import nl.kpmg.lcm.common.rest.authentication.UserPasswordHashException;
 import nl.kpmg.lcm.ui.rest.AuthenticationException;
-import nl.kpmg.lcm.ui.rest.DataCreationException;
+import nl.kpmg.lcm.ui.rest.LcmBadRequestException;
 import nl.kpmg.lcm.ui.rest.RestClientService;
 import nl.kpmg.lcm.ui.view.administration.DynamicDataContainer;
 
@@ -260,9 +260,12 @@ public class AuthorizedLcmCreateWindow extends Window implements Button.ClickLis
         }
         dataContainer.updateContent();
         this.close();
-      } catch (ServerException | DataCreationException | AuthenticationException | IOException ex) {
+      } catch (ServerException | IOException ex) {
         Notification.show("Operation failed.");
         LOGGER.warn("Creation of authorized LCM failed.", ex);
+      } catch (AuthenticationException | LcmBadRequestException  ex) {
+        Notification.show("Operation failed. Message " +  ex.getMessage());
+        LOGGER.warn("Creation of authorized LCM failed. Message: ", ex);
       }
     }
   }

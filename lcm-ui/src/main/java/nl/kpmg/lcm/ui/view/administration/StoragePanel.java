@@ -24,12 +24,12 @@ import com.vaadin.ui.UI;
 import com.vaadin.ui.VerticalLayout;
 
 import nl.kpmg.lcm.common.ServerException;
-import nl.kpmg.lcm.common.client.ClientException;
 import nl.kpmg.lcm.common.data.Storage;
 import nl.kpmg.lcm.common.rest.types.StorageRepresentation;
 import nl.kpmg.lcm.common.rest.types.StoragesRepresentation;
 import nl.kpmg.lcm.ui.component.DefinedLabel;
 import nl.kpmg.lcm.ui.rest.AuthenticationException;
+import nl.kpmg.lcm.ui.rest.LcmBadRequestException;
 import nl.kpmg.lcm.ui.rest.RestClientService;
 import nl.kpmg.lcm.ui.view.administration.components.StorageCreateWindow;
 import nl.kpmg.lcm.ui.view.administration.listeners.DeleteStorageListener;
@@ -154,9 +154,12 @@ public class StoragePanel extends CustomComponent implements DynamicDataContaine
   private void reloadStorages() {
     try {
       this.storages = restClientService.getStorage();
-    } catch (AuthenticationException | ServerException | ClientException ex) {
+    } catch (ServerException ex) {
       Notification.show("Unable to reload the storages!");
       LOGGER.error("Unable to reload the storages." + ex.getMessage());
+    }  catch (AuthenticationException | LcmBadRequestException ex) {
+      LOGGER.error("Unable to reload the storages." + ex.getMessage());
+      Notification.show("Unable to reload the storages! Message: " + ex.getMessage());
     }
   }
 

@@ -27,7 +27,6 @@ import com.vaadin.ui.Window;
 
 import nl.kpmg.lcm.common.NamespacePathValidator;
 import nl.kpmg.lcm.common.ServerException;
-import nl.kpmg.lcm.common.client.ClientException;
 import nl.kpmg.lcm.common.data.Storage;
 import nl.kpmg.lcm.common.data.TransferSettings;
 import nl.kpmg.lcm.common.data.TransferValidator;
@@ -36,7 +35,7 @@ import nl.kpmg.lcm.common.data.metadata.MetaDataWrapper;
 import nl.kpmg.lcm.common.rest.types.StorageRepresentation;
 import nl.kpmg.lcm.common.rest.types.StoragesRepresentation;
 import nl.kpmg.lcm.ui.rest.AuthenticationException;
-import nl.kpmg.lcm.ui.rest.DataCreationException;
+import nl.kpmg.lcm.ui.rest.LcmBadRequestException;
 import nl.kpmg.lcm.ui.rest.RestClientService;
 
 import org.slf4j.LoggerFactory;
@@ -181,8 +180,12 @@ public class StartTransferWindow extends Window implements Button.ClickListener 
           storageListComboBox.setItemCaption(storage.getId(), name);
         }
       }
-    } catch (AuthenticationException | ServerException | ClientException ex) {
-      LOGGER.error("Unable to load remote LCMs! Message:" + ex.getMessage());
+    } catch (ServerException ex) {
+      Notification.show("Unable to init storage list!");
+      LOGGER.error("Unable to init storage list! Message:" + ex.getMessage());
+    } catch (AuthenticationException | LcmBadRequestException ex) {
+      LOGGER.error("Unable to init storage list!" + ex.getMessage());
+      Notification.show("Unable to init storage list! Message: " + ex.getMessage());
     }
     storageListComboBox.addStyleName("margin-right-20");
     storageListComboBox.addStyleName("width-search-field");
@@ -220,8 +223,11 @@ public class StartTransferWindow extends Window implements Button.ClickListener 
         restClientService.triggerTransfer(remoteLcmId, remoteMetadata.getId(), payload.toString());
         Notification.show("Transfer was scheduled successfully.");
         this.close();
-      } catch (ServerException | DataCreationException | AuthenticationException | IOException ex) {
+      } catch (ServerException | IOException ex) {
         Notification.show("Unable to schedule stransfer.");
+        LOGGER.warn("Unable to schedule stransfer." + ex.getMessage());
+      } catch (LcmBadRequestException | AuthenticationException ex) {
+        Notification.show("Unable to schedule stransfer. Message: " + ex.getMessage());
         LOGGER.warn("Unable to schedule stransfer." + ex.getMessage());
       }
     }

@@ -16,12 +16,11 @@ package nl.kpmg.lcm.ui.view.administration.listeners;
 import com.vaadin.ui.Button;
 
 import nl.kpmg.lcm.common.ServerException;
-import nl.kpmg.lcm.common.client.ClientException;
 import nl.kpmg.lcm.common.data.Storage;
 import nl.kpmg.lcm.common.data.TestResult;
 import nl.kpmg.lcm.common.rest.types.StorageRepresentation;
 import nl.kpmg.lcm.ui.rest.AuthenticationException;
-import nl.kpmg.lcm.ui.rest.DataCreationException;
+import nl.kpmg.lcm.ui.rest.LcmBadRequestException;
 import nl.kpmg.lcm.ui.rest.RestClientService;
 import nl.kpmg.lcm.ui.view.administration.DynamicDataContainer;
 
@@ -58,7 +57,7 @@ public class TestStorageListener extends AbstractListener {
   }
 
   protected void deleteItem(String id) throws AuthenticationException, ServerException,
-      ClientException, DataCreationException {
+      LcmBadRequestException {
     restClientService.deleteStorage(id);
   }
 }

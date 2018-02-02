@@ -22,13 +22,13 @@ import com.vaadin.ui.TabSheet;
 import com.vaadin.ui.VerticalLayout;
 
 import nl.kpmg.lcm.common.ServerException;
-import nl.kpmg.lcm.common.client.ClientException;
 import nl.kpmg.lcm.common.rest.types.LcmIdRepresentation;
 import nl.kpmg.lcm.common.rest.types.TaskDescriptionsRepresentation;
 import nl.kpmg.lcm.common.rest.types.TaskScheduleRepresentation;
 import nl.kpmg.lcm.common.rest.types.UserGroupsRepresentation;
 import nl.kpmg.lcm.common.rest.types.UsersRepresentation;
 import nl.kpmg.lcm.ui.rest.AuthenticationException;
+import nl.kpmg.lcm.ui.rest.LcmBadRequestException;
 import nl.kpmg.lcm.ui.rest.RestClientService;
 import nl.kpmg.lcm.ui.view.administration.AuthorizedLcmPanel;
 import nl.kpmg.lcm.ui.view.administration.LcmIdPanel;
@@ -173,8 +173,8 @@ public class AdministrationViewImpl extends VerticalLayout implements Administra
         } catch (ServerException se) {
           Notification.show("Cannot instantiate client HTTPS endpoint");
           getUI().getNavigator().navigateTo("");
-        } catch (ClientException ex) {
-          Notification.show("Couldn't fetch remote data.");
+        } catch (LcmBadRequestException ex) {
+          Notification.show("Couldn't fetch remote data. Message: " +  ex.getMessage());
         }
       }
     });
