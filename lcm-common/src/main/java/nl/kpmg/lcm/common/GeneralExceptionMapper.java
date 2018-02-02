@@ -64,10 +64,8 @@ public class GeneralExceptionMapper implements ExceptionMapper<Throwable> {
       LOGGER.warn("Request failed! Error message: {}", logErrorMessage);
       LOGGER.debug("Stacktrace ", ex);
 
-      String errorMessage =
-          ex.getMessage() != null ? "Error message: " + ex.getMessage() : ex.getClass().getName();
       response = Response.status(Response.Status.INTERNAL_SERVER_ERROR).type("text/plain")
-          .entity("Request failed! Check logs for more information." + errorMessage).build();
+          .entity("Request failed! Check server logs for more information.").build();
     }
 
     return response;
