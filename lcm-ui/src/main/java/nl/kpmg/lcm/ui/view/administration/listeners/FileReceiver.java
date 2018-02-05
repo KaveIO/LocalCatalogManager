@@ -60,21 +60,21 @@ public class FileReceiver implements Upload.Receiver, Upload.SucceededListener,
   @Override
   public void uploadSucceeded(Upload.SucceededEvent event) {
     try {
-
-      if (isUpdate) {
-        restClientService.updateCertificateAlias(alias,
-            new ByteArrayInputStream(certificate.toByteArray()));
-      } else {
-        restClientService.addCertificateAlias(alias,
-            new ByteArrayInputStream(certificate.toByteArray()));
+      if (certificate.size() > 0) {
+        if (isUpdate) {
+          restClientService.updateCertificateAlias(alias,
+              new ByteArrayInputStream(certificate.toByteArray()));
+        } else {
+          restClientService.addCertificateAlias(alias,
+              new ByteArrayInputStream(certificate.toByteArray()));
+        }
       }
-      
       Notification.show("Operation finished successfully.");
       contianer.close();
     } catch (ServerException ex) {
       Notification.show("Operation of failed!");
       LOGGER.warn("Submitting certificate failed.", ex);
-    }  catch (LcmBadRequestException | AuthenticationException ex) {
+    } catch (LcmBadRequestException | AuthenticationException ex) {
       Notification.show("Operation of failed! Message: " + ex.getMessage());
       LOGGER.warn("Submitting certificate failed.", ex);
     }

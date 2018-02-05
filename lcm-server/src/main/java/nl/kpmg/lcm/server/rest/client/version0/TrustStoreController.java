@@ -130,6 +130,10 @@ public class TrustStoreController {
         + " is trying to update the certificate with alias: " + alias + ".");
 
     byte[] certificate = readCertificate(certificateAsStream);
+    if(certificate == null) {
+        return Response.status(Response.Status.BAD_REQUEST).entity("Unable to read a file!").build();
+    }
+
     if (certificate.length > MAX_CERTIFICATE_SIZE) {
       AUDIT_LOGGER.debug(userIdentifier.getUserDescription(securityContext, true)
           + " was unable to update the certificate with alias: " + alias
@@ -151,6 +155,9 @@ public class TrustStoreController {
 
     byte[] data = new byte[MAX_CERTIFICATE_SIZE + 1];
     int nRead = certificateAsStream.read(data, 0, data.length);
+    if( nRead == -1) {
+        return null;
+    }
 
     ByteArrayOutputStream buffer = new ByteArrayOutputStream();
     buffer.write(data, 0, nRead);
