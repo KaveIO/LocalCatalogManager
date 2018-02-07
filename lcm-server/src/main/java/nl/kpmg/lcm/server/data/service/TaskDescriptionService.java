@@ -24,8 +24,13 @@ import nl.kpmg.lcm.common.data.metadata.DataItemsDescriptor;
 import nl.kpmg.lcm.common.data.metadata.DynamicDataDescriptor;
 import nl.kpmg.lcm.common.data.metadata.MetaData;
 import nl.kpmg.lcm.common.data.metadata.MetaDataWrapper;
+import nl.kpmg.lcm.server.cron.job.processor.AtlasDataDeletionExecutor;
+import nl.kpmg.lcm.server.cron.job.processor.AtlasDataInsertionExecutor;
+import nl.kpmg.lcm.server.cron.job.processor.AtlasDataUpdateExecutor;
 import nl.kpmg.lcm.server.cron.job.processor.DataDeletionExecutor;
 import nl.kpmg.lcm.server.data.dao.TaskDescriptionDao;
+import nl.kpmg.lcm.server.integration.atlas.TransformationException;
+import nl.kpmg.lcm.server.integration.service.AtlasMetadataService;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -56,6 +61,9 @@ public class TaskDescriptionService {
 
   @Autowired
   private MetaDataService metadataService;
+
+  @Autowired
+  private AtlasMetadataService atlasMetadataService;
 
   public List<TaskDescription> findAll() {
     List result = Lists.newArrayList(taskDescriptionDao.findAll());
@@ -252,5 +260,102 @@ public class TaskDescriptionService {
       dataDeletionTaskDescription.setStartTime(startTime);
 
       createNew(dataDeletionTaskDescription);
+  }
+
+  public void createAtlasTasks() {
+    createAtlasMetaDataDeletionTasks();
+    createAtlasMetaDataUpdateTasks();
+    createAtlasMetaDataInsertionTasks();
+  }
+
+  private void createAtlasMetaDataInsertionTasks() {
+    List<MetaData> atlasMetadatas = atlasMetadataService.getAll();
+
+    for (MetaData atlasMetadata : atlasMetadatas) {
+      MetaDataWrapper atlasMetadataWrapper = new MetaDataWrapper(atlasMetadata);
+      String atlasMetadataGuid = atlasMetadataWrapper.getAtlasMetadata().getGuid();
+
+      List<MetaData> lcmMetadatas = metadataService.findAll();
+      boolean doExist = false;
+      for (MetaData lcmMetadata : lcmMetadatas) {
+        MetaDataWrapper lcmMetadataWrapper = new MetaDataWrapper(lcmMetadata);
+        String lcmMetadataGuid = lcmMetadataWrapper.getAtlasMetadata().getGuid();
+
+        if (atlasMetadataGuid.equals(lcmMetadataGuid)) {
+          doExist = true;
+          break;
+        }
+      }
+
+      if (!doExist) {
+        createAtlasMetaDataTask(AtlasDataInsertionExecutor.class.getName(), TaskType.ATLAS_INSERT,
+            atlasMetadataGuid);
+      }
+    }
+  }
+
+
+  private void createAtlasMetaDataDeletionTasks() {
+    List<MetaData> lcmMetadatas = metadataService.findAll();
+    for (MetaData lcmMetadata : lcmMetadatas) {
+      MetaDataWrapper lcmMetadataWrapper = new MetaDataWrapper(lcmMetadata);
+      String guid = lcmMetadataWrapper.getAtlasMetadata().getGuid();
+      if (guid == null) {
+        continue;
+      }
+
+      try {
+        MetaData atlasMetadata = atlasMetadataService.getOne(guid);
+        if (atlasMetadata == null) {
+          createAtlasMetaDataTask(AtlasDataDeletionExecutor.class.getName(), TaskType.ATLAS_DELETE,
+              guid);
+        }
+
+      } catch (TransformationException ex) {
+        LOGGER.warn(ex.getMessage());
+      }
+    }
+  }
+
+
+  private void createAtlasMetaDataUpdateTasks() {
+    List<MetaData> lcmMetadatas = metadataService.findAll();
+    for (MetaData lcmMetadata : lcmMetadatas) {
+      MetaDataWrapper lcmMetadataWrapper = new MetaDataWrapper(lcmMetadata);
+      String guid = lcmMetadataWrapper.getAtlasMetadata().getGuid();
+      String lcmMetadataLastModifiedTime =
+          lcmMetadataWrapper.getAtlasMetadata().getLastModifiedTime();
+
+      try {
+        MetaDataWrapper atlasMetadataWrapper =
+            new MetaDataWrapper(atlasMetadataService.getOne(guid));
+        String atlasMetadataLastModifiedTime =
+            atlasMetadataWrapper.getAtlasMetadata().getLastModifiedTime();
+
+        if ((lcmMetadataLastModifiedTime == null && atlasMetadataLastModifiedTime != null)
+            || !lcmMetadataLastModifiedTime.equals(atlasMetadataLastModifiedTime)) {
+          createAtlasMetaDataTask(AtlasDataUpdateExecutor.class.getName(), TaskType.ATLAS_UPDATE,
+              guid);
+        }
+
+      } catch (TransformationException ex) {
+        LOGGER.warn(ex.getMessage());
+      }
+    }
+  }
+
+  private void createAtlasMetaDataTask(String job, TaskType type, String guid) {
+    TaskDescription task = new TaskDescription();
+    task.setJob(job);
+    task.setType(type);
+    task.setStatus(TaskDescription.TaskStatus.PENDING);
+    task.setTarget(guid);
+
+    Calendar calendar = Calendar.getInstance();
+    calendar.add(Calendar.MINUTE, 2);
+    Date startTime = calendar.getTime();
+    task.setStartTime(startTime);
+
+    createNew(task);
   }
 }

@@ -48,6 +48,14 @@ public class AtlasMetadataDescriptor extends AbstractMetaDataDescriptor {
     set("body", body);
   }
 
+  public final String getLastModifiedTime() {
+    return get("last_modified_time");
+  }
+
+  public final void setLastModifiedTime(final String lastModifiedTime) {
+    set("last_modified_time", lastModifiedTime);
+  }
+
   @Override
   public void validate(Notification notification) {
     if (getMap() == null) {

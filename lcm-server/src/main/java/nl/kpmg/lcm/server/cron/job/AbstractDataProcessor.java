@@ -24,6 +24,8 @@ import nl.kpmg.lcm.server.cron.exception.CronJobExecutionException;
 import nl.kpmg.lcm.server.data.service.MetaDataService;
 import nl.kpmg.lcm.server.data.service.StorageService;
 import nl.kpmg.lcm.server.data.service.TaskDescriptionService;
+import nl.kpmg.lcm.server.integration.atlas.TransformationException;
+import nl.kpmg.lcm.server.integration.service.AtlasMetadataService;
 
 import org.quartz.Job;
 import org.quartz.JobDataMap;
@@ -74,6 +76,9 @@ public abstract class AbstractDataProcessor implements Job {
 
   @Autowired
   protected StorageService storageService;
+
+  @Autowired
+  protected AtlasMetadataService atlasMetadataService;
 
   /**
    * The TaskDescriptionService.
@@ -134,11 +139,18 @@ public abstract class AbstractDataProcessor implements Job {
         taskDescriptionService.markTaskAsRunning(taskDescription);
 
         // Find the MetaData target on which this job needs to be executed
+      if (taskType.equals(TaskType.ATLAS_INSERT) || taskType.equals(TaskType.ATLAS_UPDATE)
+          || taskType.equals(TaskType.ATLAS_DELETE)) {
+        status = processAtlasTarget(target, taskDescription);
+      } else {
         List<MetaData> targets = loadTargetMetadata(target, targetType, taskDescription);
 
         status = processTargets(targets, taskDescription);
+      }
+    } catch (TransformationException ex) {
+      LOGGER.warn(ex.getMessage());
     } finally {
-        taskDescriptionService.markTaskAsFinished(taskId, status);
+      taskDescriptionService.markTaskAsFinished(taskId, status);
     }
   }
 
@@ -191,5 +203,31 @@ public abstract class AbstractDataProcessor implements Job {
       }
     }
     return targets;
+  }
+
+  private TaskDescription.TaskStatus processAtlasTarget(String target,
+      TaskDescription taskDescription) throws TransformationException {
+    TaskDescription.TaskStatus status = TaskDescription.TaskStatus.SUCCESS;
+
+    if (target != null) {
+      MetaData metadata = atlasMetadataService.getOne(target);
+
+      try {
+        LOGGER.info(String.format("Executing Task %s (%s)", taskDescription.getId(),
+            taskDescription.getJob()));
+
+        TaskResult taskResult =
+            execute(new MetaDataWrapper(metadata), taskDescription.getOptions());
+
+        LOGGER.info(String.format("Done with Task %s (%s) with status : %s",
+            taskDescription.getId(), taskDescription.getJob(), taskResult));
+        if (taskResult == TaskResult.FAILURE) {
+          status = TaskDescription.TaskStatus.FAILED;
+        }
+      } catch (CronJobExecutionException ex) {
+        LOGGER.error("Failed executing task! Message : " + ex.getMessage());
+      }
+    }
+    return status;
   }
 }

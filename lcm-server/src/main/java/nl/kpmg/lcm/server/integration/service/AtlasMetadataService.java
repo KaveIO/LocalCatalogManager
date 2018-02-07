@@ -58,8 +58,11 @@ public class AtlasMetadataService {
   }
 
 
-  private MetaData getOne(String guid) throws TransformationException {
+  public MetaData getOne(String guid) throws TransformationException {
     Map fullEntity = requestProxy.getEntity(guid);
+    if(fullEntity == null){
+        return null;
+    }
     MetaData metadata = metadataTransformator.transform(fullEntity);
 
     return metadata;

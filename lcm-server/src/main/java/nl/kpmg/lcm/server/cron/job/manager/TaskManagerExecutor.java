@@ -41,6 +41,7 @@ public class TaskManagerExecutor implements Job {
   public void execute(JobExecutionContext context) throws JobExecutionException {
     taskScheduleService.createNewScheduleWithEnrichmentJobs();
     taskDescriptionService.createNewDataDeletionTaskDescriptions();
+    taskDescriptionService.createAtlasTasks();
   }
 
 }
