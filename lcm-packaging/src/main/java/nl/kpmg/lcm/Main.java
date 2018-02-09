@@ -14,8 +14,8 @@
 package nl.kpmg.lcm;
 
 import nl.kpmg.lcm.common.InvalidArgumentsException;
-import nl.kpmg.lcm.server.Server;
 import nl.kpmg.lcm.common.ServerException;
+import nl.kpmg.lcm.server.Server;
 import nl.kpmg.lcm.ui.UI;
 
 import org.apache.commons.lang.ArrayUtils;
@@ -54,20 +54,11 @@ public class Main {
         final Server server = new Server();
         server.start();
 
-        LOG.info( "Hit enter to stop it...");
-        System.in.read();
-
-        server.stop();
       } else if (command.equals("ui")) {
         LOG.info( "Starting LCM UI");
 
         final UI ui = new UI();
         ui.start();
-
-        LOG.info( "Hit enter to stop it...");
-        System.in.read();
-
-        ui.stop();
       } else if (command.equals("cli")) {
         LOG.info( "Cli not implemented yet.");
       } else if (command.equals("help")) {
