@@ -5,7 +5,13 @@
  */
 package nl.kpmg.lcm.common.data.metadata;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
+
 import nl.kpmg.lcm.common.validation.Notification;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.Map;
 
@@ -14,6 +20,8 @@ import java.util.Map;
  * @author shristov
  */
 public class AtlasMetadataDescriptor extends AbstractMetaDataDescriptor {
+  private static final Logger LOGGER = LoggerFactory.getLogger(AtlasMetadataDescriptor.class);
+
   private MetaData metadata;
 
   public AtlasMetadataDescriptor(MetaData metadata) {
@@ -45,7 +53,15 @@ public class AtlasMetadataDescriptor extends AbstractMetaDataDescriptor {
   }
 
   public final void setBody(final Map body) {
-    set("body", body);
+    ObjectMapper objectMapper = new ObjectMapper();
+
+    try {
+      String actual = objectMapper.writeValueAsString(body);
+      set("body", actual);
+    } catch (JsonProcessingException ex) {
+      LOGGER.warn("Unable to transform the atlas body map to json string. Error message: "
+          + ex.getMessage());
+    }
   }
 
   public final String getLastModifiedTime() {
@@ -54,6 +70,14 @@ public class AtlasMetadataDescriptor extends AbstractMetaDataDescriptor {
 
   public final void setLastModifiedTime(final String lastModifiedTime) {
     set("last_modified_time", lastModifiedTime);
+  }
+
+  public final String getStatus() {
+    return get("status");
+  }
+
+  public final void setStatus(final String status) {
+    set("status", status);
   }
 
   @Override

@@ -287,6 +287,19 @@ public class TaskDescriptionService {
         }
       }
 
+      if (doesTaskDescriptionExist(TaskType.ATLAS_INSERT, atlasMetadataGuid,
+          TaskDescription.TaskStatus.PENDING)
+          || doesTaskDescriptionExist(TaskType.ATLAS_INSERT, atlasMetadataGuid,
+              TaskDescription.TaskStatus.SCHEDULED)
+          || doesTaskDescriptionExist(TaskType.ATLAS_INSERT, atlasMetadataGuid,
+              TaskDescription.TaskStatus.RUNNING)) {
+        continue;
+      }
+
+      if (atlasMetadataWrapper.getAtlasMetadata().getStatus().equals("DELETED")) {
+        continue;
+      }
+
       if (!doExist) {
         createAtlasMetaDataTask(AtlasDataInsertionExecutor.class.getName(), TaskType.ATLAS_INSERT,
             atlasMetadataGuid);
@@ -304,9 +317,17 @@ public class TaskDescriptionService {
         continue;
       }
 
+      if (doesTaskDescriptionExist(TaskType.ATLAS_DELETE, guid, TaskDescription.TaskStatus.PENDING)
+          || doesTaskDescriptionExist(TaskType.ATLAS_DELETE, guid,
+              TaskDescription.TaskStatus.SCHEDULED)
+          || doesTaskDescriptionExist(TaskType.ATLAS_DELETE, guid,
+              TaskDescription.TaskStatus.RUNNING)) {
+        continue;
+      }
+
       try {
         MetaData atlasMetadata = atlasMetadataService.getOne(guid);
-        if (atlasMetadata == null) {
+        if (new MetaDataWrapper(atlasMetadata).getAtlasMetadata().getStatus().equals("DELETED")) {
           createAtlasMetaDataTask(AtlasDataDeletionExecutor.class.getName(), TaskType.ATLAS_DELETE,
               guid);
         }
@@ -325,12 +346,28 @@ public class TaskDescriptionService {
       String guid = lcmMetadataWrapper.getAtlasMetadata().getGuid();
       String lcmMetadataLastModifiedTime =
           lcmMetadataWrapper.getAtlasMetadata().getLastModifiedTime();
+      if (guid == null) {
+        continue;
+      }
 
       try {
         MetaDataWrapper atlasMetadataWrapper =
             new MetaDataWrapper(atlasMetadataService.getOne(guid));
         String atlasMetadataLastModifiedTime =
             atlasMetadataWrapper.getAtlasMetadata().getLastModifiedTime();
+
+        if (atlasMetadataLastModifiedTime == null) {
+          continue;
+        }
+
+        if (doesTaskDescriptionExist(TaskType.ATLAS_UPDATE, guid,
+            TaskDescription.TaskStatus.PENDING)
+            || doesTaskDescriptionExist(TaskType.ATLAS_UPDATE, guid,
+                TaskDescription.TaskStatus.SCHEDULED)
+            || doesTaskDescriptionExist(TaskType.ATLAS_UPDATE, guid,
+                TaskDescription.TaskStatus.RUNNING)) {
+          continue;
+        }
 
         if ((lcmMetadataLastModifiedTime == null && atlasMetadataLastModifiedTime != null)
             || !lcmMetadataLastModifiedTime.equals(atlasMetadataLastModifiedTime)) {

@@ -144,6 +144,9 @@ public class AtlasMetadataTransformer {
     Map parameters = (Map) attributes.get("parameters");
     String lastModifiedTime = (String) parameters.get("last_modified_time");
     metadata.getAtlasMetadata().setLastModifiedTime(lastModifiedTime);
+
+    String status = (String) entityItem.get("status");
+    metadata.getAtlasMetadata().setStatus(status);
   }
 
   private void setSize(ColumnType columnType, String size, ColumnDescription description)

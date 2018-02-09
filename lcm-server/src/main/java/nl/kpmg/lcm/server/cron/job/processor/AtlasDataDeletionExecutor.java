@@ -29,13 +29,13 @@ public class AtlasDataDeletionExecutor extends AbstractDataProcessor {
   @Override
   protected TaskResult execute(MetaDataWrapper metadataWrapper, Map options)
       throws CronJobExecutionException {
-    String atlasLastModifiedTime = metadataWrapper.getAtlasMetadata().getLastModifiedTime();
+    String metadataGuid = metadataWrapper.getAtlasMetadata().getGuid();
     List<MetaData> metadatas = metadataService.findAll();
 
     for (MetaData metadata : metadatas) {
-      String currLastModifiedTime =
-          new MetaDataWrapper(metadata).getAtlasMetadata().getLastModifiedTime();
-      if (currLastModifiedTime != null && currLastModifiedTime.equals(atlasLastModifiedTime)) {
+      String currMetadataGuid =
+          new MetaDataWrapper(metadata).getAtlasMetadata().getGuid();
+      if (currMetadataGuid != null && currMetadataGuid.equals(metadataGuid)) {
         metadataService.delete(metadata);
         return TaskResult.SUCCESS;
       }
