@@ -139,8 +139,7 @@ public abstract class AbstractDataProcessor implements Job {
         taskDescriptionService.markTaskAsRunning(taskDescription);
 
         // Find the MetaData target on which this job needs to be executed
-      if (taskType.equals(TaskType.ATLAS_INSERT) || taskType.equals(TaskType.ATLAS_UPDATE)
-          || taskType.equals(TaskType.ATLAS_DELETE)) {
+      if (taskType.equals(TaskType.ATLAS_INSERT)) {
         status = processAtlasTarget(target, taskDescription);
       } else {
         List<MetaData> targets = loadTargetMetadata(target, targetType, taskDescription);
