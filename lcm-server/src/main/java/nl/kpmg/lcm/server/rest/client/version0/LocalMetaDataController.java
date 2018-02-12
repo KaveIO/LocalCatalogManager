@@ -128,11 +128,6 @@ public class LocalMetaDataController {
       all = metaDataService.findAll();
     }
 
-    List<MetaData> atlasMetadata = atlasService.getAll();
-    for(MetaData metadata: atlasMetadata) {
-        all.add(metadata);
-    }
-
     MetaDatasRepresentation metaDatasRepresentation = new ConcreteMetaDatasRepresentation();
     metaDatasRepresentation.setRepresentedItems(ConcreteMetaDataRepresentation.class, all);
 
