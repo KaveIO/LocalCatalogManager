@@ -259,8 +259,14 @@ public class TaskDescriptionService {
       }
 
       try {
-        MetaDataWrapper atlasMetadataWrapper =
-            new MetaDataWrapper(atlasMetadataService.getOne(guid));
+        MetaData atlasMetadata = atlasMetadataService.getOne(guid);
+
+        if (atlasMetadata == null) {
+          LOGGER.warn("Atlas metadata with guid: " + guid + " is null.");
+          continue;
+        }
+
+        MetaDataWrapper atlasMetadataWrapper = new MetaDataWrapper(atlasMetadata);
 
         // Delete atlas metadata from LCM if it no longer exists in Apache Atlas.
         if (atlasMetadataWrapper.getAtlasMetadata().getStatus().equals("DELETED")
@@ -283,7 +289,8 @@ public class TaskDescriptionService {
         }
 
       } catch (TransformationException ex) {
-        LOGGER.warn(ex.getMessage());
+        LOGGER.error("Unable to get the atlas metadata with guid: " + guid + ". Error message: "
+            + ex.getMessage());
       }
     }
   }

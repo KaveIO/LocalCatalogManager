@@ -56,7 +56,9 @@ public class AtlasDataExecutor extends AbstractDataProcessor {
             return TaskResult.FAILURE;
           }
         } catch (TransformationException ex) {
-          LOGGER.warn(ex.getMessage());
+          LOGGER.error("Unable to get atlas metadata with guid: "
+              + metadataWrapper.getAtlasMetadata().getGuid() + ". Error message: "
+              + ex.getMessage());
           return TaskResult.FAILURE;
         }
       }

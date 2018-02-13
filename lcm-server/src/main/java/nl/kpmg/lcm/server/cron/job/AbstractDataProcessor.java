@@ -134,20 +134,17 @@ public abstract class AbstractDataProcessor implements Job {
         return;
     }
 
-    TaskDescription.TaskStatus status =  TaskDescription.TaskStatus.FAILED;
+    TaskDescription.TaskStatus status = TaskDescription.TaskStatus.FAILED;
     try {
-        taskDescriptionService.markTaskAsRunning(taskDescription);
+      taskDescriptionService.markTaskAsRunning(taskDescription);
 
-        // Find the MetaData target on which this job needs to be executed
+      // Find the MetaData target on which this job needs to be executed
       if (taskType.equals(TaskType.ATLAS_INSERT)) {
         status = processAtlasTarget(target, taskDescription);
       } else {
         List<MetaData> targets = loadTargetMetadata(target, targetType, taskDescription);
-
         status = processTargets(targets, taskDescription);
       }
-    } catch (TransformationException ex) {
-      LOGGER.warn(ex.getMessage());
     } finally {
       taskDescriptionService.markTaskAsFinished(taskId, status);
     }
@@ -173,6 +170,7 @@ public abstract class AbstractDataProcessor implements Job {
           }
         } catch (CronJobExecutionException ex) {
           LOGGER.error("Failed executing task! Message : " +  ex.getMessage());
+          status = TaskDescription.TaskStatus.FAILED;
         }
       }
     }
@@ -205,13 +203,13 @@ public abstract class AbstractDataProcessor implements Job {
   }
 
   private TaskDescription.TaskStatus processAtlasTarget(String target,
-      TaskDescription taskDescription) throws TransformationException {
+      TaskDescription taskDescription) {
     TaskDescription.TaskStatus status = TaskDescription.TaskStatus.SUCCESS;
 
     if (target != null) {
-      MetaData metadata = atlasMetadataService.getOne(target);
-
       try {
+        MetaData metadata = atlasMetadataService.getOne(target);
+
         LOGGER.info(String.format("Executing Task %s (%s)", taskDescription.getId(),
             taskDescription.getJob()));
 
@@ -225,6 +223,11 @@ public abstract class AbstractDataProcessor implements Job {
         }
       } catch (CronJobExecutionException ex) {
         LOGGER.error("Failed executing task! Message : " + ex.getMessage());
+        status = TaskDescription.TaskStatus.FAILED;
+      } catch (TransformationException ex) {
+        LOGGER.error("Unable to get atlas metadata with guid: " + target + ". Error message: "
+            + ex.getMessage());
+        status = TaskDescription.TaskStatus.FAILED;
       }
     }
     return status;
