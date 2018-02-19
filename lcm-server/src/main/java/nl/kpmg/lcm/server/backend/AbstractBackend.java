@@ -104,10 +104,18 @@ abstract class AbstractBackend implements Backend {
     if (metaDataWrapper.getDynamicData().getAllDynamicDataDescriptors() == null) {
       return metaDataWrapper.getMetaData();
     }
+
     for (String key : metaDataWrapper.getDynamicData().getAllDynamicDataDescriptors().keySet()) {
       DataItemsDescriptor dynamicDataDescriptor =
           metaDataWrapper.getDynamicData().getDynamicDataDescriptor(key);
       long start = System.currentTimeMillis();
+
+      String uri = dynamicDataDescriptor.getURI();
+      if (!match(uri)) {
+        metaDataWrapper.getDynamicData().removeDynamicDataItem(key);
+        continue;
+      }
+
       try {
         dynamicDataDescriptor.clearDetailsDescriptor();
         enrichMetadataItem(properties, key);
@@ -145,7 +153,7 @@ abstract class AbstractBackend implements Backend {
           continue;
         }
         String path = parsedUri.getPath();
-        // remove '/' in fron of the path
+        // remove '/' in front of the path
         if (path.charAt(0) == '/') {
           path = path.substring(1);
         }
@@ -275,4 +283,21 @@ abstract class AbstractBackend implements Backend {
 
   }
 
+  protected boolean match(String uri) {
+    List<String> dataUriList = metaDataWrapper.getData().getUri();
+    for (String dataUri : dataUriList) {
+
+      if (!dataUri.contains("*")) {
+        if (dataUri.equals(uri)) {
+          return true;
+        }
+      } else {
+        Pattern dataUriPattern = Pattern.compile(dataUri.replace("*", ".*"));
+        if (dataUriPattern.matcher(uri).matches()) {
+          return true;
+        }
+      }
+    }
+    return false;
+  }
 }

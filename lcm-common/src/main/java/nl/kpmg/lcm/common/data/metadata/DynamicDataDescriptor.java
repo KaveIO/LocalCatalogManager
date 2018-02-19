@@ -76,6 +76,14 @@ public class DynamicDataDescriptor extends AbstractMetaDataDescriptor {
     getItems().put(key, descriptor);
   }
 
+  public void removeDynamicDataItem(String key) {
+    if (getItems() == null) {
+      return;
+    }
+
+    getItems().remove(key);
+  }
+
   public String getSectionName() {
     return "dynamic.data";
   }
