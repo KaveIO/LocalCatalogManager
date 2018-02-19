@@ -24,7 +24,7 @@ import nl.kpmg.lcm.common.data.Storage;
 import nl.kpmg.lcm.common.data.TaskDescription;
 import nl.kpmg.lcm.common.data.TaskType;
 import nl.kpmg.lcm.common.data.TransferSettings;
-import nl.kpmg.lcm.common.data.TransferValidation;
+import nl.kpmg.lcm.common.data.TransferValidator;
 import nl.kpmg.lcm.common.data.metadata.DataItemsDescriptor;
 import nl.kpmg.lcm.common.data.metadata.MetaData;
 import nl.kpmg.lcm.common.data.metadata.MetaDataWrapper;
@@ -113,7 +113,7 @@ public class DataFetchTriggerService {
     if (localStorage == null) {
       throw new NotFoundException(String.format("Storage with id: %s is not found", localStorageId));
     }
-    if (!TransferValidation.validateTransfer(metaDataWrapper.getSourceType(),
+    if (!TransferValidator.validateTransfer(metaDataWrapper.getSourceType(),
         localStorage.getType())) {
       throw new LcmException("Unable to transfer " + metaDataWrapper.getSourceType() + " to "
           + localStorage.getType() + " storage.");
@@ -208,7 +208,7 @@ public class DataFetchTriggerService {
     }
 
     String newItemName = originalItemName;
-    if (originalDataFormat.equals(DataFormat.CSV)) {
+    if (originalDataFormat.equals(DataFormat.CSV) || originalDataFormat.equals(DataFormat.AZURECSV)) {
       if (originalItemName.indexOf(".csv") == originalItemName.length() - 4) {
         newItemName = originalItemName.substring(0, originalItemName.length() - 4);
       } else {
@@ -224,12 +224,12 @@ public class DataFetchTriggerService {
       }
     }
 
-    if (destinationDataFormat.equals(DataFormat.CSV)) {
+    if (destinationDataFormat.equals(DataFormat.CSV) || destinationDataFormat.equals(DataFormat.AZURECSV)) {
       newItemName = newItemName + ".csv";
     }
 
     if (destinationDataFormat.equals(DataFormat.JSON)
-        || (originalDataFormat.equals(DataFormat.JSON) && TransferValidation
+        || (originalDataFormat.equals(DataFormat.JSON) && TransferValidator
             .isUnstructuredDataFormat(destinationDataFormat))) {
       newItemName = newItemName + ".json";
     }
@@ -237,7 +237,8 @@ public class DataFetchTriggerService {
     // When the source is file based data item i.e csv or json and the destination
     // is DB(Hive, Mongo) and the file path contains folders
     // then transformation must be
-    if ((originalDataFormat.equals(DataFormat.CSV) || originalDataFormat.equals(DataFormat.JSON))
+    if ((originalDataFormat.equals(DataFormat.CSV) || originalDataFormat.equals(DataFormat.AZURECSV)
+            || originalDataFormat.equals(DataFormat.JSON))
         && (destinationDataFormat.equals(DataFormat.HIVE) || destinationDataFormat
             .equals(DataFormat.MONGO))) {
 

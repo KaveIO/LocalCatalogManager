@@ -30,7 +30,7 @@ import nl.kpmg.lcm.common.ServerException;
 import nl.kpmg.lcm.common.client.ClientException;
 import nl.kpmg.lcm.common.data.Storage;
 import nl.kpmg.lcm.common.data.TransferSettings;
-import nl.kpmg.lcm.common.data.TransferValidation;
+import nl.kpmg.lcm.common.data.TransferValidator;
 import nl.kpmg.lcm.common.data.metadata.MetaData;
 import nl.kpmg.lcm.common.data.metadata.MetaDataWrapper;
 import nl.kpmg.lcm.common.rest.types.StorageRepresentation;
@@ -160,7 +160,7 @@ public class StartTransferWindow extends Window implements Button.ClickListener 
   private ComboBox initStorageListComboBox() throws UnsupportedOperationException {
     ComboBox storageListComboBox = new ComboBox("Local Storage");
     List<String> validStorageTypes =
-        TransferValidation.getValidStorageTypes(remoteMetadata.getSourceType());
+        TransferValidator.getValidStorageTypes(remoteMetadata.getSourceType());
     StoragesRepresentation storages;
     try {
       storages = restClientService.getStorage();

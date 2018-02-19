@@ -23,6 +23,7 @@ import nl.kpmg.lcm.common.data.metadata.MetaDataWrapper;
 import nl.kpmg.lcm.common.exception.LcmException;
 import nl.kpmg.lcm.server.backend.Backend;
 import nl.kpmg.lcm.server.backend.BackendFactory;
+import nl.kpmg.lcm.server.backend.storage.AzureStorage;
 import nl.kpmg.lcm.server.backend.storage.HiveStorage;
 import nl.kpmg.lcm.server.backend.storage.MongoStorage;
 import nl.kpmg.lcm.server.backend.storage.S3FileStorage;
@@ -99,6 +100,9 @@ public class StorageService {
     } else if (storage.getType().equals(DataFormat.MONGO)) {
       storage = presetCredentails(storage);
       new MongoStorage(storage);// create not used wrapper to validate the structure of the storage
+    } else if (AzureStorage.getSupportedStorageTypes().contains(storage.getType())) {
+      storage = presetCredentails(storage);
+      new AzureStorage(storage);// create not used wrapper to validate the structure of the storage
     }
 
     return storageDao.save(storage);

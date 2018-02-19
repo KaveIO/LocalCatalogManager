@@ -24,14 +24,25 @@ import java.util.Map;
  * @author shristov
  */
 public class StorageMocker {
-  private static final String CSV_STORAGE_PATH = System.getProperty("java.io.tmpdir");
+  private static final String STORAGE_PATH = System.getProperty("java.io.tmpdir");
   private static final String CSV_STORAGE_NAME = "csv-storage";
+  private static final String FILE_STORAGE_NAME = "file-storage";
+
+  public static Storage createFileStorage() {
+    Storage fileStorage = new Storage();
+    fileStorage.setName(FILE_STORAGE_NAME);
+    Map options = new HashMap();
+    options.put("storagePath", STORAGE_PATH);
+    fileStorage.setOptions(options);
+    fileStorage.setType(DataFormat.FILE);
+    return fileStorage;
+  }
 
   public static Storage createCsvStorage() {
     Storage csvStorage = new Storage();
     csvStorage.setName(CSV_STORAGE_NAME);
     Map options = new HashMap();
-    options.put("storagePath", CSV_STORAGE_PATH);
+    options.put("storagePath", STORAGE_PATH);
     csvStorage.setOptions(options);
     csvStorage.setType(DataFormat.CSV);
     return csvStorage;
@@ -45,7 +56,7 @@ public class StorageMocker {
     options.put("url", "jdbc:hive2://10.191.30.201:10000");
     options.put("driver", "org.apache.hive.jdbc.HiveDriver");
     backendStorage.setOptions(options);
-    Map credentials =  new HashMap();
+    Map credentials = new HashMap();
     credentials.put("username", "hive");
     credentials.put("password", "hive");
     backendStorage.setCredentials(credentials);
@@ -54,7 +65,7 @@ public class StorageMocker {
     return backendStorage;
   }
 
-   public static Storage createMongoStorage() {
+  public static Storage createMongoStorage() {
     Storage backendStorage = new Storage();
     backendStorage.setName("mongo-sotrage");
     Map options = new HashMap();
@@ -62,7 +73,7 @@ public class StorageMocker {
     options.put("hostname", "localhost");
     options.put("port", "12345");
     backendStorage.setOptions(options);
-    Map credentials =  new HashMap();
+    Map credentials = new HashMap();
     credentials.put("username", "mongo");
     credentials.put("password", "mongo");
     backendStorage.setCredentials(credentials);

@@ -11,20 +11,22 @@
   * or implied. See the License for the specific language governing permissions and limitations under
   * the License.
  */
-package nl.kpmg.lcm.common.data;
+package nl.kpmg.lcm.server.data;
+
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
 
 /**
  *
  * @author shristov
  */
-public class DataFormat {
-  public static final String S3FILE = "s3file";
-  public static final String FILE = "file";
-  public static final String CSV = "csv";
-  public static final String JSON = "json";
-  public static final String HIVE = "hive";
-  public static final String HDFSFILE = "hdfsfile";
-  public static final String AZUREFILE = "azurefile";
-  public static final String AZURECSV = "azurecsv";
-  public static final String MONGO = "mongo";
+public interface CsvAdapter {
+  public OutputStream getOutputStream() throws IOException;
+  public InputStream getInputStream() throws IOException;
+
+  public boolean exists() throws IOException;
+  public long length() throws IOException;
+  public long lastModified() throws IOException;
+  public void validatePaths();
 }

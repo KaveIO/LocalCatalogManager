@@ -95,7 +95,7 @@ public class HdfsFileAdapter implements FileAdapter {
 
   @Override
   public void validatePaths() {
-    //in case ../ exists in the storagePath new Path() will eliminate them.
+    //in case '../' exists in the 'storagePath' then  'new Path()' will eliminate them.
     Path filePath = new Path(storagePath);
     if (!filePath.toString().startsWith(storageBasePath)) {
       throw new LcmValidationException(

@@ -11,20 +11,17 @@
   * or implied. See the License for the specific language governing permissions and limitations under
   * the License.
  */
-package nl.kpmg.lcm.common.data;
+package nl.kpmg.lcm.server.data.azure;
+
+import nl.kpmg.lcm.server.backend.storage.AzureStorage;
+import nl.kpmg.lcm.server.data.CsvAdapter;
 
 /**
  *
  * @author shristov
  */
-public class DataFormat {
-  public static final String S3FILE = "s3file";
-  public static final String FILE = "file";
-  public static final String CSV = "csv";
-  public static final String JSON = "json";
-  public static final String HIVE = "hive";
-  public static final String HDFSFILE = "hdfsfile";
-  public static final String AZUREFILE = "azurefile";
-  public static final String AZURECSV = "azurecsv";
-  public static final String MONGO = "mongo";
+public class AzureCsvAdapter extends BasicAzureAdapter implements CsvAdapter {
+  public AzureCsvAdapter(AzureStorage azureStorage, String filename) {
+    super(azureStorage, filename);
+  }
 }

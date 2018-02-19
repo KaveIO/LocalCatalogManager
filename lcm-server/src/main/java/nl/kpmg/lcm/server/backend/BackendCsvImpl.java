@@ -27,7 +27,14 @@ import nl.kpmg.lcm.common.exception.LcmException;
 import nl.kpmg.lcm.common.exception.LcmValidationException;
 import nl.kpmg.lcm.common.validation.Notification;
 import nl.kpmg.lcm.server.backend.metadata.CsvMetaData;
+import nl.kpmg.lcm.server.backend.storage.AzureStorage;
 import nl.kpmg.lcm.server.backend.storage.LocalFileStorage;
+import nl.kpmg.lcm.server.data.CsvAdapter;
+import nl.kpmg.lcm.server.data.FileSystemAdapter;
+import nl.kpmg.lcm.server.data.LocalCsvAdapter;
+import nl.kpmg.lcm.server.data.LocalFileSystemAdapter;
+import nl.kpmg.lcm.server.data.azure.AzureCsvAdapter;
+import nl.kpmg.lcm.server.data.azure.AzureFileSystemAdapter;
 import nl.kpmg.lcm.server.data.service.StorageService;
 
 import org.apache.metamodel.DataContextFactory;
@@ -38,17 +45,13 @@ import org.apache.metamodel.csv.CsvWriter;
 import org.apache.metamodel.data.DataSet;
 import org.apache.metamodel.schema.Schema;
 import org.apache.metamodel.schema.Table;
-import org.apache.metamodel.util.FileHelper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.File;
 import java.io.IOException;
-import java.io.Writer;
-import java.net.URI;
-import java.net.URISyntaxException;
+import java.io.InputStream;
+import java.io.OutputStream;
 import java.util.Date;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
@@ -56,12 +59,11 @@ import java.util.Map;
  *
  * @author mhoekstra
  */
-@BackendSource(type = {DataFormat.CSV})
+@BackendSource(type = {DataFormat.CSV, DataFormat.AZURECSV})
 public class BackendCsvImpl extends AbstractBackend {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(BackendCsvImpl.class.getName());
   private final CsvMetaData csvMetaData;
-
 
   /**
    *
@@ -73,82 +75,23 @@ public class BackendCsvImpl extends AbstractBackend {
     this.csvMetaData = new CsvMetaData(metaData);
   }
 
-  private UpdateableDataContext createDataContext(File dataSourceFile, String key) {
-    if (metaDataWrapper == null) {
-      throw new IllegalStateException("MetaData parameter could not be null");
-    }
-
-    CsvConfiguration csvConfiguration = null;
-    if(csvMetaData.doesConfigurationExists(key)){
-        csvConfiguration =  csvMetaData.getConfiguration(key);
-    } else {
-        csvConfiguration =  csvMetaData.getDefaultConfiguration();
-    }
-
-    if (!dataSourceFile.exists()) {
-      throw new LcmException("Unable to find data source file! FilePath: "
-          + dataSourceFile.getPath());
-    }
-    return (CsvDataContext) DataContextFactory.createCsvDataContext(dataSourceFile,
-        csvConfiguration);
-  }
-
-  private File constructDatasourceFile(String key) {
-    DataItemsDescriptor dynamicDataDescriptor =
-        metaDataWrapper.getDynamicData().getDynamicDataDescriptor(key);
-    String unparesURI = dynamicDataDescriptor.getURI();
-    URI parsedUri;
-    try {
-      parsedUri = new URI(unparesURI);
-    } catch (URISyntaxException ex) {
-      LOGGER.error("unable to parse uri " + unparesURI + " for key:" + key);
-      return null;
-    }
-
-    String storageName =
-        parsedUri.getHost() != null ? parsedUri.getHost() : parsedUri.getAuthority();
-    Storage storage = storageService.findByName(storageName);
-
-    if (storage == null) {
-      LOGGER.error("Storage with name: " + storageName + " does not exists! Data item with key "
-          + key + "will not be updated");
-      return null;
-    }
-    LocalFileStorage localStorage = new LocalFileStorage(storage);
-    String fileName = parsedUri.getPath();
-
-    File dataSourceFile;
-    File baseDir = new File(localStorage.getStoragePath());
-
-    dataSourceFile = new File(localStorage.getStoragePath() + fileName);
-
-    Notification notification = new Notification();
-    FilePathValidator.validate(baseDir, dataSourceFile, notification);
-
-    if (notification.hasErrors()) {
-      throw new LcmValidationException(notification);
-    }
-
-    return dataSourceFile;
-  }
-
   @Override
-  protected void enrichMetadataItem(EnrichmentProperties properties, String key) {
+  protected void enrichMetadataItem(EnrichmentProperties properties, String key) throws IOException {
     DataItemsDescriptor dynamicDataDescriptor =
         metaDataWrapper.getDynamicData().getDynamicDataDescriptor(key);
-    File dataSourceFile = constructDatasourceFile(key);
+    CsvAdapter csvAdapter = getCsvAdapter(key);
     metaDataWrapper.getDynamicData().getDynamicDataDescriptor(key).clearDetailsDescriptor();
     if (properties.getAccessibility()) {
-      String state = dataSourceFile.exists() ? "ATTACHED" : "DETACHED";
+      String state = csvAdapter.exists() ? "ATTACHED" : "DETACHED";
       dynamicDataDescriptor.getDetailsDescriptor().setState(state);
     }
 
-    if (dataSourceFile.exists()) {
+    if (csvAdapter.exists()) {
       if (properties.getSize()) {
-        dynamicDataDescriptor.getDetailsDescriptor().setSize(dataSourceFile.length());
+        dynamicDataDescriptor.getDetailsDescriptor().setSize(csvAdapter.length());
       }
       if (properties.getStructure()) {
-        UpdateableDataContext dataContext = createDataContext(dataSourceFile, key);
+        UpdateableDataContext dataContext = createDataContext(csvAdapter.getInputStream(), key);
         Schema schema = dataContext.getDefaultSchema();
         if (schema.getTableCount() == 0) {
           return;
@@ -156,7 +99,7 @@ public class BackendCsvImpl extends AbstractBackend {
         Table table = schema.getTables()[0];
         csvMetaData.getTableDescription(key).setColumns(table.getColumns());
       }
-      Long dataUpdateTime = new Date(dataSourceFile.lastModified()).getTime();
+      Long dataUpdateTime = new Date(csvAdapter.lastModified()).getTime();
       dynamicDataDescriptor.getDetailsDescriptor().setDataUpdateTimestamp(dataUpdateTime);
     }
   }
@@ -165,72 +108,81 @@ public class BackendCsvImpl extends AbstractBackend {
    * Method to store some content on a data storage backend.
    *
    * @param data {@link ContentIterator} that should be stored.
-   * @param transferSettings - settings how to deal with special cases as:
-   * -  already existing data
-   * - 
+   * @param transferSettings - settings how to deal with special cases as: - already existing data -
    */
   @Override
   public void store(Data data, String key, TransferSettings transferSettings) {
-
     if (!(data instanceof IterativeData)) {
       throw new LcmException("Unable to store streaming data directly to csv.");
     }
-    
     ContentIterator content = ((IterativeData) data).getIterator();
-    File dataSourceFile = constructDatasourceFile(key);
-    if (dataSourceFile.exists() && !transferSettings.isForceOverwrite()) {
-      if (progressIndicationFactory != null) {
-        String message = "The file: " + dataSourceFile.getPath()
-                + " is already attached, won't overwrite.";
-        progressIndicationFactory.writeIndication(message);
-      }
-      throw new LcmException("Data set is already attached, won't overwrite. Data item: " + key);
-    }
+    CsvAdapter csvAdapter = getCsvAdapter(key);
 
-    int rowNumber = 1;
-    try (Writer writer = FileHelper.getBufferedWriter(dataSourceFile);) {
-
-      CsvConfiguration configuration = csvMetaData.getConfiguration(key);
-      CsvWriter csvWriter = new CsvWriter(configuration);
-
-      if (progressIndicationFactory != null) {
-        String message = "Start transfer. File: " + dataSourceFile.getPath();
-        progressIndicationFactory.writeIndication(message);
-      }
-      while (content.hasNext()) {
-
-        Map row = content.next();
-
-        if (rowNumber == configuration.getColumnNameLineNumber()) {
-          Object[] lineAsObjectValues = (Object[]) row.keySet().toArray(new Object[] {});
-          String[] lineAsStringValues = toStringArray(lineAsObjectValues);
-          String columnLine = csvWriter.buildLine(lineAsStringValues);
-          writer.write(columnLine);
-          rowNumber++;
+    try {
+      if (csvAdapter.exists() && !transferSettings.isForceOverwrite()) {
+        if (progressIndicationFactory != null) {
+          String message =
+              "The file: " + getFilePath(key) + " is already attached, won't overwrite.";
+          progressIndicationFactory.writeIndication(message);
         }
+        throw new LcmException("Data set is already attached, won't overwrite. Data item: " + key);
+      }
 
-        Object[] lineAsObjectValues = (Object[]) row.values().toArray(new Object[] {});
-        String[] lineAsStringValues = toStringArray(lineAsObjectValues);
-        String line = csvWriter.buildLine(lineAsStringValues);
-        writer.write(line);
-        rowNumber++;
-        if (progressIndicationFactory != null
-            && rowNumber % progressIndicationFactory.getIndicationChunkSize() == 0) {
-          String message = "Written " + (rowNumber - 1) + " records!";
+      int rowNumber = 1;
+
+      try (OutputStream out = getCsvAdapter(key).getOutputStream()) {
+
+        CsvConfiguration configuration = csvMetaData.getConfiguration(key);
+        CsvWriter csvWriter = new CsvWriter(configuration);
+
+        if (progressIndicationFactory != null) {
+          String message = "Start transfer. File: " + getFilePath(key);
+          progressIndicationFactory.writeIndication(message);
+        }
+        while (content.hasNext()) {
+
+          Map row = content.next();
+
+          if (rowNumber == configuration.getColumnNameLineNumber()) {
+            Object[] lineAsObjectValues = (Object[]) row.keySet().toArray(new Object[] {});
+            String[] lineAsStringValues = toStringArray(lineAsObjectValues);
+            String columnLine = csvWriter.buildLine(lineAsStringValues);
+            out.write(columnLine.getBytes());
+            rowNumber++;
+          }
+
+          Object[] lineAsObjectValues = (Object[]) row.values().toArray(new Object[] {});
+          String[] lineAsStringValues = toStringArray(lineAsObjectValues);
+          String line = csvWriter.buildLine(lineAsStringValues);
+          out.write(line.getBytes());
+          rowNumber++;
+          if (progressIndicationFactory != null
+              && rowNumber % progressIndicationFactory.getIndicationChunkSize() == 0) {
+            String message = "Written " + (rowNumber - 1) + " records!";
+            progressIndicationFactory.writeIndication(message);
+          }
+        }
+        out.flush();
+        String message = "Written successfully all the records: " + (rowNumber - 1);
+        if (progressIndicationFactory != null) {
+          progressIndicationFactory.writeIndication(message);
+        }
+      } catch (IOException ex) {
+        LOGGER.error("Error occured during saving information!", ex);
+        if (progressIndicationFactory != null) {
+          String message =
+              String.format("The content is inserted partially, only %d rows in file: %s",
+                  (rowNumber - 1), getFilePath(key));
           progressIndicationFactory.writeIndication(message);
         }
       }
-      writer.flush();
-      String message = "Written successfully all the records: " + (rowNumber - 1);
-      if (progressIndicationFactory != null) {
-        progressIndicationFactory.writeIndication(message);
-      }
     } catch (IOException ex) {
-      LOGGER.error("Error occured during saving information!", ex);
+      LOGGER.error("Unable to write file: " + getFilePath(key) + ". Error message:"
+          + ex.getMessage());
       if (progressIndicationFactory != null) {
         String message =
-            String.format("The content is inserted partially, only %d rows in file: %s",
-                (rowNumber - 1), dataSourceFile.getName());
+            "Transfer of the file: " + getFilePath(key) + " failed. Error message: "
+                + ex.getMessage();
         progressIndicationFactory.writeIndication(message);
       }
     }
@@ -252,17 +204,23 @@ public class BackendCsvImpl extends AbstractBackend {
    */
   @Override
   public IterativeData read(String key) {
-    File dataSourceFile = constructDatasourceFile(key);
-    UpdateableDataContext dataContext = createDataContext(dataSourceFile, key);
-    Schema schema = dataContext.getDefaultSchema();
-    if (schema.getTableCount() == 0) {
+    try (InputStream stream = getCsvAdapter(key).getInputStream();) {
+
+      UpdateableDataContext dataContext = createDataContext(stream, key);
+      Schema schema = dataContext.getDefaultSchema();
+      if (schema.getTableCount() == 0) {
+        return null;
+      }
+      Table table = schema.getTables()[0];
+      DataSet result = dataContext.query().from(table).selectAll().execute();
+      csvMetaData.getTableDescription(key).setColumns(table.getColumns());
+
+      return new IterativeData(new DataSetContentIterator(result));
+    } catch (IOException ex) {
+      LOGGER.error("Unable to read the file: " + getFilePath(key) + ". Error message: "
+          + ex.getMessage());
       return null;
     }
-    Table table = schema.getTables()[0];
-    DataSet result = dataContext.query().from(table).selectAll().execute();
-    csvMetaData.getTableDescription(key).setColumns(table.getColumns());
-
-    return new IterativeData(new DataSetContentIterator(result));
   }
 
   @Override
@@ -277,27 +235,74 @@ public class BackendCsvImpl extends AbstractBackend {
 
   @Override
   protected List loadDataItems(String storageName, String subPath) {
-
     Storage storage = storageService.findByName(storageName);
-    LocalFileStorage fileStorage = new LocalFileStorage(storage);
-    String storagePath = fileStorage.getStoragePath();
-    File dataSourceDir = new File(storagePath + "/" + subPath);
+    FileSystemAdapter fileSystem = getFileSystemAdapter(storage);
+    try {
+      return fileSystem.listFileNames(subPath);
+    } catch (IOException ex) {
+      LOGGER.error("Unable to laod data items");
+      return null;
+    }
+  }
 
-    if (!dataSourceDir.exists() || !dataSourceDir.isDirectory()) {
-         String message =
-          String.format("The storage %s is pointing non existing directory %s", storageName,
-              subPath);
-      throw new LcmException(message);
+  private FileSystemAdapter getFileSystemAdapter(Storage storage) {
+    FileSystemAdapter fileSystemAdapter = null;
+    Notification notification = new Notification();
+    if (AzureStorage.getSupportedStorageTypes().contains(storage.getType())) {
+      fileSystemAdapter = new AzureFileSystemAdapter(new AzureStorage(storage));
+    } else if (LocalFileStorage.getSupportedStorageTypes().contains(storage.getType())) {
+      fileSystemAdapter = new LocalFileSystemAdapter(new LocalFileStorage(storage));
+    } else {
+      LOGGER.warn("Improper storage object is passed to BackendCsvImpl. Storage id: "
+          + storage.getId());
+      notification.addError("Improper storage object is passed to BackendCsvImpl.");
+      throw new LcmValidationException(notification);
     }
 
-    File[] files = dataSourceDir.listFiles();
-    List<String> fileNameList = new LinkedList();
-    for (File file : files) {
-      if (file.isFile()) {
-        fileNameList.add(file.getName());
-      }
+
+    return fileSystemAdapter;
+  }
+
+
+  private CsvAdapter getCsvAdapter(String key) {
+    CsvAdapter csvAdapter = null;
+    String storageName = getStorageName(key);
+    Storage storage = storageService.findByName(storageName);
+    if (storage == null) {
+      LOGGER.error("Storage with name: " + storageName + " does not exists!");
+      return null;
     }
 
-    return fileNameList;
+    String filePath = getFilePath(key);
+
+    if (LocalFileStorage.getSupportedStorageTypes().contains(storage.getType())) {
+      csvAdapter = new LocalCsvAdapter(new LocalFileStorage(storage), filePath);
+    } else if (AzureStorage.getSupportedStorageTypes().contains(storage.getType())) {
+      csvAdapter = new AzureCsvAdapter(new AzureStorage(storage), filePath);
+    } else {
+      LOGGER.warn("Improper storage object is passed to BackendCsvImpl. Storage id: "
+          + storage.getId());
+      Notification notification = new Notification();
+      notification.addError("Improper storage object is passed to BackendCsvImpl.");
+      throw new LcmValidationException(notification);
+    }
+
+    csvAdapter.validatePaths();
+    return csvAdapter;
+  }
+
+  private UpdateableDataContext createDataContext(InputStream stream, String key) {
+    if (metaDataWrapper == null) {
+      throw new IllegalStateException("MetaData parameter could not be null");
+    }
+
+    CsvConfiguration csvConfiguration = null;
+    if (csvMetaData.doesConfigurationExists(key)) {
+      csvConfiguration = csvMetaData.getConfiguration(key);
+    } else {
+      csvConfiguration = csvMetaData.getDefaultConfiguration();
+    }
+
+    return (CsvDataContext) DataContextFactory.createCsvDataContext(stream, csvConfiguration);
   }
 }

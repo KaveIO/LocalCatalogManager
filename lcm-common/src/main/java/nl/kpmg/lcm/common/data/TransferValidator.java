@@ -21,16 +21,16 @@ import java.util.List;
  *
  * @author shristov
  */
-public class TransferValidation {
+public class TransferValidator {
   private static List<String> structuredDataFormats;
   private static List<String> unstructuredDataFormats;
 
   static {
     structuredDataFormats =
-        Arrays.asList(DataFormat.CSV, DataFormat.JSON, DataFormat.MONGO, DataFormat.HIVE);
+        Arrays.asList(DataFormat.CSV, DataFormat.JSON, DataFormat.MONGO, DataFormat.HIVE, DataFormat.AZURECSV);
     unstructuredDataFormats =
         Arrays
-            .asList(DataFormat.FILE, DataFormat.S3FILE, DataFormat.HDFSFILE);
+            .asList(DataFormat.FILE, DataFormat.S3FILE, DataFormat.HDFSFILE, DataFormat.AZUREFILE);
   }
 
   public static boolean validateTransfer(String dataFormat, String storageFormat) {
@@ -42,6 +42,7 @@ public class TransferValidation {
     } else if (dataFormat.equals(DataFormat.JSON) && isUnstructuredDataFormat(storageFormat)) {
       return true;
     }
+
     return false;
   }
 
