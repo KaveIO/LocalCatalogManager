@@ -31,6 +31,7 @@ import nl.kpmg.lcm.server.backend.storage.LocalFileStorage;
 import nl.kpmg.lcm.server.data.service.StorageService;
 
 import org.apache.metamodel.DataContextFactory;
+import org.apache.metamodel.MetaModelException;
 import org.apache.metamodel.data.DataSet;
 import org.apache.metamodel.json.JsonDataContext;
 import org.apache.metamodel.schema.Schema;
@@ -118,12 +119,20 @@ public class BackendJsonImpl extends AbstractBackend {
       }
       if (properties.getStructure()) {
         JsonDataContext dataContext = createDataContext(dataSourceFile);
-        Schema schema = dataContext.getDefaultSchema();
-        if (schema.getTableCount() == 0) {
-          return;
+        try {
+          Schema schema = dataContext.getDefaultSchema();
+          if (schema.getTableCount() == 0) {
+            return;
+          }
+          Table table = schema.getTables()[0];
+          jsonMetaData.getTableDescription(key).setColumns(table.getColumns());
+        } catch (MetaModelException mme) {
+          String state = "DETACHED";
+          jsonMetaData.getDynamicData().getDynamicDataDescriptor(key).getDetailsDescriptor()
+              .setState(state);
+          LOGGER.warn("The metadata with id: " + jsonMetaData.getId()
+              + " describes invalid data. Invalid data key: " + key);
         }
-        Table table = schema.getTables()[0];
-        jsonMetaData.getTableDescription(key).setColumns(table.getColumns());
       }
       Long dataUpdateTime = new Date(dataSourceFile.lastModified()).getTime();
       jsonMetaData.getDynamicData().getDynamicDataDescriptor(key).getDetailsDescriptor()
