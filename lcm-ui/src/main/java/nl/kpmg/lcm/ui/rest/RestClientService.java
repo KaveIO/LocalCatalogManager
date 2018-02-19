@@ -475,6 +475,21 @@ public class RestClientService {
     }
   }
 
+  public void enrichMetadata(String metadataId)
+      throws ServerException, DataCreationException, AuthenticationException {
+    Entity<String> payload =
+        Entity.entity("", "application/nl.kpmg.lcm.server.data.EnrichmentProperties+json");
+
+    Invocation.Builder client = getClient("client/v0/local/" + metadataId+ "/enrich");
+    Response post = client.post(payload);
+
+    Response.StatusType statusInfo = post.getStatusInfo();
+    if (statusInfo.getFamily() != Response.Status.Family.SUCCESSFUL) {
+      throw new DataCreationException(
+          String.format("%s - %s", statusInfo.getStatusCode(), statusInfo.getReasonPhrase()));
+    }
+  }
+
   public Set<String> getSubNamespaces(String baseNamespace)
       throws AuthenticationException, ServerException, ClientException {
     String pathTemplate = "client/v0/local/namespace?namespace=%s";
