@@ -192,6 +192,7 @@ public class TaskSchedule extends AbstractModel {
   /**
    * @return the enrichmentItems
    */
+  // Wouldn`t it be better to store the enrichment items in Set?
   public List<TaskScheduleItem> getEnrichmentItems() {
     return enrichmentItems;
   }

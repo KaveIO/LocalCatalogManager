@@ -17,9 +17,9 @@ import nl.kpmg.lcm.common.data.EnrichmentProperties;
 import nl.kpmg.lcm.common.data.Storage;
 import nl.kpmg.lcm.common.data.TaskSchedule;
 import nl.kpmg.lcm.common.data.TaskType;
-import nl.kpmg.lcm.server.data.dao.TaskScheduleDao;
 import nl.kpmg.lcm.common.data.metadata.MetaData;
 import nl.kpmg.lcm.common.data.metadata.MetaDataWrapper;
+import nl.kpmg.lcm.server.data.dao.TaskScheduleDao;
 import nl.kpmg.lcm.server.task.enrichment.DataEnrichmentTask;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -55,16 +55,17 @@ public class TaskScheduleService {
     List<TaskSchedule.TaskScheduleItem> taskList = new ArrayList<TaskSchedule.TaskScheduleItem>();
     processStorages(taskList);
 
-    procesMetaDatas(taskList);
+    processMetaDatas(taskList);
     TaskSchedule lastSchedule = findFirstByOrderByIdDesc();
     if (lastSchedule == null) {
       lastSchedule = new TaskSchedule();
     }
+
     lastSchedule.setEnrichmentItems(taskList);
     return save(lastSchedule);
   }
 
-  private void procesMetaDatas(List<TaskSchedule.TaskScheduleItem> taskList) {
+  private void processMetaDatas(List<TaskSchedule.TaskScheduleItem> taskList) {
     List<MetaData> metadataList = metaDataService.findAll();
     for (MetaData metadata : metadataList) {
       MetaDataWrapper metadataWrapper = new MetaDataWrapper(metadata);
@@ -115,4 +116,48 @@ public class TaskScheduleService {
 
     return save(last);
   }
+
+  public void removeMetadataFromTaskSchedule(MetaData metaData) {
+
+    MetaDataWrapper metaDataWrapper = new MetaDataWrapper(metaData);
+
+    TaskSchedule lastSchedule = findFirstByOrderByIdDesc();
+    if (lastSchedule == null) {
+      return;
+    }
+    List<TaskSchedule.TaskScheduleItem> items = lastSchedule.getEnrichmentItems();
+
+    for (TaskSchedule.TaskScheduleItem item : items) {
+      if (metaDataWrapper.getId().equals(item.getTarget())) {
+        items.remove(item);
+        save(lastSchedule);
+        // as metadata has unique id it must exist just once in the enrichment list.
+        break;
+      }
+    }
+  }
+
+  public void removeStorageFromTaskSchedule(Storage storage) {
+
+    if (storage == null) {
+      throw new IllegalArgumentException("Storage could not be null!");
+    }
+
+    TaskSchedule lastSchedule = findFirstByOrderByIdDesc();
+    if (lastSchedule == null) {
+      return;
+    }
+    List<TaskSchedule.TaskScheduleItem> items = lastSchedule.getEnrichmentItems();
+
+    for (TaskSchedule.TaskScheduleItem item : items) {
+      if (storage.getId().equals(item.getTarget())) {
+        items.remove(item);
+        save(lastSchedule);
+        // as storage has unique id it must exist just once in the enrichment list.
+        break;
+      }
+    }
+  }
+
+
 }
