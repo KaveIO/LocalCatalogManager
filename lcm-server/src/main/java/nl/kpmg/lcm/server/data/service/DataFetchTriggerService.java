@@ -18,6 +18,7 @@ import nl.kpmg.lcm.common.ServerException;
 import nl.kpmg.lcm.common.client.HttpsClientFactory;
 import nl.kpmg.lcm.common.configuration.ClientConfiguration;
 import nl.kpmg.lcm.common.data.DataFormat;
+import nl.kpmg.lcm.common.data.DataState;
 import nl.kpmg.lcm.common.data.FetchEndpoint;
 import nl.kpmg.lcm.common.data.RemoteLcm;
 import nl.kpmg.lcm.common.data.Storage;
@@ -174,7 +175,7 @@ public class DataFetchTriggerService {
       Map<String, DataItemsDescriptor> dynamicDataMap =
           metaDataWrapper.getDynamicData().getAllDynamicDataDescriptors();
       for (DataItemsDescriptor descriptor : dynamicDataMap.values()) {
-        descriptor.getDetailsDescriptor().setState("DETACHED");
+        descriptor.getDetailsDescriptor().setState(DataState.DETACHED);
       }
     }
 

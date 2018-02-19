@@ -13,18 +13,19 @@
  */
 package nl.kpmg.lcm.server.data.metadata;
 
-import nl.kpmg.lcm.common.data.metadata.DataDetailsDescriptor;
-import nl.kpmg.lcm.common.data.metadata.DataDescriptor;
-import nl.kpmg.lcm.common.data.metadata.GeneralInfoDescriptor;
-import nl.kpmg.lcm.common.data.metadata.DynamicDataDescriptor;
-import nl.kpmg.lcm.common.data.metadata.MetaDataWrapper;
-import nl.kpmg.lcm.common.data.metadata.MetaData;
-
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+
+import nl.kpmg.lcm.common.data.DataState;
+import nl.kpmg.lcm.common.data.metadata.DataDescriptor;
+import nl.kpmg.lcm.common.data.metadata.DataDetailsDescriptor;
+import nl.kpmg.lcm.common.data.metadata.DynamicDataDescriptor;
+import nl.kpmg.lcm.common.data.metadata.GeneralInfoDescriptor;
+import nl.kpmg.lcm.common.data.metadata.MetaData;
+import nl.kpmg.lcm.common.data.metadata.MetaDataWrapper;
 
 import org.junit.Ignore;
 import org.junit.Test;
@@ -61,7 +62,7 @@ public class MetaDataWrapperTest {
     String testKey = "test1234";
     DataDetailsDescriptor details = dynamicData.getDynamicDataDescriptor(testKey).getDetailsDescriptor();
     details.setSize(123L);
-    details.setState("ATTACHED");
+    details.setState(DataState.ATTACHED);
     details.setDataUpdateTimestamp(12423423L);
 
     metaData.set(dynamicData.getSectionName() + testKey, dynamicData.getDynamicDataDescriptor(testKey).getMap());

@@ -17,6 +17,7 @@ package nl.kpmg.lcm.server.backend;
 import nl.kpmg.lcm.common.data.ContentIterator;
 import nl.kpmg.lcm.common.data.Data;
 import nl.kpmg.lcm.common.data.DataFormat;
+import nl.kpmg.lcm.common.data.DataState;
 import nl.kpmg.lcm.common.data.EnrichmentProperties;
 import nl.kpmg.lcm.common.data.IterativeData;
 import nl.kpmg.lcm.common.data.Storage;
@@ -83,7 +84,7 @@ public class BackendCsvImpl extends AbstractBackend {
     CsvAdapter csvAdapter = getCsvAdapter(key);
     metaDataWrapper.getDynamicData().getDynamicDataDescriptor(key).clearDetailsDescriptor();
     if (properties.getAccessibility()) {
-      String state = csvAdapter.exists() ? "ATTACHED" : "DETACHED";
+      String state = csvAdapter.exists() ? DataState.ATTACHED : DataState.DETACHED;
       dynamicDataDescriptor.getDetailsDescriptor().setState(state);
     }
 
@@ -93,7 +94,6 @@ public class BackendCsvImpl extends AbstractBackend {
       }
       if (properties.getStructure()) {
         UpdateableDataContext dataContext = createDataContext(csvAdapter.getInputStream(), key);
-
         try {
           Schema schema = dataContext.getDefaultSchema();
           if (schema.getTableCount() == 0) {
@@ -102,7 +102,7 @@ public class BackendCsvImpl extends AbstractBackend {
           Table table = schema.getTables()[0];
           csvMetaData.getTableDescription(key).setColumns(table.getColumns());
         } catch (MetaModelException mme) {
-          String state = "DETACHED";
+          String state = DataState.INVALID;
           dynamicDataDescriptor.getDetailsDescriptor().setState(state);
           LOGGER.warn("The metadata with id: " + csvMetaData.getId()
               + " describes invalid data. Invalid data key: " + key);

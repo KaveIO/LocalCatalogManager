@@ -18,6 +18,7 @@ import com.google.gson.Gson;
 import nl.kpmg.lcm.common.data.ContentIterator;
 import nl.kpmg.lcm.common.data.Data;
 import nl.kpmg.lcm.common.data.DataFormat;
+import nl.kpmg.lcm.common.data.DataState;
 import nl.kpmg.lcm.common.data.EnrichmentProperties;
 import nl.kpmg.lcm.common.data.IterativeData;
 import nl.kpmg.lcm.common.data.Storage;
@@ -107,7 +108,7 @@ public class BackendJsonImpl extends AbstractBackend {
     File dataSourceFile = createDataSourceFile(key);
     jsonMetaData.getDynamicData().getDynamicDataDescriptor(key).clearDetailsDescriptor();
     if (properties.getAccessibility()) {
-      String state = dataSourceFile.exists() ? "ATTACHED" : "DETACHED";
+      String state = dataSourceFile.exists() ? DataState.ATTACHED : DataState.DETACHED;
       jsonMetaData.getDynamicData().getDynamicDataDescriptor(key).getDetailsDescriptor()
           .setState(state);
     }
@@ -127,7 +128,7 @@ public class BackendJsonImpl extends AbstractBackend {
           Table table = schema.getTables()[0];
           jsonMetaData.getTableDescription(key).setColumns(table.getColumns());
         } catch (MetaModelException mme) {
-          String state = "DETACHED";
+          String state = DataState.INVALID;
           jsonMetaData.getDynamicData().getDynamicDataDescriptor(key).getDetailsDescriptor()
               .setState(state);
           LOGGER.warn("The metadata with id: " + jsonMetaData.getId()
