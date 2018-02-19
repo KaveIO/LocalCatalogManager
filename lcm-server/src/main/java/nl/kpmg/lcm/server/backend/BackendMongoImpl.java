@@ -136,6 +136,11 @@ public class BackendMongoImpl extends AbstractBackend {
     Table table = database.getTableByName(tableName);
 
     if (table != null && !transferSettings.isForceOverwrite()) {
+      if (progressIndicationFactory != null) {
+        String message = "Table: \"" + tableName
+                + "\" already exists and storing is started without overwriting!";
+        progressIndicationFactory.writeIndication(message);
+      }
       throw new LcmException("Error, can not store the data! Table: \"" + tableName
           + "\" already exists and storing is started without overwriting!");
     }
@@ -153,6 +158,10 @@ public class BackendMongoImpl extends AbstractBackend {
               .getColumns());
     }
 
+    if (progressIndicationFactory != null) {
+        String message = "Start transfer. Mongo table: " + tableName;
+        progressIndicationFactory.writeIndication(message);
+    }
     InsertInto insert = new InsertInto(table);
     Map<String, ColumnDescription> columns = mongoMetaData.getTableDescription(key).getColumns();
     String[] columnNames = (String[]) columns.keySet().toArray(new String[] {});
@@ -163,6 +172,10 @@ public class BackendMongoImpl extends AbstractBackend {
       }
     }
     dataContext.executeUpdate(insert);
+    if (progressIndicationFactory != null) {
+        String message = "Written successfully all the records: " + rowNumber;
+        progressIndicationFactory.writeIndication(message);
+    }
   }
 
 
