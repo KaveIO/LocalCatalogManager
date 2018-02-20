@@ -53,57 +53,64 @@ public class TrustStoreServiceTest extends LcmBaseServerTest {
   @Autowired
   private TrustStoreService service;
 
+
+  private int originalCertificatesCount = 0;
+
   @Before
   public void setUp() {
-      List<String> aliases = service.listTrustStoreAliases();
-      for(String alias :  aliases){
-          service.removeCertificate(alias);      
+    List<String> aliases = service.listTrustStoreAliases();
+    originalCertificatesCount = aliases.size();
+    for (String alias : aliases) {
+      if (alias.equals(certificateAlias2) || alias.equals(certificateAlias1)) {
+        service.removeCertificate(alias);
+        originalCertificatesCount--;
       }
+    }
   }
 
   @Test
-    public void  testAddCertificate() throws IOException{
-        byte[] certificateAsBytes = IOUtils.toByteArray(new FileInputStream(certificate));
+  public void testAddCertificate() throws IOException {
+    byte[] certificateAsBytes = IOUtils.toByteArray(new FileInputStream(certificate));
 
-        service.addCertificate(certificateAsBytes, certificateAlias1);
-        List<String> aliases = service.listTrustStoreAliases();
-        assertEquals(1, aliases.size());
-        
-        certificateAsBytes = IOUtils.toByteArray(new FileInputStream(certificate2));
-        service.addCertificate(certificateAsBytes, certificateAlias2);
-        aliases = service.listTrustStoreAliases();
-        assertEquals(2, aliases.size());
-    }
+    service.addCertificate(certificateAsBytes, certificateAlias1);
+    List<String> aliases = service.listTrustStoreAliases();
+    assertEquals(originalCertificatesCount + 1, aliases.size());
+
+    certificateAsBytes = IOUtils.toByteArray(new FileInputStream(certificate2));
+    service.addCertificate(certificateAsBytes, certificateAlias2);
+    aliases = service.listTrustStoreAliases();
+    assertEquals(originalCertificatesCount + 2, aliases.size());
+  }
 
   @Test
   public void testRemoveCertificate() throws IOException {
-      byte[] certificateAsBytes = IOUtils.toByteArray(new FileInputStream(certificate));
-        service.addCertificate(certificateAsBytes, certificateAlias1);
-        
-        certificateAsBytes = IOUtils.toByteArray(new FileInputStream(certificate2));
-        service.addCertificate(certificateAsBytes, certificateAlias2);
-        
-        List<String> aliases;
-        aliases = service.listTrustStoreAliases();
-        assertEquals(2, aliases.size());
-        
-        service.removeCertificate(certificateAlias1);
-        aliases = service.listTrustStoreAliases();
-        assertEquals(1, aliases.size());
+    byte[] certificateAsBytes = IOUtils.toByteArray(new FileInputStream(certificate));
+    service.addCertificate(certificateAsBytes, certificateAlias1);
 
-        service.removeCertificate(certificateAlias2);
-        aliases = service.listTrustStoreAliases();
-        assertEquals(0, aliases.size());
+    certificateAsBytes = IOUtils.toByteArray(new FileInputStream(certificate2));
+    service.addCertificate(certificateAsBytes, certificateAlias2);
+
+    List<String> aliases;
+    aliases = service.listTrustStoreAliases();
+    assertEquals(originalCertificatesCount + 2, aliases.size());
+
+    service.removeCertificate(certificateAlias1);
+    aliases = service.listTrustStoreAliases();
+    assertEquals(originalCertificatesCount + 1, aliases.size());
+
+    service.removeCertificate(certificateAlias2);
+    aliases = service.listTrustStoreAliases();
+    assertEquals(originalCertificatesCount, aliases.size());
   }
 
   @Test
   public void testListCertificate() throws IOException {
-        byte[] certificateAsBytes = IOUtils.toByteArray(new FileInputStream(certificate));
+    byte[] certificateAsBytes = IOUtils.toByteArray(new FileInputStream(certificate));
 
-        service.addCertificate(certificateAsBytes, certificateAlias1);
-        List<String> aliases = service.listTrustStoreAliases();
-        assertEquals(1, aliases.size());
-        assertEquals(aliases.get(0), certificateAlias1);
+    service.addCertificate(certificateAsBytes, certificateAlias1);
+    List<String> aliases = service.listTrustStoreAliases();
+    assertEquals(originalCertificatesCount + 1, aliases.size());
+    assertEquals(aliases.get(0), certificateAlias1);
   }
 
 }

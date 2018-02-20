@@ -46,20 +46,24 @@ public abstract class LcmBaseServerTest extends LcmBaseTest {
   @Value("${lcm.server.unsafe}")
   private String serverUnsafe;
 
+  @Autowired
+  @Value("${lcm.client.security.truststore}")
+  private String serverTruststore;
+
+  @Autowired
+  @Value("${lcm.server.security.keystorePassword}")
+  private String serverTruststorePass;
+
+  @Autowired
+  @Value("${lcm.server.security.keystoreType}")
+  private String serverTruststoreType;
+
   @BeforeClass
   public static void setUpClass() throws Exception {
     try {
       LcmBaseTest.setUpClass();
       server = new Server();
       server.start();
-
-      ClientConfiguration clientConfiguration = new ClientConfiguration();
-      clientConfiguration.setTruststore("./src/main/resources/ssl-keys/lcm.keystore");
-      clientConfiguration.setTruststorePassword("storepass");
-      clientConfiguration.setTruststoreType("JKS");
-      clientConfiguration.setTargetHost("0.0.0.0");
-
-      httpsClientFactory = new HttpsClientFactory(clientConfiguration);
 
     } catch (ServerException se) {
       LoggerFactory.getLogger(LcmBaseServerTest.class.getName()).error(
@@ -74,6 +78,19 @@ public abstract class LcmBaseServerTest extends LcmBaseTest {
   }
 
   protected WebTarget getWebTarget() throws ServerException {
+    if(httpsClientFactory == null){
+
+
+      ClientConfiguration clientConfiguration = new ClientConfiguration();
+      clientConfiguration.setTruststore(serverTruststore);
+      clientConfiguration.setTruststorePassword(serverTruststorePass);
+      clientConfiguration.setTruststoreType(serverTruststoreType);
+      clientConfiguration.setTargetHost("0.0.0.0");
+
+      httpsClientFactory = new HttpsClientFactory(clientConfiguration);
+
+    }
+
     if (Boolean.valueOf(serverUnsafe)) {
       return httpsClientFactory.createWebTarget(server.getBaseFallbackUri());
     } else {

@@ -28,6 +28,8 @@ public class SslProvider {
 
     sslContextConfigurator.setKeyStoreFile(configuration.getKeystore());
     sslContextConfigurator.setKeyStorePass(configuration.getKeystorePassword());
+    sslContextConfigurator.setKeyStoreType(configuration.getKeystoreType());
+    sslContextConfigurator.setKeyPass(configuration.getKeystoreKeypass());
 
     return sslContextConfigurator;
   }
@@ -38,6 +40,8 @@ public class SslProvider {
     SSLContextConfigurator sslContextConfigurator = new SSLContextConfigurator(true);
 
     sslContextConfigurator.setTrustStoreFile(configuration.getTruststore());
+    sslContextConfigurator.setTrustStorePass(configuration.getTruststorePassword());
+    sslContextConfigurator.setTrustStoreType(configuration.getTruststoreType());
 
     return sslContextConfigurator;
   }
