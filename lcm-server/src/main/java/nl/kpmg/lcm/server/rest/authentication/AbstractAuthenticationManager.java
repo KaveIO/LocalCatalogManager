@@ -119,7 +119,7 @@ public abstract class AbstractAuthenticationManager implements AuthenticationMan
   private boolean isValidatePassword(AuthorizedLcm lcm, final String password) {
     try {
       return PasswordHash.validatePassword(lcm.getApplicationKey(), password);
-    } catch (UserPasswordHashException ex) {
+    } catch (Exception ex) {
       LOGGER.warn("unable to validate  password hash: " + ex.getMessage());
       return false;
     }
