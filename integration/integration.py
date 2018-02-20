@@ -32,23 +32,24 @@ class IntegrationTestCase(unittest.TestCase):
       'detach': True,
       'ports': {'8081/tcp': 8081},
       'stdin_open':True
-    },
-    'lcm-integration-ui': {
-      'image': 'kave/lcm:latest',
-      'command': 'ui',
-      'hostname': 'ui',
-      'links': {'lcm-integration-server': 'server'},
-      'detach': True,
-      'ports': {'8080/tcp': 8080},
-      'stdin_open': True
+   # UI module is currently not used for tests
+   # },
+   # 'lcm-integration-ui': {
+   #   'image': 'kave/lcm:latest',
+   #   'command': 'ui',
+   #   'hostname': 'ui',
+   #   'links': {'lcm-integration-server': 'server'},
+   #   'detach': True,
+   #   'ports': {'8080/tcp': 8080},
+   #   'stdin_open': True
     }
   }
   fixture = {
     'metadata': [
-      {"name":"example", "general": { "creation_date": "01-21-2016 00:00:00", "owner": "bob", "description": "This is the newly computed train schedule for optimized transport flow."}, "data": { "uri": "csv://local/mock.csv", "options": { "table-description": { "columns" : {"column_a" : {}, "column_b": {}}}}}}
+      {"name":"example", "data": { "uri": ["csv://local/mock.csv"], "path": "kpmg"}}
     ], 
     'storage': [
-      {"name": "local", "type": "csv", "options":{"storagePath":"/data"}}
+      {"name": "local", "type": "csv", "options":{"path":"/data"}}
     ]
   }
 
@@ -59,6 +60,11 @@ class IntegrationTestCase(unittest.TestCase):
   username = 'admin'
   password = 'admin'
 
+  unique_lcm_id = "test_dev-1509029918655-HYO38o80zAs"
+  application_id = "integration"
+  application_key = "ij8spjd5e4kb"
+  hashed_key = "1000:4332779a128eaf94d3d920c726f360ec10ded9d3f146cc47:a66aa86e154e5ded59b0510fbeeb25e94057c83e563e875c"
+
   @classmethod
   def setUpClass(cls):
     if not cls.retain:
@@ -68,7 +74,7 @@ class IntegrationTestCase(unittest.TestCase):
 
   @classmethod
   def tearDownClass(cls):
-    if not cls.retain: 
+    if not cls.retain:
       cls.tearDownDockers()
 
   @classmethod
@@ -92,8 +98,8 @@ class IntegrationTestCase(unittest.TestCase):
       else:
         print('  skipping %s' %  name)
    
-    # Some arbitrarybackoff time to allow the dockers to become alive
-    sleep(5)
+    # Some arbitrary back-off time to allow the dockers to become alive
+    sleep(10)
 
     cls.load_fixture('lcm-integration-mongo', cls.fixture)
 
@@ -130,8 +136,8 @@ class IntegrationTestCase(unittest.TestCase):
   def print_lcm_log(cls, container_id):
     print('Printing for %s ' % container_id)
     container = cls.client.containers.get(container_id)
-    result = container.exec_run('tail -n 100 lcm-complete/logs/lcm.log')
-    print('--------------  Container %s lcm.log  --------------' % container.name)
+    result = container.exec_run('tail -n 100 lcm-complete/logs/lcm-server.log')
+    print('--------------  Container %s lcm-server.log  --------------' % container.name)
     print(result.decode('utf-8').replace('\\n', '\n'))
     print('')
  
@@ -144,23 +150,82 @@ class IntegrationTestCase(unittest.TestCase):
     ctx.verify_mode = ssl.CERT_NONE
     return ctx 
 
+  def get_response_items(self, response):
+    string = response.read().decode('utf-8')
+    json_obj = json.loads(string)
+    if json_obj is None or len(json_obj) == 0:
+      return None
+
+    if json_obj['items'] is None or len(json_obj['items']) == 0:
+      return None
+
+    return json_obj['items']
+
+
   def get_authorization(self, username, password):
     identity = ('%s:%s' % (username, password)).encode('utf-8') 
     return "Basic %s" % base64.b64encode(identity).decode('utf-8')
 
-  def request(self, url, data=None, content_type="application/json", authorization=None):
+  @classmethod
+  def post_request(cls, url, data=None, content_type="application/json"):
+    return cls.request(url, data , content_type , None,
+                        "local" , 'POST', None )
+
+  @classmethod
+  def put_request(cls, url, data=None, content_type="application/json"):
+    return cls.request(url, data , content_type , None,
+                        "local" , 'PUT', None )
+
+  @classmethod
+  def delete_request(cls, url, data=None, content_type="application/json",
+                     authorization=None):
+    return cls.request(url, data , content_type , authorization,
+                        "local" , 'DELETE', None )
+
+  @classmethod
+  def get_request(cls, url, data=None, content_type="application/json",
+              authorization=None, origin="local", remote_user = None):
+    return cls.request(url, data, content_type,
+              authorization, origin,  'GET', remote_user)
+
+  @classmethod
+  def request(cls, url, data=None, content_type="application/json",
+              authorization=None, origin="local",  method='GET', remote_user = None):
+    if url[:7] != 'http://':
+      url = '%s/%s' % (cls.server_url, url)
+
+    if authorization is None:
+      identity = ('%s:%s' % (cls.username, cls.password)).encode('utf-8')
+      authorization = "Basic %s" % base64.b64encode(identity).decode('utf-8')
+
+    if type(data) is dict:
+      data = json.dumps(data).encode('utf-8')
+
+    headers = {
+      'Content-Type': content_type,
+      'Authorization': authorization,
+      'LCM-Authentication-origin': origin}
+
+    if remote_user is not None:
+      headers['LCM-Authentication-remote-user'] = remote_user
+
+    req = urllib.request.Request(url, data, headers, method=method)
+
+    return urllib.request.urlopen(req)
+
+  def request_session_authentication(self, url, authentication_user = None, authentication_token = None):
     if url[:7] != 'http://':
       url = '%s/%s' % (self.server_url, url)
 
-    if authorization is None:
-      authorization = self.get_authorization(self.username, self.password)
+    headers = {}
 
-    if type(data) is dict: 
-      data = json.dumps(data).encode('utf-8')
+    if authentication_user is not None:
+        headers['LCM-Authentication-user'] = authentication_user
 
-    req = urllib.request.Request(url, data, {
-      'Content-Type': content_type,
-      'Authorization': authorization})
+    if authentication_token is not None:
+        headers['LCM-Authentication-token'] = authentication_token
+
+    req = urllib.request.Request(url, None, headers, 'GET')
 
     return urllib.request.urlopen(req)
 
@@ -169,10 +234,14 @@ class IntegrationTestCase(unittest.TestCase):
     body = response.read()
     return json.loads(body)
 
+  def request_remote(self, url, origin):
+    response = self.request(url, None, "application/json", None, origin)
+    return response.read()
+
 def main(**kwargs): 
   parser = argparse.ArgumentParser(description='Runs integration tests')
   parser.add_argument('--retain', 
-    dest='retain', 
+    dest='retain',
     action='store_true',
     help='Retain the dockers booted after test execution')
   parser.add_argument('unittest_args', nargs='*')

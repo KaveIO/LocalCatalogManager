@@ -64,13 +64,19 @@ public class BasicAuthenticationManager extends AbstractAuthenticationManager {
 
   @Override
   public boolean isAuthenticationValid(ContainerRequestContext requestContext) {
-    String authenticationString = requestContext.getHeaderString(BASIC_AUTHENTICATION_HEADER);
     String requestOrigin  = requestContext.getHeaderString(LCM_AUTHENTICATION_ORIGIN_HEADER);
+    if (requestOrigin == null) {
+      LOGGER.info("Unable to read origin");
+      return false;
+    }
+
+    String authenticationString = requestContext.getHeaderString(BASIC_AUTHENTICATION_HEADER);
     Credentials credentials = authenticationStringToCredentials(authenticationString);
 
-    if (credentials != null && requestOrigin !=  null) {
+    if (credentials != null) {
       return isUsernamePasswordValid(requestOrigin, credentials.getUsername(), credentials.getPassword());
     }
+
     return false;
   }
 
@@ -100,6 +106,7 @@ public class BasicAuthenticationManager extends AbstractAuthenticationManager {
   private Credentials authenticationStringToCredentials(String authenticationString) {
 
     if (authenticationString == null) {
+      LOGGER.info("Authentication string is null can not be parsed");
       return null;
     }
     // header value format will be "Basic encodedstring" for Basic
@@ -116,6 +123,8 @@ public class BasicAuthenticationManager extends AbstractAuthenticationManager {
 
       return new Credentials(split[0], split[1]);
     }
+    
+    LOGGER.info("Authentication string hass incorrect format, can not be parsed " + authenticationString);
     return null;
   }
 
