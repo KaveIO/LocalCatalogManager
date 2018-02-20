@@ -23,6 +23,7 @@ import com.vaadin.ui.Table;
 import com.vaadin.ui.UI;
 import com.vaadin.ui.VerticalLayout;
 
+import nl.kpmg.lcm.common.Roles;
 import nl.kpmg.lcm.common.ServerException;
 import nl.kpmg.lcm.common.client.ClientException;
 import nl.kpmg.lcm.common.data.User;
@@ -163,9 +164,9 @@ public class UserPanel extends CustomComponent implements DynamicDataContainer {
     if (users != null) {
       for (UserRepresentation item : users.getItems()) {
         User user = item.getItem();
-
+        String role = getRoleName(user);
         HorizontalLayout actionsLayout = createActionsLayout(item);
-        userTable.addItem(new Object[] {user.getName(), user.getRole(), user.getOrigin(),
+        userTable.addItem(new Object[] {user.getName(), role, user.getOrigin(),
             actionsLayout}, user.getId());
       }
     }
@@ -215,7 +216,8 @@ public class UserPanel extends CustomComponent implements DynamicDataContainer {
 
     panelContent.addComponent(new DefinedLabel("Username: ", item.getName()));
 
-    panelContent.addComponent(new DefinedLabel("Role: ", item.getRole()));
+    String role = getRoleName(item);
+    panelContent.addComponent(new DefinedLabel("Role: ", role));
 
     panelContent.addComponent(new DefinedLabel("Origin: ", item.getOrigin()));
 
@@ -234,6 +236,23 @@ public class UserPanel extends CustomComponent implements DynamicDataContainer {
     panelContent.setMargin(true);
 
     userDetailsPanel.setContent(panelContent);
+  }
+
+  private String getRoleName(User user) {
+    String role = null;
+    if (user.getRole().equals(Roles.ADMINISTRATOR)) {
+      role = "Administrator";
+    }
+
+    if (user.getRole().equals(Roles.REMOTE_USER)) {
+      role = "Remote user";
+    }
+
+    if (user.getRole().equals(Roles.API_USER)) {
+      role = "API user";
+    }
+
+    return role;
   }
 
   @Override
