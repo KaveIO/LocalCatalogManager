@@ -154,6 +154,15 @@ public class BackendFileImpl extends AbstractBackend {
         metaDataWrapper.getDynamicData().getDynamicDataDescriptor(key).getDetailsDescriptor()
             .getSize();
 
+    if (size == null) {
+      LOGGER.warn("The file: " + getFilePath(key)
+          + " can`t be transferred because it doesn`t exist.");
+      String message =
+          "The file: " + getFilePath(key) + " can`t be transferred because it doesn`t exist.";
+      progressIndicationFactory.writeIndication(message);
+      return;
+    }
+
     FileAdapter fileAdapter = getFileAdapter(key);
 
     InputStream in = null;
