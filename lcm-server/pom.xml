@@ -58,9 +58,9 @@
             <version>0.2.4-SNAPSHOT</version>
         </dependency>
         <dependency>
-            <groupId>commons-lang</groupId>
-            <artifactId>commons-lang</artifactId>
-            <version>2.5</version>
+             <groupId>org.apache.commons</groupId>
+             <artifactId>commons-lang3</artifactId>
+             <version>3.7</version>
             <type>jar</type>
         </dependency>
         <dependency>
@@ -252,7 +252,7 @@
         <dependency>
             <groupId>com.google.guava</groupId>
             <artifactId>guava</artifactId>
-            <version>19.0</version>
+            <version>20.0</version>
         </dependency>
         <dependency>
             <groupId>org.mockito</groupId>
@@ -281,6 +281,11 @@
             <artifactId>azure-data-lake-store-sdk</artifactId>
             <version>2.2.1</version>
             <type>jar</type>
+        </dependency>
+        <dependency>
+            <groupId>io.swagger</groupId>
+            <artifactId>swagger-jersey2-jaxrs</artifactId>
+            <version>1.5.17</version>
         </dependency>
     </dependencies>
     <build>

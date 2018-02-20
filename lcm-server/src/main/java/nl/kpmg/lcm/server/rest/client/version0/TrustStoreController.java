@@ -37,12 +37,19 @@ import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.core.Response;
 
+import io.swagger.annotations.Api;
+import io.swagger.annotations.ApiOperation;
+import io.swagger.annotations.ApiParam;
+import io.swagger.annotations.ApiResponse;
+import io.swagger.annotations.ApiResponses;
+
 /**
  *
  * @author shristov
  */
 @Component
 @Path("client/v0/truststore")
+@Api(value = "v0  trust store)")
 public class TrustStoreController {
 
   private static final Logger LOGGER = LoggerFactory
@@ -64,8 +71,14 @@ public class TrustStoreController {
   @Path("/{alias}")
   @Consumes({"application/octet-stream"})
   @RolesAllowed({Roles.ADMINISTRATOR})
-  public final Response addCertificate(@PathParam("alias") String alias,
-      InputStream certificateAsStream) throws IOException {
+  @ApiOperation(value = "Add Certificate(Public key) to the truststore.", 
+          notes = "Roles: " + Roles.ADMINISTRATOR)
+  @ApiResponses(value = {@ApiResponse(code = 200, message = "OK")})
+  public final Response addCertificate(
+          @ApiParam( value = "Certificate alias. It must be unique within one LCM") 
+          @PathParam("alias") String alias,
+          @ApiParam( value = "Stream to the certificate file.") 
+          InputStream certificateAsStream) throws IOException {
 
     byte[] certificate = readCertificate(certificateAsStream);
     if (certificate.length > MAX_CERTIFICATE_SIZE) {
@@ -81,7 +94,13 @@ public class TrustStoreController {
   @Path("/{alias}")
   @Consumes({"application/octet-stream"})
   @RolesAllowed({Roles.ADMINISTRATOR})
-  public final Response updateCertificate(@PathParam("alias") String alias,
+  @ApiOperation(value = "Update Certificate(Public key) to the truststore.", 
+          notes = "Roles: " + Roles.ADMINISTRATOR)
+  @ApiResponses(value = {@ApiResponse(code = 200, message = "OK")})
+  public final Response updateCertificate(
+          @ApiParam( value = "Certificate alias. It must be unique within one LCM") 
+          @PathParam("alias") String alias,
+          @ApiParam( value = "Stream to the certificate file.") 
       InputStream certificateAsStream) throws IOException {
 
     byte[] certificate = readCertificate(certificateAsStream);
@@ -110,7 +129,12 @@ public class TrustStoreController {
   @DELETE
   @Path("/{alias}")
   @RolesAllowed({Roles.ADMINISTRATOR})
-  public final Response removeCertificate(@PathParam("alias") String alias) {
+  @ApiOperation(value = "Remove Certificate(Public key) from the truststore.", 
+          notes = "Roles: " + Roles.ADMINISTRATOR)
+  @ApiResponses(value = {@ApiResponse(code = 200, message = "OK")})
+  public final Response removeCertificate(
+          @ApiParam( value = "Certificate alias. It must be unique within one LCM") 
+          @PathParam("alias") String alias) {
 
     trustStoreService.removeCertificate(alias);
     return Response.ok().build();

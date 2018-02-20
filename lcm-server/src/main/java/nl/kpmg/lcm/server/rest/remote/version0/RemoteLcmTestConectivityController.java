@@ -20,16 +20,25 @@ import javax.ws.rs.GET;
 import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
 
+import io.swagger.annotations.Api;
+import io.swagger.annotations.ApiOperation;
+import io.swagger.annotations.ApiResponse;
+import io.swagger.annotations.ApiResponses;
+
 /**
  *
  * @author shristov
  */
 @Path("remote/v0/test")
+@Api(value = "v0 remote calls that test connectivity")
 public class RemoteLcmTestConectivityController {
 
   @GET
   @Produces({"application/json"})
   @RolesAllowed({Roles.ANY_USER})
+  @ApiOperation(value = "This is \"ping\" like function that test conectivity.",
+          notes = "Roles: " + Roles.ANY_USER)
+  @ApiResponses(value = {@ApiResponse(code = 200, message = "OK")})
   public final String testConnectivity() {
 
     return "OK";

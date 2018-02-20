@@ -29,6 +29,7 @@ import nl.kpmg.lcm.server.exception.mapper.ValidationExceptionMapper;
 import nl.kpmg.lcm.server.rest.authentication.AuthenticationRequestFilter;
 import nl.kpmg.lcm.server.rest.authentication.ResponseFilter;
 import nl.kpmg.lcm.server.rest.authorization.AuthorizationRequestFilter;
+import nl.kpmg.lcm.server.swagger.SwaggerServer;
 import nl.kpmg.lcm.server.task.TaskManager;
 import nl.kpmg.lcm.server.task.TaskManagerException;
 
@@ -57,6 +58,8 @@ public class Server {
 
   private HttpsServerWrapper restServer;
   private TaskManager taskManager;
+  
+  private SwaggerServer swaggerServer;
 
   public Server() throws ServerException {
     // A double application conext is used because the single configuration
@@ -135,6 +138,9 @@ public class Server {
     try {
       restServer = startRestInterface();
       taskManager = startTaskManager();
+      if(configuration.getSwaggerServerEnabled()){
+          startSwaggerServer();
+      }
       LcmIdService lcmIdService = context.getBean(LcmIdService.class);
       lcmIdService.create();
     } catch (SslConfigurationException ex) {
@@ -155,6 +161,9 @@ public class Server {
   public void stop() {
     restServer.stop();
     taskManager.stop();
+    if(swaggerServer !=  null) {
+        swaggerServer.stop();
+    }
   }
 
   public String getBaseUri() {
@@ -167,5 +176,12 @@ public class Server {
    */
   public String getBaseFallbackUri() {
     return baseFallbackUri;
+  }
+  
+  public void startSwaggerServer(){
+    swaggerServer = new SwaggerServer();
+    String  swaggerUri = String.format("%s://%s:%d/", "http", configuration.getServiceName(),
+        configuration.getSwaggerPort());
+    swaggerServer.initialize(swaggerUri);
   }
 }

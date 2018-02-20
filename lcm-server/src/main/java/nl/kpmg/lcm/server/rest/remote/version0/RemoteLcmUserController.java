@@ -13,9 +13,9 @@
  */
 package nl.kpmg.lcm.server.rest.remote.version0;
 
+import nl.kpmg.lcm.common.Roles;
 import nl.kpmg.lcm.common.data.User;
 import nl.kpmg.lcm.server.data.service.UserService;
-import nl.kpmg.lcm.common.Roles;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
@@ -28,12 +28,18 @@ import javax.ws.rs.GET;
 import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
 
+import io.swagger.annotations.Api;
+import io.swagger.annotations.ApiOperation;
+import io.swagger.annotations.ApiResponse;
+import io.swagger.annotations.ApiResponses;
+
 /**
  *
  * @author shristov
  */
 @Component
 @Path("remote/v0/users")
+@Api(value = "v0 remote calls for users")
 public class RemoteLcmUserController {
 
   /**
@@ -46,6 +52,9 @@ public class RemoteLcmUserController {
   @Produces({"application/nl.kpmg.lcm.rest.types.UsersRepresentation+json"})
   @Path("/username-list")
   @RolesAllowed({Roles.ADMINISTRATOR, Roles.REMOTE_USER})
+  @ApiOperation(value = "Return list of usernames of local users.",
+          notes = "Roles: " + Roles.ADMINISTRATOR + ", " + Roles.REMOTE_USER)
+  @ApiResponses(value = {@ApiResponse(code = 200, message = "OK")})
   public final List<String> getUsernames() {
     List<User> users = userService.findAll();
     List<String> usernameList = new LinkedList();

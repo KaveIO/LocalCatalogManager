@@ -29,6 +29,9 @@ public class ServerConfiguration extends BasicConfiguration {
   private String keystoreAlias;
   private String keystoreKeypass;
 
+  private Integer swaggerPort;
+  private Boolean swaggerServerEnabled;
+  
   public String getKeystore() {
     return keystore;
   }
@@ -84,5 +87,33 @@ public class ServerConfiguration extends BasicConfiguration {
   public void setApplicationName(String applicationName) {
     this.applicationName = applicationName;
   }
+
+    /**
+     * @return the swaggerPort
+     */
+    public Integer getSwaggerPort() {
+        return swaggerPort;
+    }
+
+    /**
+     * @param swaggerPort the swaggerPort to set
+     */
+    public void setSwaggerPort(Integer swaggerPort) {
+        this.swaggerPort = swaggerPort;
+    }
+
+    /**
+     * @return the isSwaggerServerEnabled
+     */
+    public Boolean getSwaggerServerEnabled() {
+        return swaggerServerEnabled;
+    }
+
+    /**
+     * @param swaggerServerEnabled the isSwaggerServerEnabled to set
+     */
+    public void setSwaggerServerEnabled(Boolean swaggerServerEnabled) {
+        this.swaggerServerEnabled = swaggerServerEnabled;
+    }
 
 }

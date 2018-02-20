@@ -17,6 +17,7 @@ package nl.kpmg.lcm.server.rest.client.version0;
 import com.amazonaws.services.certificatemanager.model.InvalidStateException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
+import nl.kpmg.lcm.common.Roles;
 import nl.kpmg.lcm.common.ServerException;
 import nl.kpmg.lcm.common.client.ClientException;
 import nl.kpmg.lcm.common.data.TransferSettings;
@@ -26,7 +27,6 @@ import nl.kpmg.lcm.common.rest.types.MetaDatasRepresentation;
 import nl.kpmg.lcm.common.validation.Notification;
 import nl.kpmg.lcm.server.data.service.DataFetchTriggerService;
 import nl.kpmg.lcm.server.data.service.RemoteMetaDataService;
-import nl.kpmg.lcm.common.Roles;
 import nl.kpmg.lcm.server.rest.authorization.PermissionChecker;
 
 import org.slf4j.Logger;
@@ -49,12 +49,19 @@ import javax.ws.rs.core.Context;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.SecurityContext;
 
+import io.swagger.annotations.Api;
+import io.swagger.annotations.ApiOperation;
+import io.swagger.annotations.ApiParam;
+import io.swagger.annotations.ApiResponse;
+import io.swagger.annotations.ApiResponses;
+
 /**
  *
  * @author mhoekstra
  */
 @Component
 @Path("client/v0/remote")
+@Api(value = "v0 remote lcm interaction")
 public class RemoteMetaDataController {
   private static final Logger LOGGER = LoggerFactory.getLogger(RemoteMetaDataController.class.getName());
 
@@ -69,8 +76,16 @@ public class RemoteMetaDataController {
   @Produces({"text/plain"})
   @Consumes({"application/json"})
   @RolesAllowed({Roles.ADMINISTRATOR, Roles.API_USER})
-  public final Response trigger(@Context SecurityContext securityContext, @PathParam("lcm_id") final String lcmId,
-      @PathParam("metadata_id") final String metadataId, Map payload) throws ServerException {
+  @ApiOperation(value = "Trigger transfer of data from remote Lcm.", notes = "Roles: " + Roles.ADMINISTRATOR + ", " + Roles.API_USER)
+  @ApiResponses(value = {@ApiResponse(code = 200, message = "OK")})
+  public final Response trigger(@Context SecurityContext securityContext, 
+          @ApiParam( value = "Remote Lcm id.") 
+          @PathParam("lcm_id") final String lcmId,
+          @ApiParam( value = "Metadata id on the Remote Lcm.") 
+          @PathParam("metadata_id") final String metadataId, 
+          @ApiParam( value = "Transfer details map Contains: "
+                  + "\"local-storage-id\",\"namespace-path\" and \"transfer-settings\".") 
+          Map payload) throws ServerException {
 
     Notification notification = validateTriggerParams(payload, lcmId, metadataId);
 
@@ -130,9 +145,14 @@ public class RemoteMetaDataController {
   @Path("{scope}/search")
   // TODO Implement the actual custom LCM peer filtering
   @Produces({"application/nl.kpmg.lcm.rest.types.MetaDatasRepresentation+json"})
-  @RolesAllowed({Roles.ADMINISTRATOR})
-  public MetaDatasRepresentation searchMetadata(@Context SecurityContext securityContext, @PathParam("scope") final String scope,
-      @QueryParam("text") String searchString) throws ServerException, ClientException {
+  @RolesAllowed({Roles.ADMINISTRATOR, Roles.API_USER})
+  @ApiOperation(value = "Search metadata on remote Lcm.", notes = "Roles: " + Roles.ADMINISTRATOR + ", " + Roles.API_USER)
+  @ApiResponses(value = {@ApiResponse(code = 200, message = "OK")})
+  public MetaDatasRepresentation searchMetadata(@Context SecurityContext securityContext, 
+          @ApiParam( value = "Remote Lcm id or \"all\".") 
+          @PathParam("scope") final String scope,
+          @ApiParam( value = "Return only metadatas containing specified string") 
+          @QueryParam("text") String searchString) throws ServerException, ClientException {
     if (scope == null) {
       Notification notification = new Notification();
       notification.addError("Scope could not be null!", null);

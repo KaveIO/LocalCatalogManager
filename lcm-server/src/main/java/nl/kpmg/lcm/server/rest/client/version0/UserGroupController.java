@@ -14,10 +14,10 @@
 
 package nl.kpmg.lcm.server.rest.client.version0;
 
+import nl.kpmg.lcm.common.Roles;
 import nl.kpmg.lcm.common.data.UserGroup;
 import nl.kpmg.lcm.common.rest.types.UserGroupsRepresentation;
 import nl.kpmg.lcm.server.data.service.UserGroupService;
-import nl.kpmg.lcm.common.Roles;
 import nl.kpmg.lcm.server.rest.client.version0.types.ConcreteUserGroupRepresentation;
 import nl.kpmg.lcm.server.rest.client.version0.types.ConcreteUserGroupsRepresentation;
 
@@ -38,8 +38,15 @@ import javax.ws.rs.Produces;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
 
+import io.swagger.annotations.Api;
+import io.swagger.annotations.ApiOperation;
+import io.swagger.annotations.ApiParam;
+import io.swagger.annotations.ApiResponse;
+import io.swagger.annotations.ApiResponses;
+
 @Component
 @Path("client/v0/userGroups")
+@Api(value = "v0 user groups")
 public class UserGroupController {
 
   private final UserGroupService userGroupService;
@@ -52,6 +59,8 @@ public class UserGroupController {
   @GET
   @Produces({"application/nl.kpmg.lcm.rest.types.UserGroupsRepresentation+json"})
   @RolesAllowed({Roles.ADMINISTRATOR})
+  @ApiOperation(value = "Get all user groups.", notes = "Roles: " + Roles.ADMINISTRATOR)
+  @ApiResponses(value = {@ApiResponse(code = 200, message = "OK")})
   public final UserGroupsRepresentation getUserGroups() {
     List userGroups = userGroupService.findAll();
     ConcreteUserGroupsRepresentation concreteUserGroupsRepresentation =
@@ -66,7 +75,12 @@ public class UserGroupController {
   @Path("/{user_group_id}")
   @Produces({"application/nl.kpmg.lcm.rest.types.UserGroupRepresentation+json"})
   @RolesAllowed({Roles.ADMINISTRATOR})
-  public final Response getUserGroup(@PathParam("user_group_id") String userGroupId) {
+  @ApiOperation(value = "Get a single user group.", notes = "Roles: " + Roles.ADMINISTRATOR)
+  @ApiResponses(value = {@ApiResponse(code = 200, message = "OK"),
+                         @ApiResponse(code = 404, message = "The user is not found")})
+  public final Response getUserGroup(
+          @ApiParam( value = "User group id")
+          @PathParam("user_group_id") String userGroupId) {
     UserGroup userGroup = userGroupService.findOne(userGroupId);
 
     if (userGroup != null) {
@@ -79,7 +93,11 @@ public class UserGroupController {
   @POST
   @Consumes({"application/nl.kpmg.lcm.server.data.UserGroup+json"})
   @RolesAllowed({Roles.ADMINISTRATOR})
-  public final Response createNewUserGroup(final UserGroup userGroup) {
+  @ApiOperation(value = "Create a user group.", notes = "Roles: " + Roles.ADMINISTRATOR)
+  @ApiResponses(value = {@ApiResponse(code = 200, message = "OK")})
+  public final Response createNewUserGroup(
+          @ApiParam( value = "User group object")
+          final UserGroup userGroup) {
     userGroupService.save(userGroup);
 
     return Response.ok().build();
@@ -88,7 +106,11 @@ public class UserGroupController {
   @PUT
   @Consumes({"application/nl.kpmg.lcm.server.data.UserGroup+json"})
   @RolesAllowed({Roles.ADMINISTRATOR})
-  public final Response modifyUserGroup(final UserGroup userGroup) {
+    @ApiOperation(value = "Update a user group.", notes = "Roles: " + Roles.ADMINISTRATOR)
+  @ApiResponses(value = {@ApiResponse(code = 200, message = "OK")})
+  public final Response modifyUserGroup(
+          @ApiParam( value = "User group object")
+          final UserGroup userGroup) {
     userGroupService.save(userGroup);
     return Response.ok().build();
   }
@@ -96,7 +118,12 @@ public class UserGroupController {
   @DELETE
   @Path("/{user_group_id}")
   @RolesAllowed({Roles.ADMINISTRATOR})
-  public final Response deleteUserGroup(@PathParam("user_group_id") final String userGroupId) {
+    @ApiOperation(value = "Delete a user group.", notes = "Roles: " + Roles.ADMINISTRATOR)
+  @ApiResponses(value = {@ApiResponse(code = 200, message = "OK"),
+                         @ApiResponse(code = 404, message = "The user group is not found")})
+  public final Response deleteUserGroup(
+          @ApiParam( value = "User group id")
+          @PathParam("user_group_id") final String userGroupId) {
 
     UserGroup userGroup = userGroupService.findOne(userGroupId);
     if (userGroup != null) {

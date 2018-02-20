@@ -58,11 +58,18 @@ import javax.ws.rs.core.Response;
 import javax.ws.rs.core.SecurityContext;
 import javax.ws.rs.core.StreamingOutput;
 
+import io.swagger.annotations.Api;
+import io.swagger.annotations.ApiOperation;
+import io.swagger.annotations.ApiParam;
+import io.swagger.annotations.ApiResponse;
+import io.swagger.annotations.ApiResponses;
+
 /**
  *
  * @author S. Koulouzis
  */
 @Path("/remote/v0/fetch")
+@Api(value = "v0 Fetch Endpoint")
 public class FetchEndpointController {
 
   @Autowired
@@ -84,8 +91,14 @@ public class FetchEndpointController {
   @Path("/{id}")
   @Produces(MediaType.APPLICATION_OCTET_STREAM)
   @RolesAllowed({Roles.ADMINISTRATOR, Roles.REMOTE_USER})
+  @ApiOperation(value = "Get authorized LCM with specified id.", notes = "Roles: " + Roles.ADMINISTRATOR + ", " + Roles.REMOTE_USER)
+  @ApiResponses(value = {@ApiResponse(code = 200, message = "OK"),
+       @ApiResponse(code = 400, message = "Fetch endpoint with specified id is expired!"),
+       @ApiResponse(code = 403, message = "You are not authorized to access requested Fetch endpoint!"),
+       @ApiResponse(code = 404, message = "Fetch endpoint with specified id is not found!")})
   public final Response getOne(@Context SecurityContext securityContext,
-          @PathParam("id") final String id, @QueryParam("data_key") String dataKey) throws URISyntaxException,
+          @ApiParam( value = "Fetch endpoint Id") @PathParam("id") final String id, 
+          @ApiParam( value = "Specify the exact data part which is requested") @QueryParam("data_key") String dataKey) throws URISyntaxException,
       IOException {
       
     FetchEndpoint fe = fetchEndpointService.findOneById(id);
@@ -100,7 +113,7 @@ public class FetchEndpointController {
     }
     if(!permissionChecker.check(securityContext, fe.getMetadataId())){
         throw new LcmException(String.format("Unable to authorize the request.", id),
-          Response.Status.BAD_REQUEST);
+          Response.Status.FORBIDDEN);
     }
 
     MetaData md = metaDataService.findById(fe.getMetadataId());

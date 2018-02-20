@@ -14,6 +14,7 @@
 
 package nl.kpmg.lcm.server.rest.client.version0;
 
+import nl.kpmg.lcm.common.Roles;
 import nl.kpmg.lcm.common.data.Storage;
 import nl.kpmg.lcm.common.data.TestResult;
 import nl.kpmg.lcm.common.exception.LcmValidationException;
@@ -21,7 +22,6 @@ import nl.kpmg.lcm.common.rest.types.StorageRepresentation;
 import nl.kpmg.lcm.common.rest.types.StoragesRepresentation;
 import nl.kpmg.lcm.common.validation.Notification;
 import nl.kpmg.lcm.server.data.service.StorageService;
-import nl.kpmg.lcm.common.Roles;
 import nl.kpmg.lcm.server.rest.client.version0.types.ConcreteStorageRepresentation;
 import nl.kpmg.lcm.server.rest.client.version0.types.ConcreteStoragesRepresentation;
 
@@ -33,6 +33,7 @@ import javax.annotation.security.RolesAllowed;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.DELETE;
 import javax.ws.rs.GET;
+import javax.ws.rs.NotFoundException;
 import javax.ws.rs.POST;
 import javax.ws.rs.PUT;
 import javax.ws.rs.Path;
@@ -41,11 +42,17 @@ import javax.ws.rs.Produces;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
 
+import io.swagger.annotations.Api;
+import io.swagger.annotations.ApiOperation;
+import io.swagger.annotations.ApiParam;
+import io.swagger.annotations.ApiResponse;
+import io.swagger.annotations.ApiResponses;
 /**
  *
  * @author mhoekstra
  */
 @Path("client/v0/storage")
+@Api(value = "v0 storage")
 public class StorageController {
 
   private final StorageService storageService;
@@ -63,6 +70,8 @@ public class StorageController {
   @GET
   @Produces({"application/nl.kpmg.lcm.rest.types.StoragesRepresentation+json"})
   @RolesAllowed({Roles.ADMINISTRATOR, Roles.API_USER})
+  @ApiOperation(value = "Return all the storages in the LCM.",  notes = "Roles: " + Roles.ADMINISTRATOR +", " + Roles.API_USER )
+  @ApiResponses(value = {@ApiResponse(code = 200, message = "OK")})
   public StoragesRepresentation getStorage() {
     List all = storageService.findAll();
     ConcreteStoragesRepresentation concreteStoragesRepresentation =
@@ -81,8 +90,16 @@ public class StorageController {
   @Path("{storage_id}")
   @Produces({"application/nl.kpmg.lcm.rest.types.StoragesRepresentation+json"})
   @RolesAllowed({Roles.ADMINISTRATOR, Roles.API_USER})
-  public StorageRepresentation getStorageHandler(@PathParam("storage_id") String storageId) {
+  @ApiOperation(value = "Return a storage with specified id.", notes = "Roles: " + Roles.ADMINISTRATOR +", " + Roles.API_USER)
+  @ApiResponses(value = {@ApiResponse(code = 200, message = "OK"),
+       @ApiResponse(code = 404, message = "Storage with specified id is not found!")})
+  public StorageRepresentation getStorageHandler( @ApiParam( value = "Storage Id") @PathParam("storage_id") String storageId) {
     Storage storage = storageService.findById(storageId);
+    
+    if(storage ==  null) {
+        throw new NotFoundException("Storage with specified id is not found!");
+    }
+    
     return new ConcreteStorageRepresentation(storage);
   }
 
@@ -95,7 +112,10 @@ public class StorageController {
   @DELETE
   @Path("{storage_id}")
   @RolesAllowed({Roles.ADMINISTRATOR})
-  public Response deleteStorageHandler(final @PathParam("storage_id") String storageId) {
+  @ApiOperation(value = "Delete a storage with specified id.", notes = "Roles: " + Roles.ADMINISTRATOR)
+  @ApiResponses(value = {@ApiResponse(code = 200, message = "OK"),
+       @ApiResponse(code = 404, message = "The storage with specified id is not found.")})
+  public Response deleteStorageHandler(final  @ApiParam( value = "Storage Id") @PathParam("storage_id") String storageId) {
 
     Storage storage = storageService.findById(storageId);
     if (storage != null) {
@@ -115,7 +135,9 @@ public class StorageController {
   @POST
   @Consumes({"application/nl.kpmg.lcm.server.data.Storage+json"})
   @RolesAllowed({Roles.ADMINISTRATOR})
-  public Response createNewStorage(final Storage storage) {
+  @ApiOperation(value = "Create a storage.", notes = "Roles: " + Roles.ADMINISTRATOR)
+  @ApiResponses(value = {@ApiResponse(code = 200, message = "OK")})
+  public Response createNewStorage(@ApiParam( value = "Storage that will be created") final Storage storage) {
     storageService.add(storage);
     return Response.ok().build();
   }
@@ -129,7 +151,9 @@ public class StorageController {
   @PUT
   @Consumes({"application/nl.kpmg.lcm.server.data.Storage+json"})
   @RolesAllowed({Roles.ADMINISTRATOR})
-  public Response overwriteStorage(final Storage storage) {
+  @ApiOperation(value = "Update a storage.", notes = "Roles: " + Roles.ADMINISTRATOR)
+  @ApiResponses(value = {@ApiResponse(code = 200, message = "OK")})
+  public Response overwriteStorage(@ApiParam( value = "Storage object.") final Storage storage) {
     storageService.update(storage);
     return Response.ok().build();
   }
@@ -138,7 +162,9 @@ public class StorageController {
   @Path("status/{id}")
   @Produces({"application/nl.kpmg.lcm.rest.types.MetaDatasRepresentation+json"})
   @RolesAllowed({Roles.ADMINISTRATOR, Roles.API_USER})
-  public TestResult getStorageStatus(@PathParam("id") final String id)  {
+  @ApiOperation(value = "Test accessability of a storage.", notes = "Roles: " + Roles.ADMINISTRATOR +", " + Roles.API_USER)
+  @ApiResponses(value = {@ApiResponse(code = 200, message = "OK")})
+  public TestResult getStorageStatus(@ApiParam( value = "Storage Id") @PathParam("id") final String id)  {
     if (id == null || id.isEmpty()) {
       Notification notification = new Notification();
       notification.addError("Id could not be null ot empty!", null);

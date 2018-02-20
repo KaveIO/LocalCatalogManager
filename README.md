@@ -57,6 +57,10 @@ You can use your browser to reach
     https://localhost:4443/
 
 To access the UI. The default username and password are: admin, admin
+Once administrator user is created the default ones are inactive.
+
+In case swagger is enabled REST API documentation is available
+Go to http://localhost:8082/docs and place in the swagger source box: http://localhost:8082/swagger.json
 
 ## Goals  
 
