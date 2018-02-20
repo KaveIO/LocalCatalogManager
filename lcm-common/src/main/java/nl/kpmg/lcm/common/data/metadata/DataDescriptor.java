@@ -16,6 +16,7 @@ package nl.kpmg.lcm.common.data.metadata;
 import com.fasterxml.jackson.annotation.JsonInclude;
 
 import nl.kpmg.lcm.common.NamespacePathValidator;
+import nl.kpmg.lcm.common.data.DataFormat;
 import nl.kpmg.lcm.common.exception.LcmException;
 import nl.kpmg.lcm.common.validation.Notification;
 
@@ -24,6 +25,8 @@ import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 /**
  *
@@ -110,5 +113,28 @@ public class DataDescriptor extends AbstractMetaDataDescriptor {
     String path = (String) getMap().get("path");
     NamespacePathValidator validator = new NamespacePathValidator();
     validator.validate(path, notification);
+    List<String> uriList = getUri();
+    if (uriList != null) {
+      for (String uri : uriList) {
+        validateUri(uri, notification);
+      }
+    }
+  }
+
+  private void validateUri(String uri, Notification notification) {
+    String dataTypes =
+        "(" + DataFormat.FILE + "|" + DataFormat.S3FILE + "|" + DataFormat.HDFSFILE + "|"
+            + DataFormat.AZUREFILE + "|" + DataFormat.AZURECSV + "|" + DataFormat.CSV + "|"
+            + DataFormat.JSON + "|" + DataFormat.MONGO + "|" + DataFormat.HIVE + ")";
+    String storageName = "([a-zA-Z0-9_-]+)";
+    String dataItemPath = "(([a-zA-Z0-9_.\\/-]*\\/)*)";
+    String dataItemName = "([a-zA-Z0-9_-]*(\\*?)[a-zA-Z0-9_-]*([\\.]{1}[a-zA-Z0-9]+){0,1})";
+    String patternStr = dataTypes + ":\\/\\/" + storageName + "\\/" + dataItemPath + dataItemName;
+    Pattern pattern = Pattern.compile(patternStr);
+    Matcher matcher = pattern.matcher(uri);
+    if (!matcher.matches()) {
+      notification.addError(String.format("Invalid data uri: (%s). It does not match the pattern.",
+          uri));
+    }
   }
 }
