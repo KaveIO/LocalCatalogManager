@@ -29,6 +29,7 @@ import nl.kpmg.lcm.common.data.Storage;
 import nl.kpmg.lcm.ui.rest.AuthenticationException;
 import nl.kpmg.lcm.ui.rest.DataCreationException;
 import nl.kpmg.lcm.ui.rest.RestClientService;
+import nl.kpmg.lcm.ui.view.administration.DynamicDataContainer;
 
 import org.slf4j.LoggerFactory;
 
@@ -54,6 +55,7 @@ public class StorageCreateWindow extends Window implements Button.ClickListener 
   private static final String EDIT_TITLE = "Edit Storage";
 
   private RestClientService restClientService;
+  private DynamicDataContainer dataContainer;
 
   private final TextArea optionsArea = new TextArea("Options");
   private final TextArea credentialsArea = new TextArea("Credentials");
@@ -66,18 +68,20 @@ public class StorageCreateWindow extends Window implements Button.ClickListener 
 
   private boolean isCreateOpereration;
 
-  public StorageCreateWindow(RestClientService restClientService) {
+  public StorageCreateWindow(RestClientService restClientService, DynamicDataContainer dataContainer) {
     super(CREATE_TITLE);
     isCreateOpereration = true;
     this.restClientService = restClientService;
+    this.dataContainer = dataContainer;
     init();
   }
 
-  public StorageCreateWindow(RestClientService restClientService, Storage storage)
-      throws JsonProcessingException {
+  public StorageCreateWindow(RestClientService restClientService, Storage storage,
+      DynamicDataContainer dataContainer) throws JsonProcessingException {
     super(EDIT_TITLE);
     isCreateOpereration = false;
     this.restClientService = restClientService;
+    this.dataContainer = dataContainer;
     nameField.setValue(storage.getName());
     typeField.setValue(storage.getType());
     String storageJson = new ObjectMapper().writeValueAsString(storage.getOptions());
@@ -175,6 +179,7 @@ public class StorageCreateWindow extends Window implements Button.ClickListener 
           restClientService.createStorage(rootNode.toString());
           Notification.show("Creation of storage successful.");
         }
+        dataContainer.updateContent();
         this.close();
       } catch (ServerException | DataCreationException | AuthenticationException | IOException ex) {
         Notification.show("Creation of storage failed.");

@@ -22,7 +22,6 @@ import com.vaadin.ui.Panel;
 import com.vaadin.ui.Table;
 import com.vaadin.ui.UI;
 import com.vaadin.ui.VerticalLayout;
-import com.vaadin.ui.Window;
 
 import nl.kpmg.lcm.common.ServerException;
 import nl.kpmg.lcm.common.client.ClientException;
@@ -79,7 +78,6 @@ public class AuthorizedLcmPanel extends CustomComponent implements DynamicDataCo
     root.setExpandRatio(rootVerticalLayout, 1f);
 
     setCompositionRoot(root);
-    updateAuthorizedLcmTable();
   }
 
   private HorizontalLayout initDataLayout() throws UnsupportedOperationException {
@@ -128,13 +126,8 @@ public class AuthorizedLcmPanel extends CustomComponent implements DynamicDataCo
   private Button initCreateButton(RestClientService restClientService1) {
     Button createButton = new Button("Create");
     createButton.addClickListener((Button.ClickEvent event) -> {
-      AuthorizedLcmCreateWindow authorizedLcmCreateWindow = new AuthorizedLcmCreateWindow(restClientService1);
-      authorizedLcmCreateWindow.addCloseListener(new Window.CloseListener() {
-        @Override
-        public void windowClose(Window.CloseEvent e) {
-          updateAuthorizedLcmTable();
-        }
-      });
+      AuthorizedLcmCreateWindow authorizedLcmCreateWindow =
+          new AuthorizedLcmCreateWindow(restClientService1, this);
       UI.getCurrent().addWindow(authorizedLcmCreateWindow);
     });
     createButton.addStyleName("margin-10");

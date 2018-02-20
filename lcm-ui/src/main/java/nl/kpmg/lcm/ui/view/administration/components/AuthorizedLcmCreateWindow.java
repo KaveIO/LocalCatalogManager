@@ -33,6 +33,7 @@ import nl.kpmg.lcm.common.rest.authentication.UserPasswordHashException;
 import nl.kpmg.lcm.ui.rest.AuthenticationException;
 import nl.kpmg.lcm.ui.rest.DataCreationException;
 import nl.kpmg.lcm.ui.rest.RestClientService;
+import nl.kpmg.lcm.ui.view.administration.DynamicDataContainer;
 
 import org.slf4j.LoggerFactory;
 
@@ -61,7 +62,7 @@ public class AuthorizedLcmCreateWindow extends Window implements Button.ClickLis
   private static final String EDIT_TITLE = "Edit authorized LCM";
 
   private RestClientService restClientService;
-
+  private DynamicDataContainer dataContainer;
 
   private final TextField nameField = new TextField("Name");
   private final TextField uniqeLcmIdField = new TextField("Lcm id");
@@ -77,18 +78,22 @@ public class AuthorizedLcmCreateWindow extends Window implements Button.ClickLis
   private boolean isCreateOpereration;
   private String unhashedKey;
 
-  public AuthorizedLcmCreateWindow(RestClientService restClientService) {
+  public AuthorizedLcmCreateWindow(RestClientService restClientService,
+      DynamicDataContainer dataContainer) {
     super(CREATE_TITLE);
     isCreateOpereration = true;
     this.restClientService = restClientService;
+    this.dataContainer = dataContainer;
     init();
   }
 
-  public AuthorizedLcmCreateWindow(RestClientService restClientService, AuthorizedLcm authorizedLcm)
+  public AuthorizedLcmCreateWindow(RestClientService restClientService,
+      AuthorizedLcm authorizedLcm, DynamicDataContainer dataContainer)
       throws JsonProcessingException {
     super(EDIT_TITLE);
     isCreateOpereration = false;
     this.restClientService = restClientService;
+    this.dataContainer = dataContainer;
     nameField.setValue(authorizedLcm.getName());
     uniqeLcmIdField.setValue(authorizedLcm.getUniqueId());
     applicationIdField.setValue(authorizedLcm.getApplicationId());
@@ -204,6 +209,7 @@ public class AuthorizedLcmCreateWindow extends Window implements Button.ClickLis
           restClientService.createAuthorizedLcm(rootNode.toString());
           Notification.show("Creation is successful.");
         }
+        dataContainer.updateContent();
         this.close();
       } catch (ServerException | DataCreationException | AuthenticationException | IOException ex) {
         Notification.show("Operation failed.");

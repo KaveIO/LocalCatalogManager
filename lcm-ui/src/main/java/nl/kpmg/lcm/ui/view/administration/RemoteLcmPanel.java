@@ -22,7 +22,6 @@ import com.vaadin.ui.Panel;
 import com.vaadin.ui.Table;
 import com.vaadin.ui.UI;
 import com.vaadin.ui.VerticalLayout;
-import com.vaadin.ui.Window;
 
 import nl.kpmg.lcm.common.ServerException;
 import nl.kpmg.lcm.common.client.ClientException;
@@ -81,7 +80,6 @@ public class RemoteLcmPanel extends CustomComponent implements DynamicDataContai
     root.setExpandRatio(rootVerticalLayout, 1f);
 
     setCompositionRoot(root);
-    refreshRemoteLcmTable();
   }
 
   private HorizontalLayout initDataLayout() throws UnsupportedOperationException {
@@ -129,13 +127,8 @@ public class RemoteLcmPanel extends CustomComponent implements DynamicDataContai
     Button createButton = new Button("Create");
     createButton.addStyleName("margin-10");
     createButton.addClickListener((Button.ClickEvent event) -> {
-      RemoteLcmCreateWindow remoteLcmCreateWindow = new RemoteLcmCreateWindow(restClientService1);
-      remoteLcmCreateWindow.addCloseListener(new Window.CloseListener() {
-        @Override
-        public void windowClose(Window.CloseEvent e) {
-          updateContent();
-        }
-      });
+      RemoteLcmCreateWindow remoteLcmCreateWindow =
+          new RemoteLcmCreateWindow(restClientService1, this);
       UI.getCurrent().addWindow(remoteLcmCreateWindow);
     });
 

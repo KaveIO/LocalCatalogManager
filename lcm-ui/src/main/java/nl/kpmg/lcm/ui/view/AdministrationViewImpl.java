@@ -135,25 +135,53 @@ public class AdministrationViewImpl extends VerticalLayout implements Administra
    */
   @Override
   public final void enter(final ViewChangeListener.ViewChangeEvent event) {
-    try {
-      tasks = restClientService.getLastTasks(MAX_TASKS_LOADED);
-      taskSchedule = restClientService.getTaskSchedule();
-      users = restClientService.getUsers();
-      userGroups = restClientService.getUserGroups();
-      lcmId = restClientService.getLcmId();
 
-      tasksPanel.setTasks(tasks);
-      tasksPanel.setTaskSchedule(taskSchedule);
+    storagePanel.updateContent();
 
-      lcmIdPanel.setLcmId(lcmId);
+    tabsheet.addSelectedTabChangeListener(new TabSheet.SelectedTabChangeListener() {
+      @Override
+      public void selectedTabChange(TabSheet.SelectedTabChangeEvent event) {
 
-    } catch (AuthenticationException ex) {
-      getUI().getNavigator().navigateTo("");
-    } catch (ServerException se) {
-      Notification.show("Cannot instantiate client HTTPS endpoint");
-      getUI().getNavigator().navigateTo("");
-    } catch (ClientException ex) {
-      Notification.show("Couldn't fetch remote data.");
-    }
+        com.vaadin.ui.Component tab = tabsheet.getSelectedTab();
+
+        if (tab instanceof RemoteLcmPanel) {
+          ((RemoteLcmPanel) tab).updateContent();
+        }
+
+        if (tab instanceof UserPanel) {
+          ((UserPanel) tab).updateContent();
+        }
+
+        if (tab instanceof UserGroupPanel) {
+          ((UserGroupPanel) tab).updateContent();
+        }
+
+        if (tab instanceof AuthorizedLcmPanel) {
+          ((AuthorizedLcmPanel) tab).updateContent();
+        }
+
+        try {
+          if (tab instanceof TasksPanel) {
+            tasks = restClientService.getLastTasks(MAX_TASKS_LOADED);
+            taskSchedule = restClientService.getTaskSchedule();
+            tasksPanel.setTasks(tasks);
+            tasksPanel.setTaskSchedule(taskSchedule);
+          }
+
+          if (tab instanceof LcmIdPanel) {
+            lcmId = restClientService.getLcmId();
+            lcmIdPanel.setLcmId(lcmId);
+          }
+
+        } catch (AuthenticationException ex) {
+          getUI().getNavigator().navigateTo("");
+        } catch (ServerException se) {
+          Notification.show("Cannot instantiate client HTTPS endpoint");
+          getUI().getNavigator().navigateTo("");
+        } catch (ClientException ex) {
+          Notification.show("Couldn't fetch remote data.");
+        }
+      }
+    });
   }
 }

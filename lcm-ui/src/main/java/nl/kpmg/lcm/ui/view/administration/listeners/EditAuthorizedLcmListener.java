@@ -16,7 +16,6 @@ package nl.kpmg.lcm.ui.view.administration.listeners;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.vaadin.ui.Button;
 import com.vaadin.ui.UI;
-import com.vaadin.ui.Window;
 
 import nl.kpmg.lcm.common.data.AuthorizedLcm;
 import nl.kpmg.lcm.common.rest.types.AuthorizedLcmRepresentation;
@@ -52,13 +51,8 @@ public class EditAuthorizedLcmListener extends AbstractListener {
     AuthorizedLcmRepresentation data = (AuthorizedLcmRepresentation) event.getButton().getData();
     AuthorizedLcm lcm = data.getItem();
     try {
-      AuthorizedLcmCreateWindow authorizedLcmCreateWindow = new AuthorizedLcmCreateWindow(restClientService, lcm);
-      authorizedLcmCreateWindow.addCloseListener(new Window.CloseListener() {
-        @Override
-        public void windowClose(Window.CloseEvent e) {
-          dataContainer.updateContent();
-        }
-      });
+      AuthorizedLcmCreateWindow authorizedLcmCreateWindow =
+          new AuthorizedLcmCreateWindow(restClientService, lcm, dataContainer);
       UI.getCurrent().addWindow(authorizedLcmCreateWindow);
 
     } catch (JsonProcessingException ex) {

@@ -29,6 +29,7 @@ import nl.kpmg.lcm.common.data.UserGroup;
 import nl.kpmg.lcm.ui.rest.AuthenticationException;
 import nl.kpmg.lcm.ui.rest.DataCreationException;
 import nl.kpmg.lcm.ui.rest.RestClientService;
+import nl.kpmg.lcm.ui.view.administration.DynamicDataContainer;
 
 import org.slf4j.LoggerFactory;
 
@@ -54,6 +55,7 @@ public class UserGroupCreateWindow extends Window implements Button.ClickListene
   private static final String EDIT_TITLE = "Edit User";
 
   private RestClientService restClientService;
+  private DynamicDataContainer dataContainer;
   private final TextField nameField = new TextField("Name");
   private final TextArea userListArea = new TextArea("Users");
   private final TextArea pathListArea = new TextArea("Accessible paths");
@@ -66,10 +68,12 @@ public class UserGroupCreateWindow extends Window implements Button.ClickListene
   private final String LIST_DELIMITER = ";";
   private boolean isCreateOpereration;
 
-  public UserGroupCreateWindow(RestClientService restClientService) {
+  public UserGroupCreateWindow(RestClientService restClientService,
+      DynamicDataContainer dataContainer) {
     super(CREATE_TITLE);
     isCreateOpereration = true;
     this.restClientService = restClientService;
+    this.dataContainer = dataContainer;
     init();
     userListArea.setDescription("Each user that is part of the group terminated by: "
         + LIST_DELIMITER);
@@ -77,11 +81,13 @@ public class UserGroupCreateWindow extends Window implements Button.ClickListene
     metadataListArea.setDescription("Each metadata Id must be terminated by: " + LIST_DELIMITER);
   }
 
-  public UserGroupCreateWindow(RestClientService restClientService, UserGroup userGroup)
+  public UserGroupCreateWindow(RestClientService restClientService, UserGroup userGroup,
+      DynamicDataContainer dataContainer)
       throws JsonProcessingException {
     super(EDIT_TITLE);
     isCreateOpereration = false;
     this.restClientService = restClientService;
+    this.dataContainer = dataContainer;
     nameField.setValue(userGroup.getName());
     nameField.setEnabled(false);
 
@@ -174,6 +180,7 @@ public class UserGroupCreateWindow extends Window implements Button.ClickListene
           restClientService.createUserGroup(rootNode.toString());
           Notification.show("Creation of user was successful.");
         }
+        dataContainer.updateContent();
         this.close();
       } catch (ServerException | DataCreationException | AuthenticationException | IOException ex) {
         Notification.show("Creation of user failed.");
