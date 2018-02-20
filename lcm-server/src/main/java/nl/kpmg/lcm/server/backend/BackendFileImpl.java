@@ -98,20 +98,49 @@ public class BackendFileImpl extends AbstractBackend {
   protected void enrichMetadataItem(EnrichmentProperties properties, String key) throws IOException {
     DataItemsDescriptor dynamicDataDescriptor =
         metaDataWrapper.getDynamicData().getDynamicDataDescriptor(key);
-    FileAdapter fileAdapter = getFileAdapter(key);
+    FileAdapter fileAdapter = null;
+    try {
+      fileAdapter = getFileAdapter(key);
+    } catch (LcmValidationException ex) {
+      String state = DataState.DETACHED;
+      dynamicDataDescriptor.getDetailsDescriptor().setState(state);
+      LOGGER.warn("The metadata with id: " + metaDataWrapper.getId()
+          + " has problems with storage validation. " + ex.getNotification().errorMessage());
+      return;
+    } catch (Exception ex) {
+      String state = DataState.DETACHED;
+      dynamicDataDescriptor.getDetailsDescriptor().setState(state);
+      LOGGER
+          .warn("Metadata id: " + metaDataWrapper.getId() + ". Error message: " + ex.getMessage());
+      return;
+    }
+
+    try {
+      if (!fileAdapter.exists()) {
+        String state = DataState.DETACHED;
+        dynamicDataDescriptor.getDetailsDescriptor().setState(state);
+        LOGGER.warn("The metadata with id: " + metaDataWrapper.getId()
+            + " has storage directory which does not exist.");
+        return;
+      }
+    } catch (Exception ex) {
+      String state = DataState.DETACHED;
+      dynamicDataDescriptor.getDetailsDescriptor().setState(state);
+      LOGGER
+          .warn("Metadata id: " + metaDataWrapper.getId() + ". Error message: " + ex.getMessage());
+      return;
+    }
+
     if (properties.getAccessibility()) {
       String state = fileAdapter.exists() ? DataState.ATTACHED : DataState.DETACHED;
       dynamicDataDescriptor.getDetailsDescriptor().setState(state);
     }
 
-    if (fileAdapter.exists()) {
-      if (properties.getSize()) {
-        dynamicDataDescriptor.getDetailsDescriptor().setSize(fileAdapter.length());
-      }
-
-      dynamicDataDescriptor.getDetailsDescriptor().setDataUpdateTimestamp(
-          fileAdapter.lastModified());
+    if (properties.getSize()) {
+      dynamicDataDescriptor.getDetailsDescriptor().setSize(fileAdapter.length());
     }
+
+    dynamicDataDescriptor.getDetailsDescriptor().setDataUpdateTimestamp(fileAdapter.lastModified());
   }
 
   @Override

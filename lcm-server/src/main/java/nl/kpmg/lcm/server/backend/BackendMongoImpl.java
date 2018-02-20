@@ -79,7 +79,17 @@ public class BackendMongoImpl extends AbstractBackend {
       String dataURI = metaDataWrapper.getDynamicData().getDynamicDataDescriptor(key).getURI();
       Storage storage = storageService.getStorageByUri(dataURI);
       MongoStorage mongoStorage = new MongoStorage(storage);
-      UpdateableDataContext dataContext = getDataContext(mongoStorage);
+      UpdateableDataContext dataContext = null;
+
+      try {
+        dataContext = getDataContext(mongoStorage);
+      } catch (Exception ex) {
+        mongoMetaData.getDynamicData().getDynamicDataDescriptor(key).getDetailsDescriptor()
+            .setState(DataState.DETACHED);
+        LOGGER.warn("Metadata id: " + metaDataWrapper.getId() + ". Error message: "
+            + ex.getMessage());
+        return;
+      }
 
       Schema database = dataContext.getSchemaByName(mongoStorage.getDatabase());
       if (database == null && properties.getAccessibility()) {

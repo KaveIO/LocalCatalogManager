@@ -81,36 +81,66 @@ public class BackendCsvImpl extends AbstractBackend {
   protected void enrichMetadataItem(EnrichmentProperties properties, String key) throws IOException {
     DataItemsDescriptor dynamicDataDescriptor =
         metaDataWrapper.getDynamicData().getDynamicDataDescriptor(key);
-    CsvAdapter csvAdapter = getCsvAdapter(key);
+    CsvAdapter csvAdapter = null;
+    try {
+      csvAdapter = getCsvAdapter(key);
+    } catch (LcmValidationException ex) {
+      String state = DataState.DETACHED;
+      dynamicDataDescriptor.getDetailsDescriptor().setState(state);
+      LOGGER.warn("The metadata with id: " + csvMetaData.getId()
+          + " has problems with storage validation. " + ex.getNotification().errorMessage());
+      return;
+    } catch (Exception ex) {
+      String state = DataState.DETACHED;
+      dynamicDataDescriptor.getDetailsDescriptor().setState(state);
+      LOGGER.warn("Metadata id: " + csvMetaData.getId()
+          + ". Error message: " + ex.getMessage());
+      return;
+    }
     metaDataWrapper.getDynamicData().getDynamicDataDescriptor(key).clearDetailsDescriptor();
+
+    try {
+      if (!csvAdapter.exists()) {
+        String state = DataState.DETACHED;
+        dynamicDataDescriptor.getDetailsDescriptor().setState(state);
+        LOGGER.warn("The metadata with id: " + csvMetaData.getId()
+            + " has storage directory which does not exist.");
+        return;
+      }
+    } catch (Exception ex) {
+      String state = DataState.DETACHED;
+      dynamicDataDescriptor.getDetailsDescriptor().setState(state);
+      LOGGER.warn("Metadata id: " + csvMetaData.getId() + " . Error message: "
+          + ex.getMessage());
+      return;
+    }
+
     if (properties.getAccessibility()) {
       String state = csvAdapter.exists() ? DataState.ATTACHED : DataState.DETACHED;
       dynamicDataDescriptor.getDetailsDescriptor().setState(state);
     }
 
-    if (csvAdapter.exists()) {
-      if (properties.getSize()) {
-        dynamicDataDescriptor.getDetailsDescriptor().setSize(csvAdapter.length());
-      }
-      if (properties.getStructure()) {
-        UpdateableDataContext dataContext = createDataContext(csvAdapter.getInputStream(), key);
-        try {
-          Schema schema = dataContext.getDefaultSchema();
-          if (schema.getTableCount() == 0) {
-            return;
-          }
-          Table table = schema.getTables()[0];
-          csvMetaData.getTableDescription(key).setColumns(table.getColumns());
-        } catch (MetaModelException mme) {
-          String state = DataState.INVALID;
-          dynamicDataDescriptor.getDetailsDescriptor().setState(state);
-          LOGGER.warn("The metadata with id: " + csvMetaData.getId()
-              + " describes invalid data. Invalid data key: " + key);
-        }
-      }
-      Long dataUpdateTime = new Date(csvAdapter.lastModified()).getTime();
-      dynamicDataDescriptor.getDetailsDescriptor().setDataUpdateTimestamp(dataUpdateTime);
+    if (properties.getSize()) {
+      dynamicDataDescriptor.getDetailsDescriptor().setSize(csvAdapter.length());
     }
+    if (properties.getStructure()) {
+      UpdateableDataContext dataContext = createDataContext(csvAdapter.getInputStream(), key);
+      try {
+        Schema schema = dataContext.getDefaultSchema();
+        if (schema.getTableCount() == 0) {
+          return;
+        }
+        Table table = schema.getTables()[0];
+        csvMetaData.getTableDescription(key).setColumns(table.getColumns());
+      } catch (MetaModelException mme) {
+        String state = DataState.INVALID;
+        dynamicDataDescriptor.getDetailsDescriptor().setState(state);
+        LOGGER.warn("The metadata with id: " + csvMetaData.getId()
+            + " describes invalid data. Invalid data key: " + key);
+      }
+    }
+    Long dataUpdateTime = new Date(csvAdapter.lastModified()).getTime();
+    dynamicDataDescriptor.getDetailsDescriptor().setDataUpdateTimestamp(dataUpdateTime);
   }
 
   /**

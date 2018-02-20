@@ -64,7 +64,7 @@ private static final org.slf4j.Logger LOGGER =
   @Override
   public List listFileNames(String subPath) throws IOException {
 
-    if(subPath.charAt(subPath.length() -1) != '/') {
+    if(subPath.length() > 0 && subPath.charAt(subPath.length() -1) != '/') {
         subPath =  subPath + '/';
     }
 
@@ -77,6 +77,12 @@ private static final org.slf4j.Logger LOGGER =
       for (S3ObjectSummary objectSummary : objectSummaryList) {
         String key = objectSummary.getKey();
         int index = StringUtils.lastIndexOf(key, "/");
+        // Some of the keys contain '/'. For example "test/test1.csv". Some others don`t. For
+        // example "example1.txt". If a key doesn`t contain '/' the value of index would be -1. That
+        // is why we need the following check.
+        if (index == -1) {
+          index = 0;
+        }
         String itemName = key.substring(index);
         fileNameList.add(itemName);
       }
