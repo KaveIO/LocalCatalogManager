@@ -14,6 +14,7 @@
 
 package nl.kpmg.lcm.server.rest.client.version0;
 
+import static nl.kpmg.lcm.common.rest.authentication.AuthorizationConstants.LCM_AUTHENTICATION_ORIGIN_HEADER;
 import static org.junit.Assert.assertEquals;
 
 import nl.kpmg.lcm.common.ServerException;
@@ -50,17 +51,21 @@ public class UserGroupControllerClientTest extends LcmBaseServerTest {
     // Due to a Spring configuration error we can't login in this thread. We
     // have to create a actuall login call.
     LoginRequest loginRequest = new LoginRequest();
-    loginRequest.setUsername("admin"+ "@" + User.LOCAL_ORIGIN);
+    loginRequest.setUsername("admin");
     loginRequest.setPassword("admin");
     Entity<LoginRequest> entity = Entity.entity(loginRequest,
         "application/nl.kpmg.lcm.server.rest.client.types.LoginRequest+json");
-    Response res = getWebTarget().path("client/login").request().post(entity);
+    Response res = getWebTarget().path("client/login").request()
+            .header(LCM_AUTHENTICATION_ORIGIN_HEADER, User.LOCAL_ORIGIN)
+            .post(entity);
     authenticationToken = res.readEntity(String.class);
   }
 
   @After
   public void afterTest() throws ServerException {
-    getWebTarget().path("client/logout").request().header("LCM-Authentication-User", "admin")
+    getWebTarget().path("client/logout").request()
+            .header(LCM_AUTHENTICATION_ORIGIN_HEADER, User.LOCAL_ORIGIN)
+            .header("LCM-Authentication-User", "admin")
         .header("LCM-Authentication-Token", authenticationToken).post(null);
   }
 
@@ -82,6 +87,7 @@ public class UserGroupControllerClientTest extends LcmBaseServerTest {
     UserGroup saved = userGroupDao.save(userGroup);
 
     Response res1 = getWebTarget().path("client/v0/userGroups/" + saved.getId()).request()
+            .header(LCM_AUTHENTICATION_ORIGIN_HEADER, User.LOCAL_ORIGIN)
         .header("LCM-Authentication-User", "admin")
         .header("LCM-Authentication-Token", authenticationToken).get();
 
@@ -101,6 +107,7 @@ public class UserGroupControllerClientTest extends LcmBaseServerTest {
     Entity<UserGroup> entity =
         Entity.entity(userGroup, "application/nl.kpmg.lcm.server.data.UserGroup+json");
     Response res1 = getWebTarget().path("client/v0/userGroups/").request()
+            .header(LCM_AUTHENTICATION_ORIGIN_HEADER, User.LOCAL_ORIGIN)
         .header("LCM-Authentication-User", "admin")
         .header("LCM-Authentication-Token", authenticationToken).put(entity);
 
@@ -120,6 +127,7 @@ public class UserGroupControllerClientTest extends LcmBaseServerTest {
     Entity<UserGroup> entity =
         Entity.entity(userGroup, "application/nl.kpmg.lcm.server.data.UserGroup+json");
     Response res1 = getWebTarget().path("client/v0/userGroups/").request()
+            .header(LCM_AUTHENTICATION_ORIGIN_HEADER, User.LOCAL_ORIGIN)
         .header("LCM-Authentication-User", "admin")
         .header("LCM-Authentication-Token", authenticationToken).put(entity);
 
@@ -139,10 +147,12 @@ public class UserGroupControllerClientTest extends LcmBaseServerTest {
     Entity<UserGroup> entity1 =
         Entity.entity(userGroup, "application/nl.kpmg.lcm.server.data.UserGroup+json");
     Response res1 = getWebTarget().path("client/v0/userGroups").request()
+            .header(LCM_AUTHENTICATION_ORIGIN_HEADER, User.LOCAL_ORIGIN)
         .header("LCM-Authentication-User", "admin")
         .header("LCM-Authentication-Token", authenticationToken).post(entity1);
 
     Response res2 = getWebTarget().path("client/v0/userGroups/testUserGroup1").request()
+            .header(LCM_AUTHENTICATION_ORIGIN_HEADER, User.LOCAL_ORIGIN)
         .header("LCM-Authentication-User", "admin")
         .header("LCM-Authentication-Token", authenticationToken).delete();
 

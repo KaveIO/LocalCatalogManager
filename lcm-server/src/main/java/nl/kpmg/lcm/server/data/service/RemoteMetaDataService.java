@@ -14,11 +14,15 @@
 
 package nl.kpmg.lcm.server.data.service;
 
+import static nl.kpmg.lcm.common.rest.authentication.AuthorizationConstants.LCM_AUTHENTICATION_ORIGIN_HEADER;
+import static nl.kpmg.lcm.common.rest.authentication.AuthorizationConstants.LCM_AUTHENTICATION_REMOTE_USER_HEADER;
+
 import nl.kpmg.lcm.common.client.HttpsClientFactory;
 import nl.kpmg.lcm.common.configuration.ClientConfiguration;
 import nl.kpmg.lcm.common.data.RemoteLcm;
 import nl.kpmg.lcm.common.exception.LcmException;
 import nl.kpmg.lcm.common.rest.types.MetaDatasRepresentation;
+import nl.kpmg.lcm.server.rest.authorization.PermissionChecker;
 import nl.kpmg.lcm.server.rest.client.version0.types.ConcreteMetaDataRepresentation;
 import nl.kpmg.lcm.server.rest.client.version0.types.ConcreteMetaDatasRepresentation;
 
@@ -26,7 +30,6 @@ import org.glassfish.jersey.client.authentication.HttpAuthenticationFeature;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import java.util.Collections;
@@ -52,34 +55,27 @@ public class RemoteMetaDataService {
   @Autowired
   private RemoteLcmService remoteLcmService;
 
-  // TODO once the Authorization/Auhtenticaion model is implemented this part must be refactored
-  // After the refactoring ther emust be used a user which is used only for remote calls
-  private String adminUser;
-  private String adminPassword;
-
-  @Value("${lcm.server.adminUser}")
-  public final void setAdminUser(final String adminUser) {
-    this.adminUser = adminUser;
-  }
-
-  @Value("${lcm.server.adminPassword}")
-  public final void setAdminPassword(final String adminPassword) {
-    this.adminPassword = adminPassword;
-  }
-
+  @Autowired
+  private LcmIdService lcmIdService;
+  
   private MetaDatasRepresentation fetchRemoteLcmMetadata(RemoteLcm remoteLcm, String searchString) {
     configuration.setTargetHost(remoteLcm.getDomain());
     configuration.setTargetPort(remoteLcm.getPort().toString());
     String fetchUrl = buildRemoteUrl(remoteLcm) + "/" + remoteMetaDataPath + searchString;
 
     HttpAuthenticationFeature credentials =
-        HttpAuthenticationFeature.basicBuilder().credentials(adminUser, adminPassword).build();
+        HttpAuthenticationFeature.basicBuilder()
+                .credentials(remoteLcm.getApplicationId(), remoteLcm.getApplicationKey()).build();
 
     HttpsClientFactory clientFactory = new HttpsClientFactory(configuration, credentials);
 
     Response response = null;
     try {
-      response = clientFactory.createWebTarget(fetchUrl).request().get();
+      String username = PermissionChecker.getThreadLocal().get().getName();
+      String self = lcmIdService.getLcmIdObject().getLcmId();
+      response = clientFactory.createWebTarget(fetchUrl).request()
+              .header(LCM_AUTHENTICATION_REMOTE_USER_HEADER, username)
+              .header(LCM_AUTHENTICATION_ORIGIN_HEADER, self).get();
       if (response.getStatusInfo().getFamily() == Response.Status.Family.SUCCESSFUL) {
         MetaDatasRepresentation datasRepresentation =
             response.readEntity(MetaDatasRepresentation.class);

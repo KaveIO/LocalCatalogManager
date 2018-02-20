@@ -18,10 +18,20 @@ package nl.kpmg.lcm.common.rest.authentication;
  * @author shristov
  */
 public class AuthorizationConstants {
-      /**
+  /**
    * The name of the http request header containing the authentication user.
    */
   public static final String LCM_AUTHENTICATION_USER_HEADER = "LCM-Authentication-User";
+
+  /**
+   * The name of the http request header containing the lcm unique id which identifies user's origin.
+   */
+  public static final String LCM_AUTHENTICATION_ORIGIN_HEADER = "LCM-Authentication-origin";
+
+  /**
+   * The name of the http request header containing the username of the actual user logged on the remote LCM.
+   */
+  public static final String LCM_AUTHENTICATION_REMOTE_USER_HEADER = "LCM-Authentication-remote-user";
 
   /**
    * The name of the http request header containing the authentication token.

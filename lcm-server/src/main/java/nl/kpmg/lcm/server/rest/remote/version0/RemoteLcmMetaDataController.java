@@ -23,7 +23,7 @@ import nl.kpmg.lcm.common.rest.types.MetaDatasRepresentation;
 import nl.kpmg.lcm.server.data.service.FetchEndpointService;
 import nl.kpmg.lcm.server.data.service.MetaDataService;
 import nl.kpmg.lcm.server.data.service.StorageService;
-import nl.kpmg.lcm.server.rest.authentication.Roles;
+import nl.kpmg.lcm.common.Roles;
 import nl.kpmg.lcm.server.rest.authorization.PermissionChecker;
 import nl.kpmg.lcm.server.rest.client.version0.types.ConcreteFetchEndpointRepresentation;
 import nl.kpmg.lcm.server.rest.client.version0.types.ConcreteRemoteLcmMetaDataRepresentation;
@@ -120,13 +120,13 @@ public class RemoteLcmMetaDataController {
       @PathParam("meta_data_id") final String metaDataId) {
 
     MetaData metadata = metaDataService.findById(metaDataId);
-    if(!permissionChecker.check(securityContext, metaDataId)) {
-        throw new LcmException(String.format("Unable to authorize the request.", metaDataId),
-          Response.Status.BAD_REQUEST);
-    }
-
     if (metadata == null) {
       throw new NotFoundException(String.format("MetaData set %s could not be found", metaDataId));
+    }
+
+    if (!permissionChecker.check(securityContext, metaDataId)) {
+      throw new LcmException(String.format("Unable to authorize the request.", metaDataId),
+          Response.Status.BAD_REQUEST);
     }
 
     return new ConcreteRemoteLcmMetaDataRepresentation(metadata);

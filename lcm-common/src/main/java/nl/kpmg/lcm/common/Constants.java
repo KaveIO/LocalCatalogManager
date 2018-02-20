@@ -19,6 +19,8 @@ package nl.kpmg.lcm.common;
  */
 public class Constants {
     public static final String NAMESPACE_SEPARATOR = "/";
+    
+    public static final int MAX_INPUT_VALUE_LENGTH = 128;
 
     private Constants(){}
 }

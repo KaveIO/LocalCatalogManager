@@ -14,20 +14,20 @@
 
 package nl.kpmg.lcm.server;
 
-import nl.kpmg.lcm.common.ServerException;
-import nl.kpmg.lcm.common.GeneralExceptionMapper;
-
 import com.fasterxml.jackson.jaxrs.json.JacksonJsonProvider;
 
+import nl.kpmg.lcm.common.GeneralExceptionMapper;
 import nl.kpmg.lcm.common.HttpsServerProvider;
 import nl.kpmg.lcm.common.HttpsServerWrapper;
+import nl.kpmg.lcm.common.ServerException;
 import nl.kpmg.lcm.common.SslConfigurationException;
 import nl.kpmg.lcm.common.configuration.ServerConfiguration;
+import nl.kpmg.lcm.server.data.service.LcmIdService;
 import nl.kpmg.lcm.server.exception.mapper.LcmExceptionMapper;
 import nl.kpmg.lcm.server.exception.mapper.ValidationExceptionMapper;
 import nl.kpmg.lcm.server.rest.authentication.AuthenticationRequestFilter;
 import nl.kpmg.lcm.server.rest.authentication.ResponseFilter;
-import nl.kpmg.lcm.server.rest.authentication.Roles;
+import nl.kpmg.lcm.common.Roles;
 import nl.kpmg.lcm.server.rest.authorization.AuthorizationRequestFilter;
 import nl.kpmg.lcm.server.task.TaskManager;
 import nl.kpmg.lcm.server.task.TaskManagerException;
@@ -135,6 +135,8 @@ public class Server {
     try {
       restServer = startRestInterface();
       taskManager = startTaskManager();
+      LcmIdService lcmIdService = context.getBean(LcmIdService.class);
+      lcmIdService.create();
     } catch (SslConfigurationException ex) {
       LOGGER.error(
           "Failed starting the LocalCatalogManager due to invalid SSL configuration", ex);

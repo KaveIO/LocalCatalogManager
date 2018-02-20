@@ -14,6 +14,9 @@
 
 package nl.kpmg.lcm.common.data;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonProperty;
+
 import org.springframework.data.mongodb.core.mapping.Document;
 
 @Document(collection = "remote_lcm")
@@ -41,6 +44,10 @@ public class RemoteLcm extends AbstractModel {
   private String status;
 
   private String uniqueId;
+
+  private String applicationId;
+
+  private String applicationKey;
 
   /**
    * @return the domain
@@ -125,4 +132,34 @@ public class RemoteLcm extends AbstractModel {
     public void setUniqueId(String uniqueId) {
         this.uniqueId = uniqueId;
     }
+
+  /**
+   * @return the applicationId
+   */
+  public String getApplicationId() {
+    return applicationId;
+  }
+
+  /**
+   * @param applicationId the applicationId to set
+   */
+  public void setApplicationId(String applicationId) {
+    this.applicationId = applicationId;
+  }
+
+  /**
+   * @return the applicationKey
+   */
+  @JsonIgnore
+  public String getApplicationKey() {
+    return applicationKey;
+  }
+
+  /**
+   * @param applicationKey the applicationKey to set
+   */
+  @JsonProperty
+  public void setApplicationKey(String applicationKey) {
+    this.applicationKey = applicationKey;
+  }
 }

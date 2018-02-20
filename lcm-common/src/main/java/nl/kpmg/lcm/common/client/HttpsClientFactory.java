@@ -14,10 +14,10 @@
 
 package nl.kpmg.lcm.common.client;
 
+import nl.kpmg.lcm.common.ServerException;
 import nl.kpmg.lcm.common.SslConfigurationException;
 import nl.kpmg.lcm.common.SslProvider;
 import nl.kpmg.lcm.common.configuration.ClientConfiguration;
-import nl.kpmg.lcm.common.ServerException;
 
 import org.glassfish.jersey.client.authentication.HttpAuthenticationFeature;
 import org.slf4j.Logger;

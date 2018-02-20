@@ -15,11 +15,15 @@
 package nl.kpmg.lcm.server.rest.authentication;
 
 import static nl.kpmg.lcm.common.rest.authentication.AuthorizationConstants.BASIC_AUTHENTICATION_HEADER;
+import static nl.kpmg.lcm.common.rest.authentication.AuthorizationConstants.LCM_AUTHENTICATION_ORIGIN_HEADER;
+import static nl.kpmg.lcm.common.rest.authentication.AuthorizationConstants.LCM_AUTHENTICATION_REMOTE_USER_HEADER;
 
+import nl.kpmg.lcm.common.data.User;
 import nl.kpmg.lcm.server.LoginException;
 import nl.kpmg.lcm.server.data.service.UserService;
 
 import org.apache.commons.codec.binary.Base64;
+import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -61,10 +65,11 @@ public class BasicAuthenticationManager extends AbstractAuthenticationManager {
   @Override
   public boolean isAuthenticationValid(ContainerRequestContext requestContext) {
     String authenticationString = requestContext.getHeaderString(BASIC_AUTHENTICATION_HEADER);
+    String requestOrigin  = requestContext.getHeaderString(LCM_AUTHENTICATION_ORIGIN_HEADER);
     Credentials credentials = authenticationStringToCredentials(authenticationString);
 
-    if (credentials != null) {
-      return isUsernamePasswordValid(credentials.getUsername(), credentials.getPassword());
+    if (credentials != null && requestOrigin !=  null) {
+      return isUsernamePasswordValid(requestOrigin, credentials.getUsername(), credentials.getPassword());
     }
     return false;
   }
@@ -72,14 +77,19 @@ public class BasicAuthenticationManager extends AbstractAuthenticationManager {
   @Override
   public UserSecurityContext getSecurityContext(ContainerRequestContext requestContext) {
     String authenticationString = requestContext.getHeaderString(BASIC_AUTHENTICATION_HEADER);
+    String remoteUser = requestContext.getHeaderString(LCM_AUTHENTICATION_REMOTE_USER_HEADER);
+    String requestOrigin  = requestContext.getHeaderString(LCM_AUTHENTICATION_ORIGIN_HEADER);
     Credentials credentials = authenticationStringToCredentials(authenticationString);
     if (credentials == null) {
       LOGGER.warn("Unable to parse credentials for authentication string: " + authenticationString);
       return null;
     }
     try {
-      Session session = createSessionForUser(credentials.getUsername());
-      LOGGER.debug("Successfully created session for user: " + credentials.getUsername());
+      // in case this is request for another LCM the the credentials are LCM based and they auhtorize the
+      // LCM, the actual user who is using the remote LCM is passed as header.
+      String username = requestOrigin.equals(User.LOCAL_ORIGIN)? credentials.getUsername(): remoteUser;
+      Session session = createSessionForUser(requestOrigin, username);
+      LOGGER.debug("Successfully created session for user: " + username);
       return new UserSecurityContext(session);
     } catch (LoginException ex) {
       LOGGER.error(ex.getMessage(), ex);
@@ -100,7 +110,7 @@ public class BasicAuthenticationManager extends AbstractAuthenticationManager {
     byte[] decodedBytes = Base64.decodeBase64(encodedUserPassword.getBytes());
     usernameAndPassword = new String(decodedBytes);
 
-    String[] split = usernameAndPassword.split(":");
+    String[] split = StringUtils.split(usernameAndPassword, ":", 2);
 
     if (split.length == 2 && !split[0].isEmpty() && !split[1].isEmpty()) {
 

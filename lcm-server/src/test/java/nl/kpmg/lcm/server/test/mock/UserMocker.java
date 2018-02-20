@@ -15,7 +15,7 @@ package nl.kpmg.lcm.server.test.mock;
 
 import nl.kpmg.lcm.common.data.User;
 import nl.kpmg.lcm.common.rest.authentication.UserPasswordHashException;
-import nl.kpmg.lcm.server.rest.authentication.Roles;
+import nl.kpmg.lcm.common.Roles;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -41,7 +41,6 @@ public class UserMocker {
 
     return user;
   }
-
 
   public static User createRemoteUser(List<String> metadataList, List<String> pathList) {
     User user = new User();

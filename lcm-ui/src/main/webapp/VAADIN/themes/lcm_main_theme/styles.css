@@ -13012,10 +13012,29 @@ div.v-layout.v-horizontal.v-widget {
 	padding-right: 20px;
 }
 
+.lcm_main_theme .margin-top-10 {
+	margin-top: 10px;
+}
+
+.lcm_main_theme .margin-top-20 {
+	margin-top: 20px;
+}
+
+.lcm_main_theme .generate-button {
+	margin-top: 25px;
+	margin-left: 10px;
+	width: 30%;
+}
+
 .lcm_main_theme .width-search-field {
 	width: 300px;
 }
 
 .lcm_main_theme .width-wide-search-field {
 	width: 400px;
+}
+
+.lcm_main_theme .application-key-warning {
+	margin-top: 20px;
+	font-weight: bold;
 }

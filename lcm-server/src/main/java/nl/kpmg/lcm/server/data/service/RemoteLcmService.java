@@ -14,6 +14,8 @@
 
 package nl.kpmg.lcm.server.data.service;
 
+import static nl.kpmg.lcm.common.rest.authentication.AuthorizationConstants.LCM_AUTHENTICATION_ORIGIN_HEADER;
+
 import jersey.repackaged.com.google.common.collect.Lists;
 
 import nl.kpmg.lcm.common.ServerException;
@@ -24,13 +26,12 @@ import nl.kpmg.lcm.common.data.TestResult;
 import nl.kpmg.lcm.common.data.User;
 import nl.kpmg.lcm.common.exception.LcmException;
 import nl.kpmg.lcm.server.data.dao.RemoteLcmDao;
-import nl.kpmg.lcm.server.rest.authentication.Roles;
+import nl.kpmg.lcm.common.Roles;
 
 import org.glassfish.jersey.client.authentication.HttpAuthenticationFeature;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -53,21 +54,8 @@ public class RemoteLcmService {
   @Autowired
   private ClientConfiguration configuration;
 
-  // TODO once the Authorization/Auhtenticaion model is implemented this part must be refactored
-  // After the refactoring ther emust be used a user which is used only for remote calls
-  private String adminUser;
-  private String adminPassword;
-
-
-  @Value("${lcm.server.adminUser}")
-  public final void setAdminUser(final String adminUser) {
-    this.adminUser = adminUser;
-  }
-
-  @Value("${lcm.server.adminPassword}")
-  public final void setAdminPassword(final String adminPassword) {
-    this.adminPassword = adminPassword;
-  }
+  @Autowired
+  private LcmIdService lcmIdService;
 
   public List<RemoteLcm> findAll() {
     return Lists.newLinkedList(dao.findAll());
@@ -77,8 +65,20 @@ public class RemoteLcmService {
     return dao.findOne(id);
   }
 
-  public RemoteLcmDao getDao() {
-    return dao;
+  public RemoteLcm create(RemoteLcm remoteLcm) {
+    return dao.save(remoteLcm);
+  }
+
+  public RemoteLcm update(RemoteLcm remoteLcm) {
+    if(remoteLcm.getApplicationKey() ==  null || remoteLcm.getApplicationKey().length() == 0) {
+        RemoteLcm oldRecord =  dao.findOne(remoteLcm.getId());
+        remoteLcm.setApplicationKey(oldRecord.getApplicationKey());
+    }
+    return dao.save(remoteLcm);
+  }
+
+  public void delete(String  remoteLcmId) {
+      dao.delete(remoteLcmId);
   }
 
   public TestResult testRemoteLcmConnectivity(String id) {
@@ -88,14 +88,17 @@ public class RemoteLcmService {
     String fetchUrl = buildRemoteUrl(remoteLcm) + "/remote/v0/test";
 
     HttpAuthenticationFeature credentials =
-        HttpAuthenticationFeature.basicBuilder().credentials(adminUser, adminPassword).build();
+        HttpAuthenticationFeature.basicBuilder()
+                .credentials(remoteLcm.getApplicationId(), remoteLcm.getApplicationKey()).build();
 
     HttpsClientFactory clientFactory = new HttpsClientFactory(configuration, credentials);
 
     Response response = null;
     TestResult result;
     try {
-      response = clientFactory.createWebTarget(fetchUrl).request().get();
+      String self = lcmIdService.getLcmIdObject().getLcmId();
+      response = clientFactory.createWebTarget(fetchUrl).request()
+              .header(LCM_AUTHENTICATION_ORIGIN_HEADER, self).get();
       if (response.getStatusInfo().getFamily() == Response.Status.Family.SUCCESSFUL) {
         String message = response.readEntity(String.class);
         result = new TestResult(message, TestResult.TestCode.ACCESIBLE);
@@ -123,15 +126,18 @@ public class RemoteLcmService {
 
   public boolean importUsers(String remoteLcmId) {
 
+    RemoteLcm remoteLcm = dao.findOne(remoteLcmId);
     HttpAuthenticationFeature credentials =
-        HttpAuthenticationFeature.basicBuilder().credentials(adminUser, adminPassword).build();
+        HttpAuthenticationFeature.basicBuilder()
+                .credentials(remoteLcm.getApplicationId(), remoteLcm.getApplicationKey()).build();
 
     HttpsClientFactory clientFactory = new HttpsClientFactory(configuration, credentials);
-    RemoteLcm remoteLcm = dao.findOne(remoteLcmId);
     String fetchUrl = buildRemoteUrl(remoteLcm) + "/remote/v0/users/username-list";
     Response response = null;
     try {
-      response = clientFactory.createWebTarget(fetchUrl).request().get();
+      String self = lcmIdService.getLcmIdObject().getLcmId();
+      response = clientFactory.createWebTarget(fetchUrl).request()
+              .header(LCM_AUTHENTICATION_ORIGIN_HEADER, self).get();
       if (response.getStatus() != Response.Status.OK.getStatusCode()) {
         return false;
       }
@@ -141,7 +147,7 @@ public class RemoteLcmService {
            user.setName(username);
            user.setRole(Roles.REMOTE_USER);
            user.setOrigin(remoteLcm.getUniqueId());
-           userService.save(user);
+           userService.create(user);
        }
     } catch (ServerException ex) {
       throw new LcmException(ex.getMessage());

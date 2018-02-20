@@ -17,10 +17,10 @@ package nl.kpmg.lcm.server.data.dao.mongo;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
-import nl.kpmg.lcm.server.LcmBaseTest;
 import nl.kpmg.lcm.common.data.User;
-import nl.kpmg.lcm.server.data.dao.UserDao;
 import nl.kpmg.lcm.common.rest.authentication.UserPasswordHashException;
+import nl.kpmg.lcm.server.LcmBaseTest;
+import nl.kpmg.lcm.server.data.dao.UserDao;
 
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -35,11 +35,12 @@ public class MongoUserDaoTest extends LcmBaseTest {
     User expected = new User();
     expected.setName("testUser");
     expected.setPassword("testPassword");
+    expected.setOrigin(User.LOCAL_ORIGIN);
 
     assertFalse(expected.isHashed());
     userDao.save(expected);
 
-    User actual = userDao.findOneByName("testUser");
+    User actual = userDao.findOneByNameAndOrigin("testUser", User.LOCAL_ORIGIN);
     assertTrue(actual.isHashed());
     assertFalse(actual.getPassword().equals("testPassword"));
     assertTrue(actual.passwordEquals("testPassword"));

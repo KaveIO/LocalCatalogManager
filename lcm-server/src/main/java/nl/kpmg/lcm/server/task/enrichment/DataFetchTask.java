@@ -14,36 +14,38 @@
 
 package nl.kpmg.lcm.server.task.enrichment;
 
+import static nl.kpmg.lcm.common.rest.authentication.AuthorizationConstants.LCM_AUTHENTICATION_ORIGIN_HEADER;
+
 import com.google.gson.stream.JsonReader;
 
+import nl.kpmg.lcm.common.ServerException;
 import nl.kpmg.lcm.common.client.HttpsClientFactory;
 import nl.kpmg.lcm.common.configuration.ClientConfiguration;
-import nl.kpmg.lcm.common.ServerException;
-import nl.kpmg.lcm.server.backend.Backend;
 import nl.kpmg.lcm.common.data.ContentIterator;
 import nl.kpmg.lcm.common.data.Data;
 import nl.kpmg.lcm.common.data.EnrichmentProperties;
 import nl.kpmg.lcm.common.data.IterativeData;
-import nl.kpmg.lcm.server.data.JsonReaderContentIterator;
 import nl.kpmg.lcm.common.data.ProgressIndication;
-import nl.kpmg.lcm.server.data.ProgressIndicationFactory;
 import nl.kpmg.lcm.common.data.RemoteLcm;
 import nl.kpmg.lcm.common.data.StreamingData;
 import nl.kpmg.lcm.common.data.TaskDescription;
 import nl.kpmg.lcm.common.data.TransferSettings;
 import nl.kpmg.lcm.common.data.metadata.DataItemsDescriptor;
 import nl.kpmg.lcm.common.data.metadata.MetaDataWrapper;
+import nl.kpmg.lcm.common.validation.Notification;
+import nl.kpmg.lcm.server.backend.Backend;
+import nl.kpmg.lcm.server.data.JsonReaderContentIterator;
+import nl.kpmg.lcm.server.data.ProgressIndicationFactory;
+import nl.kpmg.lcm.server.data.service.LcmIdService;
 import nl.kpmg.lcm.server.data.service.RemoteLcmService;
 import nl.kpmg.lcm.server.task.EnrichmentTask;
 import nl.kpmg.lcm.server.task.TaskException;
 import nl.kpmg.lcm.server.task.TaskResult;
-import nl.kpmg.lcm.common.validation.Notification;
 
 import org.glassfish.jersey.client.authentication.HttpAuthenticationFeature;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -63,23 +65,13 @@ public class DataFetchTask extends EnrichmentTask {
   private RemoteLcmService remoteLcmService;
 
   @Autowired
+  private LcmIdService lcmIdService;
+
+  @Autowired
   private ClientConfiguration configuration;
 
-  // TODO once the Authorization model is implemented this part may be refactored
-  // Now directly is used admin user and its password. After the refactoring there
-  // could be a user which is used only for remote calls
-  private String adminUser;
-  private String adminPassword;
-
-  @Value("${lcm.server.adminUser}")
-  public final void setAdminUser(final String adminUser) {
-    this.adminUser = adminUser;
-  }
-
-  @Value("${lcm.server.adminPassword}")
-  public final void setAdminPassword(final String adminPassword) {
-    this.adminPassword = adminPassword;
-  }
+  private String applicationId;
+  private String applicationKey;
 
   @Override
   protected TaskResult execute(MetaDataWrapper metadata, Map options) throws TaskException {
@@ -129,14 +121,16 @@ public class DataFetchTask extends EnrichmentTask {
   private InputStream openInputStream(String fetchUrl) throws TaskException {
 
     HttpAuthenticationFeature credentials =
-        HttpAuthenticationFeature.basicBuilder().credentials(adminUser, adminPassword).build();
+        HttpAuthenticationFeature.basicBuilder().credentials(applicationId, applicationKey).build();
 
     HttpsClientFactory clientFactory = new HttpsClientFactory(configuration, credentials);
 
     Response response = null;
 
     try {
-      response = clientFactory.createWebTarget(fetchUrl).request().get();
+      String self = lcmIdService.getLcmIdObject().getLcmId();
+      response = clientFactory.createWebTarget(fetchUrl).request()
+              .header(LCM_AUTHENTICATION_ORIGIN_HEADER, self).get();
     } catch (ServerException ex) {
       throw new TaskException(ex);
     }
@@ -215,6 +209,8 @@ public class DataFetchTask extends EnrichmentTask {
   private void initConfiguration(Map options) {
     String remoteLcmId = options.get("remoteLcm").toString();
     RemoteLcm remoteLcm = remoteLcmService.findOneById(remoteLcmId);
+    applicationId = remoteLcm.getApplicationId();
+    applicationKey = remoteLcm.getApplicationKey();
     configuration.setTargetHost(remoteLcm.getDomain());
     configuration.setTargetPort(remoteLcm.getPort().toString());
   }

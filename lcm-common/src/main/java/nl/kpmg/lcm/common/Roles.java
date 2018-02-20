@@ -12,7 +12,7 @@
  * the License.
  */
 
-package nl.kpmg.lcm.server.rest.authentication;
+package nl.kpmg.lcm.common;
 
 /**
  * Enumeration like class describing the user roles in the system. The controller endpoints are

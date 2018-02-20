@@ -24,12 +24,15 @@ import com.vaadin.ui.VerticalLayout;
 
 import nl.kpmg.lcm.common.ServerException;
 import nl.kpmg.lcm.common.client.ClientException;
+import nl.kpmg.lcm.common.rest.types.LcmIdRepresentation;
 import nl.kpmg.lcm.common.rest.types.TaskDescriptionsRepresentation;
 import nl.kpmg.lcm.common.rest.types.TaskScheduleRepresentation;
 import nl.kpmg.lcm.common.rest.types.UserGroupsRepresentation;
 import nl.kpmg.lcm.common.rest.types.UsersRepresentation;
 import nl.kpmg.lcm.ui.rest.AuthenticationException;
 import nl.kpmg.lcm.ui.rest.RestClientService;
+import nl.kpmg.lcm.ui.view.administration.AuthorizedLcmPanel;
+import nl.kpmg.lcm.ui.view.administration.LcmIdPanel;
 import nl.kpmg.lcm.ui.view.administration.RemoteLcmPanel;
 import nl.kpmg.lcm.ui.view.administration.StoragePanel;
 import nl.kpmg.lcm.ui.view.administration.TasksPanel;
@@ -74,12 +77,16 @@ public class AdministrationViewImpl extends VerticalLayout implements Administra
   private UsersRepresentation users;
   private TaskScheduleRepresentation taskSchedule;
   private TaskDescriptionsRepresentation tasks;
+  private LcmIdRepresentation lcmId;
 
   private TasksPanel tasksPanel;
   private StoragePanel storagePanel;
   private RemoteLcmPanel remoteLcmPanel;
   private UserPanel usersPanel;
   private UserGroupPanel userGroupsPanel;
+  private AuthorizedLcmPanel authorizedLcmPanel;
+
+  private LcmIdPanel lcmIdPanel;
 
   /**
    * Builds the interface.
@@ -107,6 +114,14 @@ public class AdministrationViewImpl extends VerticalLayout implements Administra
     userGroupsPanel = new UserGroupPanel(restClientService);
     tabsheet.addTab(userGroupsPanel, "User groups");
 
+    authorizedLcmPanel = new AuthorizedLcmPanel(restClientService);
+    tabsheet.addTab(authorizedLcmPanel, "Authorized LCMs");
+
+    lcmIdPanel = new LcmIdPanel();
+    tabsheet.addTab(lcmIdPanel, "Local LCM id");
+
+
+
     tabsheet.setHeight("100%");
     root.addComponent(tabsheet);
 
@@ -125,9 +140,12 @@ public class AdministrationViewImpl extends VerticalLayout implements Administra
       taskSchedule = restClientService.getTaskSchedule();
       users = restClientService.getUsers();
       userGroups = restClientService.getUserGroups();
+      lcmId = restClientService.getLcmId();
 
       tasksPanel.setTasks(tasks);
       tasksPanel.setTaskSchedule(taskSchedule);
+
+      lcmIdPanel.setLcmId(lcmId);
 
     } catch (AuthenticationException ex) {
       getUI().getNavigator().navigateTo("");

@@ -15,18 +15,19 @@
 package nl.kpmg.lcm.server.rest.client.version0;
 
 
+import nl.kpmg.lcm.common.Roles;
 import nl.kpmg.lcm.common.data.RemoteLcm;
 import nl.kpmg.lcm.common.data.TestResult;
 import nl.kpmg.lcm.common.exception.LcmValidationException;
 import nl.kpmg.lcm.common.rest.types.RemoteLcmRepresentation;
 import nl.kpmg.lcm.common.rest.types.RemoteLcmsRepresentation;
 import nl.kpmg.lcm.common.validation.Notification;
-import nl.kpmg.lcm.server.data.dao.RemoteLcmDao;
 import nl.kpmg.lcm.server.data.service.RemoteLcmService;
-import nl.kpmg.lcm.server.rest.authentication.Roles;
 import nl.kpmg.lcm.server.rest.client.version0.types.ConcreteRemoteLcmRepresentation;
 import nl.kpmg.lcm.server.rest.client.version0.types.ConcreteRemoteLcmsRepresentation;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import java.util.List;
@@ -49,9 +50,12 @@ import javax.ws.rs.core.Response;
  */
 @Path("client/v0/remoteLcm")
 public class RemoteLcmController {
+  private final int MAX_FIELD_LENTH = 128;
+
+  private static final Logger LOGGER = LoggerFactory.getLogger(RemoteLcmController.class.getName());
 
   @Autowired
-  private RemoteLcmService service;
+  private RemoteLcmService remoteLcmService;
 
   /**
    * Gets all registered lcms.
@@ -62,7 +66,7 @@ public class RemoteLcmController {
   @Produces({"application/nl.kpmg.lcm.rest.types.RemoteLcmsRepresentation+json"})
   @RolesAllowed({Roles.ADMINISTRATOR, Roles.API_USER})
   public RemoteLcmsRepresentation getAll() {
-    List all = service.findAll();
+    List all = remoteLcmService.findAll();
     RemoteLcmsRepresentation lcmsRep = new ConcreteRemoteLcmsRepresentation();
     lcmsRep.setRepresentedItems(ConcreteRemoteLcmRepresentation.class, all);
     return lcmsRep;
@@ -80,8 +84,7 @@ public class RemoteLcmController {
   @RolesAllowed({Roles.ADMINISTRATOR, Roles.API_USER})
   public final RemoteLcmRepresentation getOne(@PathParam("id") final String id) {
 
-    RemoteLcmDao dao = service.getDao();
-    RemoteLcm lcm = dao.findOneById(id);
+    RemoteLcm lcm = remoteLcmService.findOneById(id);
     if (lcm == null) {
       throw new NotFoundException(String.format("LCM %s not found", id));
     }
@@ -97,22 +100,27 @@ public class RemoteLcmController {
   @POST
   @Consumes({"application/nl.kpmg.lcm.server.data.RemoteLcm+json"})
   @RolesAllowed({Roles.ADMINISTRATOR})
-  public final Response add(final RemoteLcm lcm) {
-    service.getDao().save(lcm);
+  public final Response add(final RemoteLcm remoteLcm) {
+    try {
+      validateRemoteLcm(remoteLcm, true);
+    } catch (LcmValidationException ex) {
+      return Response.status(Response.Status.BAD_REQUEST).entity(ex.getMessage()).build();
+    }
+
+    remoteLcmService.create(remoteLcm);
     return Response.ok().build();
   }
 
   @PUT
   @Consumes({"application/nl.kpmg.lcm.server.data.RemoteLcm+json"})
   @RolesAllowed({Roles.ADMINISTRATOR})
-  public final Response update(RemoteLcm lcm) {
-    if(lcm.getId() == null){
-       Notification notification =new Notification();
-       notification.addError("Id is null!");
-       throw new LcmValidationException(notification);
+  public final Response update(RemoteLcm remoteLcm) {
+    try {
+      validateRemoteLcm(remoteLcm, false);
+    } catch (LcmValidationException ex) {
+      return Response.status(Response.Status.BAD_REQUEST).entity(ex.getMessage()).build();
     }
-
-    service.getDao().save(lcm);
+    remoteLcmService.update(remoteLcm);
     return Response.ok().build();
   }
 
@@ -125,38 +133,68 @@ public class RemoteLcmController {
   @DELETE
   @Path("{id}")
   @RolesAllowed({Roles.ADMINISTRATOR})
-  public final Response delete(@PathParam("id") final String id) {
-    validateRemoteLcmId(id);
-    RemoteLcmRepresentation lcm = getOne(id);
-    service.getDao().delete(lcm.getItem());
-    return Response.ok().build();
+  public final Response delete(@PathParam("id") final String remoteLcmId) {
+    try {
+      validateRemoteLcmField(remoteLcmId, "Remote LCM id");
+    } catch (LcmValidationException ex) {
+      return Response.status(Response.Status.BAD_REQUEST).entity(ex.getMessage()).build();
+    }
+
+    RemoteLcm remoteLcm = remoteLcmService.findOneById(remoteLcmId);
+    if (remoteLcm != null) {
+      remoteLcmService.delete(remoteLcmId);
+      return Response.ok().build();
+    } else {
+      return Response.status(Response.Status.NOT_FOUND).build();
+    }
   }
 
   @GET
   @Path("status/{id}")
-  @Produces({"application/nl.kpmg.lcm.rest.types.MetaDatasRepresentation+json"})
+  @Produces({"application/nl.kpmg.lcm.server.data.TestResult+json"})
   @RolesAllowed({Roles.ADMINISTRATOR, Roles.API_USER})
-  public TestResult getRemoteLcmStatus(@PathParam("id") final String id) {
-
-    validateRemoteLcmId(id);
-    return service.testRemoteLcmConnectivity(id);
+  public TestResult getRemoteLcmStatus(@PathParam("id") final String remoteLcmId) {
+    try {
+      validateRemoteLcmField(remoteLcmId, "Remote LCM id");
+    } catch (LcmValidationException ex) {
+      LOGGER.warn("Can not test the connectivity of the remote LCM with id: " + remoteLcmId
+          + ". Error message: " + ex.getMessage());
+      return null;
+    }
+    return remoteLcmService.testRemoteLcmConnectivity(remoteLcmId);
   }
 
   @POST
   @Path("{id}/import-users")
   @RolesAllowed({Roles.ADMINISTRATOR})
   public final Response importUsers(@PathParam("id") final String remoteLcmId) {
-    validateRemoteLcmId(remoteLcmId);
+    try {
+      validateRemoteLcmField(remoteLcmId, "Remote LCM id");
+    } catch (LcmValidationException ex) {
+      return Response.status(Response.Status.BAD_REQUEST).entity(ex.getMessage()).build();
+    }
 
-    service.importUsers(remoteLcmId);
+    remoteLcmService.importUsers(remoteLcmId);
     return Response.ok().build();
   }
 
-  private void validateRemoteLcmId(final String remoteLcmId) throws LcmValidationException {
-    if (remoteLcmId == null || remoteLcmId.isEmpty()) {
+  private void validateRemoteLcmField(final String field, String fieldName) {
+    if (field == null || field.isEmpty() || field.length() > MAX_FIELD_LENTH) {
       Notification notification = new Notification();
-      notification.addError("Id could not be null ot empty!", null);
+      notification.addError(fieldName + " could not be null, empty or longer than "
+          + MAX_FIELD_LENTH + "!", null);
       throw new LcmValidationException(notification);
+    }
+  }
+
+  private void validateRemoteLcm(final RemoteLcm remoteLcm, boolean isRemoteLcmNew) {
+    validateRemoteLcmField(remoteLcm.getName(), "Name");
+    validateRemoteLcmField(remoteLcm.getProtocol(), "Protocol");
+    validateRemoteLcmField(remoteLcm.getDomain(), "Domain");
+    validateRemoteLcmField(remoteLcm.getPort().toString(), "Port");
+    validateRemoteLcmField(remoteLcm.getApplicationId(), "Application id");
+    if (isRemoteLcmNew) {
+      validateRemoteLcmField(remoteLcm.getApplicationKey(), "Application key");
     }
   }
 }

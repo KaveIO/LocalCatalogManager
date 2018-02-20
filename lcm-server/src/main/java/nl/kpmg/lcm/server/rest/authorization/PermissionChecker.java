@@ -20,7 +20,7 @@ import nl.kpmg.lcm.common.data.metadata.MetaDataWrapper;
 import nl.kpmg.lcm.server.data.service.MetaDataService;
 import nl.kpmg.lcm.server.data.service.UserGroupService;
 import nl.kpmg.lcm.server.data.service.UserService;
-import nl.kpmg.lcm.server.rest.authentication.Roles;
+import nl.kpmg.lcm.common.Roles;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -54,6 +54,12 @@ public class PermissionChecker {
 
   public PermissionChecker(AuthorizationService authorizationService) {
     this.authorizationService = authorizationService;
+  }
+
+  static private ThreadLocal threadLocal = new ThreadLocal<User>();
+
+  public static ThreadLocal<User> getThreadLocal() {
+    return threadLocal;
   }
 
   /**
@@ -134,11 +140,6 @@ public class PermissionChecker {
     AUTHORIZATION_LOGGER.info("Unable to authorize access to metadata: " + metadataId
         + " because no permissions are not found for user:" + user.getId());
     return false;
-  }
-
-  private void checkSecurityContext(SecurityContext securityContext, String metadataId) {
-
-
   }
 
   private boolean isUserAuthorizedByUserGroup(User user, MetaDataWrapper metadataWrapper) {

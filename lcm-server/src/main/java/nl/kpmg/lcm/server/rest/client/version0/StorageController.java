@@ -21,7 +21,7 @@ import nl.kpmg.lcm.common.rest.types.StorageRepresentation;
 import nl.kpmg.lcm.common.rest.types.StoragesRepresentation;
 import nl.kpmg.lcm.common.validation.Notification;
 import nl.kpmg.lcm.server.data.service.StorageService;
-import nl.kpmg.lcm.server.rest.authentication.Roles;
+import nl.kpmg.lcm.common.Roles;
 import nl.kpmg.lcm.server.rest.client.version0.types.ConcreteStorageRepresentation;
 import nl.kpmg.lcm.server.rest.client.version0.types.ConcreteStoragesRepresentation;
 
@@ -138,7 +138,7 @@ public class StorageController {
   @Path("status/{id}")
   @Produces({"application/nl.kpmg.lcm.rest.types.MetaDatasRepresentation+json"})
   @RolesAllowed({Roles.ADMINISTRATOR, Roles.API_USER})
-  public TestResult getRemoteLcmStatus(@PathParam("id") final String id)  {
+  public TestResult getStorageStatus(@PathParam("id") final String id)  {
     if (id == null || id.isEmpty()) {
       Notification notification = new Notification();
       notification.addError("Id could not be null ot empty!", null);

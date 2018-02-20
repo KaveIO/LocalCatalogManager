@@ -13,7 +13,7 @@
  */
 package nl.kpmg.lcm.server.documentation;
 
-import nl.kpmg.lcm.server.rest.authentication.Roles;
+import nl.kpmg.lcm.common.Roles;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

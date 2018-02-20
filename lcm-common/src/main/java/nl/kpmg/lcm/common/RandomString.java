@@ -11,7 +11,7 @@
   * or implied. See the License for the specific language governing permissions and limitations under
   * the License.
  */
-package nl.kpmg.lcm.server.test.mock;
+package nl.kpmg.lcm.common;
 
 /**
  *
@@ -53,6 +53,15 @@ public class RandomString {
         if (symbols.length() < 2) throw new IllegalArgumentException();
         this.random = Objects.requireNonNull(random);
         this.symbols = symbols.toCharArray();
+        this.buf = new char[length];
+    }
+
+     public RandomString(int length, String extraSymbols) {
+        if (length < 1) throw new IllegalArgumentException();
+        if (extraSymbols.length() < 2) throw new IllegalArgumentException();
+        this.random = new SecureRandom();
+        extraSymbols = extraSymbols + alphanum;
+        this.symbols =  extraSymbols.toCharArray();
         this.buf = new char[length];
     }
 

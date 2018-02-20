@@ -19,12 +19,14 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.vaadin.data.Property;
 import com.vaadin.event.FieldEvents.TextChangeEvent;
 import com.vaadin.event.FieldEvents.TextChangeListener;
+import com.vaadin.ui.AbstractField;
 import com.vaadin.ui.Button;
 import com.vaadin.ui.ComboBox;
-import com.vaadin.ui.FormLayout;
+import com.vaadin.ui.HorizontalLayout;
 import com.vaadin.ui.Label;
 import com.vaadin.ui.Notification;
 import com.vaadin.ui.TextField;
+import com.vaadin.ui.VerticalLayout;
 import com.vaadin.ui.Window;
 
 import nl.kpmg.lcm.common.ServerException;
@@ -59,6 +61,9 @@ public class RemoteLcmCreateWindow extends Window implements Button.ClickListene
   private RestClientService restClientService;
 
   private TextField nameField = new TextField("Name");
+  private TextField uniqueIdField = new TextField("LCM id");
+  private TextField applicationIdField = new TextField("Application id");
+  private TextField applicationKeyField = new TextField("Application key");
   private ComboBox protocolField = new ComboBox("Protocol");
   private TextField addressField = new TextField("Address");
   private TextField portField = new TextField("Port");
@@ -79,6 +84,10 @@ public class RemoteLcmCreateWindow extends Window implements Button.ClickListene
     this.restClientService = restClientService;
     init();
     nameField.setValue(lcm.getName());
+    uniqueIdField.setValue(lcm.getUniqueId());
+    applicationIdField.setValue(lcm.getApplicationId());
+    // Application key is never displayed in security reasons
+    applicationKeyField.setValue("");
     protocolField.setValue(lcm.getProtocol());
     addressField.setValue(lcm.getDomain());
     portField.setValue(lcm.getPort().toString());
@@ -89,8 +98,6 @@ public class RemoteLcmCreateWindow extends Window implements Button.ClickListene
   private void init() {
     saveButton.addClickListener(this);
     urlLabel.setCaption("URL");
-    FormLayout panelContent = new FormLayout();
-    panelContent.setMargin(true);
     protocolField.setInputPrompt("Select protocol");
     protocolField.addItem("http");
     protocolField.addItem("https");
@@ -103,11 +110,34 @@ public class RemoteLcmCreateWindow extends Window implements Button.ClickListene
     addressField.addTextChangeListener(new URLUpdater(2));
     portField.addTextChangeListener(new URLUpdater(3));
 
-    panelContent.addComponent(nameField);
-    panelContent.addComponent(protocolField);
-    panelContent.addComponent(addressField);
-    panelContent.addComponent(portField);
-    panelContent.addComponent(urlLabel);
+    VerticalLayout panelContent = new VerticalLayout();
+    panelContent.setMargin(true);
+
+    HorizontalLayout nameLayout = createLayoutForField(nameField);
+    panelContent.addComponent(nameLayout);
+
+    HorizontalLayout uniqeIdLayout = createLayoutForField(uniqueIdField, false);
+    panelContent.addComponent(uniqeIdLayout);
+
+    HorizontalLayout applicationIdLayout = createLayoutForField(applicationIdField);
+    panelContent.addComponent(applicationIdLayout);
+
+    HorizontalLayout applicationKeyLayout = createLayoutForField(applicationKeyField);
+    panelContent.addComponent(applicationKeyLayout);
+
+    HorizontalLayout protocolFieldLayout = createLayoutForField(protocolField);
+    panelContent.addComponent(protocolFieldLayout);
+
+    HorizontalLayout addressFieldLayout = createLayoutForField(addressField);
+    panelContent.addComponent(addressFieldLayout);
+
+    HorizontalLayout portFieldLayout = createLayoutForField(portField);
+    panelContent.addComponent(portFieldLayout);
+
+    HorizontalLayout urlLabelLayout = createLayoutForLabel(urlLabel);
+    panelContent.addComponent(urlLabelLayout);
+
+    saveButton.addStyleName("margin-top-10");
     panelContent.addComponent(saveButton);
 
     this.setWidth(PANEL_SIZE);
@@ -139,7 +169,8 @@ public class RemoteLcmCreateWindow extends Window implements Button.ClickListene
   @Override
   public void buttonClick(Button.ClickEvent event) {
     if (event.getSource() == saveButton) {
-      nl.kpmg.lcm.common.validation.Notification notification = new nl.kpmg.lcm.common.validation.Notification();
+      nl.kpmg.lcm.common.validation.Notification notification =
+          new nl.kpmg.lcm.common.validation.Notification();
 
       validate(notification);
       ObjectMapper mapper = new ObjectMapper();
@@ -152,6 +183,9 @@ public class RemoteLcmCreateWindow extends Window implements Button.ClickListene
 
       ObjectNode rootNode = mapper.createObjectNode();
       rootNode.put("name", nameField.getValue());
+      rootNode.put("uniqueId", uniqueIdField.getValue());
+      rootNode.put("applicationId", applicationIdField.getValue());
+      rootNode.put("applicationKey", applicationKeyField.getValue());
       rootNode.put("protocol", protocolField.getValue().toString());
       rootNode.put("domain", addressField.getValue());
       rootNode.put("port", portField.getValue());
@@ -175,6 +209,7 @@ public class RemoteLcmCreateWindow extends Window implements Button.ClickListene
 
   private void validate(nl.kpmg.lcm.common.validation.Notification notification) {
     validateField(nameField, notification);
+    validateField(applicationIdField, notification);
     validateField(addressField, notification);
     validateField(portField, notification);
     if (protocolField.isEmpty()) {
@@ -188,9 +223,14 @@ public class RemoteLcmCreateWindow extends Window implements Button.ClickListene
     }
   }
 
-  private void validateField(TextField field, nl.kpmg.lcm.common.validation.Notification notification) {
+  private void validateField(TextField field,
+      nl.kpmg.lcm.common.validation.Notification notification) {
     if (field.getValue().isEmpty()) {
       notification.addError(field.getCaption() + " can not be empty");
+    }
+
+    if (field.getValue().indexOf(' ') != -1) {
+      notification.addError(field.getCaption() + " can not contain spaces!");
     }
 
     if (field.getValue().length() > MAX_LENGTH) {
@@ -209,5 +249,30 @@ public class RemoteLcmCreateWindow extends Window implements Button.ClickListene
     public void textChange(TextChangeEvent event) {
       updateURLLabel(index, event.getText());
     }
+  }
+
+  private HorizontalLayout createLayoutForField(AbstractField field) {
+    return createLayoutForField(field, true);
+  }
+
+  private HorizontalLayout createLayoutForField(AbstractField field, boolean isRequired) {
+    HorizontalLayout fieldLayout = new HorizontalLayout();
+    field.setRequired(isRequired);
+    field.setWidth("70%");
+    fieldLayout.setWidth("100%");
+    fieldLayout.addStyleName("margin-top-10");
+    fieldLayout.addComponent(field);
+
+    return fieldLayout;
+  }
+
+  private HorizontalLayout createLayoutForLabel(Label label) {
+    HorizontalLayout labelLayout = new HorizontalLayout();
+    label.setWidth("70%");
+    labelLayout.setWidth("100%");
+    labelLayout.addStyleName("margin-top-10");
+    labelLayout.addComponent(label);
+
+    return labelLayout;
   }
 }

@@ -16,10 +16,11 @@ package nl.kpmg.lcm.server.rest;
 
 import static nl.kpmg.lcm.common.rest.authentication.AuthorizationConstants.LCM_AUTHENTICATION_TOKEN_HEADER;
 
+import nl.kpmg.lcm.common.data.User;
 import nl.kpmg.lcm.server.LoginException;
 import nl.kpmg.lcm.server.LogoutException;
 import nl.kpmg.lcm.server.data.service.UserService;
-import nl.kpmg.lcm.server.rest.authentication.Roles;
+import nl.kpmg.lcm.common.Roles;
 import nl.kpmg.lcm.server.rest.authentication.SessionAuthenticationManager;
 import nl.kpmg.lcm.server.rest.client.types.ClientRepresentation;
 import nl.kpmg.lcm.server.rest.client.types.LoginRequest;
@@ -87,7 +88,7 @@ public class Client {
     public final Response login(final LoginRequest loginRequest) {
         String authorizationToken;
         try {
-            authorizationToken = authenticationManager.getAuthenticationToken(
+            authorizationToken = authenticationManager.getAuthenticationToken(User.LOCAL_ORIGIN,
                     loginRequest.getUsername(),
                     loginRequest.getPassword());
             return Response.ok().entity(authorizationToken).build();

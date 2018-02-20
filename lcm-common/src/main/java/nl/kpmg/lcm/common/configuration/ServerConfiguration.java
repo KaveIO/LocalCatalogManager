@@ -21,6 +21,7 @@ package nl.kpmg.lcm.common.configuration;
 public class ServerConfiguration extends BasicConfiguration {
 
   private String serverStorage;
+  private String applicationName;
 
   public String getServerStorage() {
     return serverStorage;
@@ -29,4 +30,13 @@ public class ServerConfiguration extends BasicConfiguration {
   public void setServerStorage(String serverStorage) {
     this.serverStorage = serverStorage;
   }
+
+  public String getApplicationName() {
+    return applicationName;
+  }
+
+  public void setApplicationName(String applicationName) {
+    this.applicationName = applicationName;
+  }
+
 }

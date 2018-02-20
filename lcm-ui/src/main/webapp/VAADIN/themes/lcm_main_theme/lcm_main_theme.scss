@@ -59,11 +59,31 @@
       padding-right: 20px;
   }
 
+
+  .margin-top-10 {
+      margin-top: 10px;
+  }
+
+  .margin-top-20 {
+      margin-top: 20px;
+  }
+
+  .generate-button {
+      margin-top: 25px;
+      margin-left: 10px;
+      width: 30%;
+  }
+
   .width-search-field {
       width: 300px;
   }
 
   .width-wide-search-field {
       width: 400px;
+  }
+
+  .application-key-warning {
+      margin-top: 20px;
+      font-weight:bold;
   }
 }

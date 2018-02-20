@@ -14,6 +14,7 @@
 
 package nl.kpmg.lcm.ui.rest;
 
+import static nl.kpmg.lcm.common.rest.authentication.AuthorizationConstants.LCM_AUTHENTICATION_ORIGIN_HEADER;
 import static nl.kpmg.lcm.common.rest.authentication.AuthorizationConstants.LCM_AUTHENTICATION_TOKEN_HEADER;
 import static nl.kpmg.lcm.common.rest.authentication.AuthorizationConstants.LCM_AUTHENTICATION_USER_HEADER;
 
@@ -27,7 +28,10 @@ import nl.kpmg.lcm.common.client.HttpsClientFactory;
 import nl.kpmg.lcm.common.configuration.ClientConfiguration;
 import nl.kpmg.lcm.common.data.TaskType;
 import nl.kpmg.lcm.common.data.TestResult;
+import nl.kpmg.lcm.common.data.User;
 import nl.kpmg.lcm.common.rest.types.AbstractRepresentation;
+import nl.kpmg.lcm.common.rest.types.AuthorizedLcmsRepresentation;
+import nl.kpmg.lcm.common.rest.types.LcmIdRepresentation;
 import nl.kpmg.lcm.common.rest.types.MetaDatasRepresentation;
 import nl.kpmg.lcm.common.rest.types.RemoteLcmsRepresentation;
 import nl.kpmg.lcm.common.rest.types.StoragesRepresentation;
@@ -103,7 +107,8 @@ public class RestClientService {
   }
 
   private Response post(String uri, String path, Entity<String> payload) throws ServerException {
-    return clientFactory.createWebTarget(uri).path(path).request().post(payload);
+    return clientFactory.createWebTarget(uri).path(path).request()
+            .header(LCM_AUTHENTICATION_ORIGIN_HEADER, User.LOCAL_ORIGIN).post(payload);
   }
 
   public void authenticate(String username, String password)
@@ -238,6 +243,11 @@ public class RestClientService {
     return getDatasRepresentation("client/v0/storage", StoragesRepresentation.class);
   }
 
+  public AuthorizedLcmsRepresentation getAuthorizedLcms()
+      throws AuthenticationException, ServerException, ClientException {
+    return getDatasRepresentation("client/v0/authorizedlcm", AuthorizedLcmsRepresentation.class);
+  }
+
   public RemoteLcmsRepresentation getRemoteLcm() throws AuthenticationException, ServerException,
       ClientException {
     return getDatasRepresentation("client/v0/remoteLcm", RemoteLcmsRepresentation.class);
@@ -319,8 +329,8 @@ public class RestClientService {
     return getDatasRepresentation("client/v0/users", UsersRepresentation.class);
   }
 
-  public UserGroupsRepresentation getUserGroups()
-      throws AuthenticationException, ServerException, ClientException {
+  public UserGroupsRepresentation getUserGroups() throws AuthenticationException, ServerException,
+      ClientException {
     return getDatasRepresentation("client/v0/userGroups", UserGroupsRepresentation.class);
   }
 
@@ -365,6 +375,12 @@ public class RestClientService {
       throw new DataCreationException(String.format("%s - %s", statusInfo.getStatusCode(),
           statusInfo.getReasonPhrase()));
     }
+  }
+
+  public LcmIdRepresentation getLcmId() throws AuthenticationException, ServerException,
+      ClientException {
+    return getDatasRepresentation("client/v0/lcmId", LcmIdRepresentation.class);
+
   }
 
   public void createRemoteLcm(String storage) throws ServerException, DataCreationException,
@@ -444,6 +460,49 @@ public class RestClientService {
       ClientException, DataCreationException {
 
     Invocation.Builder client = getClient(String.format("client/v0/storage/%s", storageId));
+    Response delete = client.delete();
+
+    Response.StatusType statusInfo = delete.getStatusInfo();
+    if (statusInfo.getFamily() != Response.Status.Family.SUCCESSFUL) {
+      throw new DataCreationException(String.format("%s - %s", statusInfo.getStatusCode(),
+          statusInfo.getReasonPhrase()));
+    }
+  }
+
+  public void createAuthorizedLcm(String authorizedLcm) throws ServerException, DataCreationException,
+      AuthenticationException, JsonProcessingException {
+    Entity<String> payload =
+        Entity.entity(authorizedLcm, "application/nl.kpmg.lcm.server.data.AuthorizedLcm+json");
+
+    Invocation.Builder client = getClient("client/v0/authorizedlcm");
+    Response post = client.post(payload);
+
+    Response.StatusType statusInfo = post.getStatusInfo();
+    if (statusInfo.getFamily() != Response.Status.Family.SUCCESSFUL) {
+      throw new DataCreationException(String.format("%s - %s", statusInfo.getStatusCode(),
+          statusInfo.getReasonPhrase()));
+    }
+  }
+
+    public void updateAuthorizedLcm(String authorizedLcm) throws ServerException, DataCreationException,
+      AuthenticationException, JsonProcessingException {
+    Entity<String> payload =
+        Entity.entity(authorizedLcm, "application/nl.kpmg.lcm.server.data.AuthorizedLcm+json");
+
+    Invocation.Builder client = getClient("client/v0/authorizedlcm");
+    Response put = client.put(payload);
+
+    Response.StatusType statusInfo = put.getStatusInfo();
+    if (statusInfo.getFamily() != Response.Status.Family.SUCCESSFUL) {
+      throw new DataCreationException(String.format("%s - %s", statusInfo.getStatusCode(),
+          statusInfo.getReasonPhrase()));
+    }
+  }
+
+  public void deleteAuthorizedLcm(String lcmId) throws AuthenticationException, ServerException,
+      ClientException, DataCreationException {
+
+    Invocation.Builder client = getClient(String.format("client/v0/authorizedlcm/%s", lcmId));
     Response delete = client.delete();
 
     Response.StatusType statusInfo = delete.getStatusInfo();

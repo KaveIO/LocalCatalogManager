@@ -61,19 +61,19 @@ public class SessionAuthenticationManagerTest extends LcmBaseTest {
 
   @Test
   public void testGetAuthenticationToken() throws LoginException {
-    String authenticationToken = authenticationManager.getAuthenticationToken("admin" + "@" + User.LOCAL_ORIGIN, "admin");
+    String authenticationToken = authenticationManager.getAuthenticationToken(User.LOCAL_ORIGIN, "admin", "admin");
     assertNotNull(authenticationToken);
   }
 
   @Test(expected = LoginException.class)
   public void testGetAuthenticationTokenThrowsOnBadPassword() throws LoginException {
     String authenticationToken =
-        authenticationManager.getAuthenticationToken("admin", "not_admin_password");
+        authenticationManager.getAuthenticationToken(User.LOCAL_ORIGIN,"admin", "not_admin_password");
   }
 
   @Test
   public void testAuthenticationTokenIsValid() throws Exception {
-    String authenticationToken = authenticationManager.getAuthenticationToken("admin" + "@" + User.LOCAL_ORIGIN, "admin");
+    String authenticationToken = authenticationManager.getAuthenticationToken(User.LOCAL_ORIGIN, "admin", "admin");
     assertTrue((boolean) isAuthenticationTokenValid.invoke(authenticationManager, "admin",
         authenticationToken));
   }
@@ -85,7 +85,7 @@ public class SessionAuthenticationManagerTest extends LcmBaseTest {
 
   @Test
   public void testLogoutInvalidatesAuthenticationToken() throws Exception {
-    String authenticationToken = authenticationManager.getAuthenticationToken("admin" + "@" + User.LOCAL_ORIGIN, "admin");
+    String authenticationToken = authenticationManager.getAuthenticationToken(User.LOCAL_ORIGIN, "admin", "admin");
     assertTrue((boolean) isAuthenticationTokenValid.invoke(authenticationManager, "admin",
         authenticationToken));
 
@@ -105,10 +105,10 @@ public class SessionAuthenticationManagerTest extends LcmBaseTest {
     User user = new User();
     user.setName("testUser");
     user.setPassword("testPassword");
-    userService.save(user);
+    userService.create(user);
 
     String authenticationToken =
-        authenticationManager.getAuthenticationToken("testUser", "testPassword");
+        authenticationManager.getAuthenticationToken(User.LOCAL_ORIGIN, "testUser", "testPassword");
     assertNotNull(authenticationToken);
   }
 
@@ -117,13 +117,13 @@ public class SessionAuthenticationManagerTest extends LcmBaseTest {
     User user = new User();
     user.setName("admin");
     user.setPassword("testPassword");
-    userService.save(user);
+    userService.create(user);
 
-    String authenticationToken = authenticationManager.getAuthenticationToken("admin" + "@" + User.LOCAL_ORIGIN, "admin");
+    String authenticationToken = authenticationManager.getAuthenticationToken(User.LOCAL_ORIGIN, "admin", "admin");
     assertNotNull(authenticationToken);
 
     try {
-      authenticationManager.getAuthenticationToken("admin", "testPassword");
+      authenticationManager.getAuthenticationToken(User.LOCAL_ORIGIN, "admin", "testPassword");
       fail();
     } catch (LoginException e) {
       assertTrue(true);

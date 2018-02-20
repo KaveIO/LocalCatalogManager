@@ -14,10 +14,12 @@
 
 package nl.kpmg.lcm.server.rest.client.version0;
 
+import static nl.kpmg.lcm.common.rest.authentication.AuthorizationConstants.LCM_AUTHENTICATION_ORIGIN_HEADER;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 
+import nl.kpmg.lcm.common.Roles;
 import nl.kpmg.lcm.common.ServerException;
 import nl.kpmg.lcm.common.data.User;
 import nl.kpmg.lcm.common.rest.authentication.UserPasswordHashException;
@@ -55,17 +57,21 @@ public class UserControllerClientTest extends LcmBaseServerTest {
     // Due to a Spring configuration error we can't login in this thread. We
     // have to create a actuall login call.
     LoginRequest loginRequest = new LoginRequest();
-    loginRequest.setUsername("admin" + "@" + User.LOCAL_ORIGIN);
+    loginRequest.setUsername("admin");
     loginRequest.setPassword("admin");
     Entity<LoginRequest> entity = Entity.entity(loginRequest,
         "application/nl.kpmg.lcm.server.rest.client.types.LoginRequest+json");
-    Response res = getWebTarget().path("client/login").request().post(entity);
+    Response res = getWebTarget().path("client/login").request()
+            .header(LCM_AUTHENTICATION_ORIGIN_HEADER, User.LOCAL_ORIGIN)
+            .post(entity);
     authenticationToken = res.readEntity(String.class);
   }
 
   @After
   public void afterTest() throws ServerException {
-    getWebTarget().path("client/logout").request().header("LCM-Authentication-User", "admin")
+    getWebTarget().path("client/logout").request()
+            .header(LCM_AUTHENTICATION_ORIGIN_HEADER, User.LOCAL_ORIGIN)
+            .header("LCM-Authentication-User", "admin")
         .header("LCM-Authentication-Token", authenticationToken).post(null);
 
     for (User user : userService.findAll()) {
@@ -80,9 +86,10 @@ public class UserControllerClientTest extends LcmBaseServerTest {
     expected.setName("testUser");
     expected.setPassword("testPassword");
 
-    User saved = userService.save(expected);
+    User saved = userService.create(expected);
 
     Response response = getWebTarget().path("client/v0/users/" + saved.getId()).request()
+            .header(LCM_AUTHENTICATION_ORIGIN_HEADER, User.LOCAL_ORIGIN)
         .header("LCM-Authentication-User", "admin")
         .header("LCM-Authentication-Token", authenticationToken).get();
 
@@ -101,10 +108,12 @@ public class UserControllerClientTest extends LcmBaseServerTest {
     User user = new User();
     user.setName("user");
     user.setNewPassword("password");
-    userService.save(user);
+    userService.create(user);
 
     Response res1 =
-        getWebTarget().path("client/v0/users").request().header("LCM-Authentication-User", "admin")
+        getWebTarget().path("client/v0/users").request()
+            .header(LCM_AUTHENTICATION_ORIGIN_HEADER, User.LOCAL_ORIGIN)
+            .header("LCM-Authentication-User", "admin")
             .header("LCM-Authentication-Token", authenticationToken).get();
 
     assertEquals(200, res1.getStatus());
@@ -123,10 +132,13 @@ public class UserControllerClientTest extends LcmBaseServerTest {
       throws LoginException, UserPasswordHashException, ServerException {
     User user = new User();
     user.setName("admin");
+    user.setRole(Roles.ADMINISTRATOR);
     user.setNewPassword("admin");
     Entity<User> entity = Entity.entity(user, "application/nl.kpmg.lcm.server.data.User+json");
     Response res1 =
-        getWebTarget().path("client/v0/users").request().header("LCM-Authentication-User", "admin")
+        getWebTarget().path("client/v0/users").request()
+            .header(LCM_AUTHENTICATION_ORIGIN_HEADER, User.LOCAL_ORIGIN)
+            .header("LCM-Authentication-User", "admin")
             .header("LCM-Authentication-Token", authenticationToken).post(entity);
 
     assertEquals(200, res1.getStatus());
@@ -140,12 +152,13 @@ public class UserControllerClientTest extends LcmBaseServerTest {
     User user = new User();
     user.setName("admin123");
     user.setPassword("admin");
-    User saved = userService.save(user);
+    User saved = userService.create(user);
 
     saved.setNewPassword("admin123");
 
     Response res1 = getWebTarget().path("client/v0/users/" + saved.getId()).request()
-        .header("LCM-Authentication-User", "admin")
+            .header(LCM_AUTHENTICATION_ORIGIN_HEADER, User.LOCAL_ORIGIN)
+            .header("LCM-Authentication-User", "admin")
         .header("LCM-Authentication-Token", authenticationToken)
         .put(Entity.entity(saved, "application/nl.kpmg.lcm.server.data.User+json"));
 
@@ -163,12 +176,13 @@ public class UserControllerClientTest extends LcmBaseServerTest {
     User user = new User();
     user.setName("admin123");
     user.setPassword("admin");
-    User saved = userService.save(user);
+    User saved = userService.create(user);
 
     Response response;
 
     // Delete the user
     response = getWebTarget().path("client/v0/users/" + saved.getId()).request()
+            .header(LCM_AUTHENTICATION_ORIGIN_HEADER, User.LOCAL_ORIGIN)
         .header("LCM-Authentication-User", "admin")
         .header("LCM-Authentication-Token", authenticationToken).delete();
     assertEquals(200, response.getStatus());
@@ -185,7 +199,9 @@ public class UserControllerClientTest extends LcmBaseServerTest {
     Entity<User> entity = Entity.entity(user, "application/nl.kpmg.lcm.server.data.User+json");
 
     Response res1 =
-        getWebTarget().path("client/logout").request().header("LCM-Authentication-User", "admin")
+        getWebTarget().path("client/logout").request()
+            .header(LCM_AUTHENTICATION_ORIGIN_HEADER, User.LOCAL_ORIGIN)
+            .header("LCM-Authentication-User", "admin")
             .header("LCM-Authentication-Token", authenticationToken).post(entity);
 
     assertEquals(200, res1.getStatus());

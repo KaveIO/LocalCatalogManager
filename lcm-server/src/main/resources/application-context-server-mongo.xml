@@ -31,6 +31,10 @@
 
     <mongo:mapping-converter>
         <mongo:custom-converters>
+            <mongo:converter ref="mongoAuthorizedLcmReadConverter"/>
+            <mongo:converter ref="mongoAuthorizedLcmWriteConverter"/>
+            <mongo:converter ref="mongoRemoteLcmReadConverter"/>
+            <mongo:converter ref="mongoRemoteLcmWriteConverter"/>
             <mongo:converter ref="mongoUserReadConverter"/>
             <mongo:converter ref="mongoUserWriteConverter"/>
             <mongo:converter ref="mongoStorageReadConverter"/>
@@ -40,6 +44,10 @@
         </mongo:custom-converters>
     </mongo:mapping-converter>
 
+    <bean id="mongoAuthorizedLcmReadConverter" class="nl.kpmg.lcm.server.data.dao.mongo.MongoAuthorizedLcmReadConverter"/>
+    <bean id="mongoAuthorizedLcmWriteConverter" class="nl.kpmg.lcm.server.data.dao.mongo.MongoAuthorizedLcmWriteConverter"/>
+    <bean id="mongoRemoteLcmReadConverter" class="nl.kpmg.lcm.server.data.dao.mongo.MongoRemoteLcmReadConverter"/>
+    <bean id="mongoRemoteLcmWriteConverter" class="nl.kpmg.lcm.server.data.dao.mongo.MongoRemoteLcmWriteConverter"/>
     <bean id="mongoUserReadConverter" class="nl.kpmg.lcm.server.data.dao.mongo.MongoUserReadConverter"/>
     <bean id="mongoUserWriteConverter" class="nl.kpmg.lcm.server.data.dao.mongo.MongoUserWriteConverter"/>
     <bean id="mongoStorageReadConverter" class="nl.kpmg.lcm.server.data.dao.mongo.MongoStorageReadConverter"/>

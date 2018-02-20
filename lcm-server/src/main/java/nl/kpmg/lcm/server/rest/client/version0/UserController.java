@@ -14,11 +14,14 @@
 
 package nl.kpmg.lcm.server.rest.client.version0;
 
+import static nl.kpmg.lcm.common.Constants.MAX_INPUT_VALUE_LENGTH;
+
+import nl.kpmg.lcm.common.Roles;
 import nl.kpmg.lcm.common.data.User;
-import nl.kpmg.lcm.common.rest.authentication.UserPasswordHashException;
+import nl.kpmg.lcm.common.exception.LcmValidationException;
 import nl.kpmg.lcm.common.rest.types.UsersRepresentation;
+import nl.kpmg.lcm.common.validation.Notification;
 import nl.kpmg.lcm.server.data.service.UserService;
-import nl.kpmg.lcm.server.rest.authentication.Roles;
 import nl.kpmg.lcm.server.rest.client.version0.types.ConcreteUserRepresentation;
 import nl.kpmg.lcm.server.rest.client.version0.types.ConcreteUsersRepresentation;
 
@@ -88,7 +91,6 @@ public class UserController {
   @Path("/{user_id}")
   @RolesAllowed({Roles.ADMINISTRATOR})
   public final Response getUser(@PathParam("user_id") String userId) {
-
     User user = userService.findById(userId);
     if (user != null) {
       return Response.ok(new ConcreteUserRepresentation(user)).build();
@@ -101,27 +103,77 @@ public class UserController {
   @Consumes({"application/nl.kpmg.lcm.server.data.User+json"})
   @RolesAllowed({Roles.ADMINISTRATOR})
   public final Response createNewUser(final User user) {
-    if (user.getOrigin() == null) {
-      user.setOrigin(User.LOCAL_ORIGIN);
+    Notification notification = new Notification();
+    if (user == null) {
+      String message = "Paylaod could not be null. Please add user as payload!";
+      notification.addError(message);
+      LOGGER.debug(message);
+      throw new LcmValidationException(notification);
     }
 
-    userService.save(user);
+    validateInputString(user.getName(), "user name", notification);
+    validateInputString(user.getRole(), "user role", notification);
+    validateInputString(user.getNewPassword(), "user password", notification);
+
+    if (notification.hasErrors()) {
+      LOGGER.debug(notification.errorMessage());
+      throw new LcmValidationException(notification);
+    }
+    userService.create(user);
     return Response.ok().build();
   }
 
   @PUT
-  @Path("/")
   @Consumes({"application/nl.kpmg.lcm.server.data.User+json"})
   @RolesAllowed({Roles.ADMINISTRATOR})
   public final Response modifyUser(final User user) {
-
-    try {
-      userService.updateUser(user);
-      return Response.ok().build();
-    } catch (UserPasswordHashException ex) {
-      LOGGER.error("Password hashing failed during user modification", ex);
-      return Response.serverError().build();
+    Notification notification = new Notification();
+    if (user == null) {
+      String message = "Paylaod could not be null. Please add user as payload!";
+      notification.addError(message);
+      LOGGER.debug(message);
+      throw new LcmValidationException(notification);
     }
+
+    User oldUser = userService.findById(user.getId());
+
+    if (oldUser == null) {
+      String message = "Can not update unexisting user!";
+      notification.addError(message);
+      LOGGER.debug(message);
+      throw new LcmValidationException(notification);
+    }
+
+    validateInputString(user.getName(), "user name", notification);
+    validateInputString(user.getRole(), "user role", notification);
+    if (Roles.REMOTE_USER.equals(oldUser.getRole()) && !user.getRole().equals(Roles.REMOTE_USER)) {
+
+      String message = "Remote user's role could not be changed!";
+      notification.addError(message);
+    }
+
+    if (Roles.REMOTE_USER.equals(user.getRole()) && Roles.ADMINISTRATOR.equals(user.getRole())
+        && Roles.API_USER.equals(user.getRole())) {
+      String message = "Invalid user role!";
+      notification.addError(message);
+    }
+
+    if (Roles.REMOTE_USER.equals(oldUser.getRole()) && user.getNewPassword() != null
+        && user.getNewPassword().length() > 0) {
+
+      String message = "Remote user's role could not be changed!";
+      notification.addError(message);
+    }
+
+
+    if (notification.hasErrors()) {
+      LOGGER.debug(notification.errorMessage());
+      throw new LcmValidationException(notification);
+    }
+
+    userService.update(user);
+    return Response.ok().build();
+
   }
 
   @DELETE
@@ -135,6 +187,18 @@ public class UserController {
       return Response.ok().build();
     } else {
       return Response.status(Status.NOT_FOUND).build();
+    }
+  }
+
+  private void validateInputString(final String value, final String fieldName,
+      Notification notification) {
+    if (value == null || value.length() == 0) {
+      notification.addError("The " + fieldName + " could not be null or empty!");
+    }
+
+    if (value != null && value.length() > MAX_INPUT_VALUE_LENGTH) {
+      notification.addError("The " + fieldName + " could not be longer then: "
+          + MAX_INPUT_VALUE_LENGTH);
     }
   }
 }
