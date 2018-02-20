@@ -13,31 +13,40 @@
  */
 package nl.kpmg.lcm.server.rest.remote.version0;
 
-import nl.kpmg.lcm.server.data.service.MetaDataService;
 import nl.kpmg.lcm.server.rest.authentication.Roles;
 
-import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.stereotype.Component;
 
 import javax.annotation.security.RolesAllowed;
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
-import javax.ws.rs.Produces;
 
 /**
  *
  * @author shristov
  */
-@Path("remote/v0/test")
-public class RemoteLcmTestConectivityController {
+@Component
+@Path("remote/v0/core")
+public class RemoteLcmCoreFuncionalityController {
 
-  @Autowired
-  private MetaDataService metaDataService;
+  private String customId;
+
+
+  @Value("${lcm.server.custom.id}")
+  public final void setUniqueId(final String customId) {
+    this.customId = customId;
+  }
 
   @GET
-  @Produces({"application/nl.kpmg.lcm.rest.types.MetaDataRepresentation+json"})
+  @Path("/id")
   @RolesAllowed({Roles.ANY_USER})
-  public final String testConnectivity() {
+  public final String getLCMId() {
 
-    return "OK";
+    //TODO: need conception how to generate it and store it
+    //most probably we wiillne ed this custom id and will add current time im millis
+    // and some random number/string. after that i must be saved and never generated again
+    //unitil the DB regord exists.
+    return customId;
   }
 }

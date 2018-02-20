@@ -17,21 +17,22 @@ package nl.kpmg.lcm.server.rest.client.version0;
 import com.google.gson.Gson;
 import com.google.gson.stream.JsonWriter;
 
-import nl.kpmg.lcm.server.backend.Backend;
 import nl.kpmg.lcm.common.data.ContentIterator;
 import nl.kpmg.lcm.common.data.Data;
 import nl.kpmg.lcm.common.data.EnrichmentProperties;
 import nl.kpmg.lcm.common.data.FetchEndpoint;
 import nl.kpmg.lcm.common.data.IterativeData;
 import nl.kpmg.lcm.common.data.StreamingData;
-import nl.kpmg.lcm.server.data.dao.FetchEndpointDao;
 import nl.kpmg.lcm.common.data.metadata.MetaData;
 import nl.kpmg.lcm.common.data.metadata.MetaDataWrapper;
+import nl.kpmg.lcm.common.exception.LcmException;
+import nl.kpmg.lcm.server.backend.Backend;
+import nl.kpmg.lcm.server.data.dao.FetchEndpointDao;
 import nl.kpmg.lcm.server.data.service.FetchEndpointService;
 import nl.kpmg.lcm.server.data.service.MetaDataService;
 import nl.kpmg.lcm.server.data.service.StorageService;
-import nl.kpmg.lcm.common.exception.LcmException;
 import nl.kpmg.lcm.server.rest.authentication.Roles;
+import nl.kpmg.lcm.server.rest.authorization.PermissionChecker;
 
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -55,6 +56,7 @@ import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
+import javax.ws.rs.core.SecurityContext;
 import javax.ws.rs.core.StreamingOutput;
 
 /**
@@ -72,6 +74,9 @@ public class FetchEndpointController {
 
   @Autowired
   private StorageService storageService;
+  
+  @Autowired
+  private PermissionChecker permissionChecker;
 
   @Context
   HttpServletRequest request;
@@ -80,9 +85,10 @@ public class FetchEndpointController {
   @Path("/{id}")
   @Produces(MediaType.APPLICATION_OCTET_STREAM)
   @RolesAllowed({Roles.ADMINISTRATOR, Roles.REMOTE_USER})
-  public final Response getOne(@PathParam("id") final String id, @QueryParam("data_key") String dataKey) throws URISyntaxException,
+  public final Response getOne(@Context SecurityContext securityContext,
+          @PathParam("id") final String id, @QueryParam("data_key") String dataKey) throws URISyntaxException,
       IOException {
-
+      
     FetchEndpointDao dao = fetchEndpointService.getDao();
     FetchEndpoint fe = dao.findOneById(id);
 
@@ -94,6 +100,11 @@ public class FetchEndpointController {
       throw new LcmException(String.format("FetchEndpoint %s has expired", id),
           Response.Status.BAD_REQUEST);
     }
+    if(!permissionChecker.check(securityContext, fe.getMetadataId())){
+        throw new LcmException(String.format("Unable to authorize the request.", id),
+          Response.Status.BAD_REQUEST);
+    }
+
     MetaData md = metaDataService.findById(fe.getMetadataId());
     MetaDataWrapper metaDataWrapper = new MetaDataWrapper(md);
     if (metaDataWrapper.isEmpty()) {

@@ -126,6 +126,7 @@ public class RemoteLcmController {
   @Path("{id}")
   @RolesAllowed({Roles.ADMINISTRATOR})
   public final Response delete(@PathParam("id") final String id) {
+    validateRemoteLcmId(id);
     RemoteLcmRepresentation lcm = getOne(id);
     service.getDao().delete(lcm.getItem());
     return Response.ok().build();
@@ -135,14 +136,27 @@ public class RemoteLcmController {
   @Path("status/{id}")
   @Produces({"application/nl.kpmg.lcm.rest.types.MetaDatasRepresentation+json"})
   @RolesAllowed({Roles.ADMINISTRATOR, Roles.API_USER})
-  public TestResult getRemoteLcmStatus(@PathParam("id") final String id)  {
-    if (id == null || id.isEmpty()) {
+  public TestResult getRemoteLcmStatus(@PathParam("id") final String id) {
+
+    validateRemoteLcmId(id);
+    return service.testRemoteLcmConnectivity(id);
+  }
+
+  @POST
+  @Path("{id}/import-users")
+  @RolesAllowed({Roles.ADMINISTRATOR})
+  public final Response importUsers(@PathParam("id") final String remoteLcmId) {
+    validateRemoteLcmId(remoteLcmId);
+
+    service.importUsers(remoteLcmId);
+    return Response.ok().build();
+  }
+
+  private void validateRemoteLcmId(final String remoteLcmId) throws LcmValidationException {
+    if (remoteLcmId == null || remoteLcmId.isEmpty()) {
       Notification notification = new Notification();
       notification.addError("Id could not be null ot empty!", null);
       throw new LcmValidationException(notification);
     }
-
-    return service.testRemoteLcmConnectivity(id);
   }
-
 }

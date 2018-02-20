@@ -13,9 +13,9 @@
  */
 package nl.kpmg.lcm.server.rest.authentication;
 
+import nl.kpmg.lcm.common.data.User;
 import nl.kpmg.lcm.common.rest.authentication.UserPasswordHashException;
 import nl.kpmg.lcm.server.LoginException;
-import nl.kpmg.lcm.common.data.User;
 import nl.kpmg.lcm.server.data.service.UserService;
 
 import org.slf4j.Logger;
@@ -64,7 +64,9 @@ public abstract class AbstractAuthenticationManager implements AuthenticationMan
     this.adminPassword = adminPassword;
   }
 
-  protected boolean isUsernamePasswordValid(final String username, final String password) {
+  protected boolean isUsernamePasswordValid(String username, final String password) {
+    //TODO refactor this when implementing the auhtentication
+    username  =  (username.split("@"))[0];
     if (username.equals(adminUser)) {
       LOGGER.info("Caught login attempt for admin user");
       if (password.equals(adminPassword)) {
@@ -72,7 +74,7 @@ public abstract class AbstractAuthenticationManager implements AuthenticationMan
       }
     } else {
       LOGGER.info("Caught login attempt for regular user");
-      User user = userService.getUserDao().findOneByName(username);
+      User user = userService.findOneByName(username);
       try {
         if (user != null && user.passwordEquals(password)) {
           return true;
@@ -96,7 +98,7 @@ public abstract class AbstractAuthenticationManager implements AuthenticationMan
       remoteLcmUID = splitted[1];
     }
 
-    if (remoteLcmUID != null && username.equals(adminUser)) {
+    if (remoteLcmUID !=  null && !remoteLcmUID.equals(User.LOCAL_ORIGIN) && username.equals(adminUser)) {
       throw new LoginException("Remote user is trying to login "
           + "with preconfiguredadmin user! User: " + username + " and lcmUID: " + remoteLcmUID);
     }
@@ -104,7 +106,7 @@ public abstract class AbstractAuthenticationManager implements AuthenticationMan
     if (username.equals(adminUser)) {
       return new Session(username, Roles.ADMINISTRATOR, UserOrigin.CONFIGURED, remoteLcmUID);
     } else {
-      User user = userService.getUserDao().findOneByName(username);
+      User user = userService.findOneByName(username);
       String role = remoteLcmUID != null ? user.getRole() : Roles.REMOTE_USER;
       if (user != null) {
         return new Session(user.getName(), role, UserOrigin.LOCAL, remoteLcmUID);

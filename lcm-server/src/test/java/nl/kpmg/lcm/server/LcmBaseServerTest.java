@@ -29,9 +29,9 @@ import javax.ws.rs.client.WebTarget;
 public abstract class LcmBaseServerTest extends LcmBaseTest {
 
   /**
-   * Token used for login as admin. Contains: Basic BASE64(admin + ":" + admin).
+   * Token used for login as admin. Contains: Basic BASE64(admin@local + ":" + admin).
    */
-  protected static String basicAuthTokenAdmin = "Basic YWRtaW46YWRtaW4=";
+    protected static String basicAuthTokenAdmin = "Basic YWRtaW5AbG9jYWw6YWRtaW4=";
 
   protected static Server server;
 

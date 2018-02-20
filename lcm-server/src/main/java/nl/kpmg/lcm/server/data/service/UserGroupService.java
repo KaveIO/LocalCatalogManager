@@ -22,6 +22,7 @@ import nl.kpmg.lcm.server.data.dao.UserGroupDao;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.util.LinkedList;
 import java.util.List;
 
 /**
@@ -33,6 +34,38 @@ public class UserGroupService {
 
   @Autowired
   private UserGroupDao userGroupDao;
+
+  public List<UserGroup> findByUserId(String userId) {
+    List<UserGroup> all = Lists.newLinkedList(userGroupDao.findAll());
+    List<UserGroup> selected =  new LinkedList<UserGroup>();
+    
+    for(UserGroup group :  all) {
+        if(group.getUsers() !=  null){
+            for(String id: group.getUsers()) {
+                if(userId.equals(id)) {
+                    selected.add(group);                
+                    break;
+                }
+            }
+        }
+    }
+            
+    return selected;    
+  }
+
+  
+  
+  public UserGroup findOne(String userGroupId) {
+    return userGroupDao.findOne(userGroupId);
+  }
+
+  public void delete(UserGroup userGroup) {
+    userGroupDao.delete(userGroup);
+  }
+
+  public UserGroup save(UserGroup userGroup) {
+    return userGroupDao.save(userGroup);
+  }
 
   public List<UserGroup> findAll() {
     return Lists.newLinkedList(userGroupDao.findAll());

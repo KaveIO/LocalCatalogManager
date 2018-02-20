@@ -13,10 +13,15 @@
  */
 package nl.kpmg.lcm.server.rest.remote.version0;
 
-import nl.kpmg.lcm.server.data.service.MetaDataService;
+import nl.kpmg.lcm.common.data.User;
+import nl.kpmg.lcm.server.data.service.UserService;
 import nl.kpmg.lcm.server.rest.authentication.Roles;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
+
+import java.util.LinkedList;
+import java.util.List;
 
 import javax.annotation.security.RolesAllowed;
 import javax.ws.rs.GET;
@@ -27,17 +32,28 @@ import javax.ws.rs.Produces;
  *
  * @author shristov
  */
-@Path("remote/v0/test")
-public class RemoteLcmTestConectivityController {
+@Component
+@Path("remote/v0/users")
+public class RemoteLcmUserController {
 
+  /**
+   * The user service.
+   */
   @Autowired
-  private MetaDataService metaDataService;
+  private UserService userService;
 
   @GET
-  @Produces({"application/nl.kpmg.lcm.rest.types.MetaDataRepresentation+json"})
-  @RolesAllowed({Roles.ANY_USER})
-  public final String testConnectivity() {
+  @Produces({"application/nl.kpmg.lcm.rest.types.UsersRepresentation+json"})
+  @Path("/username-list")
+  @RolesAllowed({Roles.ADMINISTRATOR, Roles.REMOTE_USER})
+  public final List<String> getUsernames() {
+    List<User> users = userService.findAll();
+    List<String> usernameList = new LinkedList();
+    for(User user : users) {
+        usernameList.add(user.getName());
+    }
 
-    return "OK";
+    return usernameList;
   }
+
 }

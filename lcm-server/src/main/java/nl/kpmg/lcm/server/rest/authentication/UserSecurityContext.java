@@ -14,6 +14,8 @@
 
 package nl.kpmg.lcm.server.rest.authentication;
 
+import nl.kpmg.lcm.common.data.User;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -46,12 +48,11 @@ public final class UserSecurityContext implements SecurityContext {
 
   @Override
   public Principal getUserPrincipal() {
-    return new Principal() {
-      @Override
-      public String getName() {
-        return session.getUsername();
-      }
-    };
+    User user = new User();
+    user.setName(session.getUsername());
+    user.setRole(session.getRole());
+    user.setOrigin(session.getLcmUID());
+    return user;
   }
 
   @Override
@@ -71,11 +72,4 @@ public final class UserSecurityContext implements SecurityContext {
     return null;
   }
 
-  public String getUserRole() {
-    return session.getRole();
-  }
-
-  public String getRemoteLcmUID() {
-    return session.getLcmUID();
-  }
 }

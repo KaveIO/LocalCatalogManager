@@ -14,12 +14,11 @@
 
 package nl.kpmg.lcm.server.rest.client.version0;
 
-import nl.kpmg.lcm.common.rest.types.UsersRepresentation;
 import nl.kpmg.lcm.common.data.User;
-import nl.kpmg.lcm.server.data.dao.UserDao;
+import nl.kpmg.lcm.common.rest.authentication.UserPasswordHashException;
+import nl.kpmg.lcm.common.rest.types.UsersRepresentation;
 import nl.kpmg.lcm.server.data.service.UserService;
 import nl.kpmg.lcm.server.rest.authentication.Roles;
-import nl.kpmg.lcm.common.rest.authentication.UserPasswordHashException;
 import nl.kpmg.lcm.server.rest.client.version0.types.ConcreteUserRepresentation;
 import nl.kpmg.lcm.server.rest.client.version0.types.ConcreteUsersRepresentation;
 
@@ -89,9 +88,8 @@ public class UserController {
   @Path("/{user_id}")
   @RolesAllowed({Roles.ADMINISTRATOR})
   public final Response getUser(@PathParam("user_id") String userId) {
-    UserDao userDao = userService.getUserDao();
 
-    User user = userDao.findOne(userId);
+    User user = userService.findById(userId);
     if (user != null) {
       return Response.ok(new ConcreteUserRepresentation(user)).build();
     } else {
@@ -103,18 +101,22 @@ public class UserController {
   @Consumes({"application/nl.kpmg.lcm.server.data.User+json"})
   @RolesAllowed({Roles.ADMINISTRATOR})
   public final Response createNewUser(final User user) {
-    userService.getUserDao().save(user);
+    if (user.getOrigin() == null) {
+      user.setOrigin(User.LOCAL_ORIGIN);
+    }
+
+    userService.save(user);
     return Response.ok().build();
   }
 
   @PUT
-  @Path("/{user_id}")
+  @Path("/")
   @Consumes({"application/nl.kpmg.lcm.server.data.User+json"})
   @RolesAllowed({Roles.ADMINISTRATOR})
-  public final Response modifyUser(@PathParam("user_id") final String userId, final User user) {
+  public final Response modifyUser(final User user) {
 
     try {
-      userService.updateUser(userId, user);
+      userService.updateUser(user);
       return Response.ok().build();
     } catch (UserPasswordHashException ex) {
       LOGGER.error("Password hashing failed during user modification", ex);
@@ -126,11 +128,10 @@ public class UserController {
   @Path("/{user_id}")
   @RolesAllowed({Roles.ADMINISTRATOR})
   public final Response deleteUser(@PathParam("user_id") final String userId) {
-    UserDao userDao = userService.getUserDao();
-    User user = userDao.findOne(userId);
+    User user = userService.findById(userId);
 
     if (user != null) {
-      userDao.delete(user);
+      userService.delete(user);
       return Response.ok().build();
     } else {
       return Response.status(Status.NOT_FOUND).build();

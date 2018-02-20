@@ -16,6 +16,7 @@ package nl.kpmg.lcm.common.data;
 
 import org.springframework.data.mongodb.core.mapping.Document;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import javax.annotation.security.PermitAll;
@@ -34,6 +35,24 @@ public class UserGroup extends AbstractModel {
 
   private List<String> users;
 
+  private List<String> allowedMetadataList;
+
+  private List<String> allowedPathList;
+
+  public boolean addUser(String userId) {
+    if (users == null) {
+      users = new ArrayList();
+    }
+    return users.add(userId);
+  }
+
+  public boolean removeUser(String userId) {
+    if (users == null) {
+      return false;
+    }
+    return users.remove(userId);
+  }
+
   public String getName() {
     return name;
   }
@@ -48,5 +67,21 @@ public class UserGroup extends AbstractModel {
 
   public void setUsers(List<String> users) {
     this.users = users;
+  }
+
+  public List<String> getAllowedMetadataList() {
+    return allowedMetadataList;
+  }
+
+  public void setAllowedMetadataList(List<String> allowedMetadataList) {
+    this.allowedMetadataList = allowedMetadataList;
+  }
+
+  public List<String> getAllowedPathList() {
+    return allowedPathList;
+  }
+
+  public void setAllowedPathList(List<String> allowedPathList) {
+    this.allowedPathList = allowedPathList;
   }
 }

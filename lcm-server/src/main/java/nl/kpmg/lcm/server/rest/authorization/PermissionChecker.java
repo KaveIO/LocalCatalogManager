@@ -13,10 +13,21 @@
  */
 package nl.kpmg.lcm.server.rest.authorization;
 
+import nl.kpmg.lcm.common.data.User;
+import nl.kpmg.lcm.common.data.UserGroup;
+import nl.kpmg.lcm.common.data.metadata.MetaData;
+import nl.kpmg.lcm.common.data.metadata.MetaDataWrapper;
+import nl.kpmg.lcm.server.data.service.MetaDataService;
+import nl.kpmg.lcm.server.data.service.UserGroupService;
+import nl.kpmg.lcm.server.data.service.UserService;
 import nl.kpmg.lcm.server.rest.authentication.Roles;
-import nl.kpmg.lcm.server.rest.authentication.UserSecurityContext;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+
+import java.util.List;
 
 import javax.ws.rs.core.SecurityContext;
 
@@ -26,7 +37,18 @@ import javax.ws.rs.core.SecurityContext;
  */
 @Service
 public class PermissionChecker {
+  private static final Logger AUTHORIZATION_LOGGER = LoggerFactory.getLogger("authorizationLogger");
+
   private AuthorizationService authorizationService;
+
+  @Autowired
+  private UserGroupService userGroupService;
+
+  @Autowired
+  private UserService userService;
+
+  @Autowired
+  private MetaDataService metadataService;
 
   public PermissionChecker() {}
 
@@ -51,12 +73,8 @@ public class PermissionChecker {
 
   public boolean check(SecurityContext securityContext, String resourceId, String[] defaultRoles) {
     if (authorizationService != null) {
-      if (!(securityContext instanceof UserSecurityContext)) {
-        return false;
-      }
-
-      UserSecurityContext userSecurityContext = (UserSecurityContext) securityContext;
-      if (authorizationService.isAuthorized(resourceId, userSecurityContext.getUserRole())) {
+      User principal = (User) securityContext.getUserPrincipal();
+      if (authorizationService.isAuthorized(resourceId, principal.getRole())) {
         return true;
       }
 
@@ -72,4 +90,105 @@ public class PermissionChecker {
     return false;
   }
 
+  public boolean check(SecurityContext securityContext, String metadataId) {
+    if (securityContext == null || metadataId == null) {
+      AUTHORIZATION_LOGGER.info("Unable to authorize access to metadata: " + metadataId
+          + " because security condext is null");
+      return false;
+    }
+
+    User principal = (User) securityContext.getUserPrincipal();
+
+    // TODO administratore role has full acess?
+    if (principal.getRole().equals(Roles.ADMINISTRATOR)) {
+      AUTHORIZATION_LOGGER.info("Authorized admin user: " + principal.getName()
+          + " to access metadata: " + metadataId);
+      return true;
+    }
+
+    User user = userService.findOneByNameAndOrigin(principal.getName(), principal.getOrigin());
+
+    if (user == null) {
+      AUTHORIZATION_LOGGER.info("Unable to authorize access to metadata: " + metadataId
+          + " because user is not found: " + principal.getName() + "@" + principal.getOrigin());
+      return false;
+    }
+
+    MetaData metadata = metadataService.findById(metadataId);
+    if (metadata == null) {
+      AUTHORIZATION_LOGGER.info("Unable to authorize access to metadata: " + metadataId
+          + " because metadata is not found. User:" + user.getId());
+      return false;
+    }
+
+    MetaDataWrapper metadataWrapper = new MetaDataWrapper(metadata);
+
+    if (isUserDirectlyAuthorized(user, metadataWrapper)) {
+      return true;
+    }
+
+    if (isUserAuthorizedByUserGroup(user, metadataWrapper)) {
+      return true;
+    }
+
+    AUTHORIZATION_LOGGER.info("Unable to authorize access to metadata: " + metadataId
+        + " because no permissions are not found for user:" + user.getId());
+    return false;
+  }
+
+  private void checkSecurityContext(SecurityContext securityContext, String metadataId) {
+
+
+  }
+
+  private boolean isUserAuthorizedByUserGroup(User user, MetaDataWrapper metadataWrapper) {
+    List<UserGroup> userGroupList = userGroupService.findByUserId(user.getId());
+    for (UserGroup group : userGroupList) {
+      if (group.getAllowedMetadataList() != null) {
+        for (String id : group.getAllowedMetadataList()) {
+          if (metadataWrapper.getId().equals(id)) {
+            AUTHORIZATION_LOGGER.info("Authorized user: " + user.getId() + " to access metadata: "
+                + metadataWrapper.getId()
+                + ".  Reason : User is part of directly authorized group:" + group.getId());
+            return true;
+          }
+        }
+      }
+    }
+    for (UserGroup group : userGroupList) {
+      if (group.getAllowedPathList() != null) {
+        for (String path : group.getAllowedPathList()) {
+          if (metadataWrapper.getData().getPath().startsWith(path)) {
+            AUTHORIZATION_LOGGER.info("Authorized user: " + user.getId() + " to access metadata: "
+                + metadataWrapper.getId() + ".  Reason : User is part of authorized group:"
+                + group.getId());
+            return true;
+          }
+        }
+      }
+    }
+    return false;
+  }
+
+  private boolean isUserDirectlyAuthorized(User user, MetaDataWrapper metadataWrapper) {
+    if (user.getAllowedMetadataList() != null) {
+      for (String id : user.getAllowedMetadataList()) {
+        if (metadataWrapper.getId().equals(id)) {
+          AUTHORIZATION_LOGGER.info("Authorized user: " + user.getId() + " to access metadata: "
+              + metadataWrapper.getId() + ".  Reason : User is directly authorized.");
+          return true;
+        }
+      }
+    }
+    if (user.getAllowedPathList() != null) {
+      for (String path : user.getAllowedPathList()) {
+        if (metadataWrapper.getData().getPath().startsWith(path)) {
+          AUTHORIZATION_LOGGER.info("Authorized user: " + user.getId() + " to access metadata: "
+              + metadataWrapper.getId() + ".  Reason : User is authorized by path.");
+          return true;
+        }
+      }
+    }
+    return false;
+  }
 }

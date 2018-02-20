@@ -18,16 +18,15 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 
+import nl.kpmg.lcm.common.ServerException;
+import nl.kpmg.lcm.common.data.User;
+import nl.kpmg.lcm.common.rest.authentication.UserPasswordHashException;
 import nl.kpmg.lcm.common.rest.types.UserRepresentation;
 import nl.kpmg.lcm.common.rest.types.UsersRepresentation;
 import nl.kpmg.lcm.server.LcmBaseServerTest;
 import nl.kpmg.lcm.server.LoginException;
-import nl.kpmg.lcm.common.ServerException;
-import nl.kpmg.lcm.common.data.User;
-import nl.kpmg.lcm.server.data.dao.UserDao;
 import nl.kpmg.lcm.server.data.service.UserService;
 import nl.kpmg.lcm.server.rest.authentication.SessionAuthenticationManager;
-import nl.kpmg.lcm.common.rest.authentication.UserPasswordHashException;
 import nl.kpmg.lcm.server.rest.client.types.LoginRequest;
 
 import org.junit.After;
@@ -56,7 +55,7 @@ public class UserControllerClientTest extends LcmBaseServerTest {
     // Due to a Spring configuration error we can't login in this thread. We
     // have to create a actuall login call.
     LoginRequest loginRequest = new LoginRequest();
-    loginRequest.setUsername("admin");
+    loginRequest.setUsername("admin" + "@" + User.LOCAL_ORIGIN);
     loginRequest.setPassword("admin");
     Entity<LoginRequest> entity = Entity.entity(loginRequest,
         "application/nl.kpmg.lcm.server.rest.client.types.LoginRequest+json");
@@ -69,21 +68,19 @@ public class UserControllerClientTest extends LcmBaseServerTest {
     getWebTarget().path("client/logout").request().header("LCM-Authentication-User", "admin")
         .header("LCM-Authentication-Token", authenticationToken).post(null);
 
-    UserDao userDao = userService.getUserDao();
-    for (User user : userDao.findAll()) {
-      userDao.delete(user);
+    for (User user : userService.findAll()) {
+      userService.delete(user);
     }
   }
 
   @Test
   public void testGetUserTarget()
       throws LoginException, UserPasswordHashException, ServerException {
-    UserDao userDao = userService.getUserDao();
     User expected = new User();
     expected.setName("testUser");
     expected.setPassword("testPassword");
 
-    User saved = userDao.save(expected);
+    User saved = userService.save(expected);
 
     Response response = getWebTarget().path("client/v0/users/" + saved.getId()).request()
         .header("LCM-Authentication-User", "admin")
@@ -100,12 +97,11 @@ public class UserControllerClientTest extends LcmBaseServerTest {
 
   @Test
   public void testGetUsersWebTarget() throws LoginException, ServerException {
-    UserDao userDao = userService.getUserDao();
 
     User user = new User();
     user.setName("user");
     user.setNewPassword("password");
-    userDao.save(user);
+    userService.save(user);
 
     Response res1 =
         getWebTarget().path("client/v0/users").request().header("LCM-Authentication-User", "admin")
@@ -140,12 +136,11 @@ public class UserControllerClientTest extends LcmBaseServerTest {
   @Ignore //This test is totaly missmatched this should be reworked!
   public void testModifyUserWebTarget()
       throws LoginException, UserPasswordHashException, ServerException {
-    UserDao userDao = userService.getUserDao();
 
     User user = new User();
     user.setName("admin123");
     user.setPassword("admin");
-    User saved = userDao.save(user);
+    User saved = userService.save(user);
 
     saved.setNewPassword("admin123");
 
@@ -156,20 +151,19 @@ public class UserControllerClientTest extends LcmBaseServerTest {
 
     assertEquals(200, res1.getStatus());
 
-    User actual = userDao.findOneByName("admin123");
+    User actual = userService.findOneByName("admin123");
     assertTrue(actual.passwordEquals("admin123"));
   }
 
   @Test
   public void testDeleteUserWebTarget()
       throws LoginException, UserPasswordHashException, ServerException {
-    UserDao userDao = userService.getUserDao();
-    assertNull(userDao.findOneByName("admin123"));
+    assertNull(userService.findOneByName("admin123"));
 
     User user = new User();
     user.setName("admin123");
     user.setPassword("admin");
-    User saved = userDao.save(user);
+    User saved = userService.save(user);
 
     Response response;
 
@@ -179,8 +173,8 @@ public class UserControllerClientTest extends LcmBaseServerTest {
         .header("LCM-Authentication-Token", authenticationToken).delete();
     assertEquals(200, response.getStatus());
 
-    assertNull(userDao.findOne(saved.getId()));
-    assertNull(userDao.findOneByName(saved.getName()));
+    assertNull(userService.findById(saved.getId()));
+    assertNull(userService.findOneByName(saved.getName()));
   }
 
   @Test

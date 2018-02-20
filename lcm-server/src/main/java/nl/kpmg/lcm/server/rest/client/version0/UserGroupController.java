@@ -14,9 +14,8 @@
 
 package nl.kpmg.lcm.server.rest.client.version0;
 
-import nl.kpmg.lcm.common.rest.types.UserGroupsRepresentation;
 import nl.kpmg.lcm.common.data.UserGroup;
-import nl.kpmg.lcm.server.data.dao.UserGroupDao;
+import nl.kpmg.lcm.common.rest.types.UserGroupsRepresentation;
 import nl.kpmg.lcm.server.data.service.UserGroupService;
 import nl.kpmg.lcm.server.rest.authentication.Roles;
 import nl.kpmg.lcm.server.rest.client.version0.types.ConcreteUserGroupRepresentation;
@@ -68,8 +67,7 @@ public class UserGroupController {
   @Produces({"application/nl.kpmg.lcm.rest.types.UserGroupRepresentation+json"})
   @RolesAllowed({Roles.ADMINISTRATOR})
   public final Response getUserGroup(@PathParam("user_group_id") String userGroupId) {
-    UserGroupDao userGroupDao = userGroupService.getUserGroupDao();
-    UserGroup userGroup = userGroupDao.findOne(userGroupId);
+    UserGroup userGroup = userGroupService.findOne(userGroupId);
 
     if (userGroup != null) {
       return Response.ok(new ConcreteUserGroupRepresentation(userGroup)).build();
@@ -82,19 +80,16 @@ public class UserGroupController {
   @Consumes({"application/nl.kpmg.lcm.server.data.UserGroup+json"})
   @RolesAllowed({Roles.ADMINISTRATOR})
   public final Response createNewUserGroup(final UserGroup userGroup) {
-    UserGroupDao userGroupDao = userGroupService.getUserGroupDao();
-    userGroupDao.save(userGroup);
+    userGroupService.save(userGroup);
 
     return Response.ok().build();
   }
 
   @PUT
-  @Path("/{user_group_id}")
   @Consumes({"application/nl.kpmg.lcm.server.data.UserGroup+json"})
   @RolesAllowed({Roles.ADMINISTRATOR})
-  public final Response modifyUserGroup(@PathParam("user_group_id") final String userGroupId,
-      final UserGroup userGroup) {
-    userGroupService.getUserGroupDao().save(userGroup);
+  public final Response modifyUserGroup(final UserGroup userGroup) {
+    userGroupService.save(userGroup);
     return Response.ok().build();
   }
 
@@ -103,10 +98,9 @@ public class UserGroupController {
   @RolesAllowed({Roles.ADMINISTRATOR})
   public final Response deleteUserGroup(@PathParam("user_group_id") final String userGroupId) {
 
-    UserGroupDao userGroupDao = userGroupService.getUserGroupDao();
-    UserGroup userGroup = userGroupDao.findOne(userGroupId);
+    UserGroup userGroup = userGroupService.findOne(userGroupId);
     if (userGroup != null) {
-      userGroupDao.delete(userGroup);
+      userGroupService.delete(userGroup);
       return Response.ok().build();
     } else {
       return Response.status(Status.NOT_FOUND).build();

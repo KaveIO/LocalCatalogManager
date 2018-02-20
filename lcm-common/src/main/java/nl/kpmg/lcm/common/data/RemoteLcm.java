@@ -40,6 +40,8 @@ public class RemoteLcm extends AbstractModel {
 
   private String status;
 
+  private String uniqueId;
+
   /**
    * @return the domain
    */
@@ -108,5 +110,19 @@ public class RemoteLcm extends AbstractModel {
      */
     public void setStatus(String status) {
         this.status = status;
+    }
+
+    /**
+     * @return the uniqueId
+     */
+    public String getUniqueId() {
+        return uniqueId;
+    }
+
+    /**
+     * @param uniqueId the uniqueId to set
+     */
+    public void setUniqueId(String uniqueId) {
+        this.uniqueId = uniqueId;
     }
 }

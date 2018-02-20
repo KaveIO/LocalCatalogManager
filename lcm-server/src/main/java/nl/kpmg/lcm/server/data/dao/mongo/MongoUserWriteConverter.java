@@ -43,13 +43,20 @@ public class MongoUserWriteConverter implements Converter<User, DBObject> {
       }
       dbo.put("name", source.getName());
       dbo.put("role", source.getRole());
+      dbo.put("origin", source.getOrigin());
+      if(source.getAllowedPathList() !=  null  && source.getAllowedPathList().size() > 0) {
+        dbo.put("pathList", source.getAllowedPathList());
+      }
+
+      if(source.getAllowedMetadataList() != null && source.getAllowedMetadataList().size() > 0)
+      dbo.put("metadataList", source.getAllowedMetadataList());
 
       if (source.getNewPassword() != null) {
         dbo.put("password", PasswordHash.createHash(source.getNewPassword()));
       } else {
         if (source.isHashed()) {
           dbo.put("password", source.getPassword());
-        } else {
+        } else  if(source.getPassword() != null){
           dbo.put("password", PasswordHash.createHash(source.getPassword()));
         }
       }

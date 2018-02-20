@@ -16,11 +16,15 @@ package nl.kpmg.lcm.server.data.service;
 
 import jersey.repackaged.com.google.common.collect.Lists;
 
+import nl.kpmg.lcm.common.ServerException;
 import nl.kpmg.lcm.common.client.HttpsClientFactory;
 import nl.kpmg.lcm.common.configuration.ClientConfiguration;
 import nl.kpmg.lcm.common.data.RemoteLcm;
 import nl.kpmg.lcm.common.data.TestResult;
+import nl.kpmg.lcm.common.data.User;
+import nl.kpmg.lcm.common.exception.LcmException;
 import nl.kpmg.lcm.server.data.dao.RemoteLcmDao;
+import nl.kpmg.lcm.server.rest.authentication.Roles;
 
 import org.glassfish.jersey.client.authentication.HttpAuthenticationFeature;
 import org.slf4j.Logger;
@@ -43,6 +47,8 @@ public class RemoteLcmService {
 
   @Autowired
   private RemoteLcmDao dao;
+  @Autowired
+  private UserService userService;
 
   @Autowired
   private ClientConfiguration configuration;
@@ -113,5 +119,34 @@ public class RemoteLcmService {
       url += ":" + lcm.getPort();
     }
     return url;
+  }
+
+  public boolean importUsers(String remoteLcmId) {
+
+    HttpAuthenticationFeature credentials =
+        HttpAuthenticationFeature.basicBuilder().credentials(adminUser, adminPassword).build();
+
+    HttpsClientFactory clientFactory = new HttpsClientFactory(configuration, credentials);
+    RemoteLcm remoteLcm = dao.findOne(remoteLcmId);
+    String fetchUrl = buildRemoteUrl(remoteLcm) + "/remote/v0/users/username-list";
+    Response response = null;
+    try {
+      response = clientFactory.createWebTarget(fetchUrl).request().get();
+      if (response.getStatus() != Response.Status.OK.getStatusCode()) {
+        return false;
+      }
+       List<String> usernames = response.readEntity(List.class);
+       for(String username: usernames) {
+           User user =  new User();
+           user.setName(username);
+           user.setRole(Roles.REMOTE_USER);
+           user.setOrigin(remoteLcm.getUniqueId());
+           userService.save(user);
+       }
+    } catch (ServerException ex) {
+      throw new LcmException(ex.getMessage());
+    }
+
+    return true;
   }
 }

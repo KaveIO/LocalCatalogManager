@@ -26,6 +26,7 @@ import nl.kpmg.lcm.common.data.IterativeData;
 import nl.kpmg.lcm.common.data.RemoteLcm;
 import nl.kpmg.lcm.common.data.Storage;
 import nl.kpmg.lcm.common.data.TaskDescription;
+import nl.kpmg.lcm.common.data.User;
 import nl.kpmg.lcm.common.data.metadata.MetaData;
 import nl.kpmg.lcm.common.data.metadata.MetaDataWrapper;
 import nl.kpmg.lcm.common.rest.types.MetaDataRepresentation;
@@ -34,8 +35,10 @@ import nl.kpmg.lcm.server.LcmBaseServerTest;
 import nl.kpmg.lcm.server.backend.Backend;
 import nl.kpmg.lcm.server.data.service.StorageService;
 import nl.kpmg.lcm.server.data.service.TaskDescriptionService;
+import nl.kpmg.lcm.server.data.service.UserService;
 import nl.kpmg.lcm.server.test.mock.MetaDataMocker;
 import nl.kpmg.lcm.server.test.mock.StorageMocker;
+import nl.kpmg.lcm.server.test.mock.UserMocker;
 
 import org.junit.After;
 import org.junit.Before;
@@ -86,6 +89,9 @@ public class DataFetchTriggerContollerTest extends LcmBaseServerTest {
   private StorageService storageService;
 
   @Autowired
+  private UserService userService;
+
+  @Autowired
   private ServerConfiguration serverConfiguration;
 
   private static MetaDataWrapper md;
@@ -100,8 +106,7 @@ public class DataFetchTriggerContollerTest extends LcmBaseServerTest {
   @After
   public void afterTest() throws ServerException {
     getWebTarget().path("client/logout").request().header(AUTH_USER_HEADER, "admin")
-        .header(BASIC_AUTHENTICATION_HEADER, basicAuthTokenAdmin)
-        .post(null);
+        .header(BASIC_AUTHENTICATION_HEADER, basicAuthTokenAdmin).post(null);
     taskDescriptionService.deleteAll();
   }
 
@@ -189,22 +194,22 @@ public class DataFetchTriggerContollerTest extends LcmBaseServerTest {
     return metadataWrapper;
   }
 
-   private MetaDataWrapper createStorageAndPostMetadata(Storage csvStorage) throws IOException,
+  private MetaDataWrapper createStorageAndPostMetadata(Storage csvStorage) throws IOException,
       ServerException {
 
     MetaDataWrapper metadataWrapper = MetaDataMocker.getCsvMetaDataWrapper();
-      List<String> uriList = new ArrayList();
-        uriList.add(CSV_STORAGE_URI);
-        String key = MetaDataMocker.getTestKey();
-        metadataWrapper.getDynamicData().getDynamicDataDescriptor(key).setURI(uriList.get(0));
+    List<String> uriList = new ArrayList();
+    uriList.add(CSV_STORAGE_URI);
+    String key = MetaDataMocker.getTestKey();
+    metadataWrapper.getDynamicData().getDynamicDataDescriptor(key).setURI(uriList.get(0));
     metadataWrapper.getData().setUri(uriList);
 
     storageService.add(csvStorage);
     Backend backend = storageService.getBackend(metadataWrapper);
 
     generateCsvTestFile(CSV_FILE);
-    
-    IterativeData data = (IterativeData)backend.read(key);
+
+    IterativeData data = (IterativeData) backend.read(key);
     assertNotNull(data);
     postMeadata(metadataWrapper, 200);
     metadataWrapper = new MetaDataWrapper(getMetadata(200).get(0).getItem());
@@ -216,23 +221,25 @@ public class DataFetchTriggerContollerTest extends LcmBaseServerTest {
 
     Response resp =
         getWebTarget().path(METADATA_PATH).request().header(AUTH_USER_HEADER, "admin")
-            .header(BASIC_AUTHENTICATION_HEADER, basicAuthTokenAdmin)
-            .post(entity);
+            .header(BASIC_AUTHENTICATION_HEADER, basicAuthTokenAdmin).post(entity);
 
     assertEquals(expected, resp.getStatus());
   }
 
   private void postTrigger(String lcmId, String metadataId, String storageId, int expected)
       throws ServerException {
+
+    User admin = UserMocker.createAdminUser();
+    userService.save(admin);
+
     Map payload = new LinkedHashMap();
     payload.put("local-storage-id", storageId);
     payload.put("transfer-settings", "{\"forceOverwrite\": \"true\"}");
     Entity<Map> entity = Entity.entity(payload, "application/json");
     Response resp =
         getWebTarget().path(TRIGGER_PATH).path(lcmId).path("metadata").path(metadataId).request()
-            .header(AUTH_USER_HEADER, "admin")
-            .header(BASIC_AUTHENTICATION_HEADER, basicAuthTokenAdmin)
-            .post(entity);
+            .header(AUTH_USER_HEADER, admin.getName() + "@" + User.LOCAL_ORIGIN)
+            .header(BASIC_AUTHENTICATION_HEADER, basicAuthTokenAdmin).post(entity);
     assertEquals(expected, resp.getStatus());
   }
 
@@ -256,8 +263,7 @@ public class DataFetchTriggerContollerTest extends LcmBaseServerTest {
     Entity<RemoteLcm> entity = Entity.entity(lcm, LCM_CONTENT_TYPE);
     Response resp =
         getWebTarget().path(LCM_PATH).request().header(AUTH_USER_HEADER, "admin")
-            .header(BASIC_AUTHENTICATION_HEADER, basicAuthTokenAdmin)
-            .post(entity);
+            .header(BASIC_AUTHENTICATION_HEADER, basicAuthTokenAdmin).post(entity);
     assertEquals(expected, resp.getStatus());
   }
 
