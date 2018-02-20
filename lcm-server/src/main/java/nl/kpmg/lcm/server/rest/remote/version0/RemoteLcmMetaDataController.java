@@ -14,7 +14,9 @@
 
 package nl.kpmg.lcm.server.rest.remote.version0;
 
+import nl.kpmg.lcm.common.Roles;
 import nl.kpmg.lcm.common.data.FetchEndpoint;
+import nl.kpmg.lcm.common.data.User;
 import nl.kpmg.lcm.common.data.metadata.MetaData;
 import nl.kpmg.lcm.common.exception.LcmException;
 import nl.kpmg.lcm.common.rest.types.FetchEndpointRepresentation;
@@ -23,7 +25,6 @@ import nl.kpmg.lcm.common.rest.types.MetaDatasRepresentation;
 import nl.kpmg.lcm.server.data.service.FetchEndpointService;
 import nl.kpmg.lcm.server.data.service.MetaDataService;
 import nl.kpmg.lcm.server.data.service.StorageService;
-import nl.kpmg.lcm.common.Roles;
 import nl.kpmg.lcm.server.rest.authorization.PermissionChecker;
 import nl.kpmg.lcm.server.rest.client.version0.types.ConcreteFetchEndpointRepresentation;
 import nl.kpmg.lcm.server.rest.client.version0.types.ConcreteRemoteLcmMetaDataRepresentation;
@@ -159,7 +160,10 @@ public class RemoteLcmMetaDataController {
 
     fe.setTimeToLive(later);
     fe.setMetadataId(md.getId());
-    fetchEndpointService.getDao().save(fe);
+    User principal = (User) securityContext.getUserPrincipal();
+    fe.setUserToConsume(principal.getName());
+    fe.setUserOrigin(principal.getOrigin());
+    fetchEndpointService.create(fe);
 
     return new ConcreteFetchEndpointRepresentation(fe);
   }

@@ -15,6 +15,7 @@
 package nl.kpmg.lcm.server.task.enrichment;
 
 import static nl.kpmg.lcm.common.rest.authentication.AuthorizationConstants.LCM_AUTHENTICATION_ORIGIN_HEADER;
+import static nl.kpmg.lcm.common.rest.authentication.AuthorizationConstants.LCM_AUTHENTICATION_REMOTE_USER_HEADER;
 
 import com.google.gson.stream.JsonReader;
 
@@ -72,6 +73,7 @@ public class DataFetchTask extends EnrichmentTask {
 
   private String applicationId;
   private String applicationKey;
+  private String username;
 
   @Override
   protected TaskResult execute(MetaDataWrapper metadata, Map options) throws TaskException {
@@ -130,6 +132,7 @@ public class DataFetchTask extends EnrichmentTask {
     try {
       String self = lcmIdService.getLcmIdObject().getLcmId();
       response = clientFactory.createWebTarget(fetchUrl).request()
+              .header(LCM_AUTHENTICATION_REMOTE_USER_HEADER, username)
               .header(LCM_AUTHENTICATION_ORIGIN_HEADER, self).get();
     } catch (ServerException ex) {
       throw new TaskException(ex);
@@ -211,6 +214,7 @@ public class DataFetchTask extends EnrichmentTask {
     RemoteLcm remoteLcm = remoteLcmService.findOneById(remoteLcmId);
     applicationId = remoteLcm.getApplicationId();
     applicationKey = remoteLcm.getApplicationKey();
+    username = (String)options.get("username");
     configuration.setTargetHost(remoteLcm.getDomain());
     configuration.setTargetPort(remoteLcm.getPort().toString());
   }

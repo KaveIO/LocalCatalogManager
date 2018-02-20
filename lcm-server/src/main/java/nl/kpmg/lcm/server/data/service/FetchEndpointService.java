@@ -38,8 +38,19 @@ public class FetchEndpointService {
     return Lists.newLinkedList(dao.findAll());
   }
 
-  public FetchEndpointDao getDao() {
-    return dao;
+  public FetchEndpoint findOneById(String id) {
+    return dao.findOne(id);
   }
 
+  public void create(FetchEndpoint fe) {
+    dao.save(fe);
+  }
+
+  public void update(FetchEndpoint fe) {
+    dao.save(fe);
+  }
+
+  public void delete(FetchEndpoint fe) {
+    dao.delete(fe);
+  }
 }

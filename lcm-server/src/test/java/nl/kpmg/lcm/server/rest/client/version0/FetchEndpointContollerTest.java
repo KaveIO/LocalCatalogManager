@@ -114,7 +114,7 @@ public class FetchEndpointContollerTest extends LcmBaseServerTest {
     List<FetchEndpoint> all = fetchEndpointService.findAll();
     for (FetchEndpoint fe : all) {
       if (fe != null) {
-        fetchEndpointService.getDao().delete(fe);
+        fetchEndpointService.delete(fe);
       }
     }
 
@@ -304,7 +304,7 @@ public class FetchEndpointContollerTest extends LcmBaseServerTest {
     fe.setTimeToLive(later);
     fe.setUserToConsume("user");
     fe.setMetadataId(md.getId());
-    fetchEndpointService.getDao().save(fe);
+    fetchEndpointService.create(fe);
     return fe;
   }
 
