@@ -49,6 +49,11 @@ public class MetaData extends AbstractModel implements MetaDataIdentificator {
    */
   private static final Logger LOGGER = LoggerFactory.getLogger(MetaData.class.getName());
 
+  /**
+   *  The value of inactive is Unix timestamp that determinates the
+   *  time when the data is inactivated. Null  in case the metadata is active.
+   */
+  private String inactive;
 
   /**
    * The inner map in which all the unknown attributes are stored.
@@ -175,4 +180,21 @@ public class MetaData extends AbstractModel implements MetaDataIdentificator {
   public Map getInnerMap() {
     return innerMap;
   }
+
+  /**
+   *  The value of @inactive is Unix timestamp that determinates the
+   *  time when the data is inactivated. Null  in case the metadata is active.
+   */
+  @JsonIgnore
+    public String getInactive() {
+        return inactive;
+    }
+
+    /**
+     * @param inactive : unixtime stamp that determinates the moment of inactivation.
+     */
+    @JsonIgnore
+    public void setInactive(String inactiveTimestamp) {
+        this.inactive = inactiveTimestamp;
+    }
 }

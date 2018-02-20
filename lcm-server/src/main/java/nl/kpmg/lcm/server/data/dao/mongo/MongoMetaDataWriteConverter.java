@@ -35,6 +35,7 @@ public class MongoMetaDataWriteConverter implements Converter<MetaData, DBObject
       dbo.put("_id", new ObjectId(source.getId()));
     }
     putIfNotNull(dbo, "name", source.getName());
+    putIfNotNull(dbo, "inactive", source.getInactive());
     dbo.putAll(source.anyGetter());
     return dbo;
   }
