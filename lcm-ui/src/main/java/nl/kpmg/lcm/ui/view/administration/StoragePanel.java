@@ -203,6 +203,7 @@ public class StoragePanel extends CustomComponent implements DynamicDataContaine
     Button testButton = new Button("test connection");
     testButton.setData(item);
     testButton.addClickListener(new TestStorageListener(this, restClientService));
+    testButton.addStyleName("link");
 
     actionsLayout.addComponent(viewButton);
     actionsLayout.addComponent(editButton);
