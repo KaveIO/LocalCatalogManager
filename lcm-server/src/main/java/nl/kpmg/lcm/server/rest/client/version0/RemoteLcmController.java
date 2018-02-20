@@ -23,6 +23,7 @@ import nl.kpmg.lcm.common.rest.types.RemoteLcmRepresentation;
 import nl.kpmg.lcm.common.rest.types.RemoteLcmsRepresentation;
 import nl.kpmg.lcm.common.validation.Notification;
 import nl.kpmg.lcm.server.data.service.RemoteLcmService;
+import nl.kpmg.lcm.server.data.service.TrustStoreService;
 import nl.kpmg.lcm.server.rest.client.version0.types.ConcreteRemoteLcmRepresentation;
 import nl.kpmg.lcm.server.rest.client.version0.types.ConcreteRemoteLcmsRepresentation;
 
@@ -56,6 +57,9 @@ public class RemoteLcmController {
 
   @Autowired
   private RemoteLcmService remoteLcmService;
+  
+  @Autowired
+  private TrustStoreService trustStoreService;
 
   /**
    * Gets all registered lcms.
@@ -143,6 +147,7 @@ public class RemoteLcmController {
     RemoteLcm remoteLcm = remoteLcmService.findOneById(remoteLcmId);
     if (remoteLcm != null) {
       remoteLcmService.delete(remoteLcmId);
+      trustStoreService.removeCertificate(remoteLcm.getAlias());
       return Response.ok().build();
     } else {
       return Response.status(Response.Status.NOT_FOUND).build();

@@ -32,6 +32,7 @@ public class RemoteLcmMocker {
     remoteLcm.setUniqueId("lcmId");
     remoteLcm.setApplicationId("applicationId");
     remoteLcm.setApplicationKey("applicationKey");
+    remoteLcm.setAlias("test-lcm-" + System.currentTimeMillis()); // making it unique to avoid duplication
 
     return remoteLcm;
   }

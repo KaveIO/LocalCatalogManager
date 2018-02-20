@@ -14,7 +14,7 @@
 
 package nl.kpmg.lcm.common;
 
-import nl.kpmg.lcm.common.configuration.BasicConfiguration;
+import nl.kpmg.lcm.common.configuration.ServerConfiguration;
 
 import org.glassfish.grizzly.http.server.HttpHandler;
 import org.glassfish.grizzly.http.server.HttpServer;
@@ -40,8 +40,8 @@ public class HttpsServerProvider {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(HttpsServerProvider.class.getName());
 
-  public static HttpsServerWrapper createHttpsServer(BasicConfiguration configuration,
-      String baseUri, String baseFallbackUri, ResourceConfig rc, boolean clientAuth)
+  public static HttpsServerWrapper createHttpsServer(ServerConfiguration configuration,
+      String baseUri, String baseFallbackUri, ResourceConfig rc)
       throws SslConfigurationException, IOException {
 
     if (configuration.isUnsafe()) {
@@ -55,11 +55,11 @@ public class HttpsServerProvider {
     } else {
       try {
         SSLContextConfigurator sslContextConfigurator =
-            SslProvider.createSSLContextConfigurator(configuration);
+            SslProvider.createSSLServerContextConfigurator(configuration);
 
         HttpServer server = GrizzlyHttpServerFactory.createHttpServer(URI.create(baseUri), rc, true,
             new SSLEngineConfigurator(sslContextConfigurator).setClientMode(false)
-                .setNeedClientAuth(clientAuth));
+                .setNeedClientAuth(false));
         initListeners(server.getListeners());
         HttpServer redirectServer =
             HttpServer.createSimpleServer(null, configuration.getServicePort());

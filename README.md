@@ -40,7 +40,7 @@ Untar the release.
 After this you can get started. The quickest way to get this running is a unconfigured setup. The commands you have to run for this are the following:
 
 ```bash 
-  bin/setup-ssl.sh
+  bin/setup-ssl.sh - currently itis not working look at cetificates/Readme.md for details
   bin/start-dockerized-mongo.sh
   bin/populate-dockerized-mongo.sh
   bin/start-server.sh

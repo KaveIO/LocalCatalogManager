@@ -48,6 +48,7 @@ public class MongoRemoteLcmWriteConverter implements Converter<RemoteLcm, DBObje
     dbo.put("unique-lcm-id", source.getUniqueId());
     dbo.put("application-id", source.getApplicationId());
     dbo.put("application-key", source.getApplicationKey());
+    dbo.put("alias", source.getAlias());
 
     return dbo;
   }

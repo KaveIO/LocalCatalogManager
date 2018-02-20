@@ -52,7 +52,7 @@ public class HttpsClientFactory {
     SSLContext sc;
     ClientBuilder builder = ClientBuilder.newBuilder();
     try {
-      sc = SslProvider.createSSLContextConfigurator(configuration).createSSLContext();
+      sc = SslProvider.createSSLClientContextConfigurator(configuration).createSSLContext();
     } catch (SslConfigurationException ex) {
 
       LOGGER.warn(

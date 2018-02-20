@@ -19,7 +19,6 @@ import nl.kpmg.lcm.common.data.RemoteLcm;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.convert.converter.Converter;
 
 /**
@@ -29,8 +28,6 @@ import org.springframework.core.convert.converter.Converter;
 public class MongoRemoteLcmReadConverter implements Converter<DBObject, RemoteLcm> {
   private static final Logger LOGGER = LoggerFactory.getLogger(MongoRemoteLcmReadConverter.class
       .getName());
-  @Value("${lcm.server.security.encryption.key}")
-  private String securityKey;
 
   @Override
   public RemoteLcm convert(DBObject source) {
@@ -44,6 +41,7 @@ public class MongoRemoteLcmReadConverter implements Converter<DBObject, RemoteLc
     remoteLcm.setUniqueId((String) source.get("unique-lcm-id"));
     remoteLcm.setApplicationId((String) source.get("application-id"));
     remoteLcm.setApplicationKey((String) source.get("application-key"));
+    remoteLcm.setAlias((String) source.get("alias"));
 
     return remoteLcm;
   }

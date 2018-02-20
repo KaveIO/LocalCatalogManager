@@ -26,6 +26,7 @@ import com.vaadin.ui.HorizontalLayout;
 import com.vaadin.ui.Label;
 import com.vaadin.ui.Notification;
 import com.vaadin.ui.TextField;
+import com.vaadin.ui.Upload;
 import com.vaadin.ui.VerticalLayout;
 import com.vaadin.ui.Window;
 
@@ -35,6 +36,7 @@ import nl.kpmg.lcm.ui.rest.AuthenticationException;
 import nl.kpmg.lcm.ui.rest.DataCreationException;
 import nl.kpmg.lcm.ui.rest.RestClientService;
 import nl.kpmg.lcm.ui.view.administration.DynamicDataContainer;
+import nl.kpmg.lcm.ui.view.administration.listeners.FileReceiver;
 
 import org.slf4j.LoggerFactory;
 
@@ -69,16 +71,21 @@ public class RemoteLcmCreateWindow extends Window implements Button.ClickListene
   private ComboBox protocolField = new ComboBox("Protocol");
   private TextField addressField = new TextField("Address");
   private TextField portField = new TextField("Port");
+  private TextField certificateAliasField = new TextField("Certificate alias");
   private Button saveButton = new Button("Save");
+  private Upload certificateUpload = new Upload();
   private Label urlLabel = new Label();
   private RemoteLcm remoteLcm;
   private final static int MAX_LENGTH = 128;
+  
+  private FileReceiver fileReceiver;
 
   public RemoteLcmCreateWindow(RestClientService restClientService,
       DynamicDataContainer dataContainer) {
     super(DEFAULT_TITLE);
     this.restClientService = restClientService;
     this.dataContainer = dataContainer;
+    this.fileReceiver = new FileReceiver(this, restClientService, false);
     init();
   }
 
@@ -87,6 +94,7 @@ public class RemoteLcmCreateWindow extends Window implements Button.ClickListene
     super(EDIT_TITLE);
     this.restClientService = restClientService;
     this.dataContainer = dataContainer;
+    this.fileReceiver = new FileReceiver(this, restClientService, true);
     init();
     nameField.setValue(lcm.getName());
     uniqueIdField.setValue(lcm.getUniqueId());
@@ -96,7 +104,9 @@ public class RemoteLcmCreateWindow extends Window implements Button.ClickListene
     protocolField.setValue(lcm.getProtocol());
     addressField.setValue(lcm.getDomain());
     portField.setValue(lcm.getPort().toString());
+    certificateAliasField.setValue(lcm.getAlias());
     remoteLcm = lcm;
+
     updateURLLabel(0, null);
   }
 
@@ -142,6 +152,12 @@ public class RemoteLcmCreateWindow extends Window implements Button.ClickListene
     HorizontalLayout urlLabelLayout = createLayoutForLabel(urlLabel);
     panelContent.addComponent(urlLabelLayout);
 
+    HorizontalLayout aliasFieldLayout = createLayoutForField(certificateAliasField);
+    panelContent.addComponent(aliasFieldLayout);
+
+    HorizontalLayout uploadFieldLayout = createUploadLayout();
+    panelContent.addComponent(uploadFieldLayout);
+
     saveButton.addStyleName("margin-top-10");
     panelContent.addComponent(saveButton);
 
@@ -149,6 +165,21 @@ public class RemoteLcmCreateWindow extends Window implements Button.ClickListene
     this.setModal(true);
 
     this.setContent(panelContent);
+  }
+
+  private HorizontalLayout createUploadLayout() {
+    HorizontalLayout fieldLayout = new HorizontalLayout();
+    // Create the upload with a caption and set fileReceiver later
+    certificateUpload = new Upload("Select certificate file", fileReceiver);
+    certificateUpload.addSucceededListener(fileReceiver);
+    certificateUpload.addFailedListener(fileReceiver);
+    certificateUpload.setButtonCaption(null);
+
+    fieldLayout.setWidth("100%");
+    fieldLayout.addStyleName("margin-top-10");
+    fieldLayout.addComponent(certificateUpload);
+
+    return fieldLayout;
   }
 
   private void updateURLLabel(int editedTextIndex, String currentText) {
@@ -194,21 +225,23 @@ public class RemoteLcmCreateWindow extends Window implements Button.ClickListene
       rootNode.put("protocol", protocolField.getValue().toString());
       rootNode.put("domain", addressField.getValue());
       rootNode.put("port", portField.getValue());
+      rootNode.put("alias", certificateAliasField.getValue());
+      fileReceiver.setAlias(certificateAliasField.getValue());
       try {
         if (remoteLcm != null) {
           rootNode.put("id", remoteLcm.getId());
           rootNode.put("status", remoteLcm.getStatus());
           restClientService.updateRemoteLcm(rootNode.toString());
-          Notification.show("Update finished successfully.");
         } else {
           restClientService.createRemoteLcm(rootNode.toString());
-          Notification.show("Creation finished successfully.");
         }
+
+        certificateUpload.setImmediate(true);
+        certificateUpload.submitUpload();
         dataContainer.updateContent();
-        this.close();
       } catch (ServerException | DataCreationException | AuthenticationException | IOException ex) {
-        Notification.show("Creation of failed!");
-        LOGGER.warn("Creation of remote LCM failed.", ex);
+        Notification.show("Operation of failed!");
+        LOGGER.warn("Creation/Update of remote LCM failed.", ex);
       }
     }
   }

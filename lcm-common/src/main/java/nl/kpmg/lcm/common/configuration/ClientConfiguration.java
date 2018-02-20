@@ -24,6 +24,34 @@ public class ClientConfiguration extends BasicConfiguration {
   private String targetPort;
   private String unsafeTargetPort;
 
+  private String truststore;
+  private String truststoreType;
+  private String truststorePassword;
+
+  public String getTruststore() {
+    return truststore;
+  }
+
+  public void setTruststore(String truststore) {
+    this.truststore = truststore;
+  }
+
+  public String getTruststoreType() {
+    return truststoreType;
+  }
+
+  public void setTruststoreType(String truststoreType) {
+    this.truststoreType = truststoreType;
+  }
+
+  public String getTruststorePassword() {
+    return truststorePassword;
+  }
+
+  public void setTruststorePassword(String truststorePassword) {
+    this.truststorePassword = truststorePassword;
+  }
+
   public String getTargetHost() {
     return targetHost;
   }
