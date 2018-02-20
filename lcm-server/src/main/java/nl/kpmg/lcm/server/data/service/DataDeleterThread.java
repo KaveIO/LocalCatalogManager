@@ -11,27 +11,31 @@
   * or implied. See the License for the specific language governing permissions and limitations under
   * the License.
  */
-package nl.kpmg.lcm.server.task.enrichment;
-
-import nl.kpmg.lcm.server.data.service.TaskScheduleService;
-
-import org.quartz.Job;
-import org.quartz.JobExecutionContext;
-import org.quartz.JobExecutionException;
-import org.springframework.beans.factory.annotation.Autowired;
+package nl.kpmg.lcm.server.data.service;
 
 /**
  *
  * @author shristov
  */
-public class EnrichmentManagerTask implements Job {
+public class DataDeleterThread implements Runnable {
 
-  @Autowired
-  private TaskScheduleService taskScheduleService;
+  private DataDeleter deleter;
 
-  @Override
-  public void execute(JobExecutionContext context) throws JobExecutionException {
-    taskScheduleService.createNewScheduleWithEnrichmentJobs();
+  public DataDeleterThread(DataDeleter deleter ) {
+      if(deleter ==  null) {
+          throw new IllegalArgumentException("The Data Deleter can not be null");
+      }
+      this.deleter = deleter;
   }
 
+  @Override
+  public void run() {
+    deleter.execute();
+  }
+
+
+  public void start(){
+    Thread thread = new Thread(this);
+    thread.start();
+  }
 }

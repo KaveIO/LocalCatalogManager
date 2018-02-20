@@ -38,10 +38,12 @@ public class LocalCsvAdapter implements CsvAdapter {
   private static final Logger LOGGER = LoggerFactory.getLogger(BackendCsvImpl.class.getName());
   private final LocalFileStorage storage;
   private final String fileName;
+  private String fullFilePath;
 
   public LocalCsvAdapter(LocalFileStorage storage, String filePath) {
     this.storage = storage;
     this.fileName = filePath;
+    this.fullFilePath = storage.getStoragePath() + fileName;
   }
 
   private File constructDatasourceFile() {
@@ -79,19 +81,16 @@ public class LocalCsvAdapter implements CsvAdapter {
 
   @Override
   public boolean exists() throws IOException {
-    String fullFilePath = storage.getStoragePath() + fileName;
     return (new File(fullFilePath)).exists();
   }
 
   @Override
   public long length() throws IOException {
-    String fullFilePath = storage.getStoragePath() + fileName;
     return (new File(fullFilePath)).length();
   }
 
   @Override
   public long lastModified() throws IOException {
-    String fullFilePath = storage.getStoragePath() + fileName;
     return (new File(fullFilePath)).lastModified();
   }
 
@@ -105,5 +104,10 @@ public class LocalCsvAdapter implements CsvAdapter {
     if (notification.hasErrors()) {
       throw new LcmValidationException(notification);
     }
+  }
+
+  @Override
+  public boolean delete() throws Exception {
+    return (new File(fullFilePath)).delete();
   }
 }

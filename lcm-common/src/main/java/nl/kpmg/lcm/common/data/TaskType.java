@@ -21,10 +21,13 @@ public enum TaskType {
   /* Fetch tasks */
   FETCH,
 
-  /* Enrichment tsks */
+  /* Enrichment tasks */
   ENRICHMENT,
 
-  /* Enrichment tsks */
-  ENRICHMENT_MANAGER;
+  /* Tasks for data deletion */
+  DELETE,
+
+  /* Main data manager tasks */
+  TASK_MANAGER
 
 }

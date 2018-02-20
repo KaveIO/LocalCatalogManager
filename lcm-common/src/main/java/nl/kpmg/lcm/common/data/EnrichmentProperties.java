@@ -164,4 +164,14 @@ public class EnrichmentProperties {
 
     return enrichment;
   }
+
+  public static EnrichmentProperties createDataExistingEnrichmentProperties() {
+    EnrichmentProperties enrichment = new EnrichmentProperties(new HashMap());
+    enrichment.setItemCount(false);
+    enrichment.setSize(false);
+    enrichment.setStructure(false);
+    enrichment.setAccessibility(true);
+
+    return enrichment;
+  }
 }

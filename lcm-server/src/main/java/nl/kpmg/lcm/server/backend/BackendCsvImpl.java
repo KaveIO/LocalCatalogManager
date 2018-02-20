@@ -264,7 +264,14 @@ public class BackendCsvImpl extends AbstractBackend {
 
   @Override
   public boolean delete(String key) {
-    throw new UnsupportedOperationException("Backend delete operation is not supported yet.");
+    CsvAdapter csvAdapter = getCsvAdapter(key);
+    try {
+      return csvAdapter.delete();
+    } catch (Exception ex) {
+      LOGGER.warn("Unable to delete file: " + getFilePath(key) + ". Error message: "
+          + ex.getMessage());
+    }
+    return false;
   }
 
   @Override

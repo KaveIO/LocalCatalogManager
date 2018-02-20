@@ -12,7 +12,9 @@
  * the License.
  */
 
-package nl.kpmg.lcm.server.task.enrichment;
+package nl.kpmg.lcm.server.cron.job.processor;
+
+import nl.kpmg.lcm.server.cron.job.AbstractDataProcessor;
 
 import static nl.kpmg.lcm.common.rest.authentication.AuthorizationConstants.LCM_AUTHENTICATION_ORIGIN_HEADER;
 import static nl.kpmg.lcm.common.rest.authentication.AuthorizationConstants.LCM_AUTHENTICATION_REMOTE_USER_HEADER;
@@ -39,9 +41,8 @@ import nl.kpmg.lcm.server.data.JsonReaderContentIterator;
 import nl.kpmg.lcm.server.data.ProgressIndicationFactory;
 import nl.kpmg.lcm.server.data.service.LcmIdService;
 import nl.kpmg.lcm.server.data.service.RemoteLcmService;
-import nl.kpmg.lcm.server.task.EnrichmentTask;
-import nl.kpmg.lcm.server.task.TaskException;
-import nl.kpmg.lcm.server.task.TaskResult;
+import nl.kpmg.lcm.server.cron.exception.CronJobExecutionException;
+import nl.kpmg.lcm.server.cron.TaskResult;
 
 import org.glassfish.jersey.client.authentication.HttpAuthenticationFeature;
 import org.slf4j.Logger;
@@ -58,9 +59,9 @@ import javax.ws.rs.core.Response;
  *
  * @author Stoyan Hristov<shristov@intracol.com>
  */
-public class DataFetchTask extends EnrichmentTask {
+public class DataFetchExecutor extends AbstractDataProcessor {
 
-  private static final Logger LOGGER = LoggerFactory.getLogger(DataFetchTask.class.getName());
+  private static final Logger LOGGER = LoggerFactory.getLogger(DataFetchExecutor.class.getName());
 
   @Autowired
   private RemoteLcmService remoteLcmService;
@@ -76,12 +77,12 @@ public class DataFetchTask extends EnrichmentTask {
   private String username;
 
   @Override
-  protected TaskResult execute(MetaDataWrapper metadata, Map options) throws TaskException {
+  protected TaskResult execute(MetaDataWrapper metadata, Map options) throws CronJobExecutionException {
 
     Notification validationNotification = new Notification();
     validation(options, metadata, validationNotification);
     if (validationNotification.hasErrors()) {
-      throw new TaskException(validationNotification.errorMessage());
+      throw new CronJobExecutionException(validationNotification.errorMessage());
     }
 
     initConfiguration(options);
@@ -120,7 +121,7 @@ public class DataFetchTask extends EnrichmentTask {
     return settings;
   }
 
-  private InputStream openInputStream(String fetchUrl) throws TaskException {
+  private InputStream openInputStream(String fetchUrl) throws CronJobExecutionException {
 
     HttpAuthenticationFeature credentials =
         HttpAuthenticationFeature.basicBuilder().credentials(applicationId, applicationKey).build();
@@ -135,12 +136,12 @@ public class DataFetchTask extends EnrichmentTask {
               .header(LCM_AUTHENTICATION_REMOTE_USER_HEADER, username)
               .header(LCM_AUTHENTICATION_ORIGIN_HEADER, self).get();
     } catch (ServerException ex) {
-      throw new TaskException(ex);
+      throw new CronJobExecutionException(ex);
     }
     if (response.getStatus() != Response.Status.OK.getStatusCode()) {
       String responseMessage = response.readEntity(String.class);
       responseMessage = responseMessage.substring(0, Math.min(responseMessage.length(), 300));
-      throw new TaskException(responseMessage);
+      throw new CronJobExecutionException(responseMessage);
     }
 
     return response.readEntity(InputStream.class);

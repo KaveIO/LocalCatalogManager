@@ -12,10 +12,11 @@
   * the License.
  */
 
-package nl.kpmg.lcm.server.task.enrichment;
+package nl.kpmg.lcm.server.cron.job.processor;
 
+import nl.kpmg.lcm.server.cron.job.processor.DataFetchExecutor;
 import nl.kpmg.lcm.common.data.metadata.MetaDataWrapper;
-import nl.kpmg.lcm.server.task.TaskException;
+import nl.kpmg.lcm.server.cron.exception.CronJobExecutionException;
 
 import org.junit.Test;
 
@@ -28,26 +29,26 @@ import java.util.Map;
  */
 public class DataFetchTaskTest {
 
-    @Test(expected = TaskException.class)
-    public void testValidationMissingOptions() throws TaskException{
-        DataFetchTask task =  new DataFetchTask();
+    @Test(expected = CronJobExecutionException.class)
+    public void testValidationMissingOptions() throws CronJobExecutionException{
+        DataFetchExecutor task =  new DataFetchExecutor();
         Map options = null;
         MetaDataWrapper metaDataWrapper = new MetaDataWrapper();
         task.execute(metaDataWrapper, options);
     }
 
-    @Test(expected = TaskException.class)
-    public void testValidationMissingPath() throws TaskException{
-        DataFetchTask task =  new DataFetchTask();
+    @Test(expected = CronJobExecutionException.class)
+    public void testValidationMissingPath() throws CronJobExecutionException{
+        DataFetchExecutor task =  new DataFetchExecutor();
         Map options = new HashMap();
         options.put("remoteLcm", "349bncdwqe8g89g74137823tr8");
         MetaDataWrapper metaDataWrapper = new MetaDataWrapper();
         task.execute(metaDataWrapper, options);
     }
 
-    @Test(expected = TaskException.class)
-    public void testValidationMissingRemoteLcm() throws TaskException{
-        DataFetchTask task =  new DataFetchTask();
+    @Test(expected = CronJobExecutionException.class)
+    public void testValidationMissingRemoteLcm() throws CronJobExecutionException{
+        DataFetchExecutor task =  new DataFetchExecutor();
         Map options = new HashMap();
         options.put("path", "/x/y/z");
         MetaDataWrapper metaDataWrapper = new MetaDataWrapper();

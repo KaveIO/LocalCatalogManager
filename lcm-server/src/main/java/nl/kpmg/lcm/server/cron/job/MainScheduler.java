@@ -12,7 +12,8 @@
  * the License.
  */
 
-package nl.kpmg.lcm.server.task.core;
+package nl.kpmg.lcm.server.cron.job;
+
 
 import static org.quartz.CronScheduleBuilder.cronSchedule;
 import static org.quartz.JobBuilder.newJob;
@@ -21,12 +22,10 @@ import static org.quartz.TriggerBuilder.newTrigger;
 import nl.kpmg.lcm.common.data.TaskSchedule;
 import nl.kpmg.lcm.common.data.TaskSchedule.TaskScheduleItem;
 import nl.kpmg.lcm.common.data.TaskType;
+import nl.kpmg.lcm.server.cron.job.manager.TaskManagerScheduler;
+import nl.kpmg.lcm.server.cron.exception.CronJobExecutionException;
+import nl.kpmg.lcm.server.cron.exception.CronJobScheduleException;
 import nl.kpmg.lcm.server.data.service.TaskScheduleService;
-import nl.kpmg.lcm.server.task.CoreTask;
-import nl.kpmg.lcm.server.task.EnrichmentTask;
-import nl.kpmg.lcm.server.task.TaskException;
-import nl.kpmg.lcm.server.task.TaskResult;
-import nl.kpmg.lcm.server.task.TaskScheduleException;
 
 import org.quartz.CronTrigger;
 import org.quartz.JobDetail;
@@ -40,6 +39,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 
 import java.util.Set;
 
+import nl.kpmg.lcm.server.cron.TaskResult;
+
 /**
  * TaskSchedule update task. This task will try and install all task items in the most current
  * TaskSchedule. The current implementation doesn't do this with much intelligence. A backoff should
@@ -47,10 +48,10 @@ import java.util.Set;
  *
  * @author mhoekstra
  */
-public class LoadScheduleCoreTask extends CoreTask {
+public class MainScheduler extends AbstractJobScheduler {
 
   private static final Logger LOGGER = LoggerFactory
-      .getLogger(LoadScheduleCoreTask.class.getName());
+      .getLogger(MainScheduler.class.getName());
   /**
    * The group key which is used to register the scheduled tasks.
    */
@@ -61,9 +62,9 @@ public class LoadScheduleCoreTask extends CoreTask {
    */
   @Autowired
   private TaskScheduleService taskScheduleService;
-  
+
   @Autowired
-  private EnrichmentManagerScheduler enrichmentManagerScheduler;
+  private TaskManagerScheduler enrichmentManagerScheduler;
 
   /**
    * The currently active TaskSchedule.
@@ -74,10 +75,10 @@ public class LoadScheduleCoreTask extends CoreTask {
    * Installs the current TaskSchedule.
    *
    * @return the result of the task
-   * @throws TaskException if the task fails
+   * @throws CronJobExecutionException if the task fails
    */
   @Override
-  public final TaskResult execute() throws TaskException {
+  public final TaskResult execute() throws CronJobExecutionException {
     TaskSchedule latest = taskScheduleService.findFirstByOrderByIdDesc();
     if (current == null || !current.equals(latest)) {
       try {
@@ -94,8 +95,8 @@ public class LoadScheduleCoreTask extends CoreTask {
       if (latest.getEnrichmentItems() != null) {
         for (TaskScheduleItem taskScheduleItem : latest.getEnrichmentItems()) {
           try {
-            scheduleEnrichmentTask(taskScheduleItem);
-          } catch (TaskScheduleException ex) {
+            scheduleDataProcessor(taskScheduleItem);
+          } catch (CronJobScheduleException ex) {
             LOGGER.warn("Failed to schedule ", ex);
           }
         };
@@ -106,9 +107,9 @@ public class LoadScheduleCoreTask extends CoreTask {
       } else {
         for (TaskScheduleItem taskScheduleItem : latest.getManagerItems()) {
           try {
-            enrichmentManagerScheduler.scheduleEnrichmentManagerTask(getScheduler(),
+            enrichmentManagerScheduler.scheduleTaskManagerExecutor(getScheduler(),
                 taskScheduleItem);
-          } catch (TaskScheduleException ex) {
+          } catch (CronJobScheduleException ex) {
             LOGGER.warn("Failed to schedule ", ex);
           }
         };
@@ -121,43 +122,43 @@ public class LoadScheduleCoreTask extends CoreTask {
 
 
   /**
-   * Schedules an EnrichmentTask based on its cron definition.
+   * Schedules an AbstractDataProcessor based on its cron definition.
    *
    * @param TaskScheduleItem taskScheduleItem
-   * @throws TaskScheduleException when the task couldn't be scheduled
+   * @throws CronJobScheduleException when the task couldn't be scheduled
    */
-  private void scheduleEnrichmentTask(TaskScheduleItem taskScheduleItem)
-      throws TaskScheduleException {
+  private void scheduleDataProcessor(TaskScheduleItem taskScheduleItem)
+      throws CronJobScheduleException {
 
     // Assertions until we have input validation on the database objects
     if (taskScheduleItem.getJob() == null) {
-      throw new TaskScheduleException(String.format(
+      throw new CronJobScheduleException(String.format(
           "The job for task with name '%s', target '%s', and cron '%s' is empty",
           taskScheduleItem.getName(), taskScheduleItem.getTarget(), taskScheduleItem.getCron()));
     }
 
     try {
       Class<?> cls = Class.forName(taskScheduleItem.getJob());
-      if (EnrichmentTask.class.isAssignableFrom(cls)) {
-        scheduleEnrichmentTask((Class<EnrichmentTask>) cls, taskScheduleItem);
+      if (AbstractDataProcessor.class.isAssignableFrom(cls)) {
+        scheduleDataProcessor((Class<AbstractDataProcessor>) cls, taskScheduleItem);
       } else {
-        throw new TaskScheduleException("Task definition doesn't contain a schedulable job");
+        throw new CronJobScheduleException("Task definition doesn't contain a schedulable job");
       }
     } catch (ClassNotFoundException ex) {
       LOGGER.error(null, ex);
-      throw new TaskScheduleException(ex);
+      throw new CronJobScheduleException(ex);
     }
   }
 
   /**
-   * Schedules an EnrichmentTask based on its cron definition.
+   * Schedules an AbstractDataProcessor based on its cron definition.
    *
    * @param job the class of the job to execute
    * @param taskScheduleItem executed item
-   * @throws TaskScheduleException when the task couldn't be scheduled
+   * @throws CronJobScheduleException when the task couldn't be scheduled
    */
-  private void scheduleEnrichmentTask(final Class<? extends EnrichmentTask> job,
-      TaskScheduleItem taskScheduleItem) throws TaskScheduleException {
+  private void scheduleDataProcessor(final Class<? extends AbstractDataProcessor> job,
+      TaskScheduleItem taskScheduleItem) throws CronJobScheduleException {
 
     // Assertions until we have input validation on the database objects
     String name = taskScheduleItem.getName();
@@ -166,7 +167,7 @@ public class LoadScheduleCoreTask extends CoreTask {
     String cron = taskScheduleItem.getCron();
     TaskType taskType = taskScheduleItem.getTaskType();
     if (name == null || job == null || target == null || cron == null || taskType == null) {
-      throw new TaskScheduleException(String.format(
+      throw new CronJobScheduleException(String.format(
           "The job %s for task with name '%s', target '%s', and cron '%s' and task type %s"
               + " can't be scheduled due to missing values", job, name, target, cron, taskType));
     }
@@ -174,9 +175,9 @@ public class LoadScheduleCoreTask extends CoreTask {
     try {
       JobDetail jobDetail = newJob(job).withIdentity(name, GROUP_KEY).build();
 
-      jobDetail.getJobDataMap().put(EnrichmentTask.TARGET_KEY, target);
-      jobDetail.getJobDataMap().put(EnrichmentTask.TARGET_TYPE_KEY, targetType);
-      jobDetail.getJobDataMap().put(EnrichmentTask.TASK_TYPE_KEY, taskType);
+      jobDetail.getJobDataMap().put(AbstractDataProcessor.TARGET_KEY, target);
+      jobDetail.getJobDataMap().put(AbstractDataProcessor.TARGET_TYPE_KEY, targetType);
+      jobDetail.getJobDataMap().put(AbstractDataProcessor.TASK_TYPE_KEY, taskType);
 
       CronTrigger trigger =
           newTrigger().withIdentity(name, GROUP_KEY).withSchedule(cronSchedule(cron)).build();
@@ -185,7 +186,7 @@ public class LoadScheduleCoreTask extends CoreTask {
       scheduler.scheduleJob(jobDetail, trigger);
     } catch (SchedulerException ex) {
       LOGGER.error(null, ex);
-      throw new TaskScheduleException(ex);
+      throw new CronJobScheduleException(ex);
     }
   }
 
@@ -207,5 +208,4 @@ public class LoadScheduleCoreTask extends CoreTask {
       }
     });
   }
-
 }

@@ -29,4 +29,5 @@ public interface CsvAdapter {
   public long length() throws IOException;
   public long lastModified() throws IOException;
   public void validatePaths();
+  public boolean delete() throws Exception;
 }

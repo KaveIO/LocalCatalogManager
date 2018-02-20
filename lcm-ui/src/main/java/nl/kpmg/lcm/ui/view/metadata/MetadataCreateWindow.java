@@ -30,6 +30,7 @@ import nl.kpmg.lcm.common.ServerException;
 import nl.kpmg.lcm.common.data.metadata.DataDescriptor;
 import nl.kpmg.lcm.common.data.metadata.DynamicDataDescriptor;
 import nl.kpmg.lcm.common.data.metadata.EnrichmentPropertiesDescriptor;
+import nl.kpmg.lcm.common.data.metadata.ExpirationTimeDescriptor;
 import nl.kpmg.lcm.common.data.metadata.GeneralInfoDescriptor;
 import nl.kpmg.lcm.common.data.metadata.MetaData;
 import nl.kpmg.lcm.common.data.metadata.MetaDataWrapper;
@@ -56,7 +57,8 @@ public class MetadataCreateWindow extends Window implements Button.ClickListener
    * The default size of the side panels of this view.
    */
   private static final String PANEL_WIDTH = "600px";
-  private static final String PANEL_HEIGTH = "670px";
+  private static final String PANEL_HEIGHT = "670px";
+  private static final String TEXT_AREA_HEIGHT = "110px";
 
   /**
    * The default size of the side panels of this view.
@@ -68,6 +70,7 @@ public class MetadataCreateWindow extends Window implements Button.ClickListener
 
   private TextArea rawView;
   private TextArea dataView;
+  private TextArea expirationTimesView;
   private TextArea generalInfoView;
   private TextArea enrichmentPropertiesView;
   private TextArea dynamicDataView;
@@ -127,22 +130,31 @@ public class MetadataCreateWindow extends Window implements Button.ClickListener
 
     dataView = new TextArea("Data");
     dataView.setWidth("100%");
+    dataView.setHeight(TEXT_AREA_HEIGHT);
     sectionPanel.addComponent(dataView);
+
+    expirationTimesView = new TextArea("Expiration times");
+    expirationTimesView.setWidth("100%");
+    expirationTimesView.setHeight(TEXT_AREA_HEIGHT);
+    sectionPanel.addComponent(expirationTimesView);
 
     generalInfoView = new TextArea("General Info");
     generalInfoView.setWidth("100%");
+    generalInfoView.setHeight(TEXT_AREA_HEIGHT);
     sectionPanel.addComponent(generalInfoView);
 
     enrichmentPropertiesView = new TextArea("Enrichment Properties");
     enrichmentPropertiesView.setWidth("100%");
+    enrichmentPropertiesView.setHeight(TEXT_AREA_HEIGHT);
     sectionPanel.addComponent(enrichmentPropertiesView);
 
     dynamicDataView = new TextArea("Dynamic data");
     dynamicDataView.setWidth("100%");
+    dynamicDataView.setHeight(TEXT_AREA_HEIGHT);
     sectionPanel.addComponent(dynamicDataView);
 
     sectionPanel.setMargin(true);
-    sectionPanel.setHeight(PANEL_HEIGTH);
+    sectionPanel.setHeight(PANEL_HEIGHT);
     return sectionPanel;
   }
 
@@ -153,7 +165,7 @@ public class MetadataCreateWindow extends Window implements Button.ClickListener
 
     rawPanel.setMargin(true);
     rawPanel.addComponent(rawView);
-    rawPanel.setHeight(PANEL_HEIGTH);
+    rawPanel.setHeight(PANEL_HEIGHT);
     return rawPanel;
   }
 
@@ -174,10 +186,10 @@ public class MetadataCreateWindow extends Window implements Button.ClickListener
         this.close();
       } catch (ServerException | DataCreationException | AuthenticationException ex) {
         Notification.show("Creation of metadata failed.");
-        LOGGER.warn("Creation of metadata failed.", ex.getMessage());
+        LOGGER.warn("Creation of metadata failed." + ex.getMessage());
       } catch (LcmValidationException | IOException ex) {
         Notification.show("Creation of metadata failed. Invalid metadata!");
-        LOGGER.warn("Creation of metadata failed. Invalid metadata. Message: ", ex.getMessage());
+        LOGGER.warn("Creation of metadata failed. Invalid metadata. Message: " + ex.getMessage());
       }
     }
   }
@@ -205,6 +217,13 @@ public class MetadataCreateWindow extends Window implements Button.ClickListener
       Map dynamicDataMap = getDescriptor(dynamicDataView.getValue());
       DynamicDataDescriptor dynamicData = new DynamicDataDescriptor(dynamicDataMap);
       metadata.setDynamicData(dynamicData);
+    }
+
+    if (expirationTimesView.getValue() != null && !expirationTimesView.getValue().isEmpty()) {
+      Map expirationTimesMap = getDescriptor(expirationTimesView.getValue());
+      ExpirationTimeDescriptor expirationTimeDescriptor =
+          new ExpirationTimeDescriptor(expirationTimesMap);
+      metadata.setExpirationTime(expirationTimeDescriptor);
     }
 
     if (dataView.getValue() != null && !dataView.getValue().isEmpty()) {
@@ -246,6 +265,12 @@ public class MetadataCreateWindow extends Window implements Button.ClickListener
           && metaData.getData().getMap().size() > 0) {
         String dataJson = gson.toJson(metaData.getData().getMap());
         dataView.setValue(dataJson);
+      }
+
+      if (metaData.getExpirationTime() != null && metaData.getExpirationTime().getMap() != null
+          && metaData.getExpirationTime().getMap().size() > 0) {
+        String expirationTimeJson = gson.toJson(metaData.getExpirationTime().getMap());
+        expirationTimesView.setValue(expirationTimeJson);
       }
 
       if (metaData.getDynamicData() != null && metaData.getDynamicData().getMap() != null

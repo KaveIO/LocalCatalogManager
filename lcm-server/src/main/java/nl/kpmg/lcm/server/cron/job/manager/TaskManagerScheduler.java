@@ -11,7 +11,7 @@
   * or implied. See the License for the specific language governing permissions and limitations under
   * the License.
  */
-package nl.kpmg.lcm.server.task.core;
+package nl.kpmg.lcm.server.cron.job.manager;
 
 import static org.quartz.CronScheduleBuilder.cronSchedule;
 import static org.quartz.JobBuilder.newJob;
@@ -19,9 +19,8 @@ import static org.quartz.TriggerBuilder.newTrigger;
 
 import nl.kpmg.lcm.common.data.TaskSchedule;
 import nl.kpmg.lcm.common.data.TaskType;
+import nl.kpmg.lcm.server.cron.exception.CronJobScheduleException;
 import nl.kpmg.lcm.server.data.service.TaskScheduleService;
-import nl.kpmg.lcm.server.task.TaskScheduleException;
-import nl.kpmg.lcm.server.task.enrichment.EnrichmentManagerTask;
 
 import org.quartz.CronTrigger;
 import org.quartz.JobDetail;
@@ -37,30 +36,30 @@ import org.springframework.stereotype.Component;
  * @author shristov
  */
 @Component
-public class EnrichmentManagerScheduler {
+public class TaskManagerScheduler {
 
   @Autowired
   private TaskScheduleService taskScheduleService;
 
 
-  private static final Logger LOGGER = LoggerFactory.getLogger(EnrichmentManagerScheduler.class
+  private static final Logger LOGGER = LoggerFactory.getLogger(TaskManagerScheduler.class
       .getName());
 
 
   /* How often the metadata is scanned for changes in "enrichement-properties section" */
-  private static final String DEFAULT_ENRICHMENT_MANAGER_CRON_SCHEDULE = "0 0 * * * ?";
+  private static final String DEFAULT_TASK_MANAGER_CRON_SCHEDULE = "0 0 * * * ?";
 
   private static final String GROUP_KEY = "scheduled";
 
   /**
-   * Schedules an EnrichmentTask based on its cron definition.
+   * Schedules an DataProcessor based on its cron definition.
    *
    * @param taskScheduleItem the execution schedule
-   * @throws TaskScheduleException when the task couldn't be scheduled
+   * @throws CronJobScheduleException when the task couldn't be scheduled
    */
-  public void scheduleEnrichmentManagerTask(Scheduler scheduler,
-      TaskSchedule.TaskScheduleItem taskScheduleItem) throws TaskScheduleException {
-    if (taskScheduleItem.getTaskType() != TaskType.ENRICHMENT_MANAGER) {
+  public void scheduleTaskManagerExecutor(Scheduler scheduler,
+      TaskSchedule.TaskScheduleItem taskScheduleItem) throws CronJobScheduleException {
+    if (taskScheduleItem.getTaskType() != TaskType.TASK_MANAGER) {
       LOGGER.warn("unable to schedule enrichment manager because task type is wrong. Name: "
           + taskScheduleItem.getName());
       return;
@@ -71,17 +70,17 @@ public class EnrichmentManagerScheduler {
     String cron = taskScheduleItem.getCron();
     TaskType taskType = taskScheduleItem.getTaskType();
     if (name == null || cron == null
-        || taskScheduleItem.getTaskType() != TaskType.ENRICHMENT_MANAGER) {
+        || taskScheduleItem.getTaskType() != TaskType.TASK_MANAGER) {
       String message =
           String.format(
               "The task with name '%s', and cron '%s' and task type '%s' has missing data!", name,
               cron, taskType);
-      throw new TaskScheduleException(message);
+      throw new CronJobScheduleException(message);
     }
 
     try {
       JobDetail jobDetail =
-          newJob(EnrichmentManagerTask.class).withIdentity(name, GROUP_KEY).build();
+          newJob(TaskManagerExecutor.class).withIdentity(name, GROUP_KEY).build();
 
       CronTrigger trigger =
           newTrigger().withIdentity(name, GROUP_KEY).withSchedule(cronSchedule(cron)).build();
@@ -89,16 +88,16 @@ public class EnrichmentManagerScheduler {
       scheduler.scheduleJob(jobDetail, trigger);
     } catch (SchedulerException ex) {
       LOGGER.error(null, ex);
-      throw new TaskScheduleException(ex);
+      throw new CronJobScheduleException(ex);
     }
   }
 
   public TaskSchedule.TaskScheduleItem defaultEnrichmentMangerSchedule() {
     TaskSchedule.TaskScheduleItem taskScheduleItem = new TaskSchedule.TaskScheduleItem();
-    taskScheduleItem.setCron(DEFAULT_ENRICHMENT_MANAGER_CRON_SCHEDULE);
+    taskScheduleItem.setCron(DEFAULT_TASK_MANAGER_CRON_SCHEDULE);
     taskScheduleItem.setTarget("*");
-    taskScheduleItem.setTaskType(TaskType.ENRICHMENT_MANAGER);
-    taskScheduleItem.setJob(EnrichmentManagerTask.class.getName());
+    taskScheduleItem.setTaskType(TaskType.TASK_MANAGER);
+    taskScheduleItem.setJob(TaskManagerExecutor.class.getName());
     taskScheduleItem.setName("Enrichment manager task");
 
     return taskScheduleItem;
@@ -108,9 +107,9 @@ public class EnrichmentManagerScheduler {
     TaskSchedule.TaskScheduleItem defaultEnrichmentManagerSchedule =
         defaultEnrichmentMangerSchedule();
     try {
-      scheduleEnrichmentManagerTask(scheduler, defaultEnrichmentManagerSchedule);
+      scheduleTaskManagerExecutor(scheduler, defaultEnrichmentManagerSchedule);
       taskScheduleService.createManagerSchedule(defaultEnrichmentManagerSchedule);
-    } catch (TaskScheduleException ex) {
+    } catch (CronJobScheduleException ex) {
       LOGGER.warn("Failed to schedule default enrichment manager", ex);
     }
   }

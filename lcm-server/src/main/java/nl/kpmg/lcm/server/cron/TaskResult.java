@@ -12,29 +12,21 @@
  * the License.
  */
 
-package nl.kpmg.lcm.server.task;
+package nl.kpmg.lcm.server.cron;
 
 /**
+ * Used to communicate the outcome of a Task.
  *
  * @author mhoekstra
  */
-public class TaskManagerException extends Exception {
+public enum TaskResult {
+  /**
+   * The task was successfully executed.
+   */
+  SUCCESS,
 
-  public TaskManagerException() {}
-
-  public TaskManagerException(String message) {
-    super(message);
-  }
-
-  public TaskManagerException(String arg0, Throwable arg1) {
-    super(arg0, arg1);
-  }
-
-  public TaskManagerException(Throwable cause) {
-    super(cause);
-  }
-
-  public TaskManagerException(String arg0, Throwable arg1, boolean arg2, boolean arg3) {
-    super(arg0, arg1, arg2, arg3);
-  }
+  /**
+   * The task failed somewhere during execution.
+   */
+  FAILURE;
 }

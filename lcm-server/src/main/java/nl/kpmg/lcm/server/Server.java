@@ -23,6 +23,8 @@ import nl.kpmg.lcm.common.Roles;
 import nl.kpmg.lcm.common.ServerException;
 import nl.kpmg.lcm.common.SslConfigurationException;
 import nl.kpmg.lcm.common.configuration.ServerConfiguration;
+import nl.kpmg.lcm.server.cron.CronManager;
+import nl.kpmg.lcm.server.cron.exception.CronManagerException;
 import nl.kpmg.lcm.server.data.service.LcmIdService;
 import nl.kpmg.lcm.server.exception.mapper.LcmExceptionMapper;
 import nl.kpmg.lcm.server.exception.mapper.ValidationExceptionMapper;
@@ -30,8 +32,6 @@ import nl.kpmg.lcm.server.rest.authentication.AuthenticationRequestFilter;
 import nl.kpmg.lcm.server.rest.authentication.ResponseFilter;
 import nl.kpmg.lcm.server.rest.authorization.AuthorizationRequestFilter;
 import nl.kpmg.lcm.server.swagger.SwaggerServer;
-import nl.kpmg.lcm.server.task.TaskManager;
-import nl.kpmg.lcm.server.task.TaskManagerException;
 
 import org.glassfish.jersey.jackson.JacksonFeature;
 import org.glassfish.jersey.linking.DeclarativeLinkingFeature;
@@ -57,8 +57,8 @@ public class Server {
   private final String baseFallbackUri;
 
   private HttpsServerWrapper restServer;
-  private TaskManager taskManager;
-  
+  private CronManager cronManager;
+
   private SwaggerServer swaggerServer;
 
   public Server() throws ServerException {
@@ -123,8 +123,8 @@ public class Server {
     return HttpsServerProvider.createHttpsServer(configuration, baseUri, baseFallbackUri, rc);
   }
 
-  public TaskManager startTaskManager() throws TaskManagerException {
-    TaskManager taskManager = new TaskManager();
+  public CronManager startTaskManager() throws CronManagerException {
+    CronManager taskManager = new CronManager();
     taskManager.initialize(context);
     return taskManager;
   }
@@ -137,7 +137,7 @@ public class Server {
   public void start() throws ServerException {
     try {
       restServer = startRestInterface();
-      taskManager = startTaskManager();
+      cronManager = startTaskManager();
       if(configuration.getSwaggerServerEnabled()){
           startSwaggerServer();
       }
@@ -151,7 +151,7 @@ public class Server {
       LOGGER.error(
           "Failed starting the LocalCatalogManager due to the redirect server ", ex);
       throw new ServerException(ex);
-    } catch (TaskManagerException ex) {
+    } catch (CronManagerException ex) {
       LOGGER.error(
           "Failed starting the LocalCatalogManager due to the TaskManager", ex);
       throw new ServerException(ex);
@@ -160,7 +160,7 @@ public class Server {
 
   public void stop() {
     restServer.stop();
-    taskManager.stop();
+    cronManager.stop();
     if(swaggerServer !=  null) {
         swaggerServer.stop();
     }

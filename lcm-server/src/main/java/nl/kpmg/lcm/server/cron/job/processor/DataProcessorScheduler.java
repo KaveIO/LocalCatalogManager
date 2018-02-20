@@ -12,17 +12,17 @@
  * the License.
  */
 
-package nl.kpmg.lcm.server.task.core;
+package nl.kpmg.lcm.server.cron.job.processor;
 
 import static org.quartz.JobBuilder.newJob;
 
 import nl.kpmg.lcm.common.data.TaskDescription;
+import nl.kpmg.lcm.server.cron.TaskResult;
+import nl.kpmg.lcm.server.cron.exception.CronJobExecutionException;
+import nl.kpmg.lcm.server.cron.exception.CronJobScheduleException;
+import nl.kpmg.lcm.server.cron.job.AbstractDataProcessor;
+import nl.kpmg.lcm.server.cron.job.AbstractJobScheduler;
 import nl.kpmg.lcm.server.data.service.TaskDescriptionService;
-import nl.kpmg.lcm.server.task.CoreTask;
-import nl.kpmg.lcm.server.task.EnrichmentTask;
-import nl.kpmg.lcm.server.task.TaskException;
-import nl.kpmg.lcm.server.task.TaskResult;
-import nl.kpmg.lcm.server.task.TaskScheduleException;
 
 import org.quartz.JobDetail;
 import org.quartz.Scheduler;
@@ -34,14 +34,14 @@ import org.springframework.beans.factory.annotation.Autowired;
 import java.util.List;
 
 /**
- * Executor of ad-hoc tasks. EnrichmentTasks can be created either through a schedule or in an
+ * Executor of ad-hoc tasks. AbstractJobScheduler can be created either through a schedule or in an
  * ad-hoc way. These ad-hoc tasks will be scheduled by this Task.
  *
  * @author mhoekstra
  */
-public class ExecuteTasksCoreTask extends CoreTask {
+public class DataProcessorScheduler extends AbstractJobScheduler {
 
-  private final Logger LOGGER = LoggerFactory.getLogger(ExecuteTasksCoreTask.class.getName());
+  private final Logger LOGGER = LoggerFactory.getLogger(DataProcessorScheduler.class.getName());
   /**
    * The group key which is used to register the ad-hoc tasks.
    */
@@ -57,20 +57,20 @@ public class ExecuteTasksCoreTask extends CoreTask {
    * Schedules all tasks with the status PENDING for direct execution.
    *
    * @return the result of the scheduling
-   * @throws TaskException if the task fails to execute
+   * @throws CronJobExecutionException if the task fails to execute
    */
   @Override
-  public final TaskResult execute() throws TaskException {
-
+  public final TaskResult execute() throws CronJobExecutionException {
     List<TaskDescription> taskDescriptions =
         taskDescriptionService.findByStatus(TaskDescription.TaskStatus.PENDING);
     for (TaskDescription taskDescription : taskDescriptions) {
       try {
-        scheduleEnrichmentTask(taskDescription.getId(), taskDescription.getJob(),
+        scheduleDataProcessor(taskDescription.getId(), taskDescription.getJob(),
             taskDescription.getTarget());
+
         taskDescriptionService.updateStatus(taskDescription.getId(),
             TaskDescription.TaskStatus.SCHEDULED);
-      } catch (TaskScheduleException ex) {
+      } catch (CronJobScheduleException ex) {
         LOGGER.warn("Failed scheduling task.");
         taskDescriptionService.updateStatus(taskDescription.getId(),
             TaskDescription.TaskStatus.FAILED);
@@ -81,80 +81,82 @@ public class ExecuteTasksCoreTask extends CoreTask {
   }
 
   /**
-   * Schedules an EnrichmentTask for immediate execution.
+   * Schedules an AbstractDataProcessor for immediate execution.
    *
    * @param name The name of the job
    * @param job the class name of the job to execute
    * @param target the target MetaData expression
-   * @throws TaskScheduleException when the task couldn't be scheduled
+   * @throws CronJobScheduleException when the task couldn't be scheduled
    */
-  private void scheduleEnrichmentTask(final String name, final String job, final String target)
-      throws TaskScheduleException {
+  private void scheduleDataProcessor(final String name, final String job, final String target)
+      throws CronJobScheduleException {
 
     if (name == null || name.isEmpty()) {
-      throw new TaskScheduleException("Name can't be empty for scheduled task");
+      throw new CronJobScheduleException("Name can't be empty for scheduled task");
     }
     if (job == null || job.isEmpty()) {
-      throw new TaskScheduleException("Job can't be empty for scheduled task");
+      throw new CronJobScheduleException("Job can't be empty for scheduled task");
     }
     if (target == null || target.isEmpty()) {
-      throw new TaskScheduleException("Target can't be empty for scheduled task");
+      throw new CronJobScheduleException("Target can't be empty for scheduled task");
     }
 
     try {
-      Class<? extends EnrichmentTask> enrichmentTaskClass = getEnrichmentTaskClass(job);
-      scheduleEnrichmentTask(name, enrichmentTaskClass, target);
-    } catch (TaskException ex) {
+      Class<? extends AbstractDataProcessor> dataProcessorClass = getDataProcessorClass(job);
+      scheduleDataProcessor(name, dataProcessorClass, target);
+    } catch (CronJobExecutionException ex) {
       LOGGER.error(ex.getMessage());
-      throw new TaskScheduleException(ex);
+      throw new CronJobScheduleException(ex);
     }
   }
 
   /**
-   * Schedules an EnrichmentTask for immediate execution.
+   * Schedules an AbstractDataProcessor for immediate execution.
    *
    * @param name The name of the job
    * @param job the class of the job to execute
    * @param target the target MetaData expression
-   * @throws TaskScheduleException when the task couldn't be scheduled
+   * @throws CronJobScheduleException when the task couldn't be scheduled
    */
-  private void scheduleEnrichmentTask(final String name, final Class<? extends EnrichmentTask> job,
-      final String target) throws TaskScheduleException {
+  private void scheduleDataProcessor(final String name,
+      final Class<? extends AbstractDataProcessor> job, final String target)
+      throws CronJobScheduleException {
     try {
       JobDetail jobDetail = newJob(job).withIdentity(name, GROUP_KEY).build();
-      jobDetail.getJobDataMap().put(EnrichmentTask.TARGET_KEY, target);
-      jobDetail.getJobDataMap().put(EnrichmentTask.TASK_ID_KEY, name);
+      jobDetail.getJobDataMap().put(AbstractDataProcessor.TARGET_KEY, target);
+      jobDetail.getJobDataMap().put(AbstractDataProcessor.TASK_ID_KEY, name);
 
       Scheduler scheduler = getScheduler();
       scheduler.addJob(jobDetail, true, true);
       scheduler.triggerJob(jobDetail.getKey());
     } catch (SchedulerException ex) {
-      LOGGER.error( null, ex);
-      throw new TaskScheduleException(ex);
+      LOGGER.error(null, ex);
+      throw new CronJobScheduleException(ex);
     }
   }
 
   /**
    * Method for translating a class name to a specific Class instance. This will check if the
-   * provided class name actually extends an EnrichmentTask
+   * provided class name actually extends an AbstractDataProcessor
    *
    * @param className the name of the class
    * @return the class instance of the class
-   * @throws TaskException when className is not correct or points to something else than an
-   *         EnrichmentTask
+   * @throws CronJobExecutionException when className is not correct or points to something else
+   *         than an AbstractDataProcessor
    */
-  private Class<? extends EnrichmentTask> getEnrichmentTaskClass(final String className)
-      throws TaskException {
+  private Class<? extends AbstractDataProcessor> getDataProcessorClass(final String className)
+      throws CronJobExecutionException {
     try {
       Class<?> cls = Class.forName(className);
-      if (EnrichmentTask.class.isAssignableFrom(cls)) {
-        return (Class<? extends EnrichmentTask>) cls;
+      if (AbstractDataProcessor.class.isAssignableFrom(cls)) {
+        return (Class<? extends AbstractDataProcessor>) cls;
       } else {
-        throw new TaskException("Task definition doesn't contain a schedulable job");
+        throw new CronJobExecutionException("Task definition doesn't contain a schedulable job");
       }
     } catch (ClassNotFoundException ex) {
-      LOGGER.error( null, ex);
-      throw new TaskException(ex);
+      LOGGER.error(null, ex);
+      throw new CronJobExecutionException(ex);
     }
   }
+
 }

@@ -12,7 +12,7 @@
  * the License.
  */
 
-package nl.kpmg.lcm.server.task;
+package nl.kpmg.lcm.server.cron;
 
 import org.quartz.spi.TriggerFiredBundle;
 import org.springframework.beans.factory.config.AutowireCapableBeanFactory;

@@ -35,8 +35,8 @@ import nl.kpmg.lcm.common.data.metadata.MetaDataWrapper;
 import nl.kpmg.lcm.common.exception.LcmException;
 import nl.kpmg.lcm.common.rest.types.FetchEndpointRepresentation;
 import nl.kpmg.lcm.common.rest.types.MetaDataRepresentation;
+import nl.kpmg.lcm.server.cron.job.processor.DataFetchExecutor;
 import nl.kpmg.lcm.server.rest.client.version0.HttpResponseHandler;
-import nl.kpmg.lcm.server.task.enrichment.DataFetchTask;
 
 import org.glassfish.jersey.client.authentication.HttpAuthenticationFeature;
 import org.slf4j.Logger;
@@ -117,7 +117,14 @@ public class DataFetchTriggerService {
           + localStorage.getType() + " storage.");
     }
 
-    updateMetaData(metaDataWrapper, localStorage, namespacePath);
+    String executionExpirationTime =
+        metaDataWrapper.getExpirationTime().getExecutionExpirationTime();
+    if (executionExpirationTime != null) {
+      throw new LcmException(
+          "Unable to (re)transfer a metadata with already set execution expiration time.");
+    }
+
+    updateMetaData(metaDataWrapper, localStorage, namespacePath, lcm.getUniqueId());
 
     createFetchTask(metaDataWrapper, lcmId, lcm, transferSettings, username);
   }
@@ -125,7 +132,7 @@ public class DataFetchTriggerService {
   private void createFetchTask(MetaDataWrapper metaDataWrapper, String lcmId, RemoteLcm lcm,
       TransferSettings transferSettings, String username) throws ServerException, ClientErrorException {
     TaskDescription dataFetchTaskDescription = new TaskDescription();
-    dataFetchTaskDescription.setJob(DataFetchTask.class.getName());
+    dataFetchTaskDescription.setJob(DataFetchExecutor.class.getName());
     dataFetchTaskDescription.setType(TaskType.FETCH);
     dataFetchTaskDescription.setStatus(TaskDescription.TaskStatus.PENDING);
     dataFetchTaskDescription.setTarget(metaDataWrapper.getId());
@@ -162,7 +169,8 @@ public class DataFetchTriggerService {
   }
 
   private void updateMetaData(MetaDataWrapper metaDataWrapper, Storage localStorage,
-      String namespacePath) throws ServerException, NotFoundException, ClientErrorException {
+      String namespacePath, String lcmId) throws ServerException, NotFoundException,
+      ClientErrorException {
 
     List<String> uriList = metaDataWrapper.getData().getUri();
     List<String> newUriList = new LinkedList();
@@ -188,7 +196,16 @@ public class DataFetchTriggerService {
     }
 
     metaDataWrapper.getData().setUri(newUriList);
-    metaDataService.update(metaDataWrapper.getMetaData());
+
+    metaDataWrapper.getTransferHistory().addSourceLcmId(lcmId);
+
+    String newExecutionTime = metaDataWrapper.getExpirationTime().getTransferExpirationTime();
+    if(newExecutionTime != null) {
+        metaDataWrapper.getExpirationTime().setExecutionExpirationTime(newExecutionTime);
+        metaDataWrapper.getExpirationTime().removeTransferExpirationTime();
+    }
+
+    metaDataService.create(metaDataWrapper.getMetaData());
   }
 
   private String getUpdatedURI(String uri, Storage localStorage) throws ServerException {

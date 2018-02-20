@@ -12,7 +12,10 @@
  * the License.
  */
 
-package nl.kpmg.lcm.server.task;
+package nl.kpmg.lcm.server.cron.job;
+
+import nl.kpmg.lcm.server.cron.TaskResult;
+import nl.kpmg.lcm.server.cron.exception.CronJobExecutionException;
 
 import org.quartz.Job;
 import org.quartz.JobDataMap;
@@ -29,13 +32,13 @@ import org.slf4j.LoggerFactory;
  *
  * @author mhoekstra
  */
-public abstract class CoreTask implements Job {
+public abstract class AbstractJobScheduler implements Job {
   /**
    * The field name containing the scheduler in the JobDataMap.
    */
   public static final String SCHEDULER = "scheduler";
 
-  private final Logger LOGGER = LoggerFactory.getLogger(CoreTask.class.getName());
+  private final Logger LOGGER = LoggerFactory.getLogger(Scheduler.class.getName());
   /**
    * The quartz scheduler.
    */
@@ -45,9 +48,9 @@ public abstract class CoreTask implements Job {
    * Method called to process the actual code of this task.
    *
    * @return The result of the task
-   * @throws TaskException if the task can't be executed properly
+   * @throws CronJobExecutionException if the task can't be executed properly
    */
-  protected abstract TaskResult execute() throws TaskException;
+  protected abstract TaskResult execute() throws CronJobExecutionException;
 
   /**
    * Execute method invoked by the quartz scheduler.
@@ -62,12 +65,12 @@ public abstract class CoreTask implements Job {
 
     try {
       LOGGER.trace(
-          String.format("Executing CoreTask %s ", context.getJobDetail().getKey().getName()));
+          String.format("Executing JobScheduler %s ", context.getJobDetail().getKey().getName()));
 
       execute();
 
       LOGGER.trace(
-          String.format("Done with CoreTask %s ", context.getJobDetail().getKey().getName()));
+          String.format("Done with JobScheduler %s ", context.getJobDetail().getKey().getName()));
     } catch (Exception ex) {
       LOGGER.error( "Failed executing task", ex);
       throw new JobExecutionException(ex);

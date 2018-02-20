@@ -12,13 +12,15 @@
  * the License.
  */
 
-package nl.kpmg.lcm.server.task;
+package nl.kpmg.lcm.server.cron.job;
 
 import nl.kpmg.lcm.common.data.Storage;
 import nl.kpmg.lcm.common.data.TaskDescription;
 import nl.kpmg.lcm.common.data.TaskType;
 import nl.kpmg.lcm.common.data.metadata.MetaData;
 import nl.kpmg.lcm.common.data.metadata.MetaDataWrapper;
+import nl.kpmg.lcm.server.cron.TaskResult;
+import nl.kpmg.lcm.server.cron.exception.CronJobExecutionException;
 import nl.kpmg.lcm.server.data.service.MetaDataService;
 import nl.kpmg.lcm.server.data.service.StorageService;
 import nl.kpmg.lcm.server.data.service.TaskDescriptionService;
@@ -40,10 +42,10 @@ import java.util.Map;
  *
  * @author mhoekstra
  */
-public abstract class EnrichmentTask implements Job {
+public abstract class AbstractDataProcessor implements Job {
   protected String taskId;
 
-  private final Logger LOGGER = LoggerFactory.getLogger(EnrichmentTask.class.getName());
+  private final Logger LOGGER = LoggerFactory.getLogger(AbstractDataProcessor.class.getName());
 
   /**
    * The id of the object that will be processed. If metadata is transfered the this is metadata id.
@@ -85,10 +87,10 @@ public abstract class EnrichmentTask implements Job {
    * @param metadata the MetaData to apply this task on
    * @param options - any option that could be useful during task execution
    * @return The result of the task
-   * @throws TaskException if the task can't be executed properly
+   * @throws CronJobExecutionException if the task can't be executed properly
    */
   protected abstract TaskResult execute(MetaDataWrapper metadataWrapper, Map options)
-      throws TaskException;
+      throws CronJobExecutionException;
 
   /**
    * Execute method invoked by the quartz scheduler.
@@ -147,18 +149,18 @@ public abstract class EnrichmentTask implements Job {
     if (targets != null) {
       for (MetaData metadata : targets) {
         try {
-          LOGGER.info(String.format("Executing EnrichmentTask %s (%s)", taskDescription.getId(),
+          LOGGER.info(String.format("Executing Task %s (%s)", taskDescription.getId(),
               taskDescription.getJob()));
 
           TaskResult taskResult =
               execute(new MetaDataWrapper(metadata), taskDescription.getOptions());
 
-          LOGGER.info(String.format("Done with EnrichmentTask %s (%s) with status : %s",
+          LOGGER.info(String.format("Done with Task %s (%s) with status : %s",
               taskDescription.getId(), taskDescription.getJob(), taskResult));
           if (taskResult == TaskResult.FAILURE) {
             status = TaskDescription.TaskStatus.FAILED;
           }
-        } catch (TaskException ex) {
+        } catch (CronJobExecutionException ex) {
           LOGGER.error("Failed executing task! Message : " +  ex.getMessage());
         }
       }

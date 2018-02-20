@@ -136,10 +136,10 @@ public class AuthorizedLcmCreateWindow extends Window implements Button.ClickLis
     panelContent.addComponent(applicationIdLayout);
 
     if(isCreateOpereration) {
-        createWarning.addStyleName("application-key-warning");
+        createWarning.addStyleName("warning");
         panelContent.addComponent(createWarning);
     } else {
-        editWarning.addStyleName("application-key-warning");
+        editWarning.addStyleName("warning");
         panelContent.addComponent(editWarning);
     }
 

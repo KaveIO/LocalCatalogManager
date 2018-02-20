@@ -20,6 +20,7 @@ import com.amazonaws.auth.BasicAWSCredentials;
 import com.amazonaws.regions.Regions;
 import com.amazonaws.services.s3.AmazonS3;
 import com.amazonaws.services.s3.AmazonS3ClientBuilder;
+import com.amazonaws.services.s3.model.DeleteObjectRequest;
 import com.amazonaws.services.s3.model.GetObjectRequest;
 import com.amazonaws.services.s3.model.ObjectMetadata;
 import com.amazonaws.services.s3.model.PutObjectRequest;
@@ -40,12 +41,14 @@ import java.io.InputStream;
  * @author shristov
  */
 public class S3FileAdapter implements FileAdapter {
-  private static final org.slf4j.Logger LOGGER =
-      LoggerFactory.getLogger(S3FileAdapter.class.getName());
+  private static final org.slf4j.Logger LOGGER = LoggerFactory.getLogger(S3FileAdapter.class
+      .getName());
   private String bucketName;
 
   private AmazonS3 s3Client;
   private String fileName;
+
+  private S3Object object;
 
   public S3FileAdapter(S3FileStorage s3Storage, String fileName) {
     String secretAcccessKey;
@@ -55,8 +58,9 @@ public class S3FileAdapter implements FileAdapter {
         new BasicAWSCredentials(s3Storage.getAwsAccessKey(), secretAcccessKey);
     AWSStaticCredentialsProvider credentialsProvider =
         new AWSStaticCredentialsProvider(credentials);
-    s3Client = AmazonS3ClientBuilder.standard().withCredentials(credentialsProvider)
-        .withRegion(Regions.EU_WEST_1).build();
+    s3Client =
+        AmazonS3ClientBuilder.standard().withCredentials(credentialsProvider)
+            .withRegion(Regions.EU_WEST_1).build();
 
     bucketName = s3Storage.getBucketName();
     if (fileName.charAt(0) == '/') { // amazon s3 service don't like "/" in front of the file name
@@ -64,6 +68,7 @@ public class S3FileAdapter implements FileAdapter {
     } else {
       this.fileName = fileName;
     }
+    object = s3Client.getObject(new GetObjectRequest(bucketName, fileName));
   }
 
   @Override
@@ -83,7 +88,6 @@ public class S3FileAdapter implements FileAdapter {
 
   @Override
   public InputStream read() throws IOException {
-    S3Object object = s3Client.getObject(new GetObjectRequest(bucketName, fileName));
     if (object != null) {
       return object.getObjectContent();
     }
@@ -98,20 +102,25 @@ public class S3FileAdapter implements FileAdapter {
 
   @Override
   public long length() throws IOException {
-    S3Object object = s3Client.getObject(new GetObjectRequest(bucketName, fileName));
     return object.getObjectMetadata().getContentLength();
   }
 
   @Override
   public long lastModified() throws IOException {
-    S3Object object = s3Client.getObject(new GetObjectRequest(bucketName, fileName));
     return object.getObjectMetadata().getLastModified().getTime();
   }
 
-    @Override
-    public void validatePaths() {
-        if(fileName.contains("../")){
-            throw new LcmValidationException("Metadata path is probbably wrong. Data uri can not contains \"..\\\"!");
-        }
+  @Override
+  public void validatePaths() {
+    if (fileName.contains("../")) {
+      throw new LcmValidationException(
+          "Metadata path is probbably wrong. Data uri can not contains \"..\\\"!");
     }
+  }
+
+  @Override
+  public boolean delete() throws Exception {
+    s3Client.deleteObject(new DeleteObjectRequest(bucketName, object.getKey()));
+    return true;
+  }
 }

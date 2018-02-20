@@ -12,29 +12,29 @@
  * the License.
  */
 
-package nl.kpmg.lcm.server.task;
+package nl.kpmg.lcm.server.cron.exception;
 
 /**
  *
  * @author mhoekstra
  */
-public class TaskException extends Exception {
+public class CronManagerException extends Exception {
 
-  public TaskException() {}
+  public CronManagerException() {}
 
-  public TaskException(String message) {
+  public CronManagerException(String message) {
     super(message);
   }
 
-  public TaskException(String arg0, Throwable arg1) {
+  public CronManagerException(String arg0, Throwable arg1) {
     super(arg0, arg1);
   }
 
-  public TaskException(Throwable cause) {
+  public CronManagerException(Throwable cause) {
     super(cause);
   }
 
-  public TaskException(String arg0, Throwable arg1, boolean arg2, boolean arg3) {
+  public CronManagerException(String arg0, Throwable arg1, boolean arg2, boolean arg3) {
     super(arg0, arg1, arg2, arg3);
   }
 }

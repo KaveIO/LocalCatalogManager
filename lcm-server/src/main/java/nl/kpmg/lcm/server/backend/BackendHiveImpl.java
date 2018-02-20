@@ -94,8 +94,7 @@ public class BackendHiveImpl extends AbstractBackend {
     hiveMetaData.getDynamicData().getDynamicDataDescriptor(key).clearDetailsDescriptor();
     if (properties.getItemsCount() || properties.getStructure() || properties.getAccessibility()) {
       String dataURI = metaDataWrapper.getDynamicData().getDynamicDataDescriptor(key).getURI();
-      Storage storage = storageService.getStorageByUri(dataURI);
-      HiveStorage hiveStorage = new HiveStorage(storage);
+      HiveStorage hiveStorage = getHiveStorage(dataURI);
       JdbcDataContext dataContext = null;
       try {
         dataContext = getDataContext(hiveStorage);
@@ -150,8 +149,7 @@ public class BackendHiveImpl extends AbstractBackend {
     ContentIterator content = ((IterativeData) data).getIterator();
 
     String dataURI = metaDataWrapper.getDynamicData().getDynamicDataDescriptor(key).getURI();
-    Storage storage = storageService.getStorageByUri(dataURI);
-    HiveStorage hiveStorage =  new HiveStorage(storage);
+    HiveStorage hiveStorage =  getHiveStorage(dataURI);
     JdbcDataContext dataContext = getDataContext(hiveStorage);
     if (transferSettings == null) {
       transferSettings = new TransferSettings();
@@ -215,14 +213,37 @@ public class BackendHiveImpl extends AbstractBackend {
 
   @Override
   public boolean delete(String key) {
-    throw new UnsupportedOperationException("Backend delete operation is not supported yet.");
+    try {
+      String dataURI = metaDataWrapper.getDynamicData().getDynamicDataDescriptor(key).getURI();
+      HiveStorage hiveStorage = getHiveStorage(dataURI);
+      JdbcDataContext dataContext = getDataContext(hiveStorage);
+
+      Schema database = dataContext.getSchemaByName(hiveStorage.getDatabase());
+      if (database == null) {
+        throw new LcmException("Error, can not store the data! Database: \""
+            + hiveStorage.getDatabase() + "\" does not exist!");
+      }
+
+      String tableName = getTableName(dataURI);
+      Table table = database.getTableByName(tableName);
+      if (table == null) {
+        throw new LcmException("Error: specified table \"" + tableName
+            + "\" in the metadata is not found!");
+      }
+      DropTable dropTable = new DropTable(database, tableName);
+      dataContext.executeUpdate(dropTable);
+    } catch (Exception ex) {
+      LOGGER.warn("Unable to delete hive table. Error: " + ex.getMessage());
+      return false;
+    }
+
+    return true;
   }
 
   @Override
   public IterativeData read(String key) {
     String dataURI = metaDataWrapper.getDynamicData().getDynamicDataDescriptor(key).getURI();
-    Storage storage = storageService.getStorageByUri(dataURI);
-    HiveStorage hiveStorage =  new HiveStorage(storage);
+    HiveStorage hiveStorage =  getHiveStorage(dataURI);
     JdbcDataContext dataContext = getDataContext(hiveStorage);
 
     Schema schema = dataContext.getSchemaByName(hiveStorage.getDatabase());
@@ -280,4 +301,9 @@ public class BackendHiveImpl extends AbstractBackend {
     return new ArrayList(Arrays.asList(schema.getTableNames()));
   }
 
+  private HiveStorage getHiveStorage(String dataURI) {
+    Storage storage = storageService.getStorageByUri(dataURI);
+    HiveStorage hiveStorage = new HiveStorage(storage);
+    return hiveStorage;
+  }
 }
