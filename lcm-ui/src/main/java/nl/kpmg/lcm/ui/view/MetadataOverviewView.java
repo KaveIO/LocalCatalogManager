@@ -21,5 +21,5 @@ import com.vaadin.navigator.View;
  * @author mhoekstra
  */
 public interface MetadataOverviewView extends View {
-
+    public void updateContent();
 }

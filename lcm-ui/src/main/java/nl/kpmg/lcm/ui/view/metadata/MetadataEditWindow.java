@@ -33,6 +33,7 @@ import nl.kpmg.lcm.ui.component.DefinedLabel;
 import nl.kpmg.lcm.ui.rest.AuthenticationException;
 import nl.kpmg.lcm.ui.rest.DataCreationException;
 import nl.kpmg.lcm.ui.rest.RestClientService;
+import nl.kpmg.lcm.ui.view.MetadataOverviewView;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -64,6 +65,8 @@ public class MetadataEditWindow extends Window implements Button.ClickListener {
 
   private final RestClientService restClientService;
 
+  private final MetadataOverviewView metadataOverviewView;
+
   private final MetaDataRepresentation metaDataRepresentation;
 
   private final MetaData metadata;
@@ -76,10 +79,16 @@ public class MetadataEditWindow extends Window implements Button.ClickListener {
 
   public MetadataEditWindow(RestClientService restClientService,
       MetaDataRepresentation metaDataRepresentation) {
+    this(restClientService, metaDataRepresentation, null);
+  }
+
+  public MetadataEditWindow(RestClientService restClientService,
+    MetaDataRepresentation metaDataRepresentation, MetadataOverviewView metadataOverviewView) {
     super(DEFAULT_TITLE);
     this.restClientService = restClientService;
     this.metaDataRepresentation = metaDataRepresentation;
     this.metadata = metaDataRepresentation.getItem();
+    this.metadataOverviewView = metadataOverviewView;
     init();
   }
 
@@ -166,6 +175,9 @@ public class MetadataEditWindow extends Window implements Button.ClickListener {
         String rawMetadata = textArea.getValue();
         restClientService.putMetadata(metadata.getId(), rawMetadata);
         Notification.show("Edit of metadata successful.");
+        if (metadataOverviewView != null) {
+          metadataOverviewView.updateContent();
+        }
         this.close();
       } catch (ServerException | DataCreationException | AuthenticationException ex) {
         Notification.show("Edit of metadata failed.");
@@ -175,6 +187,9 @@ public class MetadataEditWindow extends Window implements Button.ClickListener {
       try {
         restClientService.deleteMetadata(metadata.getId());
         Notification.show("Delete of metadata successful.");
+        if (metadataOverviewView != null) {
+          metadataOverviewView.updateContent();
+        }
         this.close();
       } catch (ServerException | DataCreationException | AuthenticationException ex) {
         Notification.show("Edit of metadata failed.");
