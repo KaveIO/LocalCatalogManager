@@ -42,6 +42,7 @@ public class MetaDataWrapper implements MetaDataIdentificator {
     this.enrichmentPropertiesDescriptor = new EnrichmentPropertiesDescriptor(metaData);
 
     Notification notification = new Notification();
+    this.validateName(notification);
     this.dataDescriptor.validate(notification);
     this.generalInfoDescriptor.validate(notification);
     if (notification.hasErrors()) {
@@ -153,5 +154,11 @@ public class MetaDataWrapper implements MetaDataIdentificator {
    */
   public void setEnrichmentProperties(EnrichmentPropertiesDescriptor value) {
     metaData.set(value.getSectionName(), value.getMap());
+  }
+
+  public final void validateName(Notification notification) {
+    if (getName() == null || getName().isEmpty()) {
+      notification.addError("Error: Section \"name\" is not found");
+    }
   }
 }
