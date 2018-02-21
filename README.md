@@ -39,10 +39,16 @@ Untar the release.
 
 After this you can get started. The quickest way to get this running is a unconfigured setup. The commands you have to run for this are the following:
 
-```bash 
-  bin/setup-ssl.sh - currently itis not working look at cetificates/Readme.md for details
+```bash
+  bin/setup-ssl.sh
   bin/start-dockerized-mongo.sh
-  bin/populate-dockerized-mongo.sh
+```
+
+View && Edit application.properties and  security.properties files. 
+Make sure that all the properties are set correctly. 
+Most of them have default values but some important fields need your input.
+
+```bash
   bin/start-server.sh
   bin/start-ui.sh
 ```
@@ -56,7 +62,7 @@ You can use your browser to reach
 
     https://localhost:4443/
 
-To access the UI. The default username and password are: admin, admin
+To access the UI. The default username and password are: the once entered in ecurity.properties file
 Once administrator user is created the default ones are inactive.
 
 In case swagger is enabled REST API documentation is available
