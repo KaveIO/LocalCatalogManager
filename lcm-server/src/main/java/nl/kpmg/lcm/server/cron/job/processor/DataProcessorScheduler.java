@@ -17,6 +17,7 @@ package nl.kpmg.lcm.server.cron.job.processor;
 import static org.quartz.JobBuilder.newJob;
 
 import nl.kpmg.lcm.common.data.TaskDescription;
+import nl.kpmg.lcm.common.data.TaskType;
 import nl.kpmg.lcm.server.cron.TaskResult;
 import nl.kpmg.lcm.server.cron.exception.CronJobExecutionException;
 import nl.kpmg.lcm.server.cron.exception.CronJobScheduleException;
@@ -66,7 +67,7 @@ public class DataProcessorScheduler extends AbstractJobScheduler {
     for (TaskDescription taskDescription : taskDescriptions) {
       try {
         scheduleDataProcessor(taskDescription.getId(), taskDescription.getJob(),
-            taskDescription.getTarget());
+            taskDescription.getTarget(), taskDescription.getType());
 
         taskDescriptionService.updateStatus(taskDescription.getId(),
             TaskDescription.TaskStatus.SCHEDULED);
@@ -88,8 +89,8 @@ public class DataProcessorScheduler extends AbstractJobScheduler {
    * @param target the target MetaData expression
    * @throws CronJobScheduleException when the task couldn't be scheduled
    */
-  private void scheduleDataProcessor(final String name, final String job, final String target)
-      throws CronJobScheduleException {
+  private void scheduleDataProcessor(final String name, final String job, final String target,
+      final TaskType type) throws CronJobScheduleException {
 
     if (name == null || name.isEmpty()) {
       throw new CronJobScheduleException("Name can't be empty for scheduled task");
@@ -100,10 +101,13 @@ public class DataProcessorScheduler extends AbstractJobScheduler {
     if (target == null || target.isEmpty()) {
       throw new CronJobScheduleException("Target can't be empty for scheduled task");
     }
+    if (type == null) {
+      throw new CronJobScheduleException("Type can't be empty for scheduled task");
+    }
 
     try {
       Class<? extends AbstractDataProcessor> dataProcessorClass = getDataProcessorClass(job);
-      scheduleDataProcessor(name, dataProcessorClass, target);
+      scheduleDataProcessor(name, dataProcessorClass, target, type);
     } catch (CronJobExecutionException ex) {
       LOGGER.error(ex.getMessage());
       throw new CronJobScheduleException(ex);
@@ -119,12 +123,13 @@ public class DataProcessorScheduler extends AbstractJobScheduler {
    * @throws CronJobScheduleException when the task couldn't be scheduled
    */
   private void scheduleDataProcessor(final String name,
-      final Class<? extends AbstractDataProcessor> job, final String target)
+      final Class<? extends AbstractDataProcessor> job, final String target, final TaskType type)
       throws CronJobScheduleException {
     try {
       JobDetail jobDetail = newJob(job).withIdentity(name, GROUP_KEY).build();
       jobDetail.getJobDataMap().put(AbstractDataProcessor.TARGET_KEY, target);
       jobDetail.getJobDataMap().put(AbstractDataProcessor.TASK_ID_KEY, name);
+      jobDetail.getJobDataMap().put(AbstractDataProcessor.TASK_TYPE_KEY, type);
 
       Scheduler scheduler = getScheduler();
       scheduler.addJob(jobDetail, true, true);

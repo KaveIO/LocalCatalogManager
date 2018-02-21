@@ -35,6 +35,7 @@ public class MetaDataWrapper implements MetaDataIdentificator {
   protected final EnrichmentPropertiesDescriptor enrichmentPropertiesDescriptor;
   protected final ExpirationTimeDescriptor expirationTimeDescriptor;
   protected final TransferHistoryDescriptor transferHistoryDescriptor;
+  protected final AtlasMetadataDescriptor atlasMetadataDescriptor;
 
   public MetaDataWrapper(MetaData metaData) {
     this.metaData = metaData;
@@ -44,6 +45,7 @@ public class MetaDataWrapper implements MetaDataIdentificator {
     this.enrichmentPropertiesDescriptor = new EnrichmentPropertiesDescriptor(metaData);
     this.expirationTimeDescriptor = new ExpirationTimeDescriptor(metaData);
     this.transferHistoryDescriptor = new TransferHistoryDescriptor(metaData);
+    this.atlasMetadataDescriptor = new AtlasMetadataDescriptor(metaData);
 
     Notification notification = new Notification();
     this.validateName(notification);
@@ -63,6 +65,7 @@ public class MetaDataWrapper implements MetaDataIdentificator {
     this.enrichmentPropertiesDescriptor = new EnrichmentPropertiesDescriptor(metaData);
     this.expirationTimeDescriptor = new ExpirationTimeDescriptor(metaData);
     this.transferHistoryDescriptor = new TransferHistoryDescriptor(metaData);
+    this.atlasMetadataDescriptor = new AtlasMetadataDescriptor(metaData);
   }
 
   /**
@@ -80,7 +83,7 @@ public class MetaDataWrapper implements MetaDataIdentificator {
   }
 
   public String getSourceType() {
-        return getData().getDataType();
+    return getData().getDataType();
   }
 
   public List<String> getStorageName() {
@@ -183,5 +186,13 @@ public class MetaDataWrapper implements MetaDataIdentificator {
     if (getName() == null || getName().isEmpty()) {
       notification.addError("Error: Section \"name\" is not found");
     }
+  }
+
+  public final void setAtlasMetadata(AtlasMetadataDescriptor value) {
+    metaData.set(value.getSectionName(), value.getMap());
+  }
+
+  public final AtlasMetadataDescriptor getAtlasMetadata() {
+    return atlasMetadataDescriptor;
   }
 }

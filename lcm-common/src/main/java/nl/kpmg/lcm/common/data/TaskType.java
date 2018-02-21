@@ -27,6 +27,15 @@ public enum TaskType {
   /* Tasks for data deletion */
   DELETE,
 
+  /* Tasks for atlas metadata insertion */
+  ATLAS_INSERT,
+
+  /* Tasks for atlas metadata update */
+  ATLAS_UPDATE,
+
+  /* Tasks for atlas metadata deletion */
+  ATLAS_DELETE,
+
   /* Main data manager tasks */
   TASK_MANAGER
 

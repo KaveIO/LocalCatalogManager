@@ -82,6 +82,25 @@ public class StorageService {
     return saveStorage(storage);
   }
 
+  public Storage findHiveStorageByDatabaseName(String domain, String dbName) {
+    List<Storage> storageList = findAll();
+    for (Storage s : storageList) {
+      if (!s.getType().equals(DataFormat.HIVE)) {
+        continue;
+      }
+
+      HiveStorage hStorage = new HiveStorage(s);
+      if (hStorage.getUrl().contains(domain) && hStorage.getDatabase().equals(dbName)) {
+
+        return s;
+      }
+
+    }
+
+    return null;
+  }
+
+
   /**
    * Save the passed storage. If "credentials" section is missing then checks the mong if storage
    * with the same id already exists(i.e. update). If such exists the "credentials" section is

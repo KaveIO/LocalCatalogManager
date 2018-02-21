@@ -24,6 +24,7 @@ import nl.kpmg.lcm.common.rest.types.MetaDatasRepresentation;
 import nl.kpmg.lcm.server.backend.Backend;
 import nl.kpmg.lcm.server.data.service.MetaDataService;
 import nl.kpmg.lcm.server.data.service.StorageService;
+import nl.kpmg.lcm.server.integration.service.AtlasMetadataService;
 import nl.kpmg.lcm.server.rest.UserIdentifier;
 import nl.kpmg.lcm.server.rest.client.version0.types.ConcreteMetaDataRepresentation;
 import nl.kpmg.lcm.server.rest.client.version0.types.ConcreteMetaDatasRepresentation;
@@ -82,6 +83,8 @@ public class LocalMetaDataController {
    */
   private final StorageService storageService;
 
+  @Autowired
+  private  AtlasMetadataService atlasService;
   /**
    * The default constructor.
    *
@@ -124,6 +127,7 @@ public class LocalMetaDataController {
     } else {
       all = metaDataService.findAll();
     }
+
     MetaDatasRepresentation metaDatasRepresentation = new ConcreteMetaDatasRepresentation();
     metaDatasRepresentation.setRepresentedItems(ConcreteMetaDataRepresentation.class, all);
 

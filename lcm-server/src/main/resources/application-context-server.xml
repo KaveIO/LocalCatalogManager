@@ -51,4 +51,13 @@
         <property name="truststoreType" value="${lcm.client.security.truststoreType}" />
         <property name="truststorePassword" value="${lcm.client.security.truststorePassword}" />
     </bean>
+
+    <bean id="atlasConfiguration" class="nl.kpmg.lcm.common.configuration.AtlasConfiguration">
+        <property name="username" value="${lcm.server.atlas.username}" />
+        <property name="password" value="${lcm.server.atlas.password}" />
+        <property name="host" value="${lcm.server.atlas.host}" />
+        <property name="urlDomain" value="${lcm.server.atlas.hive.domain}" />
+        <property name="port" value="${lcm.server.atlas.port}" />
+        <property name="secure" value="${lcm.server.atlas.secure}" />
+    </bean>
 </beans>
