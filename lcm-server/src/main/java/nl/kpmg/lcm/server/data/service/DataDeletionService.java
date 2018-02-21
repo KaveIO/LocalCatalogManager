@@ -26,6 +26,9 @@ import org.springframework.stereotype.Service;
 public class DataDeletionService {
 
   @Autowired
+  private MetaDataService metadataService;
+
+  @Autowired
   private StorageService storageService;
 
   @Autowired
@@ -33,13 +36,13 @@ public class DataDeletionService {
 
   public void deleteData(MetaData metadata, String taskId) {
     DataDeleter deleter =
-        new DataDeleter(storageService, taskDescriptionService, metadata, taskId);
+        new DataDeleter(metadataService, storageService, taskDescriptionService, metadata, taskId);
     deleter.execute();
   }
 
   public void deleteDataByThread(MetaData metadata) {
      DataDeleter deleter =
-        new DataDeleter(storageService, taskDescriptionService, metadata, null);
+        new DataDeleter(metadataService, storageService, taskDescriptionService, metadata, null);
 
     DataDeleterThread deleterThread =
         new DataDeleterThread(deleter);
