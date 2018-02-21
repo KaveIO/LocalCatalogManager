@@ -16,9 +16,9 @@ package nl.kpmg.lcm.server.data.service;
 
 import jersey.repackaged.com.google.common.collect.Lists;
 
+import nl.kpmg.lcm.common.Roles;
 import nl.kpmg.lcm.common.data.User;
 import nl.kpmg.lcm.server.data.dao.UserDao;
-import nl.kpmg.lcm.common.Roles;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -72,5 +72,15 @@ public class UserService {
 
   public void removeAll(){
       userDao.deleteAll();
+  }
+
+  public void createRemoteUsers(List<String> usernames, String remoteLcmId) {
+    for (String username : usernames) {
+      User user = new User();
+      user.setName(username);
+      user.setRole(Roles.REMOTE_USER);
+      user.setOrigin(remoteLcmId);
+      userDao.save(user);
+    }
   }
 }

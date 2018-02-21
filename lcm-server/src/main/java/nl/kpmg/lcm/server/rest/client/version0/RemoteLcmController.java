@@ -209,14 +209,13 @@ public class RemoteLcmController {
   }
 
   @POST
-  @Path("{id}/import-users")
+  @Path("{id}/export-users")
   @RolesAllowed({Roles.ADMINISTRATOR})
-  @ApiOperation(value = "Import users from Remote Lcm.", notes = "Roles: " + Roles.ADMINISTRATOR)
+  @ApiOperation(value = "Export users to Remote Lcm.", notes = "Roles: " + Roles.ADMINISTRATOR)
   @ApiResponses(value = {@ApiResponse(code = 200, message = "OK"),
-                         @ApiResponse(code = 404, message = "Remote Lcm is not found")})  
-  public final Response importUsers(
-          @ApiParam( value = "Remote Lcm id.") 
-          @PathParam("id") final String remoteLcmId) {
+      @ApiResponse(code = 404, message = "Remote Lcm is not found")})
+  public final Response exportUsers(
+      @ApiParam(value = "Remote Lcm id.") @PathParam("id") final String remoteLcmId) {
     try {
       validateRemoteLcmField(remoteLcmId, "Remote LCM id");
     } catch (LcmValidationException ex) {
@@ -224,11 +223,19 @@ public class RemoteLcmController {
     }
 
     RemoteLcm remoteLcm = remoteLcmService.findOneById(remoteLcmId);
-    if(remoteLcm == null) {
-        throw new NotFoundException("Remote Lcm with id: " +  remoteLcmId + " is not found!");
-    }    
-    
-    remoteLcmService.importUsers(remoteLcmId);
+    if (remoteLcm == null) {
+      throw new NotFoundException("Remote Lcm with id: " + remoteLcmId + " is not found!");
+    }
+
+    boolean result = remoteLcmService.exportUsers(remoteLcmId);
+
+    if (!result) {
+      return Response
+          .status(Response.Status.BAD_REQUEST)
+          .entity(
+              "The remote lcm with id: " + remoteLcmId + " did not allow importing users from it.")
+          .build();
+    }
     return Response.ok().build();
   }
 

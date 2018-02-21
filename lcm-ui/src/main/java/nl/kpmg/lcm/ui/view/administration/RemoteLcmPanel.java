@@ -34,7 +34,7 @@ import nl.kpmg.lcm.ui.rest.RestClientService;
 import nl.kpmg.lcm.ui.view.administration.components.RemoteLcmCreateWindow;
 import nl.kpmg.lcm.ui.view.administration.listeners.DeleteRemoteLcmListener;
 import nl.kpmg.lcm.ui.view.administration.listeners.EditRemoteLcmListener;
-import nl.kpmg.lcm.ui.view.administration.listeners.ImportUsersFromRemoteLcmListener;
+import nl.kpmg.lcm.ui.view.administration.listeners.ExportUsersToRemoteLcmListener;
 import nl.kpmg.lcm.ui.view.administration.listeners.TestRemoteLcmListener;
 
 import org.slf4j.LoggerFactory;
@@ -229,10 +229,10 @@ public class RemoteLcmPanel extends CustomComponent implements DynamicDataContai
     deleteButton.addClickListener(new DeleteRemoteLcmListener(this, restClientService));
     deleteButton.addStyleName("link");
 
-    Button importUsersButton = new Button("import users");
-    importUsersButton.setData(item);
-    importUsersButton.addClickListener(new ImportUsersFromRemoteLcmListener(this, restClientService));
-    importUsersButton.addStyleName("link");
+    Button exportUsersButton = new Button("export users");
+    exportUsersButton.setData(item);
+    exportUsersButton.addClickListener(new ExportUsersToRemoteLcmListener(this, restClientService));
+    exportUsersButton.addStyleName("link");
 
     Button testButton = new Button("test");
     testButton.setData(item);
@@ -242,7 +242,7 @@ public class RemoteLcmPanel extends CustomComponent implements DynamicDataContai
     actionsLayout.addComponent(viewButton);
     actionsLayout.addComponent(editButton);
     actionsLayout.addComponent(deleteButton);
-    actionsLayout.addComponent(importUsersButton);
+    actionsLayout.addComponent(exportUsersButton);
     actionsLayout.addComponent(testButton);
 
     return actionsLayout;

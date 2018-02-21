@@ -283,23 +283,28 @@ public class RestClientService {
     }
   }
 
-  public String importUsersFromRemoteLcm(String remoteLcmId) {
-    String path = "client/v0/remoteLcm/" + remoteLcmId + "/import-users";
-    LOGGER.info(String.format("Executing import users from  remote LCM. Path: %s", path));
+  public String exportUsersToRemoteLcm(String remoteLcmId) {
+    String path = "client/v0/remoteLcm/" + remoteLcmId + "/export-users";
+    LOGGER.info(String.format("Executing export of users to remote LCM. Path: %s", path));
     try {
       Response response = getClient(path).post(null);
       if (response.getStatusInfo().getFamily() == Response.Status.Family.SUCCESSFUL) {
         return "OK";
+      } else if (response.getStatus() == 400) {
+        String message = "The remote LCM did not allow importing of users from the local LCM.";
+        LOGGER.info(message);
+        return message;
       } else {
         String message =
-            String.format("The import of users from remote LCM failed with: %d - %s", response.getStatus(), response
-                .getStatusInfo().getReasonPhrase());
+            String.format("The export of users to remote LCM failed with: %d - %s",
+                response.getStatus(), response.getStatusInfo().getReasonPhrase());
         LOGGER.info(message);
         return message;
       }
     } catch (AuthenticationException | ServerException ex) {
       String message =
-          String.format("The import of users from remote LCM failed with server exception: %s ", ex.getMessage());
+          String.format("The export of users to remote LCM failed with server exception: %s ",
+              ex.getMessage());
       LOGGER.info(message);
       return message;
     }
