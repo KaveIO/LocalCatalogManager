@@ -131,7 +131,9 @@ public class UserController {
 
     validateInputString(user.getName(), "user name", notification);
     validateInputString(user.getRole(), "user role", notification);
-    validateInputString(user.getNewPassword(), "user password", notification);
+    if(! Roles.REMOTE_USER.equals(user.getRole())) {
+        validateInputString(user.getNewPassword(), "user password", notification);
+    }
 
     if (notification.hasErrors()) {
       LOGGER.debug(notification.errorMessage());
@@ -181,9 +183,9 @@ public class UserController {
     }
 
     if (Roles.REMOTE_USER.equals(oldUser.getRole()) && user.getNewPassword() != null
-        && user.getNewPassword().length() == 0 ) {
+        && user.getNewPassword().length() >= 0 ) {
 
-      String message = "Invalid password!";
+      String message = "Remote user can not have password!";
       notification.addError(message);
     }
 

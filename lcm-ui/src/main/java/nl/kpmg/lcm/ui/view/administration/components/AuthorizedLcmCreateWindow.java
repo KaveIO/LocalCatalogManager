@@ -16,6 +16,7 @@ package nl.kpmg.lcm.ui.view.administration.components;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
+import com.vaadin.data.Property;
 import com.vaadin.ui.Button;
 import com.vaadin.ui.HorizontalLayout;
 import com.vaadin.ui.Label;
@@ -70,10 +71,11 @@ public class AuthorizedLcmCreateWindow extends Window implements Button.ClickLis
   private final TextField applicationKeyField = new TextField("Application key");
   private final Button saveButton = new Button("Save");
   private final Button copyButton = new Button("Copy");
+  private final Button generateButton = new Button("Regenerate");
   private AuthorizedLcm authorizedLcm;
   private final static int MAX_LENGTH = 128;
   private final Label createWarning = new Label("Note: Remember the key! It will be hidden after creation!");
-  private final Label editWarning = new Label("Note: The key can not be edited or displayed!");
+  private final Label editWarning = new Label("Note: The saved key can not be displayed!");
 
   private boolean isCreateOpereration;
   private String unhashedKey;
@@ -84,7 +86,7 @@ public class AuthorizedLcmCreateWindow extends Window implements Button.ClickLis
     isCreateOpereration = true;
     this.restClientService = restClientService;
     this.dataContainer = dataContainer;
-    init();
+    initLayouts();
   }
 
   public AuthorizedLcmCreateWindow(RestClientService restClientService,
@@ -99,40 +101,24 @@ public class AuthorizedLcmCreateWindow extends Window implements Button.ClickLis
     applicationIdField.setValue(authorizedLcm.getApplicationId());
     // Application key is never displayed in security reasons
     applicationKeyField.setValue("");
-    applicationKeyField.setEnabled(false);
 
     this.authorizedLcm = authorizedLcm;
-    init();
+    initLayouts();
   }
 
-  private void init() {
+  private void initLayouts() {
     saveButton.addClickListener(this);
 
     VerticalLayout panelContent = new VerticalLayout();
     panelContent.setMargin(true);
 
-    HorizontalLayout nameLayout = new HorizontalLayout();
-    nameField.setRequired(true);
-    nameField.setWidth("70%");
-    nameLayout.setWidth("100%");
-    nameLayout.addStyleName("margin-top-10");
-    nameLayout.addComponent(nameField);
+    HorizontalLayout nameLayout = initNameLayout();
     panelContent.addComponent(nameLayout);
 
-    HorizontalLayout uniqeLcmIdLayout = new HorizontalLayout();
-    uniqeLcmIdField.setRequired(true);
-    uniqeLcmIdField.setWidth("70%");
-    uniqeLcmIdLayout.setWidth("100%");
-    uniqeLcmIdLayout.addStyleName("margin-top-10");
-    uniqeLcmIdLayout.addComponent(uniqeLcmIdField);
+    HorizontalLayout uniqeLcmIdLayout = initLcmIdLayout();
     panelContent.addComponent(uniqeLcmIdLayout);
 
-    HorizontalLayout applicationIdLayout = new HorizontalLayout();
-    applicationIdField.setRequired(true);
-    applicationIdField.setWidth("70%");
-    applicationIdLayout.setWidth("100%");
-    applicationIdLayout.addStyleName("margin-top-10");
-    applicationIdLayout.addComponent(applicationIdField);
+    HorizontalLayout applicationIdLayout = initApplicationIdLayout();
     panelContent.addComponent(applicationIdLayout);
 
     if(isCreateOpereration) {
@@ -143,34 +129,9 @@ public class AuthorizedLcmCreateWindow extends Window implements Button.ClickLis
         panelContent.addComponent(editWarning);
     }
 
-    HorizontalLayout passwordLayout = new HorizontalLayout();
-    
-    applicationKeyField.setRequired(true);
-
-    passwordLayout.addComponent(applicationKeyField);
-    if(isCreateOpereration) {
-      RandomString generator = new RandomString(12, "^_!&@");
-      unhashedKey = generator.nextString();
-      String hashedKey;
-        try {
-            hashedKey = PasswordHash.createHash(unhashedKey);
-        } catch (UserPasswordHashException ex) {
-            LOGGER.error("Unable to create hash! "  +  ex.getMessage());
-            Notification.show("Unable to create authorized LCM!");
-            throw new LcmException("Unable to create hash!", ex);
-        }
-      applicationKeyField.setValue(hashedKey);
-      copyButton.addStyleName("generate-button");
-      copyButton.setWidth("30%");
-      copyButton.addClickListener(this);
-      applicationKeyField.setWidth("100%");
-      passwordLayout.addComponent(copyButton);
-    } else {
-      applicationKeyField.setWidth("70%");
-    }
-
-    passwordLayout.setWidth("100%");
+    HorizontalLayout passwordLayout = initApplicationKeyLayout();
     panelContent.addComponent(passwordLayout);
+
     saveButton.addStyleName("margin-top-20");
     panelContent.addComponent(saveButton);
     passwordLayout.setWidth("100%");
@@ -181,9 +142,82 @@ public class AuthorizedLcmCreateWindow extends Window implements Button.ClickLis
     this.setContent(panelContent);
   }
 
+    private HorizontalLayout initNameLayout() {
+        HorizontalLayout nameLayout = new HorizontalLayout();
+        nameField.setRequired(true);
+        nameField.setWidth("70%");
+        nameLayout.setWidth("100%");
+        nameLayout.addStyleName("margin-top-10");
+        nameLayout.addComponent(nameField);
+        return nameLayout;
+    }
+
+    private HorizontalLayout initLcmIdLayout() {
+        HorizontalLayout uniqeLcmIdLayout = new HorizontalLayout();
+        uniqeLcmIdField.setRequired(true);
+        uniqeLcmIdField.setWidth("70%");
+        uniqeLcmIdLayout.setWidth("100%");
+        uniqeLcmIdLayout.addStyleName("margin-top-10");
+        uniqeLcmIdLayout.addComponent(uniqeLcmIdField);
+        return uniqeLcmIdLayout;
+    }
+
+    private HorizontalLayout initApplicationIdLayout() {
+        HorizontalLayout applicationIdLayout = new HorizontalLayout();
+        applicationIdField.setRequired(true);
+        applicationIdField.setWidth("70%");
+        applicationIdLayout.setWidth("100%");
+        applicationIdLayout.addStyleName("margin-top-10");
+        applicationIdLayout.addComponent(applicationIdField);
+        return applicationIdLayout;
+    }
+
+    private HorizontalLayout initApplicationKeyLayout() throws LcmException, Property.ReadOnlyException {
+        HorizontalLayout applicationKeyLayout = new HorizontalLayout();
+        applicationKeyField.setRequired(true);
+        applicationKeyLayout.addComponent(applicationKeyField);
+        if(isCreateOpereration) {
+            String hashedKey = generateApplicationKey();
+            applicationKeyField.setValue(hashedKey);
+            copyButton.addStyleName("generate-button");
+            copyButton.setWidth("30%");
+            copyButton.addClickListener(this);
+            applicationKeyField.setWidth("100%");
+            applicationKeyLayout.addComponent(copyButton);
+        } else {
+            applicationKeyField.setWidth("100%");
+            generateButton.addStyleName("generate-button");
+            generateButton.setWidth("40%");
+            generateButton.addClickListener(this);
+            applicationKeyLayout.addComponent(generateButton);
+        }
+
+        applicationKeyLayout.setWidth("100%");return applicationKeyLayout;
+    }
+
+    private String generateApplicationKey() throws LcmException {
+        RandomString generator = new RandomString(12, "^_!&@");
+        unhashedKey = generator.nextString();
+        String hashedKey;
+        try {
+            hashedKey = PasswordHash.createHash(unhashedKey);
+        } catch (UserPasswordHashException ex) {
+            LOGGER.error("Unable to create hash! "  +  ex.getMessage());
+            Notification.show("Unable to create authorized LCM!");
+            throw new LcmException("Unable to create hash!", ex);
+        }
+        return hashedKey;
+    }
+
   @Override
   public void buttonClick(Button.ClickEvent event) {
     if (event.getSource() == copyButton) {
+        StringSelection stringSelection = new StringSelection(applicationKeyField.getValue());
+        Clipboard clipboard = Toolkit.getDefaultToolkit().getSystemClipboard();
+        clipboard.setContents(stringSelection, null);
+    } else if (event.getSource() == generateButton) {
+        String hashedKey = generateApplicationKey();
+        applicationKeyField.setValue(hashedKey);
         StringSelection stringSelection = new StringSelection(applicationKeyField.getValue());
         Clipboard clipboard = Toolkit.getDefaultToolkit().getSystemClipboard();
         clipboard.setContents(stringSelection, null);

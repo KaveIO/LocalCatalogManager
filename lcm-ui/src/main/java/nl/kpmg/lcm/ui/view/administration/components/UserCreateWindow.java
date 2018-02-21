@@ -17,8 +17,11 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
+import com.vaadin.data.Property;
 import com.vaadin.ui.Button;
 import com.vaadin.ui.ComboBox;
+import com.vaadin.ui.Component.Listener;
+import com.vaadin.ui.Field.ValueChangeEvent;
 import com.vaadin.ui.FormLayout;
 import com.vaadin.ui.Notification;
 import com.vaadin.ui.TextArea;
@@ -41,7 +44,7 @@ import java.io.IOException;
  *
  * @author mhoekstra
  */
-public class UserCreateWindow extends Window implements Button.ClickListener {
+public class UserCreateWindow extends Window implements Button.ClickListener, Listener {
 
   private static final org.slf4j.Logger LOGGER = LoggerFactory.getLogger(UserCreateWindow.class
       .getName());
@@ -60,6 +63,7 @@ public class UserCreateWindow extends Window implements Button.ClickListener {
   private DynamicDataContainer dataContainer;
   private final TextField nameField = new TextField("Name");
   private ComboBox rolesListComboBox = new ComboBox("Role");
+  private final TextField originField = new TextField("Origin");
   private final TextField pField = new TextField("Password");
   private final TextArea pathListArea = new TextArea("Accessible paths");
   private final TextArea metadataListArea = new TextArea("Accessible metadatas");
@@ -91,13 +95,14 @@ public class UserCreateWindow extends Window implements Button.ClickListener {
     nameField.setValue(user.getName());
     nameField.setEnabled(false);
     rolesListComboBox.setValue(user.getRole());
+    initRoleFields(user.getRole());
 
-    if(!isCreateOpereration) {
-        if(user.getRole().equals(Roles.REMOTE_USER)) {
+    if(user.getRole().equals(Roles.REMOTE_USER)) {
         rolesListComboBox.setEnabled(false);
         pField.setEnabled(false);
-      }
+        originField.setValue(user.getOrigin());
     }
+    originField.setEnabled(false);
 
     StringBuilder pathList = new StringBuilder();
     if (user.getAllowedPathList() != null && user.getAllowedPathList().size() > 0) {
@@ -131,7 +136,6 @@ public class UserCreateWindow extends Window implements Button.ClickListener {
     panelContent.setMargin(true);
     nameField.setRequired(true);
     rolesListComboBox = initRolesListComboBox();
-    pField.setRequired(true);
     pField.setId("userp");
     pathListArea.setWidth("100%");
     pathListArea.setHeight("100%");
@@ -141,6 +145,7 @@ public class UserCreateWindow extends Window implements Button.ClickListener {
     panelContent.addComponent(nameField);
     panelContent.addComponent(rolesListComboBox);
     panelContent.addComponent(pField);
+    panelContent.addComponent(originField);
     panelContent.addComponent(pathListArea);
     panelContent.addComponent(metadataListArea);
     panelContent.addComponent(saveButton);
@@ -167,9 +172,46 @@ public class UserCreateWindow extends Window implements Button.ClickListener {
     rolesListComboBox.setRequired(true);
     rolesListComboBox.setNullSelectionAllowed(false);
     rolesListComboBox.setInputPrompt("Please select one");
+    rolesListComboBox.addListener(this);
 
     return rolesListComboBox;
   }
+
+  public void componentEvent(Event event) {
+    if (!(event instanceof ValueChangeEvent)) {
+      return;// skip all other events
+    }
+
+    ValueChangeEvent vcEvent = (ValueChangeEvent) event;
+    String role = (String) vcEvent.getProperty().getValue();
+    initRoleFields(role);
+  }
+
+    private void initRoleFields(String role) throws Property.ReadOnlyException {
+        switch (role) {
+            case Roles.REMOTE_USER:
+                pField.setEnabled(false);
+                pField.setRequired(false);
+                pField.setValue("");
+                originField.setEnabled(true);
+                originField.setRequired(true);
+                break;
+            case Roles.ADMINISTRATOR:
+            case Roles.API_USER:
+                pField.setEnabled(true);
+                pField.setRequired(true);
+                originField.setEnabled(false);
+                originField.setRequired(false);
+                originField.setValue("");
+                break;
+            default:
+                pField.setEnabled(true);
+                pField.setRequired(true);
+                originField.setEnabled(true);
+                originField.setRequired(false);
+                originField.setValue("");
+        }
+    }
 
   @Override
   public void buttonClick(Button.ClickEvent event) {
@@ -211,9 +253,13 @@ public class UserCreateWindow extends Window implements Button.ClickListener {
     ObjectMapper mapper = new ObjectMapper();
     ObjectNode rootNode = mapper.createObjectNode();
     rootNode.put("name", nameField.getValue());
-    rootNode.put("role", (String)rolesListComboBox.getValue());
-    rootNode.put("newPassword", pField.getValue());
-    String origin = user !=  null ? user.getOrigin() : User.LOCAL_ORIGIN;
+    String role = (String)rolesListComboBox.getValue();
+    rootNode.put("role", role);
+    if(!Roles.REMOTE_USER.equals(role)){
+        rootNode.put("newPassword", pField.getValue());
+    }
+    String formOrigin = originField.getValue().length() > 0 ? originField.getValue(): User.LOCAL_ORIGIN;
+    String origin = user !=  null ? user.getOrigin() : formOrigin;
     rootNode.put("origin", origin);
     ArrayNode pathArrayNode = mapper.createArrayNode();
     String[] allowedPaths = pathListArea.getValue().split(LIST_DELIMITER);
@@ -246,7 +292,9 @@ public class UserCreateWindow extends Window implements Button.ClickListener {
   private void validate(nl.kpmg.lcm.common.validation.Notification notification) {
     validateText(nameField, notification);
     validateComboBox(rolesListComboBox, notification);
-    if (isCreateOpereration && pField.getValue().isEmpty()) {
+    String role =  (String)rolesListComboBox.getValue();
+    if (isCreateOpereration && !role.equals(Roles.REMOTE_USER)
+            && pField.getValue().isEmpty()) {
       notification.addError(pField.getCaption() + " can not be empty");
     }
     if (pField.getValue().length() > 0 && pField.getValue().length() < MIN_PASSWORD_LENGTH
