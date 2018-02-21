@@ -37,7 +37,7 @@ import javax.ws.rs.ext.Provider;
 @Provider
 @Priority(value = Priorities.AUTHORIZATION)
 public class AuthorizationRequestFilter implements ContainerRequestFilter {
-  private static final Logger AUTHORIZATION_LOGGER = LoggerFactory.getLogger("authorizationLogger");
+  private static final Logger AUDIT_LOGGER = LoggerFactory.getLogger("auditLogger");
   private static final Logger LOGGER = LoggerFactory.getLogger(AuthorizationRequestFilter.class
       .getName());
 
@@ -71,7 +71,7 @@ public class AuthorizationRequestFilter implements ContainerRequestFilter {
 
     SecurityContext securityContext = requestContext.getSecurityContext();
     if (securityContext == null) {
-      AUTHORIZATION_LOGGER.error("Security context is null! Path: " + path);
+      AUDIT_LOGGER.error("Security context is null! Path: " + path);
 
       requestContext.abortWith(Response.status(Response.Status.INTERNAL_SERVER_ERROR)
           .entity("Error occured, please contact the system administrator!").build());
@@ -79,7 +79,7 @@ public class AuthorizationRequestFilter implements ContainerRequestFilter {
     }
 
     if (!permissionChecker.check(securityContext, path, annotation.value())) {
-      AUTHORIZATION_LOGGER.warn("User: " + securityContext.getUserPrincipal().getName()
+      AUDIT_LOGGER.warn("User: " + securityContext.getUserPrincipal().getName()
           + " tried to access " + path + " but it is not authorized!");
       requestContext.abortWith(Response.status(Response.Status.FORBIDDEN)
           .entity("You are not authorized to access: " + path).build());
@@ -89,7 +89,7 @@ public class AuthorizationRequestFilter implements ContainerRequestFilter {
     String userName =
         securityContext.getUserPrincipal() != null ? "User "
             + securityContext.getUserPrincipal().getName() : "Unknown user";
-    AUTHORIZATION_LOGGER.info(userName + " was successfully authorized to access: " + path);
+    AUDIT_LOGGER.info(userName + " was successfully authorized to access: " + path);
 
   }
 }

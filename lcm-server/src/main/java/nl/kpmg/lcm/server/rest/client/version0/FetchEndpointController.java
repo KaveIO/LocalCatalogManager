@@ -31,8 +31,11 @@ import nl.kpmg.lcm.server.backend.Backend;
 import nl.kpmg.lcm.server.data.service.FetchEndpointService;
 import nl.kpmg.lcm.server.data.service.MetaDataService;
 import nl.kpmg.lcm.server.data.service.StorageService;
+import nl.kpmg.lcm.server.rest.UserIdentifier;
 import nl.kpmg.lcm.server.rest.authorization.PermissionChecker;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import java.io.IOException;
@@ -71,6 +74,10 @@ import io.swagger.annotations.ApiResponses;
 @Path("/remote/v0/fetch")
 @Api(value = "v0 Fetch Endpoint")
 public class FetchEndpointController {
+  private static final Logger AUDIT_LOGGER = LoggerFactory.getLogger("auditLogger");
+
+  @Autowired
+  private UserIdentifier userIdentifier;
 
   @Autowired
   private FetchEndpointService fetchEndpointService;
@@ -100,19 +107,28 @@ public class FetchEndpointController {
           @ApiParam( value = "Fetch endpoint Id") @PathParam("id") final String id, 
           @ApiParam( value = "Specify the exact data part which is requested") @QueryParam("data_key") String dataKey) throws URISyntaxException,
       IOException {
-      
+    AUDIT_LOGGER.debug(userIdentifier.getUserDescription(securityContext, false)
+        + " is trying to get the fetch endpoint with id: " + id + ".");
     FetchEndpoint fe = fetchEndpointService.findOneById(id);
 
     if (fe == null) {
+      AUDIT_LOGGER.debug(userIdentifier.getUserDescription(securityContext, true)
+          + " was unable to get the fetch endpoint with id: " + id
+          + " because such fetch endpoint is not found.");
       throw new NotFoundException(String.format("FetchEndpoint %s not found", id));
     }
     if (new Date(System.currentTimeMillis()).after(fe.getTimeToLive())) {
       fetchEndpointService.delete(fe);
+      AUDIT_LOGGER.debug(userIdentifier.getUserDescription(securityContext, true)
+          + " was unable to get the fetch endpoint with id: " + id + " because it has expired.");
       throw new LcmException(String.format("FetchEndpoint %s has expired", id),
           Response.Status.BAD_REQUEST);
     }
-    if(!permissionChecker.check(securityContext, fe.getMetadataId())){
-        throw new LcmException(String.format("Unable to authorize the request.", id),
+    if (!permissionChecker.check(securityContext, fe.getMetadataId())) {
+      AUDIT_LOGGER.debug(userIdentifier.getUserDescription(securityContext, true)
+          + " was unable to get the fetch endpoint with id: " + id
+          + " because the user is not authorized to do so.");
+      throw new LcmException(String.format("Unable to authorize the request.", id),
           Response.Status.FORBIDDEN);
     }
 
@@ -128,12 +144,19 @@ public class FetchEndpointController {
     StreamingOutput result = new StreamingOutput() {
       @Override
       public void write(OutputStream out) throws IOException, WebApplicationException {
+        AUDIT_LOGGER.debug(userIdentifier.getUserDescription(securityContext, false)
+            + " is requesting enrichment of metadata with id: " + md.getId() + " and name: "
+            + md.getName() + " because he wants to transfer it.");
         backend.enrichMetadata(EnrichmentProperties.createDefaultEnrichmentProperties());
         writeData(out, data);
+        AUDIT_LOGGER.debug("Metadata with id: " + md.getId() + " and name: " + md.getName()
+            + " is enriched successfully.");
       }
     };
     String mimeType = "application/json";
     Response.ResponseBuilder response = Response.ok(result, mimeType);
+    AUDIT_LOGGER.debug(userIdentifier.getUserDescription(securityContext, true)
+        + " successfully got the fetch endpoint with id: " + id + ".");
     return response.build();
   }
 

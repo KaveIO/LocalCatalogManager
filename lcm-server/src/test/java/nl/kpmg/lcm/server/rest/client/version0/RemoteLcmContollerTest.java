@@ -133,7 +133,8 @@ public class RemoteLcmContollerTest extends LcmBaseServerTest {
     }
 
     RemoteLcm lcm = new RemoteLcm();
-    putLcm(lcm, 400);
+    lcm.setId("123");
+    putLcm(lcm, 404);
 
     lcm = RemoteLcmMocker.createRemoteLcm();
     postLcm(lcm, 200);

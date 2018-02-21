@@ -20,7 +20,10 @@ import nl.kpmg.lcm.common.data.metadata.TransferHistoryDescriptor;
 import nl.kpmg.lcm.common.exception.LcmException;
 import nl.kpmg.lcm.server.data.service.DataDeletionService;
 import nl.kpmg.lcm.server.data.service.MetaDataService;
+import nl.kpmg.lcm.server.rest.UserIdentifier;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import java.util.List;
@@ -46,6 +49,11 @@ import io.swagger.annotations.ApiResponses;
 @Path("remote/v0/data")
 @Api(value = "v0 remote calls for data")
 public class RemoteLcmDataDeletionController {
+  private static final Logger AUDIT_LOGGER = LoggerFactory.getLogger("auditLogger");
+
+  @Autowired
+  private UserIdentifier userIdentifier;
+
   @Autowired
   private MetaDataService metaDataService;
 
@@ -59,9 +67,16 @@ public class RemoteLcmDataDeletionController {
   @ApiResponses(value = {@ApiResponse(code = 200, message = "OK"),
                          @ApiResponse(code = 404, message = "The metadata is not found")})
   public final Response deleteActualData(@Context SecurityContext securityContext,
-    @PathParam("metadata_id") final String metadataId) {
+      @PathParam("metadata_id") final String metadataId) {
+    AUDIT_LOGGER.info(userIdentifier.getUserDescription(securityContext, false)
+        + " is trying to delete the data behind the metadata with id: " + metadataId
+        + " on the local LCM.");
+
     MetaData metadata = metaDataService.findById(metadataId);
     if (metadata == null) {
+      AUDIT_LOGGER.debug(userIdentifier.getUserDescription(securityContext, true)
+          + " was unable to delete the data behind the metadata with id: " + metadataId
+          + " on the local LCM because such metadata is not found.");
       throw new NotFoundException(String.format("MetaData with id %s could not be found",
           metadataId));
     }
@@ -69,15 +84,23 @@ public class RemoteLcmDataDeletionController {
     User principal = (User) securityContext.getUserPrincipal();
     TransferHistoryDescriptor descriptor = new TransferHistoryDescriptor((metadata));
     List<String> transferHistory = descriptor.getTransferHistory();
-    if (!principal.getOrigin().equals(
-        transferHistory.get(transferHistory.size() - 1))) {
-      throw new LcmException(String.format(
-          "LCM with id: %s is not the last one that had transferred the metadata with id: %s.",
-          principal.getOrigin(), metadataId), Response.Status.FORBIDDEN);
+    if (!principal.getOrigin().equals(transferHistory.get(transferHistory.size() - 1))) {
+      String message =
+          String
+              .format(
+                  "LCM with id: %s is not the last one that the metadata with id: %s had been transferred from.",
+                  principal.getOrigin(), metadataId);
+      AUDIT_LOGGER.debug(userIdentifier.getUserDescription(securityContext, false)
+          + " was unable to delete the data behind the metadata with id: " + metadataId
+          + " because " + message + ".");
+      throw new LcmException(message, Response.Status.FORBIDDEN);
     }
 
     service.deleteDataByThread(metadata);
 
+    AUDIT_LOGGER.info(userIdentifier.getUserDescription(securityContext, false)
+        + " deleted successfully the data behind the metadata with id: " + metadataId
+        + " on the local LCM.");
     return Response.ok().build();
   }
 }

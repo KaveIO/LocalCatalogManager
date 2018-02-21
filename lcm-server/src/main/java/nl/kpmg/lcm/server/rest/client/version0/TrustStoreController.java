@@ -16,6 +16,7 @@ package nl.kpmg.lcm.server.rest.client.version0;
 import nl.kpmg.lcm.common.Roles;
 import nl.kpmg.lcm.common.exception.LcmValidationException;
 import nl.kpmg.lcm.server.data.service.TrustStoreService;
+import nl.kpmg.lcm.server.rest.UserIdentifier;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -35,7 +36,9 @@ import javax.ws.rs.POST;
 import javax.ws.rs.PUT;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
+import javax.ws.rs.core.Context;
 import javax.ws.rs.core.Response;
+import javax.ws.rs.core.SecurityContext;
 
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
@@ -52,19 +55,31 @@ import io.swagger.annotations.ApiResponses;
 @Api(value = "v0  trust store)")
 public class TrustStoreController {
 
+  private static final Logger AUDIT_LOGGER = LoggerFactory.getLogger("auditLogger");
+
   private static final Logger LOGGER = LoggerFactory
       .getLogger(TrustStoreController.class.getName());
 
   private static int MAX_CERTIFICATE_SIZE = 1024 * 1024; // 100K
 
   @Autowired
+  private UserIdentifier userIdentifier;
+
+  @Autowired
   private TrustStoreService trustStoreService;
 
   @GET
   @RolesAllowed({Roles.ADMINISTRATOR})
-  public final List<String> listAliases() {
+  public final List<String> listAliases(@Context SecurityContext securityContext) {
+    AUDIT_LOGGER.debug(userIdentifier.getUserDescription(securityContext, false)
+        + " is trying to list all of the trust store aliases.");
 
-    return trustStoreService.listTrustStoreAliases();
+    List<String> allAliases = trustStoreService.listTrustStoreAliases();
+
+    AUDIT_LOGGER.debug(userIdentifier.getUserDescription(securityContext, true)
+        + " listed successfully all of the trust store aliases. "
+        + "Number of the trust store aliases: " + allAliases.size() + ".");
+    return allAliases;
   }
 
   @POST
@@ -75,18 +90,27 @@ public class TrustStoreController {
           notes = "Roles: " + Roles.ADMINISTRATOR)
   @ApiResponses(value = {@ApiResponse(code = 200, message = "OK")})
   public final Response addCertificate(
-          @ApiParam( value = "Certificate alias. It must be unique within one LCM") 
-          @PathParam("alias") String alias,
-          @ApiParam( value = "Stream to the certificate file.") 
-          InputStream certificateAsStream) throws IOException {
+      @Context SecurityContext securityContext,
+      @ApiParam(value = "Certificate alias. It must be unique within one LCM") @PathParam("alias") String alias,
+      @ApiParam(value = "Stream to the certificate file.") InputStream certificateAsStream)
+      throws IOException {
+    AUDIT_LOGGER.info(userIdentifier.getUserDescription(securityContext, false)
+        + " is trying to add new certificate with alias: " + alias + ".");
 
     byte[] certificate = readCertificate(certificateAsStream);
     if (certificate.length > MAX_CERTIFICATE_SIZE) {
+      AUDIT_LOGGER.debug(userIdentifier.getUserDescription(securityContext, true)
+          + " was unable to add new certificate with alias: " + alias
+          + " because the certificates could not be bigger than " + MAX_CERTIFICATE_SIZE
+          + " bytes.");
       throw new LcmValidationException("Certificate can not be bigger then " + MAX_CERTIFICATE_SIZE
           + " bytes");
     }
 
     trustStoreService.addCertificate(certificate, alias);
+
+    AUDIT_LOGGER.info(userIdentifier.getUserDescription(securityContext, true)
+        + " added successfully new certificate with alias: " + alias + ".");
     return Response.ok().build();
   }
 
@@ -98,18 +122,27 @@ public class TrustStoreController {
           notes = "Roles: " + Roles.ADMINISTRATOR)
   @ApiResponses(value = {@ApiResponse(code = 200, message = "OK")})
   public final Response updateCertificate(
-          @ApiParam( value = "Certificate alias. It must be unique within one LCM") 
-          @PathParam("alias") String alias,
-          @ApiParam( value = "Stream to the certificate file.") 
-      InputStream certificateAsStream) throws IOException {
+      @Context SecurityContext securityContext,
+      @ApiParam(value = "Certificate alias. It must be unique within one LCM") @PathParam("alias") String alias,
+      @ApiParam(value = "Stream to the certificate file.") InputStream certificateAsStream)
+      throws IOException {
+    AUDIT_LOGGER.info(userIdentifier.getUserDescription(securityContext, false)
+        + " is trying to update the certificate with alias: " + alias + ".");
 
     byte[] certificate = readCertificate(certificateAsStream);
     if (certificate.length > MAX_CERTIFICATE_SIZE) {
+      AUDIT_LOGGER.debug(userIdentifier.getUserDescription(securityContext, true)
+          + " was unable to update the certificate with alias: " + alias
+          + " because the certificates could not be bigger than " + MAX_CERTIFICATE_SIZE
+          + " bytes.");
       throw new LcmValidationException("Certificate can not be bigger then " + MAX_CERTIFICATE_SIZE
           + " bytes");
     }
     trustStoreService.removeCertificate(alias);
     trustStoreService.addCertificate(certificate, alias);
+
+    AUDIT_LOGGER.info(userIdentifier.getUserDescription(securityContext, true)
+        + " updated successfully the certificate with alias: " + alias + ".");
     return Response.ok().build();
   }
 
@@ -133,10 +166,15 @@ public class TrustStoreController {
           notes = "Roles: " + Roles.ADMINISTRATOR)
   @ApiResponses(value = {@ApiResponse(code = 200, message = "OK")})
   public final Response removeCertificate(
-          @ApiParam( value = "Certificate alias. It must be unique within one LCM") 
-          @PathParam("alias") String alias) {
+      @Context SecurityContext securityContext,
+      @ApiParam(value = "Certificate alias. It must be unique within one LCM") @PathParam("alias") String alias) {
+    AUDIT_LOGGER.info(userIdentifier.getUserDescription(securityContext, false)
+        + " is trying to remove the certificate with alias: " + alias + ".");
 
     trustStoreService.removeCertificate(alias);
+
+    AUDIT_LOGGER.info(userIdentifier.getUserDescription(securityContext, true)
+        + " removed successfully the certificate with alias: " + alias + ".");
     return Response.ok().build();
   }
 }

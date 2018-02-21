@@ -40,8 +40,8 @@ import javax.ws.rs.ext.Provider;
 @Priority(value = Priorities.AUTHENTICATION)
 public class AuthenticationRequestFilter implements ContainerRequestFilter {
 
-  private static final Logger AUTHENTICATION_LOGGER = LoggerFactory
-      .getLogger("authenticationLogger");
+  private static final Logger AUDIT_LOGGER = LoggerFactory
+      .getLogger("auditLogger");
   private static final Logger LOGGER = LoggerFactory.getLogger(AuthenticationRequestFilter.class
       .getName());
   /**
@@ -84,7 +84,7 @@ public class AuthenticationRequestFilter implements ContainerRequestFilter {
             continue;
           }
 
-          AUTHENTICATION_LOGGER.info("AuthenticationRequestFilter authenticates with: "
+          AUDIT_LOGGER.info("AuthenticationRequestFilter authenticates with: "
               + authenticationManager.getClass().getName() + " user: "
               + securityContext.getUserPrincipal().getName() + " IP: " + ip);
 
@@ -94,7 +94,7 @@ public class AuthenticationRequestFilter implements ContainerRequestFilter {
         }
       }
 
-      AUTHENTICATION_LOGGER.info("AuthenticationRequestFilter was not able to authenticate user. " + " IP: " + ip);
+      AUDIT_LOGGER.info("AuthenticationRequestFilter was not able to authenticate user. " + " IP: " + ip);
       requestContext.abortWith(Response.status(Response.Status.UNAUTHORIZED)
           .entity("You are not authorized to access LCM!").build());
 

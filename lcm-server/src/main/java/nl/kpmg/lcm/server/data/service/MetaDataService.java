@@ -88,7 +88,7 @@ public class MetaDataService {
   }
 
 
-  public void create(MetaData metadata) {
+  public MetaData create(MetaData metadata) {
     MetaDataWrapper wrapper = new MetaDataWrapper(metadata);
     String metadataExecutionTime = wrapper.getExpirationTime().getExecutionExpirationTime();
     String metadataTransferTime = wrapper.getExpirationTime().getTransferExpirationTime();
@@ -103,10 +103,10 @@ public class MetaDataService {
           "Can`t set an transfer expiration time that had already passed.");
     }
 
-    metaDataDao.save(metadata);
+    return metaDataDao.save(metadata);
   }
 
-  public void update(MetaData metadata) {
+  public MetaData update(MetaData metadata) {
     MetaData oldMetadata = metaDataDao.findOne(metadata.getId());
     if (oldMetadata == null) {
       throw new LcmValidationException("Can`t update metadata which doesn`t exist.");
@@ -134,7 +134,7 @@ public class MetaDataService {
       throw new LcmValidationException(
           "Can`t set an transfer expiration time that had already passed.");
     }
-    metaDataDao.save(metadata);
+    return metaDataDao.save(metadata);
   }
 
   public void delete(MetaData metadata) {

@@ -15,6 +15,7 @@
 package nl.kpmg.lcm.server.data.service;
 
 import static nl.kpmg.lcm.common.rest.authentication.AuthorizationConstants.LCM_AUTHENTICATION_ORIGIN_HEADER;
+import static nl.kpmg.lcm.common.rest.authentication.AuthorizationConstants.LCM_AUTHENTICATION_REMOTE_USER_HEADER;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -30,6 +31,7 @@ import nl.kpmg.lcm.common.data.TestResult;
 import nl.kpmg.lcm.common.data.User;
 import nl.kpmg.lcm.common.exception.LcmException;
 import nl.kpmg.lcm.server.data.dao.RemoteLcmDao;
+import nl.kpmg.lcm.server.rest.authorization.PermissionChecker;
 
 import org.glassfish.jersey.client.authentication.HttpAuthenticationFeature;
 import org.slf4j.Logger;
@@ -103,8 +105,10 @@ public class RemoteLcmService {
     Response response = null;
     TestResult result;
     try {
+      String username = PermissionChecker.getThreadLocal().get().getName();
       String self = lcmIdService.getLcmIdObject().getLcmId();
       response = clientFactory.createWebTarget(fetchUrl).request()
+              .header(LCM_AUTHENTICATION_REMOTE_USER_HEADER, username)
               .header(LCM_AUTHENTICATION_ORIGIN_HEADER, self).get();
       if (response.getStatusInfo().getFamily() == Response.Status.Family.SUCCESSFUL) {
         String message = response.readEntity(String.class);
@@ -134,6 +138,9 @@ public class RemoteLcmService {
   public boolean exportUsers(String remoteLcmId) {
 
     RemoteLcm remoteLcm = dao.findOne(remoteLcmId);
+    configuration.setTargetHost(remoteLcm.getDomain());
+    configuration.setTargetPort(remoteLcm.getPort().toString());
+    configuration.setUnsafe(remoteLcm.getProtocol().equals("http"));
     HttpAuthenticationFeature credentials =
         HttpAuthenticationFeature.basicBuilder()
             .credentials(remoteLcm.getApplicationId(), remoteLcm.getApplicationKey()).build();
@@ -142,12 +149,14 @@ public class RemoteLcmService {
     String fetchUrl = buildRemoteUrl(remoteLcm) + "/remote/v0/users/import";
     Response response = null;
     try {
+      String username = PermissionChecker.getThreadLocal().get().getName();
       String self = lcmIdService.getLcmIdObject().getLcmId();
       ObjectNode jsonPayload = createPayload();
       Entity<String> payload = Entity.entity(jsonPayload.toString(), "application/json");
 
       response =
           clientFactory.createWebTarget(fetchUrl).request()
+              .header(LCM_AUTHENTICATION_REMOTE_USER_HEADER, username)
               .header(LCM_AUTHENTICATION_ORIGIN_HEADER, self).post(payload);
       if (response.getStatus() != Response.Status.OK.getStatusCode()) {
         return false;
@@ -160,11 +169,7 @@ public class RemoteLcmService {
   }
 
   private ObjectNode createPayload() {
-    List<User> users = userService.findAll();
-    List<String> usernames = new LinkedList<String>();
-    for (User user : users) {
-      usernames.add(user.getName());
-    }
+    List<String> usernames = getAllUsernames();
 
     ObjectMapper mapper = new ObjectMapper();
     ObjectNode rootNode = mapper.createObjectNode();
@@ -178,5 +183,14 @@ public class RemoteLcmService {
     }
     rootNode.put("usernames", value);
     return rootNode;
+  }
+
+  public List<String> getAllUsernames() {
+    List<User> users = userService.findAll();
+    List<String> usernames = new LinkedList<String>();
+    for (User user : users) {
+      usernames.add(user.getName());
+    }
+    return usernames;
   }
 }

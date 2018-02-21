@@ -18,8 +18,11 @@ import nl.kpmg.lcm.common.Roles;
 import nl.kpmg.lcm.common.data.TaskSchedule;
 import nl.kpmg.lcm.common.rest.types.TaskScheduleRepresentation;
 import nl.kpmg.lcm.server.data.service.TaskScheduleService;
+import nl.kpmg.lcm.server.rest.UserIdentifier;
 import nl.kpmg.lcm.server.rest.client.version0.types.ConcreteTaskScheduleRepresentation;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import javax.annotation.security.RolesAllowed;
@@ -28,7 +31,9 @@ import javax.ws.rs.GET;
 import javax.ws.rs.POST;
 import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
+import javax.ws.rs.core.Context;
 import javax.ws.rs.core.Response;
+import javax.ws.rs.core.SecurityContext;
 
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
@@ -43,6 +48,10 @@ import io.swagger.annotations.ApiResponses;
 @Path("client/v0/taskschedule")
 @Api(value = "v0 taskschedule(cron jobs)")
 public class TaskScheduleController {
+  private static final Logger AUDIT_LOGGER = LoggerFactory.getLogger("auditLogger");
+
+  @Autowired
+  private UserIdentifier userIdentifier;
 
   /**
    * The TaskDescription DAO.
@@ -59,11 +68,17 @@ public class TaskScheduleController {
   @ApiOperation(value = "Return the active schedule with all active cron jobs", 
           notes = "Roles: " + Roles.ADMINISTRATOR + ", " + Roles.API_USER)
   @ApiResponses(value = {@ApiResponse(code = 200, message = "OK")})
-  public final TaskScheduleRepresentation getCurrent() {
+  public final TaskScheduleRepresentation getCurrent(@Context SecurityContext securityContext) {
+    AUDIT_LOGGER.debug(userIdentifier.getUserDescription(securityContext, false)
+        + " is trying to access the current task schedule.");
+
     TaskSchedule taskSchedule = taskScheduleService.findFirstByOrderByIdDesc();
 
     ConcreteTaskScheduleRepresentation concreteTaskScheduleRepresentation =
         new ConcreteTaskScheduleRepresentation(taskSchedule);
+
+    AUDIT_LOGGER.debug(userIdentifier.getUserDescription(securityContext, true)
+        + " accessed successfully the current task schedule.");
     return concreteTaskScheduleRepresentation;
   }
 
@@ -79,11 +94,16 @@ public class TaskScheduleController {
     @ApiOperation(value = "Create the active schedule", 
           notes = "Roles: " + Roles.ADMINISTRATOR)
   @ApiResponses(value = {@ApiResponse(code = 200, message = "OK")})
-  public final Response createTaskSchedule(
-          @ApiParam( value = "TaskSchedule object.") 
-          final TaskSchedule taskSchedule) {
+  public final Response createTaskSchedule(@Context SecurityContext securityContext, @ApiParam(
+      value = "TaskSchedule object.") final TaskSchedule taskSchedule) {
+    AUDIT_LOGGER.info(userIdentifier.getUserDescription(securityContext, false)
+        + " is trying to create a new task schedule.");
+
     taskSchedule.setId(null);
-    taskScheduleService.save(taskSchedule);
+    TaskSchedule newTaskSchedule = taskScheduleService.save(taskSchedule);
+
+    AUDIT_LOGGER.info(userIdentifier.getUserDescription(securityContext, false)
+        + " created successfully new task schedule with id : " + newTaskSchedule.getId() + ".");
     return Response.ok().build();
   }
 }

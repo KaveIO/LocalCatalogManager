@@ -49,6 +49,7 @@ public class FileReceiver implements Upload.Receiver, Upload.SucceededListener,
   public FileReceiver(Window contianer, final RestClientService restClientService, boolean isUpdate) {
     this.contianer = contianer;
     this.restClientService = restClientService;
+    this.isUpdate = isUpdate;
   }
 
   @Override
