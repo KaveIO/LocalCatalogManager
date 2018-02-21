@@ -19,7 +19,6 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 
 import nl.kpmg.lcm.common.Roles;
 import nl.kpmg.lcm.common.ServerException;
-import nl.kpmg.lcm.common.client.ClientException;
 import nl.kpmg.lcm.common.data.TransferSettings;
 import nl.kpmg.lcm.common.data.User;
 import nl.kpmg.lcm.common.exception.LcmValidationException;
@@ -171,7 +170,7 @@ public class RemoteMetaDataController {
           @ApiParam( value = "Remote Lcm id or \"all\".") 
           @PathParam("scope") final String scope,
           @ApiParam( value = "Return only metadatas containing specified string") 
-          @QueryParam("text") String searchString) throws ServerException, ClientException {
+          @QueryParam("text") String searchString) throws ServerException {
     if (searchString == null) {
       searchString = "";
     }

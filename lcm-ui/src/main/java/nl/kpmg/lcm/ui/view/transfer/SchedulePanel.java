@@ -29,7 +29,6 @@ import com.vaadin.ui.UI;
 import com.vaadin.ui.VerticalLayout;
 
 import nl.kpmg.lcm.common.ServerException;
-import nl.kpmg.lcm.common.client.ClientException;
 import nl.kpmg.lcm.common.data.RemoteLcm;
 import nl.kpmg.lcm.common.data.metadata.MetaData;
 import nl.kpmg.lcm.common.data.metadata.MetaDataWrapper;
@@ -39,6 +38,7 @@ import nl.kpmg.lcm.common.rest.types.MetaDatasRepresentation;
 import nl.kpmg.lcm.common.rest.types.RemoteLcmRepresentation;
 import nl.kpmg.lcm.common.rest.types.RemoteLcmsRepresentation;
 import nl.kpmg.lcm.ui.rest.AuthenticationException;
+import nl.kpmg.lcm.ui.rest.LcmBadRequestException;
 import nl.kpmg.lcm.ui.rest.RestClientService;
 import nl.kpmg.lcm.ui.view.metadata.MetadataEditWindow;
 import nl.kpmg.lcm.ui.view.transfer.components.StartTransferWindow;
@@ -129,9 +129,13 @@ public class SchedulePanel extends CustomComponent {
         remoteLcmListComboBox.setItemCaption(remoteLcm.getId(), remoteLcm.getName() + " : " + url);
         remoteLcmListComboBox.setTextInputAllowed(false);
       }
-    } catch (AuthenticationException | ServerException | ClientException ex) {
+    } catch (ServerException ex) {
       LOGGER.error("Unable to load remote LCMs! Message:" + ex.getMessage());
+    } catch (AuthenticationException | LcmBadRequestException ex) {
+      LOGGER.error("Unable to reload remote LCMs." + ex.getMessage());
+      Notification.show("Unable to reload the remote LCMs! Message: " + ex.getMessage());
     }
+
     remoteLcmListComboBox.addStyleName("margin-right-20");
     remoteLcmListComboBox.addStyleName("width-wide-search-field");
     remoteLcmListComboBox.setRequired(true);
@@ -300,9 +304,12 @@ public class SchedulePanel extends CustomComponent {
             }
           }
         }
-      } catch (AuthenticationException | ServerException | ClientException ex) {
+      } catch (ServerException  ex) {
         LOGGER.error("Unable to load remote LCMs! Message: " + ex.getMessage());
         Notification.show("Unable to load remote LCMs!");
+      } catch (AuthenticationException | LcmBadRequestException ex) {
+        LOGGER.error("Unable to reload remote LCMs." + ex.getMessage());
+        Notification.show("Unable to reload the remote LCMs! Message: " + ex.getMessage());
       }
     }
   }

@@ -25,12 +25,12 @@ import com.vaadin.ui.VerticalLayout;
 
 import nl.kpmg.lcm.common.Constants;
 import nl.kpmg.lcm.common.ServerException;
-import nl.kpmg.lcm.common.client.ClientException;
 import nl.kpmg.lcm.common.data.metadata.MetaDataWrapper;
 import nl.kpmg.lcm.common.exception.LcmValidationException;
 import nl.kpmg.lcm.common.rest.types.MetaDataRepresentation;
 import nl.kpmg.lcm.common.rest.types.MetaDatasRepresentation;
 import nl.kpmg.lcm.ui.rest.AuthenticationException;
+import nl.kpmg.lcm.ui.rest.LcmBadRequestException;
 import nl.kpmg.lcm.ui.rest.RestClientService;
 import nl.kpmg.lcm.ui.view.metadata.MetadataCreateWindow;
 import nl.kpmg.lcm.ui.view.metadata.MetadataEditWindow;
@@ -187,8 +187,8 @@ public class MetadataOverviewViewImpl extends VerticalLayout implements Metadata
     } catch (ServerException se) {
       Notification.show("Cannot instantiate client HTTPS endpoint");
       getUI().getNavigator().navigateTo("");
-    } catch (ClientException ex) {
-      Notification.show("Couldn't fetch remote data.");
+    } catch (LcmBadRequestException ex) {
+      Notification.show("Couldn't fetch remote data. Message:"  + ex.getMessage());
     }
   }
 

@@ -24,12 +24,12 @@ import com.vaadin.ui.UI;
 import com.vaadin.ui.VerticalLayout;
 
 import nl.kpmg.lcm.common.ServerException;
-import nl.kpmg.lcm.common.client.ClientException;
 import nl.kpmg.lcm.common.data.RemoteLcm;
 import nl.kpmg.lcm.common.rest.types.RemoteLcmRepresentation;
 import nl.kpmg.lcm.common.rest.types.RemoteLcmsRepresentation;
 import nl.kpmg.lcm.ui.component.DefinedLabel;
 import nl.kpmg.lcm.ui.rest.AuthenticationException;
+import nl.kpmg.lcm.ui.rest.LcmBadRequestException;
 import nl.kpmg.lcm.ui.rest.RestClientService;
 import nl.kpmg.lcm.ui.view.administration.components.RemoteLcmCreateWindow;
 import nl.kpmg.lcm.ui.view.administration.listeners.DeleteRemoteLcmListener;
@@ -151,9 +151,12 @@ public class RemoteLcmPanel extends CustomComponent implements DynamicDataContai
   private void reloadRemoteLcms() {
     try {
       this.remoteLcms = restClientService.getRemoteLcm();
-    } catch (AuthenticationException | ServerException | ClientException ex) {
-      Notification.show("Unable to reload the remoteLcms!");
-      LOGGER.error("Unable to reload the remoteLcms." + ex.getMessage());
+    } catch (ServerException ex) {
+      Notification.show("Unable to reload the remote Lcms!");
+      LOGGER.error("Unable to reload the remote Lcms." + ex.getMessage());
+    } catch (AuthenticationException | LcmBadRequestException ex) {
+      LOGGER.error("Unable to reload the remote Lcms." + ex.getMessage());
+      Notification.show("Unable to reload the remote Lcms! Message: " + ex.getMessage());
     }
   }
 

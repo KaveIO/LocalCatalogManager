@@ -20,7 +20,7 @@ import nl.kpmg.lcm.common.data.DataFormat;
 import nl.kpmg.lcm.common.data.Storage;
 import nl.kpmg.lcm.common.data.TestResult;
 import nl.kpmg.lcm.common.data.metadata.MetaDataWrapper;
-import nl.kpmg.lcm.common.exception.LcmException;
+import nl.kpmg.lcm.common.exception.LcmExposableException;
 import nl.kpmg.lcm.server.backend.Backend;
 import nl.kpmg.lcm.server.backend.BackendFactory;
 import nl.kpmg.lcm.server.backend.storage.AzureStorage;
@@ -136,7 +136,7 @@ public class StorageService {
       String errorMessage =
           "Invalid input data! Metadata data could not be null nither the data URI!";
 
-      throw new LcmException(errorMessage);
+      throw new LcmExposableException(errorMessage);
     }
 
     try {
@@ -150,7 +150,7 @@ public class StorageService {
       Storage storage = storageDao.findOneByName(storageName);
 
       if (storage == null) {
-        throw new LcmException(
+        throw new LcmExposableException(
             "Error! Unable to find Storage for the given metadata! Storage name:" + storageName);
       }
 
@@ -158,7 +158,7 @@ public class StorageService {
 
       return backend;
     } catch (URISyntaxException ex) {
-      throw new LcmException("Error! Unable to parse medata data URI!");
+      throw new LcmExposableException("Error! Unable to parse medata data URI!");
     }
   }
 
@@ -199,7 +199,7 @@ public class StorageService {
     StorageTester tester = new StorageTester();
     Storage storage = findById(id);
     if (storage == null) {
-      throw new LcmException("Error! Unable to find Storage for the given metadata! Storage id:"
+      throw new LcmExposableException("Error! Unable to find Storage for the given metadata! Storage id:"
           + id);
     }
     TestResult result = tester.testAccessability(storage);

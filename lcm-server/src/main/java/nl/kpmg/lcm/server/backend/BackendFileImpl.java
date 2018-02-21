@@ -22,7 +22,7 @@ import nl.kpmg.lcm.common.data.StreamingData;
 import nl.kpmg.lcm.common.data.TransferSettings;
 import nl.kpmg.lcm.common.data.metadata.DataItemsDescriptor;
 import nl.kpmg.lcm.common.data.metadata.MetaData;
-import nl.kpmg.lcm.common.exception.LcmException;
+import nl.kpmg.lcm.common.exception.LcmExposableException;
 import nl.kpmg.lcm.common.exception.LcmValidationException;
 import nl.kpmg.lcm.common.validation.Notification;
 import nl.kpmg.lcm.server.backend.storage.AzureStorage;
@@ -147,7 +147,7 @@ public class BackendFileImpl extends AbstractBackend {
   public void store(Data data, String key, TransferSettings transferSettings) {
 
     if (!(data instanceof StreamingData)) {
-      throw new LcmException("Unable to store iterative data directly to file.");
+      throw new LcmExposableException("Unable to store iterative data directly to file.");
     }
 
     Long size =
@@ -173,7 +173,7 @@ public class BackendFileImpl extends AbstractBackend {
               "The file: " + getFilePath(key) + " is already attached, won't overwrite.";
           progressIndicationFactory.writeIndication(message);
         }
-        throw new LcmException("Data set is already attached, won't overwrite. Data item: "
+        throw new LcmExposableException("Data set is already attached, won't overwrite. Data item: "
             + getFilePath(key));
       }
 

@@ -33,7 +33,7 @@ import com.vaadin.ui.Window;
 import nl.kpmg.lcm.common.ServerException;
 import nl.kpmg.lcm.common.data.RemoteLcm;
 import nl.kpmg.lcm.ui.rest.AuthenticationException;
-import nl.kpmg.lcm.ui.rest.DataCreationException;
+import nl.kpmg.lcm.ui.rest.LcmBadRequestException;
 import nl.kpmg.lcm.ui.rest.RestClientService;
 import nl.kpmg.lcm.ui.view.administration.DynamicDataContainer;
 import nl.kpmg.lcm.ui.view.administration.listeners.FileReceiver;
@@ -233,8 +233,11 @@ public class RemoteLcmCreateWindow extends Window implements Button.ClickListene
         certificateUpload.setImmediate(true);
         certificateUpload.submitUpload();
         dataContainer.updateContent();
-      } catch (ServerException | DataCreationException | AuthenticationException | IOException ex) {
+      } catch (ServerException | IOException ex) {
         Notification.show("Operation of failed!");
+        LOGGER.warn("Creation/Update of remote LCM failed.", ex);
+      } catch ( LcmBadRequestException | AuthenticationException  ex) {
+        Notification.show("Operation of failed! Message: " +  ex.getMessage());
         LOGGER.warn("Creation/Update of remote LCM failed.", ex);
       }
     }

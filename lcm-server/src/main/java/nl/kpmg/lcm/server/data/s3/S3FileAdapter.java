@@ -26,7 +26,7 @@ import com.amazonaws.services.s3.model.ObjectMetadata;
 import com.amazonaws.services.s3.model.PutObjectRequest;
 import com.amazonaws.services.s3.model.S3Object;
 
-import nl.kpmg.lcm.common.exception.LcmException;
+import nl.kpmg.lcm.common.exception.LcmExposableException;
 import nl.kpmg.lcm.common.exception.LcmValidationException;
 import nl.kpmg.lcm.server.backend.storage.S3FileStorage;
 import nl.kpmg.lcm.server.data.FileAdapter;
@@ -74,7 +74,7 @@ public class S3FileAdapter implements FileAdapter {
   @Override
   public void write(InputStream stream, Long size) throws IOException {
     if (size == null || size <= 0) {
-      throw new LcmException("Error! Unable to transfer file to s3 storage with unknown size.");
+      throw new LcmExposableException("Error! Unable to transfer file to s3 storage with unknown size.");
     }
 
     ObjectMetadata metadata = new ObjectMetadata();

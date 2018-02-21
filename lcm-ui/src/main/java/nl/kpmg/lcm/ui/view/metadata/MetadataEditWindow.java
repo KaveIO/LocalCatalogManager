@@ -31,7 +31,7 @@ import nl.kpmg.lcm.common.data.metadata.MetaDataWrapper;
 import nl.kpmg.lcm.common.rest.types.MetaDataRepresentation;
 import nl.kpmg.lcm.ui.component.DefinedLabel;
 import nl.kpmg.lcm.ui.rest.AuthenticationException;
-import nl.kpmg.lcm.ui.rest.DataCreationException;
+import nl.kpmg.lcm.ui.rest.LcmBadRequestException;
 import nl.kpmg.lcm.ui.rest.RestClientService;
 import nl.kpmg.lcm.ui.view.MetadataOverviewView;
 
@@ -179,8 +179,11 @@ public class MetadataEditWindow extends Window implements Button.ClickListener {
           metadataOverviewView.updateContent();
         }
         this.close();
-      } catch (ServerException | DataCreationException | AuthenticationException ex) {
+      } catch (ServerException ex) {
         Notification.show("Edit of metadata failed.");
+        LOGGER.warn("Edit of metadata failed." + ex.getMessage());
+      } catch (LcmBadRequestException | AuthenticationException ex) {
+        Notification.show("Edit of metadata failed." + ex.getMessage());
         LOGGER.warn("Edit of metadata failed." + ex.getMessage());
       }
     } else if (event.getSource() == deleteButton) {
@@ -191,8 +194,11 @@ public class MetadataEditWindow extends Window implements Button.ClickListener {
           metadataOverviewView.updateContent();
         }
         this.close();
-      } catch (ServerException | DataCreationException | AuthenticationException ex) {
+      } catch (ServerException ex) {
         Notification.show("Edit of metadata failed.");
+        LOGGER.warn("Edit of metadata failed." + ex.getMessage());
+      } catch (LcmBadRequestException | AuthenticationException ex) {
+        Notification.show("Edit of metadata failed. Message: " + ex.getMessage());
         LOGGER.warn("Edit of metadata failed." + ex.getMessage());
       }
     }

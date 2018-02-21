@@ -32,7 +32,7 @@ import nl.kpmg.lcm.common.data.TransferValidator;
 import nl.kpmg.lcm.common.data.metadata.DataItemsDescriptor;
 import nl.kpmg.lcm.common.data.metadata.MetaData;
 import nl.kpmg.lcm.common.data.metadata.MetaDataWrapper;
-import nl.kpmg.lcm.common.exception.LcmException;
+import nl.kpmg.lcm.common.exception.LcmExposableException;
 import nl.kpmg.lcm.common.rest.types.FetchEndpointRepresentation;
 import nl.kpmg.lcm.common.rest.types.MetaDataRepresentation;
 import nl.kpmg.lcm.server.cron.job.processor.DataFetchExecutor;
@@ -99,7 +99,7 @@ public class DataFetchTriggerService {
 
     MetaData existing = metaDataService.findById(metadataId);
     if (existing != null && !transferSettings.isForceOverwrite()) {
-      throw new LcmException(
+      throw new LcmExposableException(
           "This metadata already exists! To enable the transfer enable the overwriting of existing data.");
     }
 
@@ -113,14 +113,14 @@ public class DataFetchTriggerService {
     }
     if (!TransferValidator.validateTransfer(metaDataWrapper.getSourceType(),
         localStorage.getType())) {
-      throw new LcmException("Unable to transfer " + metaDataWrapper.getSourceType() + " to "
+      throw new LcmExposableException("Unable to transfer " + metaDataWrapper.getSourceType() + " to "
           + localStorage.getType() + " storage.");
     }
 
     String executionExpirationTime =
         metaDataWrapper.getExpirationTime().getExecutionExpirationTime();
     if (executionExpirationTime != null) {
-      throw new LcmException(
+      throw new LcmExposableException(
           "Unable to (re)transfer a metadata with already set execution expiration time.");
     }
 

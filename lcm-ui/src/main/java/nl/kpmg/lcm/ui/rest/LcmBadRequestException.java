@@ -12,38 +12,29 @@
  * the License.
  */
 
-package nl.kpmg.lcm.common.client;
-
-import javax.ws.rs.core.Response;
+package nl.kpmg.lcm.ui.rest;
 
 /**
  *
  * @author mhoekstra
  */
-public class ClientException extends Exception {
+public class LcmBadRequestException extends Exception {
 
-  private Response response;
+  public LcmBadRequestException() {}
 
-  public ClientException() {}
-
-  public ClientException(String message) {
+  public LcmBadRequestException(String message) {
     super(message);
   }
 
-  public ClientException(String message, Response response) {
-    super(message);
-    this.response = response;
-  }
-
-  public ClientException(String message, Throwable cause) {
+  public LcmBadRequestException(String message, Throwable cause) {
     super(message, cause);
   }
 
-  public ClientException(Throwable cause) {
+  public LcmBadRequestException(Throwable cause) {
     super(cause);
   }
 
-  public ClientException(String message, Throwable cause, boolean enableSuppression,
+  public LcmBadRequestException(String message, Throwable cause, boolean enableSuppression,
       boolean writableStackTrace) {
     super(message, cause, enableSuppression, writableStackTrace);
   }

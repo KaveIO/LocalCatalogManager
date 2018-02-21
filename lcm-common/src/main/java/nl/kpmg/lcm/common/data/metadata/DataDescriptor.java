@@ -18,6 +18,7 @@ import com.fasterxml.jackson.annotation.JsonInclude;
 import nl.kpmg.lcm.common.NamespacePathValidator;
 import nl.kpmg.lcm.common.data.DataFormat;
 import nl.kpmg.lcm.common.exception.LcmException;
+import nl.kpmg.lcm.common.exception.LcmExposableException;
 import nl.kpmg.lcm.common.validation.Notification;
 
 import java.net.URI;
@@ -89,9 +90,9 @@ public class DataDescriptor extends AbstractMetaDataDescriptor {
         URI dataUri = new URI(uriList.get(0));
         return dataUri.getScheme();
       }
-      throw new LcmException(String.format("Data URL list is empy or it does not exiosts!"));
+      throw new LcmExposableException(String.format("Data URL list is empy or it does not exiosts!"));
     } catch (URISyntaxException ex) {
-      throw new LcmException("Failure while trying to parse URI list", ex);
+      throw new LcmExposableException("Failure while trying to parse URI list" +  ex.getMessage());
     }
   }
 

@@ -18,9 +18,8 @@ import com.vaadin.ui.Upload;
 import com.vaadin.ui.Window;
 
 import nl.kpmg.lcm.common.ServerException;
-import nl.kpmg.lcm.common.client.ClientException;
 import nl.kpmg.lcm.ui.rest.AuthenticationException;
-import nl.kpmg.lcm.ui.rest.DataCreationException;
+import nl.kpmg.lcm.ui.rest.LcmBadRequestException;
 import nl.kpmg.lcm.ui.rest.RestClientService;
 
 import org.slf4j.LoggerFactory;
@@ -61,20 +60,24 @@ public class FileReceiver implements Upload.Receiver, Upload.SucceededListener,
   @Override
   public void uploadSucceeded(Upload.SucceededEvent event) {
     try {
-
-      if (isUpdate) {
-        restClientService.updateCertificateAlias(alias,
-            new ByteArrayInputStream(certificate.toByteArray()));
-      } else {
-        restClientService.addCertificateAlias(alias,
-            new ByteArrayInputStream(certificate.toByteArray()));
+      if (certificate.size() > 0) {
+        if (isUpdate) {
+          restClientService.updateCertificateAlias(alias,
+              new ByteArrayInputStream(certificate.toByteArray()));
+        } else {
+          restClientService.addCertificateAlias(alias,
+              new ByteArrayInputStream(certificate.toByteArray()));
+        }
       }
-    } catch (ServerException | DataCreationException | AuthenticationException | ClientException ex) {
+      Notification.show("Operation finished successfully.");
+      contianer.close();
+    } catch (ServerException ex) {
       Notification.show("Operation of failed!");
       LOGGER.warn("Submitting certificate failed.", ex);
+    } catch (LcmBadRequestException | AuthenticationException ex) {
+      Notification.show("Operation of failed! Message: " + ex.getMessage());
+      LOGGER.warn("Submitting certificate failed.", ex);
     }
-    Notification.show("Operation finished successfully.");
-    contianer.close();
   }
 
   @Override

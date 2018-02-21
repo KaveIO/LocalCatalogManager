@@ -26,13 +26,13 @@ import com.vaadin.ui.TextField;
 import com.vaadin.ui.VerticalLayout;
 
 import nl.kpmg.lcm.common.ServerException;
-import nl.kpmg.lcm.common.client.ClientException;
 import nl.kpmg.lcm.common.data.ProgressIndication;
 import nl.kpmg.lcm.common.data.TaskDescription;
 import nl.kpmg.lcm.common.data.TaskDescription.TaskStatus;
 import nl.kpmg.lcm.common.rest.types.TaskDescriptionRepresentation;
 import nl.kpmg.lcm.common.rest.types.TaskDescriptionsRepresentation;
 import nl.kpmg.lcm.ui.rest.AuthenticationException;
+import nl.kpmg.lcm.ui.rest.LcmBadRequestException;
 import nl.kpmg.lcm.ui.rest.RestClientService;
 
 import org.slf4j.LoggerFactory;
@@ -236,9 +236,12 @@ public class MonitorPanel extends CustomComponent {
           }
         }
       }
-    } catch (AuthenticationException | ServerException | ClientException ex) {
+    } catch (ServerException ex) {
       LOGGER.error("Unable to load task descriptions! Message: " + ex.getMessage());
       Notification.show("Unable to load task  descriptions!");
+    } catch (AuthenticationException | LcmBadRequestException ex) {
+      LOGGER.error("Unable to reload the task descriptions." + ex.getMessage());
+      Notification.show("Unable to reload the task descriptions! Message: " + ex.getMessage());
     }
   }
 

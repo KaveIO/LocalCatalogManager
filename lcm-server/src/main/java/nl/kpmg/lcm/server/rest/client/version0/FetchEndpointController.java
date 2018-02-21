@@ -26,7 +26,7 @@ import nl.kpmg.lcm.common.data.IterativeData;
 import nl.kpmg.lcm.common.data.StreamingData;
 import nl.kpmg.lcm.common.data.metadata.MetaData;
 import nl.kpmg.lcm.common.data.metadata.MetaDataWrapper;
-import nl.kpmg.lcm.common.exception.LcmException;
+import nl.kpmg.lcm.common.exception.LcmExposableException;
 import nl.kpmg.lcm.server.backend.Backend;
 import nl.kpmg.lcm.server.data.service.FetchEndpointService;
 import nl.kpmg.lcm.server.data.service.MetaDataService;
@@ -48,6 +48,7 @@ import java.util.Map;
 
 import javax.annotation.security.RolesAllowed;
 import javax.servlet.http.HttpServletRequest;
+import javax.ws.rs.ForbiddenException;
 import javax.ws.rs.GET;
 import javax.ws.rs.NotFoundException;
 import javax.ws.rs.Path;
@@ -121,21 +122,20 @@ public class FetchEndpointController {
       fetchEndpointService.delete(fe);
       AUDIT_LOGGER.debug(userIdentifier.getUserDescription(securityContext, true)
           + " was unable to get the fetch endpoint with id: " + id + " because it has expired.");
-      throw new LcmException(String.format("FetchEndpoint %s has expired", id),
+      throw new LcmExposableException(String.format("FetchEndpoint %s has expired", id),
           Response.Status.BAD_REQUEST);
     }
     if (!permissionChecker.check(securityContext, fe.getMetadataId())) {
       AUDIT_LOGGER.debug(userIdentifier.getUserDescription(securityContext, true)
           + " was unable to get the fetch endpoint with id: " + id
           + " because the user is not authorized to do so.");
-      throw new LcmException(String.format("Unable to authorize the request.", id),
-          Response.Status.FORBIDDEN);
+      throw new ForbiddenException(String.format("Unable to authorize the request.", id));
     }
 
     MetaData md = metaDataService.findById(fe.getMetadataId());
     MetaDataWrapper metaDataWrapper = new MetaDataWrapper(md);
     if (metaDataWrapper.isEmpty()) {
-      throw new LcmException(String.format("Metadata %s not found", fe.getMetadataId()));
+      throw new LcmExposableException(String.format("Metadata %s not found", fe.getMetadataId()));
     }
 
     Backend backend = storageService.getBackend(metaDataWrapper);

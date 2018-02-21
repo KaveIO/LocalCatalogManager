@@ -24,7 +24,7 @@ import nl.kpmg.lcm.common.data.IterativeData;
 import nl.kpmg.lcm.common.data.Storage;
 import nl.kpmg.lcm.common.data.TransferSettings;
 import nl.kpmg.lcm.common.data.metadata.MetaData;
-import nl.kpmg.lcm.common.exception.LcmException;
+import nl.kpmg.lcm.common.exception.LcmExposableException;
 import nl.kpmg.lcm.common.exception.LcmValidationException;
 import nl.kpmg.lcm.common.validation.Notification;
 import nl.kpmg.lcm.server.backend.metadata.TabularMetaData;
@@ -78,7 +78,7 @@ public class BackendJsonImpl extends AbstractBackend {
     }
 
     if (!dataSourceFile.exists()) {
-      throw new LcmException("Unable to find data source file! FilePath: "
+      throw new LcmExposableException("Unable to find data source file! FilePath: "
           + dataSourceFile.getPath());
     }
     return (JsonDataContext) DataContextFactory.createJsonDataContext(dataSourceFile);
@@ -181,15 +181,15 @@ public class BackendJsonImpl extends AbstractBackend {
    *
    * @param content {@link ContentIterator} that should be stored.
    * @param forceOverwrite - indicates how to proceed if the content already exists - in case of
-   *        true the content is written no matter if already persists or not - in case it is set to
-   *        false then the content is written only when it doesn't exist - in case it is set to
-   *        false and the content already exists then LcmException is thrown.
+        true the content is written no matter if already persists or not - in case it is set to
+        false then the content is written only when it doesn't exist - in case it is set to
+        false and the content already exists then LcmExposableException is thrown.
    */
   @Override
   public void store(Data data, String key, TransferSettings transferSettings) {
 
     if (!(data instanceof IterativeData)) {
-      throw new LcmException("Unable to store streaming data directly to json.");
+      throw new LcmExposableException("Unable to store streaming data directly to json.");
     }
 
     File dataSourceFile = createDataSourceFile(key);
@@ -200,7 +200,7 @@ public class BackendJsonImpl extends AbstractBackend {
         String message = "The file: " + dataSourceFile.getPath() + " is already attached, won't overwrite.";
         progressIndicationFactory.writeIndication(message);
       }
-      throw new LcmException("Data set is already attached, won't overwrite. Data item: " + key);
+      throw new LcmExposableException("Data set is already attached, won't overwrite. Data item: " + key);
     }
 
     int rowNumber = 1;
@@ -293,7 +293,7 @@ public class BackendJsonImpl extends AbstractBackend {
       String message =
           String.format("The storage %s is pointing non existing directory %s", storageName,
               subPath);
-      throw new LcmException(message);
+      throw new LcmExposableException(message);
     }
 
     File[] files = dataSourceDir.listFiles();

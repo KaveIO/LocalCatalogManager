@@ -16,10 +16,11 @@ package nl.kpmg.lcm.server.backend;
 
 import nl.kpmg.lcm.common.data.metadata.MetaData;
 import nl.kpmg.lcm.common.data.metadata.MetaDataWrapper;
-import nl.kpmg.lcm.server.data.service.StorageService;
 import nl.kpmg.lcm.common.exception.LcmException;
+import nl.kpmg.lcm.common.exception.LcmExposableException;
 import nl.kpmg.lcm.common.exception.LcmValidationException;
 import nl.kpmg.lcm.common.validation.Notification;
+import nl.kpmg.lcm.server.data.service.StorageService;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -61,7 +62,7 @@ public class BackendFactory {
 
     if (backendClassMap == null || backendClassMap.isEmpty()
         || backendClassMap.get(sourceType) == null) {
-      throw new LcmException("Backend is not implemented for source with type: " + sourceType);
+      throw new LcmExposableException("Backend is not implemented for source with type: " + sourceType);
     }
 
     Class backendClass = backendClassMap.get(sourceType);
