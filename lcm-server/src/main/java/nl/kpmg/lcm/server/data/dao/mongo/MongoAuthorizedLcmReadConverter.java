@@ -37,7 +37,11 @@ public class MongoAuthorizedLcmReadConverter implements Converter<DBObject, Auth
     authorizedLcm.setUniqueId((String) source.get("uniqueId"));
     authorizedLcm.setApplicationId((String) source.get("application-id"));
     authorizedLcm.setApplicationKey((String) source.get("application-key"));
-    authorizedLcm.setImportOfUsersAllowed((Boolean) source.get("import-of-users-allowed"));
+    if(source.get("import-of-users-allowed") == null ) {
+        authorizedLcm.setImportOfUsersAllowed(false);
+    } else {
+        authorizedLcm.setImportOfUsersAllowed((Boolean) source.get("import-of-users-allowed"));
+    }
 
     return authorizedLcm;
   }
