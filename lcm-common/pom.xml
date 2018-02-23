@@ -6,7 +6,7 @@
     <parent>
         <groupId>nl.kpmg.lcm</groupId>
         <artifactId>LocalCatalogManager</artifactId>
-        <version>0.2.4-SNAPSHOT</version>
+        <version>0.2.5-SNAPSHOT</version>
     </parent>
     <artifactId>lcm-common</artifactId>
     <packaging>jar</packaging>
